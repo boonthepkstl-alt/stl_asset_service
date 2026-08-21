@@ -50,9 +50,14 @@ func SetupRoutes(app *fiber.App, dbManager *repository.DBManager) {
 	protected.Post("/auth/logout", authCtrl.Logout)
 	protected.Post("/sample", sampleCtrl.SampleControllerFunction)
 
-	protected.Post("/samples", sampleCtrl.CreateSample)
+	// Read access is open to any authenticated role; mutations require "admin". This is the
+	// reference wiring for middleware.RequireRole (previously implemented but unused by any
+	// route — see docs/template-analysis/FRONTEND-FOUNDATION-BASELINE.md, Blocking Item B-1's
+	// backend residual). Applied here to /samples as the only existing mutating CRUD group in
+	// this template; there is no real admin/user/role management endpoint to gate yet.
 	protected.Get("/samples", sampleCtrl.ListSamples)
 	protected.Get("/samples/:id", sampleCtrl.GetSampleByID)
-	protected.Put("/samples/:id", sampleCtrl.UpdateSample)
-	protected.Delete("/samples/:id", sampleCtrl.DeleteSample)
+	protected.Post("/samples", middleware.RequireRole("admin"), sampleCtrl.CreateSample)
+	protected.Put("/samples/:id", middleware.RequireRole("admin"), sampleCtrl.UpdateSample)
+	protected.Delete("/samples/:id", middleware.RequireRole("admin"), sampleCtrl.DeleteSample)
 }

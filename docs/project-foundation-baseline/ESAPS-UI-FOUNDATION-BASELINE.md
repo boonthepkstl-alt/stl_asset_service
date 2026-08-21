@@ -169,30 +169,70 @@ silently expands or shapes an existing requirement's business rules. Recommended
 this in the next `/update-prd` round alongside `RAISE-FR-MAINT-001`'s other open items (SLA,
 vendor model — already tracked in the Traceability Matrix).
 
+**Second open item — escalated 2026-08-21, requires a business decision, unlike the first item this
+one is about code that already exists, not just a reference page:**
+
+> `frontend/src/pages/Licenses/` and `frontend/src/pages/LicenseDetail/` are **already built and
+> tested** in the `frontend/` scaffold — real components, services, repositories, and passing tests
+> (`license-service.test.ts`, `Licenses/index.test.tsx`, `LicenseDetail/index.test.tsx`), confirmed
+> by the session that built `frontend/`'s RBAC layer to predate that session's own work. This is not
+> unused scaffolding from the ESAPS reference sitting untouched — it is functioning RAISE frontend
+> code for a feature area.
+>
+> A second independent grep of `RAISE-PRD.md` (case-insensitive, searching "license", "software",
+> "SaaS", "subscription") returns **zero matches**, confirming the §2 finding: no `RAISE-FR`/
+> `RAISE-AI`/`RAISE-NFR` requirement covers software/license management at any scope tier —
+> not MVP, not Pilot, not Roadmap.
+>
+> **This is a business decision (cut software-license management from scope, or add it as a new
+> requirement), not a technical one** — deleting working, tested code because a baseline document
+> says so would be exactly the "edit to look complete without grounding" failure mode this
+> project's rules exist to prevent, just inverted (silently *removing* real functionality instead
+> of silently *inventing* it). The correct next step is the same as any other gap: raise it via
+> `/update-prd` and let the business decide whether to keep it (write the requirement) or cut it
+> (then remove the code) — not resolve it implicitly in either direction from this document.
+
+**Clarification on what "DO NOT USE" means in §2, prompted by this item:** for
+`SoftwareLicense.tsx`/`LicenseDetail.tsx`, "DO NOT USE" is a statement about the **ESAPS reference
+pages** — don't draw further inspiration from `esaps_ai_template`'s license pages when no
+requirement backs them. It is **not** an instruction to delete equivalent code that already exists
+and works in `frontend/`. Those are two different questions (should the ESAPS reference shape new
+work vs. should already-built code be kept), and only the business, not this document, can answer
+the second one.
+
 **For visibility, not for confirmation** (already correctly excluded, not candidates being
-proposed): the four DO NOT USE pages in §2 (`SoftwareLicense.tsx`, `LicenseDetail.tsx`,
-`Inventory.tsx`, `Reports.tsx`) represent ESAPS feature areas with zero RAISE backing. They are
-recorded here so a future reader can see they were considered and deliberately excluded, not
-overlooked.
+proposed): the other three DO NOT USE pages in §2 (`Inventory.tsx`, `Reports.tsx`, and the ESAPS
+reference copy of `SoftwareLicense.tsx` itself, as opposed to the built `frontend/` pages above)
+represent ESAPS feature areas with zero RAISE backing and, as far as this document's author knows,
+no equivalent already built in `frontend/`. They are recorded here so a future reader can see they
+were considered and deliberately excluded, not overlooked.
 
 ---
 
 ## 5. Status of the `frontend/` scaffold
 
-`frontend/` already exists as `raise-frontend` (`package.json` name field), with company-template
-conventions applied (Vite, TypeScript, Tailwind v4, ESLint, Prettier, Vitest) and dependencies
-already installed (`node_modules/` present). Its `src/` directory is currently **empty** — only a
-`dist/` build artifact exists, suggesting migration work started and paused before any source was
-committed.
+**Updated 2026-08-21 — this section originally said `src/` was empty; that is no longer true.**
+`frontend/` exists as `raise-frontend` (`package.json` name field), with company-template
+conventions applied (Vite, TypeScript, Tailwind v4, ESLint, Prettier, Vitest). `src/` is now
+substantially built out: 18+ real pages (Dashboard, Assets, AssetDetail, CreateAsset, Employees,
+EmployeeDetail, Licenses, LicenseDetail, Maintenance, TicketDetail, Administration, RoleManagement,
+UserManagement, Settings, AIDecisionCenter, Login, Forbidden, NotFound), plus a full
+component/hook/service/repository layer, with a passing test suite. Two items from §3/§4 above are
+already partially resolved in this build:
 
-This baseline is the specification for **populating** that empty `src/`, slice by slice per §3,
-using the ESAPS reference pages per their §2 decision — not a proposal to scaffold a new project.
-The company template's own readiness checklist
-([`COMPANY-FOUNDATION-BASELINE.md`](../company-foundation-baseline/COMPANY-FOUNDATION-BASELINE.md)
-§7 "Must be done before any RAISE code is written against these templates") still applies and is
-not superseded by this document — in particular, the RBAC/auth-transport/response-envelope
-unresolved decisions there block the Administration/Auth/RBAC-dependent slices in §3 from being
-built correctly, independent of anything found in this baseline.
+- RBAC route gating exists (`ProtectedRoute` supports `allowedRoles`, `/administration/*` gated to
+  ADMIN, `/forbidden` page present) — closes part of the RBAC prerequisite this document listed as
+  blocking the Administration/Auth-dependent slices.
+- The 404 catch-all route exists — closes a `COMPANY-FOUNDATION-BASELINE.md` §7 pre-RAISE-code item.
+- **`Licenses`/`LicenseDetail` are built** despite §2's DO NOT USE finding for the ESAPS reference
+  equivalent — see the second `NEEDS_PRD_CONFIRMATION` item in §4, not yet resolved.
+
+Still open, independent of anything in this document: `checkAuth` is not wired into `AuthContext`
+(restored sessions aren't server-validated), and the auth-transport/response-envelope unresolved
+decisions in
+[`COMPANY-FOUNDATION-BASELINE.md`](../company-foundation-baseline/COMPANY-FOUNDATION-BASELINE.md)
+§6 remain undecided. This document is not the tracker for those — it only notes that they still
+gate correctness of the Administration/Auth/RBAC-dependent slices in §3.
 
 ---
 

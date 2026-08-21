@@ -27,7 +27,7 @@ ESAPS UI (esaps_ai_template/, src/) → Business/UI reference, page-by-page
 RAISE-PRD.md + chain             → Business requirement authority (existing, referenced only)
                     │
                     ▼
-        PROJECT-FOUNDATION-BASELINE.md (this document)
+        ESAPS-UI-FOUNDATION-BASELINE.md (this document)
                     │
                     ▼
         frontend/ (raise-frontend scaffold) — target build

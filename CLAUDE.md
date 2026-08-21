@@ -29,7 +29,7 @@ requirements/design/testing ใน `docs/01-requirements/` ถึง `docs/07-tr
 เปล่า) และ**ห้ามอ่าน `esaps_ai_template/`/`src/` เป็น requirement** — ทั้งสองเป็น business/UI
 reference เท่านั้น ตามกติกาเดียวกับ VERSCAN (ดูหัวข้อถัดไป) รายละเอียดการตัดสินใจว่าแต่ละหน้า/
 โฟลเดอร์ควร KEEP/EXTEND/REFACTOR/REPLACE/DEFER/DO NOT USE อยู่ใน
-[`docs/project-foundation-baseline/PROJECT-FOUNDATION-BASELINE.md`](docs/project-foundation-baseline/PROJECT-FOUNDATION-BASELINE.md)
+[`docs/project-foundation-baseline/ESAPS-UI-FOUNDATION-BASELINE.md`](docs/project-foundation-baseline/ESAPS-UI-FOUNDATION-BASELINE.md)
 (อ้างอิง `docs/company-foundation-baseline/COMPANY-FOUNDATION-BASELINE.md` สำหรับความพร้อมของ
 template สองอันด้วย) — **อ่านสองไฟล์นี้ก่อนเสมอ ถ้าจะเริ่มเขียนโค้ดจริงใน `frontend/`**
 
@@ -167,7 +167,7 @@ auto-chain ให้อัตโนมัติ** เพราะ RAISE ห้�
   รวมถึงพิจารณาว่าจะยังใช้โครงสร้าง 1-ไฟล์-ต่อ-ขั้นตอนนี้ต่อไปสำหรับ `docs/` หรือจะย้ายไปใช้รูปแบบที่
   `.claude/agents`/`.claude/skills` คาดหวังแทน
 - ก่อนเขียนโค้ดจริงใน `frontend/` ให้อ่าน
-  [`docs/project-foundation-baseline/PROJECT-FOUNDATION-BASELINE.md`](docs/project-foundation-baseline/PROJECT-FOUNDATION-BASELINE.md)
+  [`docs/project-foundation-baseline/ESAPS-UI-FOUNDATION-BASELINE.md`](docs/project-foundation-baseline/ESAPS-UI-FOUNDATION-BASELINE.md)
   ก่อนเสมอ เพื่อดูว่าหน้า/ฟีเจอร์ไหนใน `esaps_ai_template/`/`src/` (ESAPS reference) ควร
   KEEP/EXTEND/REFACTOR/REPLACE/DEFER/DO NOT USE ตาม requirement ที่ยืนยันแล้วใน `RAISE-PRD.md`
   — ห้ามพอร์ตหน้าจาก ESAPS reference ตรงๆ โดยไม่ตรวจสอบกับเอกสารนี้ก่อน

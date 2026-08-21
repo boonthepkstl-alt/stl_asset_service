@@ -10,8 +10,11 @@ pass.)*
 **Date:** 2026-08-21
 **Scope:** Establishes the source-of-truth map, migration boundary, and blocking-items status for the RAISE frontend
 before any scaffolding or business-page implementation work begins.
-**Read-only basis:** This document is itself the output of a read-only analysis pass. No source code was modified to
-produce it — see [Non-Actions Taken](#non-actions-taken-this-phase).
+**Read-only basis (v1.0 only):** The original v1.0 baseline was the output of a read-only analysis pass — no source
+code was modified to produce it. v1.1 and v1.2 each layered one narrow, explicitly user-requested implementation
+step on top of that baseline (frontend RBAC hardening, then backend `RequireRole` wiring); see the Changelog and
+[Non-Actions Taken](#8-explicit-non-actions-taken-this-phase) for exactly what was and wasn't touched in each
+revision.
 
 Companion documents (read first for full evidence trails):
 - [INDEX.md](./INDEX.md) — audit index
@@ -153,6 +156,7 @@ before being written into `RAISE-PRD.md` as approved requirements. None are reso
 | 3 | Should the AI Decision Center's "recommendation" behavior (currently mock-data-driven in `frontend/src/services/ai-decision-service.ts`, modeled on `esaps_ai_template`'s decision-matrix concept) be scoped as `RAISE-AI-RECOMMEND-001` (Roadmap, not MVP per `RAISE-PRD.md` §7/§13/§14) or does its MVP subset map to a different, currently-undefined requirement? | **NEEDS_PRD_CONFIRMATION** | `RAISE-PRD.md` §7 is explicit that `RAISE-AI-RECOMMEND-001` is Enterprise Roadmap, not Phase 1 MVP, yet `frontend/`'s `AIDecisionCenter` page already exists and is routed (`App.tsx`). This is a scope-boundary risk: the page currently ships ESAPS-inspired recommendation UI (age, repair cost, risk score, recommended action, confidence — matching the `RAISE-AI-RECOMMEND-001` demonstrated-example shape) without an MVP requirement ID actually backing it. |
 | 4 | Is the Oracle FA Reconciliation page (`frontend/src/pages/modules.tsx` → `ReconciliationPage`, currently a placeholder per its own code comment "Migrates from `src/pages/Reconciliation.tsx` once Oracle FA is connected in Phase 6") intended to satisfy `RAISE-FR-ORACLE-001`, and does "Phase 6" in that comment correspond to any phase defined in `RAISE-PRD.md`? | **NEEDS_PRD_CONFIRMATION** | `RAISE-PRD.md` has no phase-numbering scheme matching "Phase 6" — the phrase appears to originate from a `frontend/`-internal migration plan (see [Technical Debt Log](#7-technical-debt-log) item 3) that is not itself a PRD artifact. |
 | 5 | Does the RAISE MVP require a persisted (backend-enforced) RBAC/permission model before Phase 1 ships, or is a UI-only permission-matrix acceptable for the Hackathon MVP with enforcement deferred? | **NEEDS_PRD_CONFIRMATION** | `RAISE-PRD.md` §11 marks `RAISE-NFR-SEC-RBAC-001` fully TBD; §16 Q21-Q23 are open. This is also [Blocking Item B-1](#6-blocking-items-assessment) below — flagged here too because it is simultaneously an engineering blocker and an unanswered business/security-design question. |
+| 6 | Is Software/SaaS License Management in scope for RAISE at all (MVP, Pilot, or Roadmap)? *(raised by a peer session auditing `docs/project-foundation-baseline/ESAPS-UI-FOUNDATION-BASELINE.md` against `RAISE-PRD.md`, cross-checked here)* | **NEEDS_PRD_CONFIRMATION** | Distinct from item 2: this is not an unmigrated ESAPS-only page, it is **already-built, already-tested `frontend/` functionality with zero PRD backing**. `frontend/src/pages/Licenses` (list) and `LicenseDetail` exist, are routed, and are backed by `license-service.ts`/`license-repository.ts` with 8 passing tests plus page-level tests — real, working code, not a placeholder. A repo-wide case-insensitive search of `RAISE-PRD.md` for "license", "software", "SaaS", and "subscription" returns **zero matches on every term** — there is no requirement ID, not even at Pilot/Roadmap tier, covering this domain at all. This must be resolved as a business scope decision (keep in MVP and retroactively write the requirement, or cut from MVP scope) — it must **not** be resolved by deleting the code unilaterally, and it must not be resolved by silently treating the existing UI as the de facto requirement. See the `Licenses`/`LicenseDetail`/`SoftwareLicense` rows in the [Migration Boundary Table](#5-migration-boundary-table) below, which this item supersedes for precision. |
 
 ---
 
@@ -185,7 +189,7 @@ Legacy pages enumerated from `esaps_ai_template/src/pages/` (root `src/pages/` i
 | `EmployeeDetail.tsx` | Custody / Asset holders | `RAISE-FR-ASSET-003` (holder data model TBD, §16 Q13) | `/employees/:id` | KEEP | Phase 5A (already migrated) | `frontend/src/pages/EmployeeDetail` exists and is routed. |
 | `ErrorPages.tsx` | Error/404 handling | No dedicated FR (infrastructure concern) | `*` catch-all | KEEP | Phase 4 (already migrated, improved) | `frontend/` has an explicit `NotFound` route (`App.tsx:69`) — react-template-main and ESAPS both lacked this; `frontend/` is already ahead here. |
 | `Inventory.tsx` | Asset Registry (bulk/list view) | NONE — no distinct "Inventory" FR beyond `RAISE-FR-ASSET-001`/`002` | NONE yet in `frontend/` | DROP (pending confirmation) | N/A | Functionally overlaps `AssetList`/`Assets`. No PRD requirement singles out a separate Inventory capability; treat as covered by `RAISE-FR-ASSET-001`/`002` unless business says otherwise — see [NEEDS_PRD_CONFIRMATION #2](#4-needs_prd_confirmation-log). |
-| `LicenseDetail.tsx` | Software License | NONE — RAISE-PRD.md defines no software-license FR | `/licenses/:id` | KEEP (as built, scope open) | Phase 5C (already migrated) | `frontend/src/pages/LicenseDetail` exists and is routed, but no `RAISE-FR-LICENSE-*` requirement exists in the PRD at all — see [NEEDS_PRD_CONFIRMATION #2](#4-needs_prd_confirmation-log)-adjacent gap; flagged as scope not yet PRD-anchored. |
+| `LicenseDetail.tsx` | Software License | NONE — RAISE-PRD.md defines no software-license FR | `/licenses/:id` | KEEP (as built, scope open) | Phase 5C (already migrated) | `frontend/src/pages/LicenseDetail` exists, is routed, and is tested — but no `RAISE-FR-LICENSE-*` requirement exists in the PRD at all, at any tier. See [NEEDS_PRD_CONFIRMATION #6](#4-needs_prd_confirmation-log) (this is already-built functionality with zero PRD backing, not an unmigrated page). |
 | `Maintenance.tsx` | Maintenance | `RAISE-FR-MAINT-001` | `/maintenance` | KEEP | Phase 5B (already migrated) | `frontend/src/pages/Maintenance` exists and is routed. IT Requisition sub-flow decision (§3 above) applies here. |
 | `NotificationCenter.tsx` | Alerts | `RAISE-FR-ALERT-001` (rules/channels TBD) | NONE yet in `frontend/` | REWRITE | Not started | No `frontend/` counterpart. `RAISE-FR-ALERT-001` is MVP/P0 but "exact alert rules and channels for MVP are TBD" — do not port ESAPS's notification UI wholesale; build once alert rules are confirmed. |
 | `Profile.tsx` | User account | NONE — no user-profile FR in PRD | NONE yet in `frontend/` | DROP (pending confirmation) | N/A | No PRD requirement covers a self-service profile page. See [NEEDS_PRD_CONFIRMATION #2](#4-needs_prd_confirmation-log). |
@@ -193,16 +197,20 @@ Legacy pages enumerated from `esaps_ai_template/src/pages/` (root `src/pages/` i
 | `Reports.tsx` | Executive Intelligence | Possibly overlaps `RAISE-FR-EXEC-001`'s "AI-Generated Executive Summary" (scope/format undefined) | NONE yet in `frontend/` | REWRITE | Not started | PRD does not define a standalone "Reports" capability distinct from the Executive Dashboard. See [NEEDS_PRD_CONFIRMATION #2](#4-needs_prd_confirmation-log). |
 | `RoleManagement.tsx` | RBAC Administration | `RAISE-NFR-SEC-RBAC-001` (TBD) | `/admin/roles` | EXTEND | Phase 5 (already migrated; frontend enforcement + persistence landed) | `frontend/src/pages/RoleManagement` exists, is routed, and now persists its permission matrix through `roleService.updatePermissions` — see [Blocking Item B-1](#6-blocking-items-assessment) (frontend portion resolved; backend enforcement still open). |
 | `Settings.tsx` | Settings | No dedicated FR (infrastructure/config concern) | `/settings` | KEEP | Phase 5 (already migrated) | `frontend/src/pages/Settings` exists and is routed. |
-| `SoftwareLicense.tsx` | Software License | NONE — same gap as `LicenseDetail.tsx` above | NONE distinct — overlaps `Licenses`/`LicenseDetail` | DROP (pending confirmation) | N/A | Likely superseded by `frontend/src/pages/Licenses` + `LicenseDetail`; no separate PRD anchor exists for either. See [NEEDS_PRD_CONFIRMATION #2](#4-needs_prd_confirmation-log). |
+| `SoftwareLicense.tsx` | Software License | NONE — same gap as `LicenseDetail.tsx` above | NONE distinct — overlaps `Licenses`/`LicenseDetail` | DROP (pending confirmation) | N/A | Superseded by `frontend/src/pages/Licenses` + `LicenseDetail`, which are already built and tested; no separate PRD anchor exists for either. See [NEEDS_PRD_CONFIRMATION #6](#4-needs_prd_confirmation-log). |
+| *(no ESAPS predecessor)* → `frontend/src/pages/Licenses` | Software License (list view) | NONE — same gap as `LicenseDetail.tsx` above | `/licenses` | KEEP (as built, scope open) | Phase 5C (already migrated) | Unlike every other row in this table, this page has **no distinct ESAPS-legacy file of that name** — `esaps_ai_template/src/pages/` has `LicenseDetail.tsx` and `SoftwareLicense.tsx` but no separate `Licenses.tsx` list page; `frontend/`'s list view was built independently, in spirit closest to `SoftwareLicense.tsx`'s list content. Included as its own row because it is real, routed, tested code (`license-service.ts`, `license-repository.ts`, 8 passing service tests + page tests) that the table would otherwise silently omit. See [NEEDS_PRD_CONFIRMATION #6](#4-needs_prd_confirmation-log). |
 | `TicketDetail.tsx` | Maintenance (ticket sub-flow) | `RAISE-FR-MAINT-001` (workflow TBD) | `/tickets/:id` | KEEP | Phase 5B (already migrated) | `frontend/src/pages/TicketDetail` exists and is routed. Also the most likely landing point for the IT-requisition sub-flow decision (§3) once confirmed. |
 | `UserManagement.tsx` | RBAC Administration | `RAISE-NFR-SEC-RBAC-001` (TBD) | `/admin/users` | KEEP | Phase 5 (already migrated) | `frontend/src/pages/UserManagement` exists and is routed. |
 
-**Table stats:** 21 legacy pages enumerated (from `esaps_ai_template/src/pages/`, `root src/pages/` identical).
-KEEP: 12 · EXTEND: 4 · REWRITE: 3 · DROP (pending confirmation): 3 · DEFER: 0 (none of the 21 pages map directly to a
-`RAISE-PRD.md` §14 Enterprise Roadmap item as a page-for-page port; Roadmap items like AI Recommendation are tracked
-as a requirement-level concern via `NEEDS_PRD_CONFIRMATION #3` rather than a page-migration row). Note: some rows sum
-to more than 21 in spirit because `AssetList.tsx`/`Inventory.tsx` and `LicenseDetail.tsx`/`SoftwareLicense.tsx`
-overlap functionally — each legacy file still gets its own row for completeness.
+**Table stats:** 21 legacy pages enumerated (from `esaps_ai_template/src/pages/`, `root src/pages/` identical), plus
+1 additional row for `frontend/src/pages/Licenses` (no ESAPS-legacy predecessor of that name — added so this
+already-built, untested-by-omission gap isn't silently missed; see that row's note) — 22 rows total.
+KEEP: 13 · EXTEND: 4 · REWRITE: 3 · DROP (pending confirmation): 3 · DEFER: 0 (none of the 21 legacy pages map
+directly to a `RAISE-PRD.md` §14 Enterprise Roadmap item as a page-for-page port; Roadmap items like AI
+Recommendation are tracked as a requirement-level concern via `NEEDS_PRD_CONFIRMATION #3` rather than a
+page-migration row). Note: some rows sum to more than 21 in spirit because `AssetList.tsx`/`Inventory.tsx` and
+`LicenseDetail.tsx`/`SoftwareLicense.tsx` overlap functionally — each legacy file still gets its own row for
+completeness.
 
 ---
 
@@ -211,7 +219,7 @@ overlap functionally — each legacy file still gets its own row for completenes
 Full Step 1 output. Each item classified BLOCKER/HIGH/MEDIUM/LOW/DEFERRED, cross-checked against the **current**
 state of `frontend/` (re-verified this pass, not just quoted from `FRONTEND-RECOMMENDATION.md`).
 
-### B-1. No RBAC/authorization enforcement — **RESOLVED (frontend) / HIGH (backend residual)**
+### B-1. No RBAC/authorization enforcement — **RESOLVED (frontend) / PARTIAL (backend example wired; no real admin API yet)**
 
 - **Original problem:** No authorization enforcement existed anywhere in `frontend/` beyond a login-gate.
   `ProtectedRoute` checked only `isAuthenticated`, and `RoleManagement`'s permission matrix was a local-state-only
@@ -237,27 +245,42 @@ state of `frontend/` (re-verified this pass, not just quoted from `FRONTEND-RECO
   - Verified this pass: full suite `npx vitest run` — **32 test files / 102 tests, all passing** (30 pre-existing +
     2 new files); `npx tsc --noEmit` — clean; `npx eslint . --ext ts,tsx --max-warnings 0` — clean; `npm run build`
     (`tsc && vite build`) — succeeds.
-- **Why it still isn't "fully production-ready" — remaining backend gap:**
-  - `go-template-main/middleware/jwtAuth.go` already implements a working `RequireRole(roles ...string)` middleware
-    (checks `c.Locals("role")` from the validated JWT claims), but **`router/router.go` does not apply it to any
-    route** — every route in the `protected` group is reachable by any authenticated user regardless of role.
-    Frontend route-gating stops the *UI* from being reached by the wrong role, but a direct API call (e.g. via
-    curl/Postman with a valid non-admin token) would still succeed against whatever admin-only endpoints exist.
-  - There is no real `User`/`Role`/`Permission` persistence anywhere yet — `go-template-main` has no role/permission
-    tables or endpoints at all (only `authController.go`/`sampleController.go` exist), and the frontend's
-    `modulePermissions` matrix lives only in `MockRoleRepository`'s in-memory array, reset on page reload.
+- **Backend wiring (follow-up pass) — evidence:**
+  - `go-template-main/router/sampleRouter.go` — `middleware.RequireRole("admin")` is now chained in front of
+    `POST /samples`, `PUT /samples/:id`, and `DELETE /samples/:id` (the mutating operations). `GET /samples` and
+    `GET /samples/:id` remain open to any authenticated role, unchanged.
+  - This was deliberately applied to `/samples` — the only existing mutating CRUD group in the template — as a
+    **reference example of the wiring pattern**, not as real admin-API coverage. `go-template-main` still has no
+    User/Role/Permission management endpoints at all (only `authController.go`/`sampleController.go` exist), so
+    there is nothing resembling the frontend's `/administration/*` surface for `RequireRole` to actually protect
+    yet. When real admin endpoints are built, they should copy this exact pattern
+    (`middleware.JWTAuth()` then `middleware.RequireRole("admin")` per mutating route), not reinvent it.
+  - New regression tests: `go-template-main/middleware/requireRole_test.go` (3 cases — admin role reaches the
+    handler, non-admin role gets 403, missing token gets 401 before role is even checked). Uses the existing
+    `BYPASS_JWT`/`BYPASS_JWT_ROLE` viper flags `jwtAuth.go` already supported, so no real JWT/DB setup was needed.
+  - Verified this pass: `go build ./...` — clean; `go test ./...` — all packages pass, including the new
+    `middleware` test and the pre-existing `controller` tests (which build their own bare fiber app bypassing
+    `SetupRoutes` entirely, so they were never exercising this middleware and remain unaffected).
+- **Why it still isn't "fully production-ready" — remaining gap:**
+  - There is still no real `User`/`Role`/`Permission` persistence anywhere — no database tables, no CRUD endpoints,
+    no admin-facing API surface for `RequireRole` to guard beyond the `/samples` demo. The frontend's
+    `modulePermissions` matrix still lives only in `MockRoleRepository`'s in-memory array, reset on page reload.
   - The role set used (`EMPLOYEE`/`IT_STAFF`/`IT_MANAGER`/`ADMIN`) and the "Administration = ADMIN only" mapping
     applied in `App.tsx` are working assumptions, not PRD-confirmed business rules — `RAISE-NFR-SEC-RBAC-001` is
     still TBD in `RAISE-PRD.md` §11, and this is consistent with [NEEDS_PRD_CONFIRMATION item
     5](#4-needs_prd_confirmation-log) already logged above (backend-enforced RBAC vs. UI-only matrix for MVP).
-- **Recommended action:** Wire `middleware.RequireRole(...)` onto the admin-scoped routes in `go-template-main`'s
-  router once such routes exist; design real `Role`/`Permission` persistence; resolve `RAISE-NFR-SEC-RBAC-001` and
-  NEEDS_PRD_CONFIRMATION item 5 before treating RBAC as production-complete.
+  - Once real admin endpoints exist, they still need `RequireRole` applied explicitly per route (fiber has no
+    global role-gating by path prefix in this template) — the wiring pattern is proven, but each future admin
+    route must remember to use it.
+- **Recommended action:** Design real `Role`/`Permission` persistence and admin CRUD endpoints once
+  `RAISE-NFR-SEC-RBAC-001` and NEEDS_PRD_CONFIRMATION item 5 are resolved; apply `middleware.RequireRole(...)` to
+  each mutating admin route following the `/samples` pattern established here.
 - **Must complete before new feature development:** No longer a hard blocker for frontend feature work (the UI-level
-  gap that was blocking is closed). **Still required before production deployment** or before any endpoint that
-  returns actor-differentiated data goes live without server-side enforcement.
-- **Current `frontend/` status: RESOLVED.** **Current backend (`go-template-main`) status: STILL OPEN** — middleware
-  exists but is unwired; no role/permission data model exists.
+  gap that was blocking is closed) or for backend plumbing work (the wiring pattern is now proven). **Still required
+  before production deployment**, and before any real admin endpoint ships without this same gating applied.
+- **Current `frontend/` status: RESOLVED.** **Current backend (`go-template-main`) status: PARTIAL** — the
+  `RequireRole` wiring pattern is proven and tested against the one existing mutating CRUD group (`/samples`), but
+  no real admin/user/role management endpoint exists yet for it to actually protect in production.
 
 ### B-2. No CI/CD pipeline — **HIGH**
 
@@ -354,12 +377,16 @@ state of `frontend/` (re-verified this pass, not just quoted from `FRONTEND-RECO
 |---|---|---|
 | BLOCKER | 0 | none — B-1's frontend portion is resolved as of this pass (see below) |
 | RESOLVED | 1 | B-1, frontend portion (route-level RBAC enforcement + permission persistence) |
-| HIGH | 4 | B-1 backend residual (RequireRole middleware unwired, no Role/Permission data model), B-2 (CI/CD), B-3 (AI endpoints), B-4 (JWT storage decision) |
-| MEDIUM | 1 | B-5 (root `src/` / unused Supabase dependency) |
+| HIGH | 3 | B-2 (CI/CD), B-3 (AI endpoints), B-4 (JWT storage decision) |
+| MEDIUM | 2 | B-1 backend residual (wiring pattern proven and tested against `/samples`, but no real admin/user/role API exists yet for it to protect), B-5 (root `src/` / unused Supabase dependency) |
 | LOW | 1 | B-6 (undocumented migration-phase references) |
 | DEFERRED | 0 | none — all items above have present-day relevance; nothing was deferred out of this assessment |
 
-*Note on B-1: it now spans two severities — the frontend-side gap that was the original BLOCKER is RESOLVED; a HIGH-severity backend residual remains (server-side authorization is still unenforced). See the full B-1 write-up above (section 6, first item) for the split.*
+*Note on B-1: it now spans two states — the frontend-side gap that was the original BLOCKER is RESOLVED; a
+MEDIUM-severity backend residual remains, downgraded from its earlier HIGH rating now that `middleware.RequireRole`
+is wired and tested against `/samples`'s mutating routes. The remaining gap is a missing capability (no real
+admin/user/role API exists yet), not an active unenforced-authorization hole against something already exposed. See
+the full B-1 write-up above (section 6, first item) for the split.*
 
 ---
 
@@ -376,46 +403,74 @@ state of `frontend/` (re-verified this pass, not just quoted from `FRONTEND-RECO
 
 ## 8. Explicit Non-Actions Taken This Phase
 
-- **No source code was modified** in `react-template-main/`, `go-template-main/`, `esaps_ai_template/`, root `src/`,
-  or `frontend/`. All verification in this document (file contents, dependency lists, route tables, directory
-  listings) was done via read-only inspection.
+*The bullets below describe the original v1.0 baseline-writing pass, which was strictly read-only. v1.1 and v1.2
+each authorized one narrow, explicitly-requested implementation step on top of that baseline (see Changelog) — this
+is intentional, scoped follow-up work, not scope drift from the read-only constraint that produced the baseline
+itself. The two bullets affected by that follow-up work are annotated below rather than silently left inaccurate.*
+
+- **No source code was modified** in `react-template-main/`, `esaps_ai_template/`, or root `src/`, in any revision of
+  this document. All verification of those three is read-only inspection throughout.
+  - `frontend/` **was** modified, but only as of v1.1, under an explicit user request to fix Blocking Item B-1's
+    frontend portion (RBAC route/permission enforcement) — see the v1.1 changelog entry for the exact file list.
+  - `go-template-main/` **was** modified, but only as of v1.2, under an explicit user request to wire
+    `middleware.RequireRole` onto `/samples`'s mutating routes as a reference example — see the v1.2 changelog
+    entry.
 - **Root `src/` was not deleted**, despite being confirmed a stray duplicate.
 - **`esaps_ai_template/` was not deleted**, despite being superseded by `frontend/` as the active foundation.
-- **No frontend implementation, scaffolding, or business-page work was started.** The Migration Boundary Table
-  above records decisions (KEEP/EXTEND/REWRITE/DROP), not completed migrations — REWRITE and DROP-pending rows have
-  no corresponding code written.
-- **`react-template-main` and `go-template-main` (the company templates) were not modified.**
+- **No new business module, feature, or page was started.** The Migration Boundary Table above still records
+  decisions (KEEP/EXTEND/REWRITE/DROP), not completed migrations — REWRITE and DROP-pending rows still have no
+  corresponding code written. The RBAC and RequireRole follow-ups were infrastructure/enforcement fixes to
+  already-existing code, not new business functionality.
 - **No `@supabase/supabase-js` or other dependency was removed** from `esaps_ai_template/package.json`, despite the
   Technical Debt Log recommending review.
+- **No real admin/user/role management API was created** in `go-template-main/` — `RequireRole` was wired onto the
+  existing `/samples` CRUD group specifically because no admin-specific endpoint exists yet to wire it onto instead
+  (see B-1's backend-wiring evidence above).
 
 ---
 
 ## Document Status
 
-**Version:** 1.1 (Draft for Review — updated after frontend RBAC hardening)
+**Version:** 1.3 (Draft for Review — sharpened the Licenses/LicenseDetail PRD-coverage gap)
 **Status:** Draft — establishes baseline only; does not itself authorize any implementation, scaffolding, or PRD
 change. Every `NEEDS_PRD_CONFIRMATION` item above requires a separate `/update-prd` session before being treated as
-approved scope. This revision updates [Blocking Item B-1](#6-blocking-items-assessment) to reflect completed
-frontend RBAC hardening; it does not resolve any `NEEDS_PRD_CONFIRMATION` item, does not authorize backend RBAC
-implementation, and does not authorize starting any new business module.
+approved scope. This revision does not resolve any `NEEDS_PRD_CONFIRMATION` item (including the new item 6), does
+not authorize deleting any `frontend/` code, does not authorize building a real admin/user/role management API, and
+does not authorize starting any new business module.
 **Depends on:** `RAISE-PRD.md` v0.4, `FRONTEND-CANDIDATE-COMPARISON.md`, `FRONTEND-RECOMMENDATION.md` (all as of
 2026-08-21).
 **Changelog:**
+- v1.3 — Added [NEEDS_PRD_CONFIRMATION item 6](#4-needs_prd_confirmation-log): Software/SaaS License Management has
+  **zero coverage in `RAISE-PRD.md`** at any tier (case-insensitive search for "license"/"software"/"SaaS"/
+  "subscription" returns 0 matches), yet `frontend/src/pages/Licenses` and `LicenseDetail` are already built, routed,
+  and covered by passing tests (`license-service.ts`/`license-repository.ts`, 8 service tests + page tests). This
+  supersedes the earlier vague "#2-adjacent" note on the `LicenseDetail.tsx`/`SoftwareLicense.tsx` migration-table
+  rows and adds a missing row for `frontend/src/pages/Licenses` itself, which had no ESAPS-legacy predecessor and
+  was previously omitted from the table entirely. Raised by a peer session auditing
+  `docs/project-foundation-baseline/ESAPS-UI-FOUNDATION-BASELINE.md`; cross-checked and confirmed here independently.
+  No code was deleted or modified — this is a documentation-precision fix only, routing the gap to
+  `/update-prd` rather than resolving it unilaterally.
+- v1.2 — Downgraded B-1's backend residual from HIGH to **MEDIUM**: `go-template-main/router/sampleRouter.go` now
+  chains `middleware.RequireRole("admin")` in front of `/samples`'s mutating routes (`POST`/`PUT`/`DELETE`), leaving
+  `GET` routes open to any authenticated role — applied as a reference example, since no real admin-specific
+  endpoint exists yet in this template. Backed by a new regression test file,
+  `go-template-main/middleware/requireRole_test.go` (3 cases, using the existing `BYPASS_JWT` test flags). `go build
+  ./...` and `go test ./...` both verified passing after the change, including the pre-existing `controller` tests
+  (which bypass `SetupRoutes`/this middleware entirely and were unaffected either way). The remaining gap is now a
+  **missing capability** (no real admin/user/role API exists for `RequireRole` to protect), not an unenforced-
+  authorization hole against something already exposed — hence the downgrade from HIGH.
 - v1.1 — Marked B-1's frontend portion **RESOLVED**: `ProtectedRoute` now supports `allowedRoles`, `/administration/*`
   is restricted to `ADMIN`, a `/forbidden` page exists for authorized-but-insufficient-role users, and
   `RoleManagement`'s permission matrix now persists through `roleService` → `role-repository` (`RoleRepository`
   interface) → `MockRoleRepository`, backed by new regression tests (`App.rbac.test.tsx`,
   `role-service.test.ts`). Full suite (32 files / 102 tests), `tsc --noEmit`, `eslint`, and `vite build` all verified
-  passing after the change. B-1's **backend residual is still open** (HIGH) — `go-template-main`'s `RequireRole`
-  middleware exists but is not wired to any route, and no real `User`/`Role`/`Permission` persistence exists.
-  RBAC is therefore **not fully production-ready** — only the frontend gap that was blocking further frontend work
-  is closed.
+  passing after the change. RBAC is therefore **not fully production-ready** — only the frontend gap that was
+  blocking further frontend work is closed as of this version.
 - v1.0 — Initial baseline (source priority, source map, migration boundary table, blocking items assessment as of
   the original comparison audit).
 **Next Action:** Route the [NEEDS_PRD_CONFIRMATION log](#4-needs_prd_confirmation-log) items through business
-confirmation, including item 5 (backend-enforced RBAC vs. UI-only matrix for MVP) which directly governs how urgently
-B-1's backend residual must be closed. Wire `go-template-main`'s `RequireRole` middleware onto admin-scoped routes
-and design real `Role`/`Permission` persistence before production deployment or before any actor-differentiated
-endpoint ships without server-side enforcement. Add CI (B-2) early in Phase-1 implementation. Frontend
-scaffolding/business-page work for `REWRITE`-status rows in the Migration Boundary Table may proceed for
-actor-agnostic work; anything actor-differentiated should still wait on the backend RBAC residual above.
+confirmation, including item 5 (backend-enforced RBAC vs. UI-only matrix for MVP) which directly governs when a real
+admin/user/role API — and therefore real `RequireRole` coverage beyond the `/samples` example — should be built.
+Add CI (B-2) early in Phase-1 implementation. Frontend scaffolding/business-page work for `REWRITE`-status rows in
+the Migration Boundary Table may proceed for actor-agnostic work; anything actor-differentiated should still wait on
+a real backend admin API and PRD confirmation of the role model.

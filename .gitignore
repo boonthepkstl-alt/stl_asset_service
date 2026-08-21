@@ -1,0 +1,35 @@
+# Root-level ignores. Each subproject (esaps_ai_template/, frontend/,
+# react-template-main/, go-template-main/) has its own .gitignore that still
+# applies within its own directory — this file only covers what those don't.
+
+# Dependencies / build output (belt-and-suspenders in case any appear at root)
+node_modules/
+dist/
+dist-ssr/
+build/
+coverage/
+
+# Env files (never commit secrets)
+.env
+.env.*
+!.env.example
+!**/.env.example
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors/IDEs
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Claude Code local session/permission overrides (keep shared .claude/agents,
+# .claude/skills, and settings.json tracked; ignore only local-machine state)
+.claude/settings.local.json

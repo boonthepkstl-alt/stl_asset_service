@@ -5,8 +5,13 @@ import type { APIError } from '@/types/api';
 // Foundation API boundary — the frontend only ever talks to the Go backend here.
 // Never call Gemini or any AI provider directly from the browser; AI-related
 // requests must go through /api/v1/ai/* on this same client (see AI-ARCHITECTURE.md).
+// Base path corrected to match what go-template-main's router actually serves today
+// (router/sampleRouter.go mounts `/api`, unversioned) -- API versioning is still an open
+// decision (COMPANY-FOUNDATION-BASELINE.md Sec5.1 target: `/api/v1` on both sides before any
+// external client depends on it), not resolved by this fix. This only corrects a mismatch that
+// would otherwise 404 every real request from HttpAssetRepository.
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1',
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api',
   headers: {
     'Content-Type': 'application/json',
   },

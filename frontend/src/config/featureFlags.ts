@@ -9,3 +9,12 @@ export const ROADMAP_FEATURES_ENABLED = import.meta.env.VITE_ENABLE_ROADMAP_FEAT
 // Nav item ids (config/navigation.ts) and route path constants (config/constants.ts) gated by
 // the flag above. Kept as one shared list so the nav filter and the route filter can't drift.
 export const ROADMAP_ONLY_NAV_IDS = new Set(['licenses', 'ai']);
+
+// go-template-main now has a real Asset Registry domain (RAISE-FR-ASSET-001, see
+// go-template-main/controller/assetController.go) but this frontend has been running entirely
+// on MockAssetRepository's in-memory fixtures. Default OFF -- there's no backend/Postgres
+// running in most dev/test environments, and the whole existing test suite (Assets,
+// AssetDetail, CreateAsset, Dashboard, cross-domain tests) depends on the mock's synchronous,
+// seeded data. Set to "true" only when a real go-template-main instance (with the
+// V1__Assets_Table.sql migration applied) is actually running at VITE_API_BASE_URL.
+export const ASSET_API_ENABLED = import.meta.env.VITE_ASSET_API_ENABLED === 'true';

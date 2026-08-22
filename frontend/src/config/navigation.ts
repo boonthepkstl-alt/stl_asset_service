@@ -17,6 +17,7 @@ import {
   FileSpreadsheet,
   type LucideIcon,
 } from 'lucide-react';
+import { ROADMAP_FEATURES_ENABLED, ROADMAP_ONLY_NAV_IDS } from '@/config/featureFlags';
 
 export interface NavItem {
   id: string;
@@ -30,7 +31,7 @@ export interface NavGroup {
   items: NavItem[];
 }
 
-export const navGroups: NavGroup[] = [
+const allNavGroups: NavGroup[] = [
   {
     label: 'Overview',
     items: [
@@ -75,7 +76,18 @@ export const navGroups: NavGroup[] = [
   },
 ];
 
-export const allNavItems: NavItem[] = navGroups.flatMap((g) => g.items);
+// Roadmap-only nav items (see featureFlags.ts) are hidden from the sidebar unless the flag is
+// on; groups left with no items after filtering are dropped so no empty section header shows.
+export const navGroups: NavGroup[] = ROADMAP_FEATURES_ENABLED
+  ? allNavGroups
+  : allNavGroups
+      .map((group) => ({
+        ...group,
+        items: group.items.filter((item) => !ROADMAP_ONLY_NAV_IDS.has(item.id)),
+      }))
+      .filter((group) => group.items.length > 0);
+
+export const allNavItems: NavItem[] = allNavGroups.flatMap((g) => g.items);
 
 export const pageTitles: Record<string, { title: string; subtitle: string }> = {
   dashboard: { title: 'Executive Dashboard', subtitle: 'Real-time overview of your asset portfolio' },

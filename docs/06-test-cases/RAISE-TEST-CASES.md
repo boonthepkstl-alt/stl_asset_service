@@ -2,9 +2,9 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Test Cases
-**Version:** 0.3 Draft
+**Version:** 0.4 Draft
 **Status:** Draft for Test Case Review
-**Source:** [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.3 §7 (Test Suites) + §8 (Blocked Items) + §8.1 (Fully-Blocked Suites — AI Document Intelligence Capabilities), expanding [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md)
+**Source:** [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.4 §7 (Test Suites) + §8 (Blocked Items) + §8.1 (Fully-Blocked Suites — AI Document Intelligence Capabilities), expanding [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md)
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
 
@@ -61,7 +61,7 @@ and no AC criterion is left without a test case.
 |---|---|---|---|---|---|
 | TC-LOGIN-01 | Valid login grants access | 1. Open Login screen. 2. Enter valid credentials. 3. Submit. | One valid credential set | User is granted access to the platform | **BLOCKED** — auth mechanism undefined (PRD §16 Q21). Verify only that a "valid" path leads to access; exact credential type TBD. |
 | TC-LOGIN-02 | Invalid login shows error | 1. Open Login screen. 2. Enter invalid credentials. 3. Submit. | One invalid credential set | Error state is shown; access denied | **BLOCKED** — same as above |
-| TC-LOGIN-03 | Unauthorized area shows access-denied | 1. Log in as a user without permission for a target area. 2. Navigate to that area. | One low-privilege user | Access-denied state is shown | **BLOCKED** — role/permission model undefined (PRD §16 Q22) |
+| TC-LOGIN-03 | Unauthorized area shows access-denied | 1. Log in as a user without permission for a target area. 2. Navigate to that area. | One low-privilege user | Access-denied state is shown | **BLOCKED (partial)** — role/permission model undefined (PRD §16 Q22). **RBAC MVP enforcement level confirmed (2026-08-21, PRD §16 Resolved Question 38; Design §16):** a UI-only/client-side permission check is confirmed acceptable for MVP (backend enforcement deferred to Enterprise Roadmap) — this fixes only *where* the access-denied check runs, not *what* the roles/permissions are; Q22 (role list, permission matrix contents, authentication mechanism) remains fully open. This case verifies only that an access-denied state exists and is shown for *some* unspecified permission gate, not that any named role is correctly gated. |
 
 ---
 
@@ -174,7 +174,7 @@ sub-gap referenced below.
 
 | TC ID | Title | Steps | Test Data | Expected Result | Blocked |
 |---|---|---|---|---|---|
-| TC-OPS-002-01 | Check-out updates custody | 1. Select an available asset. 2. Choose Check-out. 3. Identify a holder. 4. Confirm. | 1 available asset, 1 holder identity | Custody state updates to new holder | **BLOCKED (partial)** — basic transition testable; "appropriate permission" gating is TBD (PRD §16 Q12/Q22) |
+| TC-OPS-002-01 | Check-out updates custody | 1. Select an available asset. 2. Choose Check-out. 3. Identify a holder. 4. Confirm. | 1 available asset, 1 holder identity | Custody state updates to new holder | **BLOCKED (partial)** — basic transition testable; "appropriate permission" gating is TBD (PRD §16 Q12/Q22). **RBAC MVP enforcement level confirmed (2026-08-21, PRD §16 Resolved Question 38; Design §16):** a UI-only/client-side permission check is confirmed acceptable for MVP, backend enforcement deferred to Enterprise Roadmap — this fixes only *where* a permission check runs, not *what* the roles/permissions are (Q22 role list/permission matrix remain TBD), so this case verifies only the state transition itself, not whether the acting user's role is correctly gated. |
 | TC-OPS-002-02 | Check-in updates custody | 1. Select a checked-out asset. 2. Confirm return. | 1 checked-out asset | Custody state updates to reflect return | **BLOCKED (partial)** — same as above; also approval/exception rules TBD (PRD §16 Q11) |
 | TC-OPS-002-03 | Check-in/Check-out triggers audit entry | 1. Perform Check-out. 2. Open Audit Log. | 1 asset | New Audit Log entry created for the operation | No |
 
@@ -182,12 +182,55 @@ sub-gap referenced below.
 
 ## 11. TS-MAINT-001 Test Cases
 
-**Suite:** TS-MAINT-001 · **AC Group:** AC-MAINT-001 · **Requirement:** `RAISE-FR-MAINT-001` · **Screen:** P-009
+**Suite:** TS-MAINT-001 · **AC Group:** AC-MAINT-001 · **Requirement:** `RAISE-FR-MAINT-001` · **Screen:** P-009 · **Level(s):** L1, L3
+
+**Updated 2026-08-21 (Test Plan v0.4 §7/§8; AC v0.4 §12):** the 4-stage maintenance-request
+workflow (User Requisition → Dept Approval (Delegated) → IT Dispatch → Technician
+Execution) and its state model (`PENDING_DEPT_APPROVAL → PENDING_IT_DISPATCH →
+PLANNING/IN_PROGRESS/ON_HOLD → DONE`) are business-confirmed (PRD §16 Resolved Question
+33; Design §5.1), so `AC-MAINT-001-03` through `-09` now have corresponding test cases
+below. Two independent blocking reasons apply to a subset of these cases: (a) the
+Reject/Request Info resulting state/flow (`AC-MAINT-001-05`) has no defined downstream
+behavior; (b) `AC-MAINT-001-04` through `-08` depend on `RAISE-NFR-SEC-RBAC-001` — MVP
+enforcement level is confirmed as UI-only/client-side (backend deferred to Roadmap), but
+the role list/permission matrix (Q22) remain TBD, so *who* may perform each stage action
+cannot be verified for correctness, only that the state transition occurs when the stage
+action is performed. `AC-MAINT-001-03` (any user submitting a request) and
+`AC-MAINT-001-09` (stage-progress indicator, not gated by any specific role in the AC/
+Design text) carry no RBAC dependency and are fully testable.
 
 | TC ID | Title | Steps | Test Data | Expected Result | Blocked |
 |---|---|---|---|---|---|
 | TC-MAINT-001-01 | Maintenance record displays | 1. Open Maintenance screen for an asset with a record. | 1 asset, 1 maintenance record (date/event/status/cost) | Record fields are displayed | **BLOCKED (partial)** — display testable; full field model TBD (PRD §16 Q14) |
 | TC-MAINT-001-02 | Maintenance history displays chronologically | 1. Open Maintenance screen for an asset with multiple records. | 1 asset, ≥2 maintenance records | Records shown in chronological order | No |
+| TC-MAINT-001-03 | Stage 1 — User Requisition submits into Dept Approval | 1. As any user, open the maintenance-request form for an asset. 2. Enter asset, requester, and issue description. 3. Submit the request. | 1 asset, 1 requester identity, 1 issue description | Request is created and enters state `PENDING_DEPT_APPROVAL` | No |
+| TC-MAINT-001-04 | Stage 2 — Dept Approval (Delegated) Approve advances to IT Dispatch | 1. Open a request in state `PENDING_DEPT_APPROVAL`. 2. Select Approve (directly, or while the "acting as delegate for" banner is shown). 3. Confirm. | 1 request in `PENDING_DEPT_APPROVAL`; optionally, 1 delegate-banner context | Request transitions to state `PENDING_IT_DISPATCH` | **BLOCKED (partial)** — the Approve→`PENDING_IT_DISPATCH` state transition itself is testable; the delegated-approver authorization rule (*who* may delegate, *to whom*, how delegation is audited) is **NOT TESTABLE YET** (Prototype §15, Design §5.1) — this case does not assert that the delegation itself was valid or correctly authorized, only that an Approve action advances the state. Also depends on `RAISE-NFR-SEC-RBAC-001`: MVP enforcement level is confirmed UI-only/client-side (PRD §16 Resolved Question 38; Design §16), but the role list/permission matrix (Q22) remain TBD, so this case cannot verify that the acting user is a correctly-gated Dept Approver. |
+| TC-MAINT-001-05 | Stage 2 — Reject/Request Info does not advance to IT Dispatch | 1. Open a request in state `PENDING_DEPT_APPROVAL`. 2. Select Reject. 3. Repeat with Request Info instead of Reject on a second request. | 2 requests in `PENDING_DEPT_APPROVAL` | Request does not transition to `PENDING_IT_DISPATCH` | **BLOCKED (partial)** — only the negative assertion (does not transition to `PENDING_IT_DISPATCH`) is testable; the actual resulting state and any downstream flow for Reject/Request Info is **NOT TESTABLE YET** (Prototype §15 shows these as UI actions only, with no defined resulting state) — this case must not assert any specific resulting state (e.g., a "Rejected" or "Info Requested" status) beyond "not `PENDING_IT_DISPATCH`." Also depends on `RAISE-NFR-SEC-RBAC-001` (same Dept Approver role-gating caveat as `TC-MAINT-001-04`). |
+| TC-MAINT-001-06 | Stage 3 — IT Dispatch advances to execution state | 1. Open a request in state `PENDING_IT_DISPATCH`. 2. Assign the request to a technician or queue. 3. Select Dispatch. | 1 request in `PENDING_IT_DISPATCH`, 1 technician/queue assignment | Request transitions to one of `PLANNING`, `IN_PROGRESS`, or `ON_HOLD`, and Stage 4 (Technician Execution) begins | **BLOCKED (partial)** — the state transition itself is testable; depends on `RAISE-NFR-SEC-RBAC-001` — MVP enforcement level confirmed UI-only/client-side, but role list/permission matrix (Q22) remain TBD, so this case cannot verify that the acting user is a correctly-gated IT Dispatcher, only that dispatch advances the state. |
+| TC-MAINT-001-07 | Stage 4 — Technician updates execution status | 1. Open a request in state `PLANNING`, `IN_PROGRESS`, or `ON_HOLD`. 2. As the assigned technician, change the status control to a different one of the three values. | 1 request in any of `PLANNING`/`IN_PROGRESS`/`ON_HOLD` | Request's displayed status reflects the newly selected value | **BLOCKED (partial)** — the status-update behavior itself is testable; depends on `RAISE-NFR-SEC-RBAC-001` — MVP enforcement level confirmed UI-only/client-side, but role list/permission matrix (Q22) remain TBD, so this case cannot verify that the acting user is a correctly-gated Technician, only that the status control updates the displayed value. |
+| TC-MAINT-001-08 | Stage 4 — Mark Complete transitions to Done | 1. Open a request in state `PLANNING`, `IN_PROGRESS`, or `ON_HOLD`. 2. As the assigned technician, select Mark Complete. | 1 request in any of `PLANNING`/`IN_PROGRESS`/`ON_HOLD` | Request transitions to state `DONE` | **BLOCKED (partial)** — the Mark Complete→`DONE` state transition itself is testable; depends on `RAISE-NFR-SEC-RBAC-001` — MVP enforcement level confirmed UI-only/client-side, but role list/permission matrix (Q22) remain TBD, so this case cannot verify that the acting user is a correctly-gated Technician. No behavior is defined for Mark Complete attempted from any other state, or for skipped/reversed stages — no test case exists for those, since none is shown in the Prototype. |
+| TC-MAINT-001-09 | Stage-progress indicator reflects current state | 1. Open the detail view for a maintenance request at each of: `PENDING_DEPT_APPROVAL`, `PENDING_IT_DISPATCH`, `PLANNING`/`IN_PROGRESS`/`ON_HOLD`, and `DONE`. | 4 requests, one per listed state (or state group) | The 4-stage progress indicator (User Requisition → Dept Approval → IT Dispatch → Technician Execution) shows Done/Current/Pending consistent with each request's current state | No |
+
+---
+
+## 11.5. License Management — No Test Suite (Confirmed Out of Scope, Roadmap-only)
+
+**Confirmed 2026-08-21 (Test Plan v0.4 §3.2; AC v0.4 §3 traceability note; PRD §6/§13/§17
+Resolved Question 34):** License Management (P-016 License Inventory / P-017 License
+Detail, `RAISE-FR-LICENSE-001`) is classified as Enterprise Roadmap, not MVP. No
+`AC-LICENSE-001` Given/When/Then group exists in `RAISE-ACCEPTANCE-CRITERIA.md` — only a
+traceability note recording *why* no group was written — and consequently **no
+`TS-LICENSE-001` suite exists in `RAISE-TEST-PLAN.md`**, per that document's own
+principle that no test suite is introduced for behavior with no corresponding AC group
+(Test Plan §2).
+
+Following the same principle, **no test cases exist for P-016/P-017 in this document**,
+consistent with the treatment already given to AI Recommendation, Risk Scoring, and
+Lifecycle Prediction (all Pilot/Roadmap, no MVP suite, no test cases). This section exists
+solely to record that the absence is deliberate and verified, not an oversight. If
+`RAISE-FR-LICENSE-001` is later promoted to MVP and a dedicated `AC-LICENSE-001` group and
+`TS-LICENSE-001` suite are added upstream, corresponding test cases must be added here at
+that time — not before.
 
 ---
 
@@ -358,7 +401,7 @@ illustrative example are described.
 | TS-ASSET-003 | 3 | 1 | 2 | 0 | 0 |
 | TS-OPS-001 | 3 | 3 | 0 | 0 | 0 |
 | TS-OPS-002 | 3 | 1 | 2 | 0 | 0 |
-| TS-MAINT-001 | 2 | 1 | 1 | 0 | 0 |
+| TS-MAINT-001 | 9 | 3 | 6 | 0 | 0 |
 | TS-WARRANTY-001 | 3 | 1 | 2 | 0 | 0 |
 | TS-ORACLE-001 | 4 | 3 | 1 | 0 | 0 |
 | TS-ALERT-001 | 2 | 1 | 1 | 0 | 0 |
@@ -370,9 +413,9 @@ illustrative example are described.
 | TS-AI-DOC-002 | 1 | 0 | 0 | 1 | 0 |
 | TS-AI-DOC-003 | 1 | 0 | 0 | 1 | 0 |
 | TS-AI-DOC-004 | 1 | 0 | 0 | 1 | 0 |
-| **Total** | **55** | **27** | **23** | **4** | **1** |
+| **Total** | **62** | **29** | **28** | **4** | **1** |
 
-23 of 55 test cases are partially blocked — executable against their
+28 of 62 test cases are partially blocked — executable against their
 structural/interaction behavior, with full correctness pending a PRD Open
 Question. This count includes `TC-ASSET-003-03`, updated 2026-08-21 to
 **BLOCKED (partial)**: the Check-in/Check-out-triggered append-and-
@@ -389,6 +432,22 @@ retain their prior status. `TC-DASH-01` and `TC-EXEC-001-01` remain
 + confirmed assignment-time-based definition) from what remains NOT
 TESTABLE YET (calculation mechanics only), per `RAISE-TEST-PLAN.md` v0.3
 §7/§8 and `RAISE-ACCEPTANCE-CRITERIA.md` v0.3 §5/§17.
+
+**TS-MAINT-001 expanded from 2 to 9 test cases (2026-08-21, Test Plan v0.4 §7/§8; AC v0.4
+§12):** seven new cases (`TC-MAINT-001-03` through `-09`) were added for the newly
+confirmed 4-stage workflow's stage-transition criteria (`AC-MAINT-001-03..09`).
+`TC-MAINT-001-03` (User Requisition submit) and `TC-MAINT-001-09` (stage-progress
+indicator) are fully testable — neither carries an RBAC dependency in the AC text.
+`TC-MAINT-001-04` through `-08` are **BLOCKED (partial)**: `-04` and `-05` each carry an
+additional, independent block (delegated-approver authorization rule NOT TESTABLE YET for
+`-04`; Reject/Request Info resulting state/flow NOT TESTABLE YET for `-05`), and `-04`
+through `-08` all depend on `RAISE-NFR-SEC-RBAC-001` — the MVP enforcement level is
+confirmed as UI-only/client-side (PRD §16 Resolved Question 38), but the role list and
+permission matrix (Q22) remain TBD, so none of these five cases can verify that the
+acting user's role (Dept Approver, IT Dispatcher, Technician) is correctly gated, only
+that the state transition itself occurs. `TC-LOGIN-03` and `TC-OPS-002-01` had their
+Blocked-column wording updated in place (no count change) to cite this same confirmed
+RBAC enforcement level explicitly, mirroring `RAISE-TEST-PLAN.md` v0.4 §7/§8.
 
 **4 new test cases (`TC-AI-DOC-001-01`–`TC-AI-DOC-004-01`) are BLOCKED (full)**
 — the first instance of this marking in this document. Unlike a BLOCKED
@@ -461,8 +520,42 @@ Suite ID → TC ID) into one master table for compliance review.
 
 ## Document Status
 
-**Version:** 0.3 (re-verified against `RAISE-TEST-PLAN.md` v0.3, 2026-08-21 — two
+**Version:** 0.4 (re-verified against `RAISE-TEST-PLAN.md` v0.4, 2026-08-21 — three
 synchronization updates applied:)
+
+**Change Log — v0.3 → v0.4 (2026-08-21):**
+
+1. **TS-MAINT-001 expanded from 2 to 9 test cases.** Test Plan v0.4 §7/§8 (carrying AC v0.4
+   §12's seven new stage-transition criteria, `AC-MAINT-001-03..09`) confirmed the 4-stage
+   maintenance workflow's state model as testable for state transitions. Seven new test
+   cases were added: `TC-MAINT-001-03` (User Requisition submit — fully testable),
+   `TC-MAINT-001-04` (Dept Approval Approve — **BLOCKED (partial)**, delegated-approver
+   rule NOT TESTABLE YET plus RBAC dependency), `TC-MAINT-001-05` (Reject/Request Info —
+   **BLOCKED (partial)**, resulting state/flow NOT TESTABLE YET plus RBAC dependency),
+   `TC-MAINT-001-06` (IT Dispatch — **BLOCKED (partial)**, RBAC dependency),
+   `TC-MAINT-001-07` (Technician status update — **BLOCKED (partial)**, RBAC dependency),
+   `TC-MAINT-001-08` (Mark Complete — **BLOCKED (partial)**, RBAC dependency), and
+   `TC-MAINT-001-09` (stage-progress indicator — fully testable, no RBAC dependency in the
+   AC text). §11's suite-level note and §19 Test Case Summary (row + totals) were updated
+   accordingly.
+2. **New §11.5 added: License Management — No Test Suite (Confirmed Out of Scope).**
+   Explicitly records, consistent with Test Plan v0.4 §3.2 and AC v0.4 §3, that
+   `RAISE-FR-LICENSE-001` (P-016/P-017) remains Enterprise Roadmap with no
+   `AC-LICENSE-001` group and no `TS-LICENSE-001` suite, so no test cases exist for it —
+   this is a deliberate, verified absence, not an oversight.
+3. **`TC-LOGIN-03` and `TC-OPS-002-01` Blocked-column wording updated** to cite the
+   confirmed RBAC MVP enforcement level (PRD §16 Resolved Question 38; Design §16 — a
+   UI-only/client-side permission check is accepted for MVP, backend enforcement deferred
+   to Roadmap), mirroring `RAISE-TEST-PLAN.md` v0.4 §7/§8's TS-LOGIN and TS-OPS-002 rows.
+   This is a wording-only change; neither case's BLOCKED (partial) classification or the
+   §19 Summary counts change as a result, since both were already counted as partially
+   blocked.
+
+No other suite's test cases required changes; `TC-DASH-*`, `TC-ASSET-001-*`,
+`TC-ASSET-001-D-*`, `TC-LIFE-001-*`, `TC-ASSET-002-*`, `TC-ASSET-003-*`, `TC-OPS-001-*`,
+`TC-OPS-002-02`/`-03`, `TC-WARRANTY-001-*`, `TC-ORACLE-001-*`, `TC-ALERT-001-*`,
+`TC-AUDIT-001-*`, `TC-EXEC-001-*`, `TC-AI-SEARCH-001-*`, `TC-AI-STATES-*`, and
+`TC-AI-DOC-001-01`–`TC-AI-DOC-004-01` are unaffected by Test Plan v0.4's changes.
 
 **Change Log — v0.2 → v0.3 (2026-08-21):**
 
@@ -495,6 +588,6 @@ synchronization updates applied:)
    fully testable, 23 partially blocked, 4 blocked (full), 1 out of scope).
 
 **Status:** Draft for Test Case Review
-**Source:** [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.3
+**Source:** [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.4
 **Reference:** VERSCAN only
 **Next Action:** Review test cases and confirm blocked-item scoping before Traceability Matrix

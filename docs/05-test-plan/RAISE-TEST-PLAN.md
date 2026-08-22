@@ -2,9 +2,9 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Test Plan
-**Version:** 0.3 Draft
+**Version:** 0.4 Draft
 **Status:** Draft for Test Plan Review
-**Source:** [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.3, cross-checked against [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.3, [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.4, [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.3
+**Source:** [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.4, cross-checked against [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.9, [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.7, [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.5
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
 
@@ -65,6 +65,17 @@ status), the following have **no MVP test suite** in this plan:
   Workflow Automation, Multi-channel Alerts (Email/Teams/LINE Notify)
 - Asset Disposal workflow (terminal stage of `RAISE-FR-LIFE-001`) — Roadmap, confirmed
   2026-08-21 (see PRD §14 item 7); `TC-LIFE-001-03` is excluded rather than tested against
+- **License Management (P-016 License Inventory / P-017 License Detail,
+  `RAISE-FR-LICENSE-001`) — Roadmap, not MVP; no MVP test suite.** Confirmed at the AC
+  layer (`RAISE-ACCEPTANCE-CRITERIA.md` v0.4 §3 traceability note, §21 checklist item):
+  PRD §6/§13/§17 (Resolved Question 34) classify this requirement as Enterprise Roadmap,
+  and no AC-LICENSE-001 Given/When/Then group was written for it — only a traceability
+  note recording *why* no group exists. Per this Test Plan's own principle (§2 — no
+  suite without a corresponding AC group), **no `TS-LICENSE-001` suite is created here**,
+  consistent with the treatment already given to AI Recommendation, Risk Scoring, and
+  Lifecycle Prediction above. If `RAISE-FR-LICENSE-001` is later promoted to MVP and a
+  dedicated AC-LICENSE-001 group is added, a corresponding `TS-LICENSE-001` suite must be
+  added here at that time — not before.
 
 If any of these is promoted to MVP through business/product review, a
 corresponding AC group must be added to `RAISE-ACCEPTANCE-CRITERIA.md`
@@ -119,7 +130,7 @@ Each suite ID mirrors its AC group for direct traceability.
 
 | Suite ID | AC Group | Screen | Level(s) | Priority | Blocked Items |
 |---|---|---|---|---|---|
-| TS-LOGIN | AC-LOGIN | P-001 | L1, L2 | P0 | Yes — auth mechanism TBD |
+| TS-LOGIN | AC-LOGIN | P-001 | L1, L2 | P0 | Yes — auth mechanism TBD; RBAC MVP enforcement level confirmed as UI-only/client-side (role list/permission matrix still TBD) |
 | TS-DASH | AC-DASH | P-002 | L1 | P0 | Yes — KPI scope partially TBD; Utilization tile presence + assignment-time-based definition are testable now (resolved 2026-08-21); calculation mechanics (formula/exclusions/aggregation window) remain NOT TESTABLE YET |
 | TS-ASSET-001 | AC-ASSET-001 | P-003 | L1 | P0 | Yes — field list TBD |
 | TS-ASSET-001-DETAIL | AC-ASSET-001-DETAIL | P-004 | L1 | P0 | No |
@@ -127,8 +138,8 @@ Each suite ID mirrors its AC group for direct traceability.
 | TS-ASSET-002 | AC-ASSET-002 | P-005 | L1 | P0 | Yes — hierarchy TBD |
 | TS-ASSET-003 | AC-ASSET-003 | P-006 | L1, L3 | P0 | Yes — holder model TBD; custody-writing-events ambiguity blocks AC-ASSET-003-03's exclusivity scope only |
 | TS-OPS-001 | AC-OPS-001 | P-007 | L1, L2 | P0 | No |
-| TS-OPS-002 | AC-OPS-002 | P-008 | L1, L3 | P0 | Yes — workflow/roles TBD |
-| TS-MAINT-001 | AC-MAINT-001 | P-009 | L1 | P0 | Yes — field model TBD |
+| TS-OPS-002 | AC-OPS-002 | P-008 | L1, L3 | P0 | Yes — workflow/roles TBD; RBAC MVP enforcement level confirmed as UI-only/client-side (role list/permission matrix still TBD) |
+| TS-MAINT-001 | AC-MAINT-001 | P-009 | L1, L3 | P0 | Yes — field model (date/event/status/cost), SLA/vendor/cost model, and delegated-approver rules TBD; stage-transition criteria (AC-MAINT-001-03..09) testable for state-transition behavior; AC-MAINT-001-04..08 depend on `RAISE-NFR-SEC-RBAC-001` (enforcement level confirmed UI-only/client-side, role list/permission matrix still TBD) |
 | TS-WARRANTY-001 | AC-WARRANTY-001 | P-010 | L1 | P0 | Yes — field list TBD |
 | TS-ORACLE-001 | AC-ORACLE-001 | P-011 | L1, L2, L4 | P0 | Yes — integration design TBD |
 | TS-ALERT-001 | AC-ALERT-001 | P-012 | L1 | P0 | Yes — trigger rules TBD; role gate (Q22) TBD |
@@ -163,14 +174,14 @@ introduced here.
 
 | Suite | Blocking PRD Open Question(s) | Cannot Fully Verify |
 |---|---|---|
-| TS-LOGIN | Q21 Authentication mechanism, Q22 Roles/permissions | Which credential type is valid; which roles see access-denied |
+| TS-LOGIN | Q21 Authentication mechanism, Q22 Roles/permissions | Which credential type is valid; which roles see access-denied. **RBAC MVP enforcement level confirmed (2026-08-21, PRD §16 Resolved Question 38; Design §16):** business has confirmed a UI-only/client-side permission check is acceptable for MVP (a client-bypassing actor is an accepted, explicit MVP risk), backend enforcement deferred to Enterprise Roadmap. This fixes only *where* AC-LOGIN-03's access-denied check runs, not *what* the roles/permissions are — Q22 (role list, permission matrix contents, authentication mechanism) remains fully open, so AC-LOGIN-03 stays testable only for "an access-denied state exists and is shown for *some* unspecified permission gate," not for any named role being correctly gated. |
 | TS-DASH | Q3 Utilization (calculation mechanics only — partially resolved), Q4 Risk | Whether the Risk tile value is correct, only that it renders; whether "Total Assets"/"Warranty Expiry" tile behavior is final. **Utilization specifically (resolved 2026-08-21, partial):** PRD v0.3 §16 Resolved Question 27 and Design v0.4 §13 confirmed Utilization's definition as assignment-time-based (% of time an asset is assigned to a user/department, relative to total available time) — this suite can now verify tile *presence* on AC-DASH-01 **and** that the tile is documented/described against this confirmed definition. What remains NOT TESTABLE YET is the calculation mechanics: how "assigned" state/time is measured against Custody (P-006), what "total available time" excludes, and the aggregation window/granularity — no test case may assert a specific numeric value, formula, or threshold until this is resolved (see `RAISE-ACCEPTANCE-CRITERIA.md` §5) |
 | TS-ASSET-001 | Q1 Asset master field list | Whether all required fields are present, only that search/filter/select work |
 | TS-ASSET-002 | (RAISE-FR-ASSET-002 Open Question) Category hierarchy | Whether the hierarchy shown is the correct one, only that hierarchy display works |
 | TS-ASSET-003 | Q13 Holder data model; Custody-writing-events ambiguity (`RAISE-FR-ASSET-003` vs. `RAISE-FR-OPS-002` — PRD Pre-Finalization Quality Pass, "Duplicated / Overlapping Requirements," marked "Needs business confirmation") | Whether holder identity is modeled correctly, only that history is appended/immutable. Separately, for AC-ASSET-003-03: whether Custody History is written *only* by Check-in/Check-out (P-008, `AC-OPS-002`) or also by other custody-changing events (e.g., a direct reassignment outside Check-in/Check-out) — this suite verifies only the Check-in/Check-out-triggered append-and-immutability behavior; a dedicated case for a non-Check-in/Check-out write path cannot be added until that ambiguity is resolved and, if needed, a corresponding flow/screen and AC criterion exist. AC-ASSET-003-01 and -02 are unaffected by this blocker and execute normally. |
 | TS-LIFE-001 | Design §4.2's exact lifecycle state/transition model is TBD. (Resolved: Disposal MVP scope — confirmed Out of Scope for MVP on 2026-08-21, `RAISE-PRD.md` §14 item 7; the former disposal test case is now excluded rather than blocked, see `RAISE-TEST-CASES.md` §6.5.) | Whether cross-domain lifecycle data displays and stays consistent across stage changes |
-| TS-OPS-002 | Q11 Check-in/Check-out workflow, Q12/Q22 Roles | Whether approval/exception rules are enforced, only that the basic state transition + audit trigger occurs |
-| TS-MAINT-001 | Q14 Maintenance fields | Whether the field set is complete, only that records/history render |
+| TS-OPS-002 | Q11 Check-in/Check-out workflow, Q12/Q22 Roles | Whether approval/exception rules are enforced, only that the basic state transition + audit trigger occurs. **RBAC MVP enforcement level confirmed (2026-08-21, PRD §16 Resolved Question 38; Design §16):** same narrow decision as TS-LOGIN — UI-only/client-side check accepted for MVP, backend deferred to Roadmap. This fixes only *where* a permission check runs, not *what* the roles/permissions are, so AC-OPS-002-01's "appropriate permission" gate remains untestable for role correctness until the role list/permission matrix (Q22) is defined. |
+| TS-MAINT-001 | Q14 Maintenance fields / SLA / vendor model / cost model (workflow shape and state model now confirmed — Resolved Question 33; only SLA, vendor model, cost model, and delegated-approver configuration remain open); Q22 Roles/permissions | Whether the full field set (beyond date/event/status/cost) is complete, only that records/history render (AC-MAINT-001-01/-02). **Stage-transition criteria now testable (2026-08-21):** the 4-stage workflow (User Requisition → Dept Approval (Delegated) → IT Dispatch → Technician Execution) and its state model (`PENDING_DEPT_APPROVAL → PENDING_IT_DISPATCH → PLANNING/IN_PROGRESS/ON_HOLD → DONE`) are business-confirmed (PRD §16 Resolved Question 33; Design §5.1), so AC-MAINT-001-03, -06, -07, -08, -09 are executable for the confirmed state transitions and stage-progress indicator. Remaining NOT TESTABLE YET items: (a) AC-MAINT-001-05's Reject/Request Info resulting state/downstream flow — Prototype §15 shows these as UI actions only with no defined resulting state; (b) delegated-approver configuration rules (*who* may delegate, *to whom*, how delegation is audited) — AC-MAINT-001-04 tests only that an Approve action advances the state, not any delegation authorization rule; (c) SLA per stage, the vendor model (internal technician vs. external vendor dispatch), and the cost model/tracking — the "Priority," "Vendor model," and "Cost incurred" fields shown in the Prototype are placeholders only. **RBAC dependency (AC-MAINT-001-04 through -08):** MVP enforcement level is confirmed as UI-only/client-side (PRD §16 Resolved Question 38; Design §16), backend deferred to Roadmap — this fixes only *where* a permission check would run, not *what* the roles/permissions are; the role list, permission matrix contents, and authentication/delegation mechanism remain TBD (Q22), so these five criteria are executable only for the state-transition behavior itself, not for whether the acting user's role (Dept Approver, IT Dispatcher, Technician) is correctly gated or verified. No behavior is defined for Mark Complete attempted from an invalid state, or for skipped/reversed stages — no test case exists for those cases. |
 | TS-WARRANTY-001 | Q15 Warranty fields | Whether fields beyond Start/End/Status are needed |
 | TS-ORACLE-001 | Q6–Q10 Integration method, sync, mapping, error handling, ownership, source-of-truth, security | Whether the integration itself is correct, only that the four UI states (available/unavailable/error/conflict) render appropriately |
 | TS-ALERT-001 | (RAISE-FR-ALERT-001 Open Question) Alert trigger rules; Q22 Roles/permissions | Whether the correct conditions trigger alerts, only that triggered alerts display severity/description/asset; separately, whether the "authorized user" gate on AC-ALERT-001-01 is correctly enforced, only that the alert lists severity/description/asset when opened |
@@ -295,6 +306,11 @@ placeholders, not a finalized data spec:
   conflicting value (to exercise all four AC-ORACLE-001 states)
 - At least one maintenance record and one custody history entry per test
   asset, to exercise history/append-only behavior
+- At least one maintenance request per confirmed workflow state
+  (`PENDING_DEPT_APPROVAL`, `PENDING_IT_DISPATCH`, `PLANNING`, `IN_PROGRESS`,
+  `ON_HOLD`, `DONE`), to exercise AC-MAINT-001-03..09's stage-transition and
+  stage-progress-indicator criteria — SLA, vendor, cost, and delegated-approver
+  field values remain conceptual placeholders only, per §8
 - At least one alert-triggering condition (exact rule TBD — see §8)
 
 **This test data model must be finalized once the Open Questions in §8
@@ -378,8 +394,46 @@ the BLOCKED distinctions in §8.
 
 ## Document Status
 
-**Version:** 0.3 (re-verified against `RAISE-ACCEPTANCE-CRITERIA.md` v0.3, 2026-08-21 —
-two synchronization updates applied:)
+**Version:** 0.4 (re-verified against `RAISE-ACCEPTANCE-CRITERIA.md` v0.4, 2026-08-21 —
+four synchronization updates applied:)
+
+**Change Log — v0.3 → v0.4 (2026-08-21):**
+
+1. **TS-MAINT-001 expanded for the confirmed 4-stage Maintenance workflow.** AC v0.4 §12
+   added seven new stage-transition criteria (AC-MAINT-001-03..09) covering User
+   Requisition, Dept Approval (Delegated), IT Dispatch, and Technician Execution, plus a
+   stage-progress-indicator criterion. TS-MAINT-001's Level(s) were expanded from L1 to
+   L1, L3 (state-transition/state-integrity behavior, consistent with how TS-OPS-002 is
+   already leveled), and its Blocked Items entry (§8) was rewritten to distinguish: (a)
+   AC-MAINT-001-03/-06/-07/-08/-09 — now testable for the confirmed state transitions;
+   (b) AC-MAINT-001-05 (Reject/Request Info resulting state) — remains NOT TESTABLE YET;
+   (c) AC-MAINT-001-04 (delegated-approver authorization rule) — remains NOT TESTABLE
+   YET; (d) AC-MAINT-001-04 through -08's dependency on `RAISE-NFR-SEC-RBAC-001` — role
+   list/permission matrix remain TBD even though the MVP enforcement level is confirmed.
+   §10 Test Data Requirements added a bullet covering one maintenance request per
+   confirmed workflow state.
+2. **License Management (P-016/P-017, `RAISE-FR-LICENSE-001`) — explicit no-suite
+   confirmation added.** AC v0.4 §3 records a traceability-only note (no AC-LICENSE-001
+   group) because the requirement is Enterprise Roadmap, not MVP. §3.2 Out of Scope now
+   states explicitly that no `TS-LICENSE-001` suite is created here, consistent with the
+   treatment already given to other Roadmap/Pilot capabilities.
+3. **TS-LOGIN and TS-OPS-002 blocked-item wording updated for the confirmed RBAC MVP
+   enforcement level.** AC v0.4 (§4, §11) cites PRD §16 Resolved Question 38: a
+   UI-only/client-side permission check is confirmed acceptable for MVP, backend
+   enforcement deferred to Roadmap. §7 and §8 rows for TS-LOGIN and TS-OPS-002 were
+   updated to cite this confirmation explicitly, while continuing to treat the role
+   list/permission matrix (Q22) as unresolved — no role model is invented here as a
+   result.
+4. **AC-ORACLE-001 "Phase 6" drift check — no Test Plan change required.** AC v0.4 §14
+   added a note confirming "Phase 6" is a stale code-comment label, not a PRD phase, and
+   that AC-ORACLE-001 never referenced it. TS-ORACLE-001 (§7, §8, §9) already made no
+   such reference, so no wording change was needed; this is recorded here only to
+   confirm the check was performed.
+
+No other suite required changes; TS-DASH, TS-ASSET-001, TS-ASSET-001-DETAIL,
+TS-LIFE-001, TS-ASSET-002, TS-ASSET-003, TS-OPS-001, TS-WARRANTY-001, TS-ORACLE-001,
+TS-ALERT-001, TS-AUDIT-001, TS-EXEC-001, TS-AI-SEARCH-001, TS-AI-STATES, and
+TS-AI-DOC-001..004 are unaffected by AC v0.4's changes.
 
 **Change Log — v0.2 → v0.3 (2026-08-21):**
 
@@ -411,6 +465,9 @@ TS-WARRANTY-001, TS-ORACLE-001, TS-ALERT-001, TS-AUDIT-001, TS-AI-SEARCH-001, an
 TS-AI-STATES are unaffected by AC v0.3's changes.
 
 **Status:** Draft for Test Plan Review
-**Source:** [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.3
+**Source:** [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.4
 **Reference:** VERSCAN only
-**Next Action:** Review test suite scope, priorities, and blocked items before Test Cases
+**Next Action:** Review the v0.4 update (TS-MAINT-001 stage-transition coverage, License
+Management no-suite confirmation, RBAC enforcement-level wording refresh) before Test
+Cases. `RAISE-TEST-CASES.md` should be checked next for the same drift, in particular
+whether it already covers (or needs to add coverage for) TC-MAINT-001-03..09.

@@ -2,9 +2,9 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Acceptance Criteria
-**Version:** 0.3 Draft
+**Version:** 0.4 Draft
 **Status:** Draft for Acceptance Review
-**Source:** [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.3 §25 (Prototype Traceability Matrix) + §5, §7–§23 (per-screen specs / AI Scope Boundary), cross-checked against [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.3 and [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.4
+**Source:** [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.5 §27 (Prototype Traceability Matrix) + §5, §7–§23 (per-screen specs / AI Scope Boundary), cross-checked against [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.9 and [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.7
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
 
@@ -57,7 +57,7 @@ detail is "TBD" or "conceptual," the corresponding criterion is marked
 | [AC-ASSET-003](#9-ac-asset-003--p-006-custody-history) | P-006 | RAISE-FR-ASSET-003 | Partially testable |
 | [AC-OPS-001](#10-ac-ops-001--p-007-qr--barcode-scan) | P-007 | RAISE-FR-OPS-001 | Testable |
 | [AC-OPS-002](#11-ac-ops-002--p-008-check-in--check-out) | P-008 | RAISE-FR-OPS-002 | Partially testable |
-| [AC-MAINT-001](#12-ac-maint-001--p-009-maintenance) | P-009 | RAISE-FR-MAINT-001 | Partially testable |
+| [AC-MAINT-001](#12-ac-maint-001--p-009-maintenance) | P-009 | RAISE-FR-MAINT-001 | Partially testable (workflow shape testable; SLA/vendor/cost NOT TESTABLE YET) |
 | [AC-WARRANTY-001](#13-ac-warranty-001--p-010-warranty) | P-010 | RAISE-FR-WARRANTY-001 | Partially testable |
 | [AC-ORACLE-001](#14-ac-oracle-001--p-011-oracle-fa--financial-view) | P-011 | RAISE-FR-ORACLE-001 | Partially testable |
 | [AC-ALERT-001](#15-ac-alert-001--p-012-alerts) | P-012 | RAISE-FR-ALERT-001 | Partially testable |
@@ -72,6 +72,27 @@ detail is "TBD" or "conceptual," the corresponding criterion is marked
 
 "Testable" = every criterion in the group can be verified today from Prototype-defined
 behavior. "Partially testable" = at least one criterion is blocked on an Open Question.
+
+**Roadmap screens — no AC group written (consistent with Risk Scoring / Lifecycle
+Prediction / AI Recommendation treatment, §21 checklist item):** `RAISE-PROTOTYPE.md`
+v0.5 §22–§23 add **P-016 License Inventory** and **P-017 License Detail**, both tracing
+to `RAISE-FR-LICENSE-001`. PRD v0.9 §6/§13/§17 confirm this requirement as **Enterprise
+Roadmap, not Phase 1 MVP** (PRD §16 Resolved Question 34), and Prototype §22/§23 Status
+Banners state the screens exist only because `frontend/src/pages/Licenses/` and
+`frontend/src/pages/LicenseDetail/` were already built ahead of that scope decision —
+they must not be read as approved MVP screens or business rules. Per this document's own
+review checklist (§21: "Roadmap/Pilot capabilities ... have no MVP acceptance criteria
+written here"), **no AC-LICENSE-001 Given/When/Then group is written** for P-016/P-017.
+This is recorded here only as a traceability note, not a testable group:
+
+- **P-016 License Inventory / P-017 License Detail** — Requirement `RAISE-FR-LICENSE-001`
+  — **Roadmap, not MVP — no AC group written.** License field model, seat/utilization
+  rule, renewal/expiry alert rule, and vendor/cost tracking are all **TBD** (PRD §16
+  Q15a; Design §5.3 "Data Model TBD") in addition to the screens themselves being
+  out-of-MVP-scope — writing Given/When/Then criteria now would invent both the business
+  rules and the MVP status. If `RAISE-FR-LICENSE-001` is later promoted to MVP through
+  product requirement review, this document should add a dedicated AC-LICENSE-001 group
+  at that time, derived from whatever field model/rules are confirmed then.
 
 ---
 
@@ -93,6 +114,17 @@ role/permission model are undefined (PRD §16 Q21–Q22; PRD §11 Security &
 RBAC). AC-LOGIN-01/02/03 validate only the *existence* of success/error/
 denied states shown in the Prototype spec (§7), not any specific
 mechanism.
+
+**RBAC MVP enforcement level — confirmed, narrow scope only (PRD §11, §16 Resolved
+Question 38; Design §16 Security Architecture; Prototype §7):** business has confirmed
+that a UI-only/client-side permission check is acceptable for MVP (a client-bypassing
+actor is an accepted, explicit MVP risk, not an oversight), with backend-enforced RBAC
+deferred to Enterprise Roadmap. This resolves only *where* AC-LOGIN-03's access-denied
+check would run — it does **not** resolve *what* the roles/permissions are. The role
+list, permission matrix contents, and authentication mechanism remain **TBD**, so
+AC-LOGIN-03 stays scoped to verifying that an access-denied state exists and is shown
+for *some* unspecified permission gate, not that any named role is correctly
+gated.
 
 ---
 
@@ -307,13 +339,29 @@ feature added.
 **NOT TESTABLE YET:** "appropriate permission" is undefined (no role
 model exists — PRD §16 Q12, Q22); approval requirements and exception
 handling for Check-in/Check-out are explicitly TBD (Prototype §14; PRD
-§16 Q11).
+§16 Q11). **RBAC MVP enforcement level is confirmed** as UI-only/client-side,
+backend deferred to Roadmap (PRD §16 Resolved Question 38; Design §16) — this fixes
+only *where* a future permission check runs, not *what* the roles/permissions are, so
+AC-OPS-002-01's "appropriate permission" gate remains untestable for role correctness
+until the role list/permission matrix (PRD §16 Q22) is defined.
 
 ---
 
 ## 12. AC-MAINT-001 — P-009 Maintenance
 
 **Requirement:** `RAISE-FR-MAINT-001` · **Screen:** P-009
+
+**Background (updated — Prototype v0.5 §15):** the 4-stage maintenance-request workflow
+(User Requisition → Dept Approval (Delegated) → IT Dispatch → Technician Execution) and
+its state model (`PENDING_DEPT_APPROVAL → PENDING_IT_DISPATCH →
+PLANNING/IN_PROGRESS/ON_HOLD → DONE`) are **business-confirmed** (PRD §16 Resolved
+Question 33; Design §5.1) — this is no longer conceptual/TBD at the workflow-shape
+level, so the criteria below test the confirmed stage transitions. SLA per stage, the
+vendor model, the cost model, and delegated-approver configuration rules remain
+**TBD** and are marked NOT TESTABLE YET separately below — deriving strictly from
+Prototype §15's own "Confirmed" vs. "Still TBD" split (its Open Question note).
+
+### Maintenance Record List
 
 - **AC-MAINT-001-01** — Given maintenance records exist for an asset,
   when a user opens the Maintenance screen for that asset, then the
@@ -322,10 +370,65 @@ handling for Check-in/Check-out are explicitly TBD (Prototype §14; PRD
   asset, when the Maintenance screen is opened, then a chronological
   maintenance history is shown.
 
-**NOT TESTABLE YET:** the maintenance field model, SLA, vendor model, and
-cost model are not finalized in the PRD (PRD §16 Q14; Prototype §15) —
-the date/event/status/cost fields above are Prototype-conceptual and
-subject to change.
+### 4-Stage Workflow — Stage Transitions
+
+- **AC-MAINT-001-03 (Stage 1 — User Requisition)** — Given a user submits a new
+  maintenance request for an asset (identifying the asset, requester, and issue
+  description), when the request is submitted, then the request enters state
+  `PENDING_DEPT_APPROVAL`.
+- **AC-MAINT-001-04 (Stage 2 — Dept Approval, Delegated)** — Given a request is in
+  state `PENDING_DEPT_APPROVAL`, when a Dept Approver (acting directly or, per the
+  delegated-approver banner concept, "acting as delegate for" another approver)
+  selects Approve, then the request transitions to state `PENDING_IT_DISPATCH`.
+- **AC-MAINT-001-05 (Stage 2 — Reject / Request Info)** — Given a request is in state
+  `PENDING_DEPT_APPROVAL`, when the Dept Approver selects Reject or Request Info
+  instead of Approve, then the request does **not** transition to
+  `PENDING_IT_DISPATCH` (the exact resulting state/flow for Reject/Request Info is
+  **NOT TESTABLE YET** — Prototype §15 shows these as UI actions only, with no
+  defined resulting state or downstream flow).
+- **AC-MAINT-001-06 (Stage 3 — IT Dispatch)** — Given a request is in state
+  `PENDING_IT_DISPATCH`, when IT Dispatch assigns the request (to a technician or
+  queue) and selects Dispatch, then the request transitions to one of
+  `PLANNING`, `IN_PROGRESS`, or `ON_HOLD` and Technician Execution (Stage 4) begins.
+- **AC-MAINT-001-07 (Stage 4 — Technician Execution)** — Given a request is in state
+  `PLANNING`, `IN_PROGRESS`, or `ON_HOLD`, when the assigned technician updates the
+  status control among those three values, then the request's displayed status
+  reflects the selected value.
+- **AC-MAINT-001-08 (Stage 4 — Completion)** — Given a request is in state
+  `PLANNING`, `IN_PROGRESS`, or `ON_HOLD`, when the technician selects Mark Complete,
+  then the request transitions to state `DONE`.
+- **AC-MAINT-001-09 (Stage progression visibility)** — Given a maintenance request
+  exists at any stage, when a user opens that request's detail view, then the 4-stage
+  progress indicator (User Requisition → Dept Approval → IT Dispatch → Technician
+  Execution) shows which stages are Done, Current, or Pending, consistent with the
+  request's current state.
+
+**NOT TESTABLE YET:**
+- The maintenance field model beyond date/event/status/cost, SLA per stage, the vendor
+  model (internal technician vs. external vendor dispatch), and the cost model/tracking
+  are not finalized in the PRD (PRD §16 Q14, partially resolved; Prototype §15 Open
+  Question) — the "Priority," "Vendor model," and "Cost incurred" fields shown in the
+  Prototype are placeholders only, and no criterion above asserts an SLA duration,
+  vendor type, or cost value.
+- **Delegated-approver configuration rules** — *who* may delegate, *to whom*, and how
+  delegation is audited — are **TBD** (Prototype §15, Design §5.1); AC-MAINT-001-04 tests
+  only that an Approve action (performed directly or while the delegate banner is
+  shown) advances the state, not any delegation authorization rule.
+- **AC-MAINT-001-04 through -08 depend on `RAISE-NFR-SEC-RBAC-001`** for *who* is
+  permitted to perform each stage's action (Dept Approver, IT Dispatcher, Technician).
+  **MVP enforcement level is confirmed** as UI-only/client-side, with backend enforcement
+  deferred to Enterprise Roadmap (PRD §11, §16 Resolved Question 38; Design §16 Security
+  Architecture) — this fixes only *where* a permission check would run, not *what* the
+  roles/permissions are. The role list, permission matrix contents, and
+  authentication/delegation mechanism remain **TBD** (PRD §16 Q22) — the criteria above
+  test only that the state transition occurs when the corresponding stage action is
+  performed, not that the acting user's role is correctly gated or verified, and no role
+  name ("Dept Approver," "IT Dispatcher," "Technician") shown here should be read as an
+  approved role definition.
+- Prototype §15 does not define what happens if a technician attempts Mark Complete
+  from any state other than `PLANNING`/`IN_PROGRESS`/`ON_HOLD`, or whether stages can be
+  skipped/reversed — no criterion is written for those cases since no such behavior is
+  shown in the Prototype.
 
 ---
 
@@ -374,6 +477,19 @@ rules, and security mechanism are all undefined (PRD §16 Q6–Q10; Design
 §6.3) — AC-ORACLE-001-01 through -04 test only that the four states
 (available / unavailable / error / conflict) are represented, not how
 they are produced or resolved.
+
+**"Phase 6" label — not applicable to this AC group (verified against Prototype v0.5 /
+Design §6.4):** `RAISE-DESIGN.md` §6.4 records that "Phase 6" is a stale
+`frontend/`-internal code-comment label (not a PRD phase), and that whether
+`ReconciliationPage` satisfies `RAISE-FR-ORACLE-001` remains an **open question (PRD
+Open Question 10a)**. Prototype §17 (P-011 Oracle FA / Financial View) does not
+reference "Phase 6" or `ReconciliationPage`, and none of AC-ORACLE-001-01..04 above does
+either — they are derived only from Prototype §17's stated screen elements (Asset
+Number, Acquisition Information, NBV, Depreciation, Oracle Source, Synchronization
+Status, and the four integration states). If `ReconciliationPage` is later confirmed (or
+rejected) as the realization of `RAISE-FR-ORACLE-001`, this AC group should be
+re-checked against whatever screen/element mapping that confirmation produces — no such
+mapping is assumed here.
 
 ---
 
@@ -636,10 +752,10 @@ them as final:
 | Q6–Q10 Oracle integration design | AC-ORACLE-001-01..04 |
 | Q11 Check-in/Check-out workflow | AC-OPS-002-01..02 |
 | Q12 Who can assign/transfer an asset | AC-OPS-002-01 |
-| Q22 Roles and permissions required | AC-LOGIN-01..03, AC-OPS-002-01, AC-ALERT-001-01, AC-AUDIT-001-03 |
+| Q22 Roles and permissions required | AC-LOGIN-01..03, AC-OPS-002-01, AC-ALERT-001-01, AC-AUDIT-001-03, AC-MAINT-001-04..08 |
 | Q13 Holder data model | AC-ASSET-003-01..03 |
 | Custody-writing-events ambiguity (RAISE-FR-ASSET-003 vs. RAISE-FR-OPS-002 — PRD Pre-Finalization Quality Pass, "Duplicated / Overlapping Requirements," needs business confirmation) | AC-ASSET-003-03 (scope note only) |
-| Q14 Maintenance fields | AC-MAINT-001-01..02 |
+| Q14 Maintenance fields / SLA / vendor model / cost model (workflow shape and state model now confirmed — Resolved Question 33; only SLA, vendor model, cost model, and delegated-approver configuration remain open) | AC-MAINT-001-01, -02 (fields); AC-MAINT-001-05 (Reject/Request Info resulting state); delegated-approver rule note under AC-MAINT-001 |
 | Q15 Warranty fields | AC-WARRANTY-001-01..03 |
 | Q18–Q20 AI citation / confidence / conflict handling | AC-AI-SEARCH-001-02..03 |
 | Q21 Authentication mechanism | AC-LOGIN-01..02 |
@@ -651,6 +767,25 @@ them as final:
 
 No criterion in this document silently resolves these — each affected
 criterion above carries its own **NOT TESTABLE YET** note.
+
+**Resolved since last revision:** Q14 (partial) — the `RAISE-FR-MAINT-001` 4-stage
+workflow shape (User Requisition → Dept Approval (Delegated) → IT Dispatch →
+Technician Execution) and its state model (`PENDING_DEPT_APPROVAL →
+PENDING_IT_DISPATCH → PLANNING/IN_PROGRESS/ON_HOLD → DONE`) are confirmed
+(`RAISE-PRD.md` §16 Resolved Question 33; `RAISE-DESIGN.md` §5.1; Prototype v0.5 §15).
+AC-MAINT-001-03 through -09 (§12 above) are now testable for stage-transition behavior.
+SLA per stage, the vendor model, the cost model, and delegated-approver configuration
+rules remain **NOT TESTABLE YET** — this is a partial, not full, resolution of Q14.
+
+**Note — RBAC MVP enforcement level confirmed, but role model still blocks several
+criteria (PRD §16 Resolved Question 38; Design §16 Security Architecture):** business
+confirmed that a UI-only/client-side permission check is acceptable for MVP, backend
+enforcement deferred to Enterprise Roadmap. This is a narrow decision about *where*
+enforcement happens, not *what* the roles/permissions are — it does not resolve Q22
+(roles and permissions required), which continues to block AC-LOGIN-01..03,
+AC-OPS-002-01, AC-ALERT-001-01, AC-AUDIT-001-03, and (newly) AC-MAINT-001-04..08 as
+listed in the table above. No role list, permission matrix, or authentication
+mechanism is assumed anywhere in this document as a result of this confirmation.
 
 **Resolved since last revision:** Q26 (Disposal MVP scope for `RAISE-FR-LIFE-001`) —
 confirmed Enterprise Roadmap, not MVP, on 2026-08-21. See §7.5 above and
@@ -690,7 +825,18 @@ Before moving to Test Plan:
       TESTABLE YET and links to the relevant PRD Open Question
 - [ ] No VERSCAN-only behavior was introduced as a criterion
 - [ ] Roadmap/Pilot capabilities (AI Recommendation, Risk Scoring,
-      Lifecycle Prediction) have no MVP acceptance criteria written here
+      Lifecycle Prediction, License Management P-016/P-017) have no MVP
+      acceptance criteria written here
+- [x] `RAISE-FR-MAINT-001`'s confirmed 4-stage workflow (User Requisition → Dept
+      Approval (Delegated) → IT Dispatch → Technician Execution) has stage-transition
+      criteria (§12 AC-MAINT-001-03..09); SLA/vendor/cost model remain NOT TESTABLE YET
+- [x] `RAISE-NFR-SEC-RBAC-001`'s confirmed MVP enforcement level (UI-only/client-side,
+      backend deferred to Roadmap) is reflected in AC-LOGIN, AC-OPS-002, and
+      AC-MAINT-001's RBAC-dependency notes without inventing a role list, permission
+      matrix, or authentication mechanism (all remain TBD per PRD §16 Q22)
+- [x] AC-ORACLE-001 does not reference the stale "Phase 6" code-comment label or assume
+      `ReconciliationPage` satisfies `RAISE-FR-ORACLE-001` (PRD Open Question 10a remains
+      open and unresolved here)
 
 ---
 
@@ -724,8 +870,52 @@ as blocked pending business confirmation.
 
 ## Document Status
 
-**Version:** 0.3 (re-verified against `RAISE-PROTOTYPE.md` v0.3, 2026-08-21 — two
-synchronization updates applied:)
+**Version:** 0.4 (re-synced against `RAISE-PROTOTYPE.md` v0.5, `RAISE-PRD.md` v0.9, and
+`RAISE-DESIGN.md` v0.7, 2026-08-21 — Prototype had advanced through several sync passes
+[v0.3 → v0.5] since this document was last updated at v0.3, against Prototype v0.2; this
+pass reconciles that gap)
+
+**Change Log — v0.3 → v0.4 (2026-08-21):**
+
+1. **`RAISE-FR-MAINT-001` 4-stage workflow criteria added.** Prototype v0.5 §15
+   confirmed the 4-stage maintenance-request workflow (User Requisition → Dept
+   Approval (Delegated) → IT Dispatch → Technician Execution) and its state model
+   (`PENDING_DEPT_APPROVAL → PENDING_IT_DISPATCH → PLANNING/IN_PROGRESS/ON_HOLD →
+   DONE`) as business-confirmed (PRD §16 Resolved Question 33; Design §5.1). AC-MAINT-001
+   (§12) was expanded from two record-list criteria to include seven new
+   stage-transition criteria (AC-MAINT-001-03..09), covering each of the four stages and
+   the overall progress-indicator display. SLA per stage, the vendor model, the cost
+   model, and delegated-approver configuration rules remain **NOT TESTABLE YET**, and
+   the new criteria's dependency on `RAISE-NFR-SEC-RBAC-001` (for who may perform each
+   stage action) is flagged without inventing a role list. The AC Index (§3) and
+   Not-Yet-Testable Summary (§20) were updated accordingly.
+2. **License Management (P-016/P-017) — confirmed Roadmap-only, no AC group written.**
+   Prototype v0.5 §22/§23 add dedicated screens for `RAISE-FR-LICENSE-001`, but PRD
+   v0.9 §6/§13/§17 confirm this requirement as Enterprise Roadmap, not MVP. Consistent
+   with this document's own checklist rule that Roadmap/Pilot capabilities get no MVP
+   acceptance criteria, a traceability note (not a full AC group) was added after the
+   AC Index (§3) recording that no AC-LICENSE-001 group exists and why.
+3. **RBAC-related criteria reviewed against the confirmed MVP enforcement level.**
+   Prototype v0.5 (§4, §7, §9) records that `RAISE-NFR-SEC-RBAC-001`'s MVP enforcement
+   level is confirmed as UI-only/client-side, with backend enforcement deferred to
+   Enterprise Roadmap (PRD §16 Resolved Question 38) — a decision about *where*
+   enforcement happens, not *what* the roles/permissions are. AC-LOGIN (§4) and
+   AC-OPS-002 (§11) NOT TESTABLE YET notes were expanded to cite this confirmation
+   explicitly while continuing to treat the role list/permission matrix (PRD §16 Q22)
+   as unresolved; no role model was invented. A corresponding note was added to the new
+   AC-MAINT-001 stage-transition criteria (§12) and to the Not-Yet-Testable Summary
+   (§20).
+4. **AC-ORACLE-001 checked against the "Phase 6" label clarification — no drift
+   found.** Design §6.4 clarifies "Phase 6" as a stale code-comment label, not a PRD
+   phase, and leaves `ReconciliationPage`'s mapping to `RAISE-FR-ORACLE-001` as an open
+   question (PRD Open Question 10a). AC-ORACLE-001 (§14) never referenced "Phase 6" or
+   `ReconciliationPage`; a clarifying note was added confirming this and stating that no
+   such mapping is assumed.
+5. Version citations in the document header and screen-index cross-references were
+   updated from Prototype v0.3 / PRD v0.3 / Design v0.4 to Prototype v0.5 / PRD v0.9 /
+   Design v0.7. No other AC group required a correction — the Asset/Ops/Warranty/Alert/
+   Audit/Executive/AI-Search/AI-Doc groups were checked against the corresponding
+   Prototype v0.5 sections and found unchanged in substance since v0.3.
 
 **Change Log — v0.2 → v0.3 (2026-08-21):**
 
@@ -758,6 +948,11 @@ No other screen changes were found in Prototype v0.3; no existing criterion beyo
 the two items above required correction.
 
 **Status:** Draft for Acceptance Review
-**Source:** [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.3, [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.3, [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.4
+**Source:** [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.5, [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.9, [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.7
 **Reference:** VERSCAN only
-**Next Action:** Review acceptance criteria and resolve blocking Open Questions (§20) before Test Plan
+**Next Action:** Review the v0.4 update (4-stage Maintenance workflow criteria,
+License Management Roadmap-only traceability note, RBAC enforcement-level
+clarifications, "Phase 6" drift check) and resolve blocking Open Questions (§20) before
+Test Plan. `RAISE-TEST-PLAN.md` / `RAISE-TEST-CASES.md` should be checked next for the
+same drift, in particular whether they already cover (or need to add coverage for) the
+new AC-MAINT-001-03..09 stage-transition criteria.

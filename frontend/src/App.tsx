@@ -23,6 +23,7 @@ import { UserManagementPage } from '@/pages/UserManagement';
 import { RoleManagementPage } from '@/pages/RoleManagement';
 import { SettingsPage } from '@/pages/Settings';
 import { ROUTES } from '@/config/constants';
+import { ROADMAP_FEATURES_ENABLED } from '@/config/featureFlags';
 import type { Role } from '@/types/auth';
 
 // allowedRoles gates on top of the base auth check: absent -> any authenticated user; present ->
@@ -70,10 +71,18 @@ const App: React.FC = () => {
                 <Route path={ROUTES.EMPLOYEE_DETAIL} element={<EmployeeDetailPage />} />
                 <Route path={ROUTES.MAINTENANCE} element={<MaintenancePage />} />
                 <Route path={ROUTES.TICKET_DETAIL} element={<TicketDetailPage />} />
-                <Route path={ROUTES.LICENSES} element={<LicensesPage />} />
-                <Route path={ROUTES.LICENSE_DETAIL} element={<LicenseDetailPage />} />
+                {/* RAISE-FR-LICENSE-001 and RAISE-AI-RECOMMEND-001 are Roadmap-only per
+                    RAISE-PRD.md, not MVP -- gated behind VITE_ENABLE_ROADMAP_FEATURES so they
+                    aren't presented as approved MVP scope by default. See
+                    config/featureFlags.ts. */}
+                {ROADMAP_FEATURES_ENABLED && (
+                  <>
+                    <Route path={ROUTES.LICENSES} element={<LicensesPage />} />
+                    <Route path={ROUTES.LICENSE_DETAIL} element={<LicenseDetailPage />} />
+                    <Route path={ROUTES.AI_DECISION} element={<AIDecisionCenterPage />} />
+                  </>
+                )}
                 <Route path={ROUTES.RECONCILIATION} element={<ReconciliationPage />} />
-                <Route path={ROUTES.AI_DECISION} element={<AIDecisionCenterPage />} />
                 <Route path={ROUTES.SETTINGS} element={<SettingsPage />} />
                 <Route path={ROUTES.FORBIDDEN} element={<Forbidden />} />
 

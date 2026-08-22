@@ -29,6 +29,10 @@ func SetupRoutes(app *fiber.App, dbManager *repository.DBManager) {
 	sampleService := service.NewSampleService(sampleHandler, dbManager, sampleRepo)
 	sampleCtrl := controller.NewSampleController(sampleService)
 
+	assetRepo := repository.NewAssetRepository(repository.NewAssetPGRepository())
+	assetService := service.NewAssetService(assetRepo)
+	assetCtrl := controller.NewAssetController(assetService)
+
 	authService := service.NewAuthService()
 	authCtrl := controller.NewAuthController(authService)
 
@@ -60,4 +64,15 @@ func SetupRoutes(app *fiber.App, dbManager *repository.DBManager) {
 	protected.Post("/samples", middleware.RequireRole("admin"), sampleCtrl.CreateSample)
 	protected.Put("/samples/:id", middleware.RequireRole("admin"), sampleCtrl.UpdateSample)
 	protected.Delete("/samples/:id", middleware.RequireRole("admin"), sampleCtrl.DeleteSample)
+
+	// RAISE-FR-ASSET-001 (Asset Registry). No RequireRole gate here, unlike /samples above --
+	// RAISE-NFR-SEC-RBAC-001's confirmed MVP enforcement level is UI-only/client-side, with
+	// backend enforcement explicitly deferred to Roadmap (RAISE-PRD.md Sec11, Sec16 Resolved
+	// Question 38). Adding RequireRole here would be enforcing a decision the business
+	// specifically chose not to make yet -- authenticated (JWTAuth) is the correct and only
+	// gate for MVP.
+	protected.Get("/assets", assetCtrl.ListAssets)
+	protected.Get("/assets/:id", assetCtrl.GetAssetByID)
+	protected.Post("/assets", assetCtrl.CreateAsset)
+	protected.Post("/assets/:id/assign", assetCtrl.AssignAsset)
 }

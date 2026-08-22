@@ -2,11 +2,47 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Prototype Specification
-**Version:** 0.3 Draft
+**Version:** 0.5 Draft
 **Status:** Draft for Prototype Review
-**Source:** [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.3 + [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.4 (§23 Prototype Preparation, §9A Document Intelligence Capabilities)
+**Source:** [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.9 + [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.7 (§23 Prototype Preparation, §9A Document Intelligence Capabilities, §5.1 Maintenance Domain, §5.3 License Domain, §6.4 ReconciliationPage / "Phase 6" Label, §16 Security Architecture — MVP Enforcement Level, §15/§22 Out of Scope)
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
+
+**Version note (2026-08-21 re-sync, v0.4 → v0.5):** this pass re-verifies against
+`RAISE-PRD.md` v0.9 and `RAISE-DESIGN.md` v0.7 (both moved forward from v0.6/v0.5, which
+this prototype was last synced against). Three PRD/Design changes were checked for drift
+in this pass:
+
+1. **License Management Design/PRD inconsistency — now resolved, no longer open.** The
+   `## NEEDS_PRD_CONFIRMATION` raised in Prototype v0.4 (that `RAISE-DESIGN.md` v0.5
+   §4.1A/§5.3 still said "Priority P0, Scope MVP" for `RAISE-FR-LICENSE-001`, contradicting
+   the PRD's Roadmap-only decision) has been **fixed at the Design layer**: `RAISE-DESIGN.md`
+   v0.6/v0.7 §4.1A and §5.3 now correctly state "Priority: Roadmap (not MVP-confirmed) ·
+   Scope: Enterprise Roadmap — not Phase 1 MVP," consistent with `RAISE-PRD.md` v0.9 §6/§13/
+   §17. This prototype's existing Roadmap-only treatment of P-016/P-017 required **no
+   change** — it was already aligned — but the stale `## NEEDS_PRD_CONFIRMATION` signal
+   from v0.4 is removed below since its underlying issue no longer exists.
+2. **Six ESAPS-reference-only pages confirmed out of scope** (`Assignment.tsx`, `Auth.tsx`
+   beyond Login, `Inventory.tsx`, `NotificationCenter.tsx`, `Profile.tsx`, `Reports.tsx`,
+   plus `ErrorPages.tsx` as generic infrastructure) per `RAISE-PRD.md` §15/§16 Resolved
+   Question 35 and `RAISE-DESIGN.md` §22 "Out of Scope." This prototype never referenced
+   any of these six pages/flows in any screen, pending state, or "TBD/uncertain" note —
+   **no drift found; no change required.**
+3. **`RAISE-FR-ORACLE-001` "Phase 6" label clarification.** `RAISE-DESIGN.md` §6.4 now
+   records that "Phase 6" is a stale `frontend/`-internal code-comment label, not a PRD
+   phase, and that `ReconciliationPage`'s mapping to `RAISE-FR-ORACLE-001` remains an
+   **open question (PRD Open Question 10a)** — not to be inferred. This prototype's
+   **P-011 Oracle FA / Financial View** never referenced "Phase 6" or `ReconciliationPage`
+   — **no drift found; no change required.**
+
+Additionally, `RAISE-NFR-SEC-RBAC-001`'s MVP enforcement level is now confirmed
+(UI-only/client-side for MVP; backend enforcement deferred to Roadmap — PRD §11, §16
+Resolved Question 38; Design §16 Security Architecture). This is a narrow decision about
+*where* enforcement happens, not *what* the roles/permissions are — the role list,
+permission matrix contents, and authentication mechanism all remain **TBD**. Screens that
+reference RBAC dependency (P-001, P-009) are updated below to note the confirmed
+enforcement-level scope **without assuming or inventing any role model, role name, or
+permission set** — consistent with the instruction that role model content must stay TBD.
 
 ---
 
@@ -103,7 +139,9 @@ RAISE
 │
 ├── Maintenance
 │   ├── Maintenance Records
-│   └── Maintenance History
+│   ├── Maintenance History
+│   └── Request Workflow (4-stage: User Requisition → Dept Approval
+│       (Delegated) → IT Dispatch → Technician Execution)
 │
 ├── Warranty
 │   ├── Warranty Overview
@@ -118,12 +156,21 @@ RAISE
 ├── Audit
 │   └── Audit Log
 │
-└── AI Assistant
-    └── Natural Language Search
+├── AI Assistant
+│   └── Natural Language Search
+│
+└── Roadmap (not MVP — exploratory, kept visually separated per §2.3)
+    └── License Management
+        ├── License Inventory (P-016)
+        └── License Detail (P-017)
 ```
 
 **Note:** This is a prototype information architecture. Final navigation
-requires design review.
+requires design review. **License Management is placed under a separate
+"Roadmap" branch, not under the main MVP navigation tree**, because
+`RAISE-FR-LICENSE-001` is confirmed Enterprise Roadmap, not MVP (PRD v0.9
+§6/§13/§17; `RAISE-DESIGN.md` v0.7 §4.1A/§5.3/§22 agree) — see P-016/P-017
+for detail.
 
 ---
 
@@ -139,7 +186,14 @@ The PRD identifies:
 | Auditor | History and traceability |
 
 Role-specific access behavior is still subject to Security Design
-(PRD §11 Security & RBAC).
+(PRD §11 Security & RBAC). **MVP enforcement-level note (PRD v0.9 §11, §16 Resolved
+Question 38; Design v0.7 §16 Security Architecture):** business has confirmed that a
+UI-only/client-side permission check is acceptable for MVP, with backend-enforced RBAC
+deferred to Enterprise Roadmap — this fixes *where* enforcement happens, not *what* the
+roles/permissions are. The role list, permission matrix contents, and authentication
+mechanism remain **TBD**; this prototype does not assume, name, or design any role model
+beyond the four actors listed in the table above (which come from PRD §5 Target Users,
+not from a permission matrix).
 
 ---
 
@@ -162,10 +216,16 @@ Role-specific access behavior is still subject to Security Design
 | P-013 | Audit Log | P0 | RAISE-FR-AUDIT-001 |
 | P-014 | Executive Dashboard | P0 | RAISE-FR-EXEC-001 |
 | P-015 | AI Assistant | P0 / Current AI | RAISE-AI-SEARCH-001 |
+| P-016 | License Inventory | **Roadmap (not MVP)** | RAISE-FR-LICENSE-001 |
+| P-017 | License Detail | **Roadmap (not MVP)** | RAISE-FR-LICENSE-001 |
 
 Risk Scoring, Lifecycle Prediction and AI Recommendation should be
 treated as Pilot / Roadmap prototype areas unless separately approved
-(PRD §7 AI Requirements).
+(PRD §7 AI Requirements). **License Management (P-016/P-017) is likewise a
+Roadmap area** (PRD v0.9 §6/§13/§17 confirm `RAISE-FR-LICENSE-001` as Enterprise
+Roadmap, not MVP) — see the note under §5's screen list below and the Document
+Status change log for why these two screens exist in this prototype despite not
+being MVP.
 
 **Mapping to Design §23 screen groups:** the 12 groups listed in the design
 document (Login, Asset Dashboard, Asset Registry, Asset Detail, QR/Barcode,
@@ -204,6 +264,30 @@ changing PRD scope. All four remain **P0/MVP requirements with no defined
 acceptance behavior (TBD)** — see PRD §7 and Design §9A "Design Notes and TBD
 Items" — so the elements described on P-003/P-004/P-005 below are
 placeholders only, not confirmed UI.
+
+**P-016/P-017 License Management — Roadmap, not MVP (PRD v0.6, added
+2026-08-21):** unlike the screens above, P-016/P-017 are given their **own
+dedicated screens** rather than being folded into an existing screen as an
+"incidental" element, because `RAISE-FR-LICENSE-001` is a structurally distinct
+domain (its own inventory + detail view — Design §4.1A/§5.3) rather than a
+capability layered onto an existing asset screen. However, **the PRD's
+Requirement Traceability Matrix (§17) and MVP Scope section (§13) both
+confirm this requirement as Enterprise Roadmap, not Phase 1 MVP** — the
+requirement's identity and screens exist here only because
+`frontend/src/pages/Licenses/` and `frontend/src/pages/LicenseDetail/` are
+already built, tested, and routed in the `frontend/` source tree ahead of
+that Roadmap-only scope decision (PRD §16 Resolved Question 34). These two
+screens are therefore recorded as **Roadmap / exploratory prototype
+screens** — they document the already-built UI concept for engineering
+alignment, they are **not** to be read as confirmed MVP scope, and no field
+model, alert rule, seat/utilization rule, or vendor/cost rule shown on them
+should be treated as PRD-approved. See §22 (P-016 License Inventory) / §23 (P-017 License
+Detail) below. **Update (v0.5, 2026-08-21 re-sync):** the Design/PRD inconsistency
+previously flagged here — `RAISE-DESIGN.md` v0.5 §4.1A/§5.3 stating "Priority P0, Scope
+MVP" against the PRD's Roadmap-only decision — has since been **corrected at the Design
+layer** (`RAISE-DESIGN.md` v0.6/v0.7 now states Roadmap/not-MVP in both sections,
+consistent with `RAISE-PRD.md` v0.9 §6/§13/§17). The `## NEEDS_PRD_CONFIRMATION` signal
+raised against it in Prototype v0.4 is therefore closed and removed from this revision.
 
 ---
 
@@ -249,7 +333,13 @@ Provide the entry point to the platform.
 ## Traceability
 
 Security requirements are identified in the PRD (§11 Security & RBAC) but the
-authentication mechanism remains TBD.
+authentication mechanism remains TBD. **MVP enforcement level confirmed (PRD v0.9 §11,
+§16 Resolved Question 38):** a UI-only/client-side permission check is acceptable for
+MVP; backend-enforced RBAC is deferred to Enterprise Roadmap. This is an accepted,
+explicit MVP risk (a client-bypassing actor is not blocked server-side), not an
+oversight — it does not change what this screen shows. The role list, permission
+matrix contents, and authentication mechanism itself remain **TBD** — no role model is
+assumed on this screen.
 
 Therefore this screen validates the user journey only.
 
@@ -564,9 +654,12 @@ Exact approval rules and exception handling remain TBD.
 
 ## Purpose
 
-Show maintenance information associated with an asset.
+Show maintenance information associated with an asset, and support the
+**confirmed 4-stage maintenance-request workflow** (PRD v0.9 §6
+`RAISE-FR-MAINT-001`; Design v0.7 §5.1 — confirmed 2026-08-21, PRD §16
+Resolved Question 33).
 
-## Prototype
+## Prototype — Maintenance Record List
 
 ```text
 Maintenance
@@ -574,7 +667,7 @@ Maintenance
 Asset
 Date
 Event
-Status
+Status (stage)
 Cost
 
 History
@@ -583,11 +676,142 @@ Date | Event | Status | Cost
 ```
 
 The fields are conceptual because the PRD does not finalize the
-maintenance schema.
+maintenance schema (SLA, vendor model, and cost model remain **TBD** — see
+Open Question below).
+
+## Prototype — 4-Stage Workflow (Request Detail View)
+
+```text
+┌────────────────────────────────────────────────────────────────────────┐
+│ Maintenance Request: MR-XXXX                          Asset: RAISE-XXXX │
+├────────────────────────────────────────────────────────────────────────┤
+│  Stage 1            Stage 2                Stage 3          Stage 4    │
+│  User            → Dept Approval        → IT           → Technician    │
+│  Requisition       (Delegated)             Dispatch        Execution   │
+│  ●───────────────────○──────────────────────○──────────────○          │
+│  Done               Current                Pending        Pending     │
+└────────────────────────────────────────────────────────────────────────┘
+```
+
+### Per-Stage Screen Concepts
+
+**Stage 1 — User Requisition**
+
+```text
+New Maintenance Request
+────────────────────────────────────
+Asset (selected / scanned)
+Requested by
+Issue description
+Priority (conceptual — TBD)
+[ Submit Request ]
+        ↓
+State: PENDING_DEPT_APPROVAL
+```
+
+**Stage 2 — Dept Approval (Delegated)**
+
+```text
+Pending Approval Queue (Dept Approver view)
+────────────────────────────────────
+Request ID | Asset | Requested by | Issue | Submitted
+
+Approver identity concept:
+┌──────────────────────────────────────────┐
+│ Approving as: [ Dept Approver ▾ ]        │
+│  ⤷ "Acting as delegate for: Approver X"  │
+│    (shown only when delegated-approver   │
+│     setting is active — TBD rules)       │
+├──────────────────────────────────────────┤
+│ [ Approve ]   [ Reject ]   [ Request Info ]│
+└──────────────────────────────────────────┘
+        ↓ (Approve)
+State: PENDING_IT_DISPATCH
+```
+
+- The **delegated-approver concept** (Design §5.1) is shown here as a
+  labeled banner only — *who* may delegate, *to whom*, and how delegation
+  is audited are **TBD**; no delegation configuration logic is implemented
+  in this prototype.
+
+**Stage 3 — IT Dispatch**
+
+```text
+Dispatch Queue (IT view)
+────────────────────────────────────
+Request ID | Asset | Approved by | Approved on
+
+Dispatch action:
+┌──────────────────────────────────────────┐
+│ Assign to: [ Technician / Queue ▾ ]      │
+│ Vendor model: Internal / External — TBD  │
+│ [ Dispatch ]                              │
+└──────────────────────────────────────────┘
+        ↓
+State: PLANNING / IN_PROGRESS / ON_HOLD (Technician Execution begins)
+```
+
+**Stage 4 — Technician Execution**
+
+```text
+Technician Work View
+────────────────────────────────────
+Request ID | Asset | Dispatched by
+
+Status control: [ PLANNING ▾ | IN_PROGRESS ▾ | ON_HOLD ▾ ]
+Work notes
+Cost incurred (TBD — cost model not defined)
+[ Mark Complete ]
+        ↓
+State: DONE
+```
+
+## Conceptual State Model (mirrors Design §5.1)
+
+```text
+PENDING_DEPT_APPROVAL → PENDING_IT_DISPATCH → PLANNING/IN_PROGRESS/ON_HOLD → DONE
+```
+
+## User Flow
+
+```text
+Maintenance
+      │
+      ├── New Request (User Requisition) ──► PENDING_DEPT_APPROVAL
+      ├── Approval Queue (Dept Approval, Delegated) ──► PENDING_IT_DISPATCH
+      ├── Dispatch Queue (IT Dispatch) ──► PLANNING/IN_PROGRESS/ON_HOLD
+      └── Technician Work View (Technician Execution) ──► DONE
+```
 
 ## Traceability
 
-`RAISE-FR-MAINT-001`
+`RAISE-FR-MAINT-001` — 4-stage workflow shape (User Requisition → Dept
+Approval (Delegated) → IT Dispatch → Technician Execution) and the state
+model (`PENDING_DEPT_APPROVAL → PENDING_IT_DISPATCH →
+PLANNING/IN_PROGRESS/ON_HOLD → DONE`) are business-confirmed per PRD §6 /
+§16 Resolved Question 33 and Design §5.1 — reflected above.
+
+Requirement traceability (RBAC dependency): approval, dispatch, and
+technician roles, and the delegated-approver setting, depend on
+`RAISE-NFR-SEC-RBAC-001`. **MVP enforcement level confirmed (PRD v0.9 §11, §16 Resolved
+Question 38; Design v0.7 §16 Security Architecture):** UI-only/client-side enforcement is
+acceptable for MVP, backend deferred to Roadmap — but this only fixes *where* a future
+permission check would run, not *what* the roles/permissions are. The role list,
+permission matrix contents, and authentication/delegation mechanism remain **TBD** — no
+role-gating logic is implemented in this prototype; the stage screens above are shown for
+all roles for prototype purposes only, and no role name (e.g., "Dept Approver," "IT
+Dispatcher," "Technician") shown on these mockups should be read as an approved role
+definition.
+
+## Open Question
+
+**Confirmed:** the 4-stage workflow shape and state model above. **Still
+TBD** (PRD §16 Q14 partially resolved; Design §5.1): SLA per stage, the
+vendor model (internal technician vs. external vendor dispatch), the cost
+model/tracking, and delegated-approver configuration rules (who may
+delegate, to whom, and how delegation is audited). None of these are
+implemented or assumed in this prototype — the "Priority," "Vendor model,"
+and "Cost incurred" fields above are placeholders only.
 
 ---
 
@@ -850,7 +1074,152 @@ Language Search.
 
 ---
 
-# 22. AI Response States
+# 22. P-016 License Inventory
+
+## Status Banner
+
+**Roadmap — not MVP.** `RAISE-FR-LICENSE-001` (Software / SaaS License
+Management) is confirmed **Enterprise Roadmap, not Phase 1 MVP** in
+`RAISE-PRD.md` v0.9 §6/§13/§17 (PRD §16 Resolved Question 34). This screen is
+included in the prototype only because `frontend/src/pages/Licenses/` is
+already built, tested, and routed in the `frontend/` source tree ahead of
+that scope decision — it documents the existing UI concept for engineering
+alignment. **It must not be read as an approved MVP screen or as approved
+business rules.** (`RAISE-DESIGN.md` v0.6/v0.7 §4.1A/§5.3 now also correctly
+state Roadmap/not-MVP for this requirement — the earlier Design/PRD
+inconsistency on this point noted in Prototype v0.4 is resolved.)
+
+## Purpose
+
+Provide an inventory view of software/SaaS license records — mirrors the
+already-built `frontend/src/pages/Licenses/index.tsx` (list/table/grid views,
+search, and filter chips for "Expiring Soon," "High Spend," and "Audit / risk"
+categories).
+
+## Prototype Elements
+
+```text
+License Inventory
+──────────────────────────────────────────────────────────
+Search   Filter: All | Expiring Soon | High Spend | Audit / True-up Risk
+
+Summary tiles: Total Annual Spend | Seat Utilization | Upcoming
+               Renewals | Potential Savings (all TBD calculation rules)
+
+Table
+──────────────────────────────────────────────────────────
+Product & Vendor | Category / Model | Seat Utilization |
+Financials | Renewal Date | Status | Actions
+```
+
+- **Seat Utilization, Financials (annual cost/cost-per-seat), and Status**
+  columns mirror fields already present in the built `frontend/` code
+  (`SoftwareLicense`/`LicenseStatus` types), but **none of these fields, their
+  computation rules, or the "Expiring Soon"/"Over-Allocated" status
+  thresholds are approved PRD requirements** — the license field model is
+  explicitly **TBD** per PRD §16 Q15a / Design §5.3 "Data Model TBD."
+- **Actions:** "Add License," "Allocate Seat" — shown as existing UI concepts
+  from the built code; the underlying workflow/approval rules (if any) are
+  **not** defined in the PRD and are not implied to exist by showing this UI.
+
+## User Flow
+
+```text
+License Inventory
+      │
+      ├── Search / Filter
+      └── Select License Row
+               ↓
+          License Detail (P-017)
+```
+
+## Traceability
+
+`RAISE-FR-LICENSE-001` — **Roadmap scope, not MVP** (PRD v0.9 §6, §13, §17;
+Design v0.7 §4.1A, §5.3). Priority/scope identity is confirmed; the license
+field model, renewal/expiry alert rule, seat/utilization tracking, and
+vendor/cost tracking shown above are all **TBD** and are not implemented or
+assumed business logic in this prototype — they are placeholders that mirror
+the already-built `frontend/` UI only.
+
+## Open Question
+
+License field model, renewal/expiry alert rule, seat/utilization tracking,
+and vendor/cost tracking are all **TBD** (PRD §16 Q15a; Design §5.3 "Data
+Model TBD"). Whether license expiry should integrate with
+`RAISE-FR-ALERT-001` (P-012 Alerts) is also **TBD** (PRD §16 Q15a; Design §5.3
+"Relationship to Alerts (Open)") — no such integration is shown here.
+
+---
+
+# 23. P-017 License Detail
+
+## Status Banner
+
+**Roadmap — not MVP.** Same status as P-016 above — see that screen's Status
+Banner for the full explanation. This screen mirrors the already-built
+`frontend/src/pages/LicenseDetail/` code.
+
+## Purpose
+
+Provide a single-record detail view of one software/SaaS license — mirrors
+`frontend/src/pages/LicenseDetail/`.
+
+## Prototype Elements
+
+```text
+License Detail: <Product> (<License Code>)
+──────────────────────────────────────────────────────────
+Vendor / Publisher
+Category / License Model
+Seats: Purchased / Used / Utilization %
+Financials: Annual Cost / Cost per Seat
+Renewal Date / Status (Active / Expiring Soon / Expired /
+                        Over-Allocated / Under-Utilized)
+
+Association
+──────────────────────────────────────────────────────────
+Allocated Seats → Holder(s) [where such an association exists]
+Linked Hardware Asset(s) [where such an association exists]
+
+Actions: Allocate Seat | Renew Subscription
+```
+
+- The **Association → Asset(s) / Holder(s)** section reflects Design §5.3's
+  conceptual data flow ("Association → Asset(s) [where such an association
+  exists]," "Association → Holder(s) [where such an association exists]") —
+  shown here as a placeholder relationship display only.
+- **Renew Subscription** and **Allocate Seat** actions mirror the built
+  `frontend/` UI; no approval workflow, cost-tracking rule, or audit rule is
+  implied — all are **TBD**.
+
+## User Flow
+
+```text
+License Inventory (P-016)
+      │
+      └── Select License
+               ↓
+          License Detail
+               ├── Allocate Seat → Holder / Asset association
+               └── Renew Subscription → Updated Renewal Date / Cost
+```
+
+## Traceability
+
+`RAISE-FR-LICENSE-001` — **Roadmap scope, not MVP** (PRD v0.9 §6, §13, §17;
+Design v0.7 §4.1A, §5.3). See P-016's Traceability note for the same caveats;
+they apply identically here.
+
+## Open Question
+
+Same open items as P-016 (license field model, renewal/expiry alert rule,
+seat/utilization tracking, vendor/cost tracking, relationship to
+`RAISE-FR-ALERT-001`) — all **TBD**, see PRD §16 Q15a and Design §5.3.
+
+---
+
+# 24. AI Response States
 
 The prototype should include:
 
@@ -890,7 +1259,7 @@ Handling Principles) and must be validated before implementation.
 
 ---
 
-# 23. AI Scope Boundary
+# 25. AI Scope Boundary
 
 ## Prototype Now
 
@@ -943,7 +1312,7 @@ not be treated as fully specified until business/design input resolves them.
 
 ---
 
-# 24. Core Prototype User Flows
+# 26. Core Prototype User Flows
 
 ## Flow A — Find Asset
 
@@ -1081,7 +1450,58 @@ Requirement:
 
 ---
 
-# 25. Prototype Traceability Matrix
+## Flow H — Maintenance Request (4-Stage Workflow)
+
+```text
+Asset Detail
+ ↓
+Maintenance → New Request (User Requisition)
+ ↓
+State: PENDING_DEPT_APPROVAL
+ ↓
+Approval Queue (Dept Approval, Delegated)
+ ↓
+State: PENDING_IT_DISPATCH
+ ↓
+Dispatch Queue (IT Dispatch)
+ ↓
+State: PLANNING / IN_PROGRESS / ON_HOLD
+ ↓
+Technician Work View (Technician Execution)
+ ↓
+State: DONE
+```
+
+Requirement:
+
+`RAISE-FR-MAINT-001` — 4-stage workflow shape confirmed 2026-08-21 (PRD §16
+Resolved Question 33; Design §5.1). SLA per stage, vendor model, cost model,
+and delegated-approver configuration rules remain **TBD**.
+
+---
+
+## Flow I — License Lookup (Roadmap, not MVP)
+
+```text
+License Inventory (P-016)
+ ↓
+Search / Filter
+ ↓
+License Detail (P-017)
+ ↓
+Allocate Seat / Renew Subscription (UI concept only)
+```
+
+Requirement:
+
+`RAISE-FR-LICENSE-001` — **Roadmap scope, not MVP** (PRD v0.9 §6/§13/§17).
+Shown here for completeness because P-016/P-017 exist in this prototype, but
+this flow is **not** part of the MVP-scoped core flows A–H above and must
+not be treated as approved MVP functionality.
+
+---
+
+# 27. Prototype Traceability Matrix
 
 | Prototype | Requirement | Status |
 |---|---|---|
@@ -1091,7 +1511,7 @@ Requirement:
 | P-006 Custody | RAISE-FR-ASSET-003 | Planned |
 | P-007 QR / Barcode | RAISE-FR-OPS-001 | Planned |
 | P-008 Check-in / Check-out | RAISE-FR-OPS-002 | Planned |
-| P-009 Maintenance | RAISE-FR-MAINT-001 | Planned |
+| P-009 Maintenance | RAISE-FR-MAINT-001 | Planned — 4-stage workflow shape reflected (confirmed 2026-08-21); SLA/vendor/cost model TBD |
 | P-010 Warranty | RAISE-FR-WARRANTY-001 | Planned |
 | P-011 Oracle FA | RAISE-FR-ORACLE-001 | Planned |
 | P-012 Alerts | RAISE-FR-ALERT-001 | Planned |
@@ -1102,8 +1522,10 @@ Requirement:
 | P-004 Asset Detail (incidental) | RAISE-AI-DOC-002 (Metadata) | Planned — no dedicated screen; TBD acceptance behavior |
 | P-005 Category & Hierarchy (incidental) | RAISE-AI-DOC-003 (Classification) | Planned — no dedicated screen; TBD acceptance behavior |
 | P-003 Asset Registry (incidental) | RAISE-AI-DOC-004 (Duplicate Detection) | Planned — no dedicated screen; TBD acceptance behavior |
+| P-016 License Inventory | RAISE-FR-LICENSE-001 | **Roadmap, not MVP** — exploratory prototype screen mirroring already-built `frontend/src/pages/Licenses/`; field model/alert rule/seat tracking/vendor-cost tracking all TBD |
+| P-017 License Detail | RAISE-FR-LICENSE-001 | **Roadmap, not MVP** — exploratory prototype screen mirroring already-built `frontend/src/pages/LicenseDetail/`; same TBD items as P-016 |
 
-**Cross-check against [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) §17 (PRD v0.3):**
+**Cross-check against [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) §17 (PRD v0.9):**
 every row's requirement ID exists in the PRD's Requirement Traceability Matrix, and every
 P0/MVP requirement in that matrix now has at least one row here — including
 `RAISE-AI-DOC-001` through `RAISE-AI-DOC-004`, added 2026-08-21 following PRD v0.3 §16
@@ -1117,17 +1539,45 @@ recorded for these four requirements' Prototype column. P-001 (Login) and P-002 
 Dashboard) are intentionally excluded from this table — they trace to Security Design
 (TBD, PRD §11) and general product navigation respectively, not to a single numbered PRD
 requirement, consistent with how the source table treats them. `RAISE-NFR-SEC-RBAC-001`
-is also intentionally excluded — its Priority/Scope are TBD (not P0/MVP) in PRD §17, and
-Design §24 likewise omits it from the design-area table, covering it structurally under
-Design §16 Security Architecture instead; P-001 Login references it narratively without a
-formal traceability row, matching that treatment. `RAISE-FR-LIFE-001` (P0, MVP, APPROVED
+is also intentionally excluded — its Scope is `MVP (enforcement level only)` with
+Priority `TBD` in PRD §17 (not a fully-scoped P0/MVP requirement), and Design §24
+likewise omits it from the design-area table, covering it structurally under
+Design §16 Security Architecture instead; P-001 Login and P-009 Maintenance reference it
+narratively (including the confirmed UI-only/client-side MVP enforcement level, PRD §16
+Resolved Question 38) without a formal traceability row, matching that treatment. The
+role list, permission matrix contents, and authentication mechanism remain **TBD** and
+are not assumed by this table. `RAISE-FR-LIFE-001` (P0, MVP, APPROVED
 in PRD §17) is added as a row against P-004 Asset Detail — previously missing from this
 matrix despite being a P0/MVP requirement; see P-004's Traceability note for how it is
 realized across P-004/P-006/P-009/P-010/P-013 collectively.
 
+**v0.4 addition — `RAISE-FR-LICENSE-001` (P-016/P-017):** PRD §17 (v0.9) records this
+requirement's Status as `ROADMAP — identity/scope confirmed 2026-08-21; field model/alert
+rules/vendor-cost tracking TBD` and Scope as `Roadmap` (not MVP). Per PRD §17's own
+downstream-sync guidance, a Roadmap-scoped requirement's Prototype column should read
+**"Not applicable — Roadmap, not MVP"** rather than "Planned," since "Planned" is reserved
+for MVP-scoped work awaiting a sync pass. The rows above use "Roadmap, not MVP" to make
+this distinction explicit rather than reusing "Planned" — if this matrix is consumed by a
+downstream tool expecting the exact PRD §17 vocabulary, these two rows should be read as
+PRD-status `"Not applicable — Roadmap, not MVP"`, not as being on the same MVP delivery
+track as the other rows in this table. `RAISE-FR-MAINT-001`'s row was **updated, not
+added** — the requirement already had a row in v0.3; only its Status detail changed to
+reflect the confirmed 4-stage workflow shape (PRD v0.6 §16 Resolved Question 33).
+
+**v0.5 re-sync (2026-08-21, against PRD v0.9 / Design v0.7):** no rows added, removed, or
+requiring a status change in this matrix. `RAISE-AI-DOC-004` (Duplicate Detection)
+remains at Status "Planned — no dedicated screen; TBD acceptance behavior" — PRD §17
+still records its acceptance detail as unresolved (asked 2026-08-21, no business answer
+received), so this row is not upgraded even though `RAISE-AI-DOC-001`–`003` (which did
+receive acceptance detail) were already reflected at v0.4. `RAISE-FR-ORACLE-001`'s row
+is unchanged — Design §6.4's "Phase 6" label clarification and the still-open
+`ReconciliationPage` mapping question (PRD Open Question 10a) do not add a new
+requirement ID or change this row's status; P-011 Oracle FA / Financial View was checked
+and does not reference "Phase 6" or `ReconciliationPage`.
+
 ---
 
-# 26. Prototype Review Checklist
+# 28. Prototype Review Checklist
 
 Before moving to Acceptance Criteria:
 
@@ -1146,10 +1596,28 @@ Before moving to Acceptance Criteria:
 - [ ] Roadmap features are clearly separated
 - [ ] No VERSCAN-only feature was silently added
 - [ ] Every mandatory screen has a requirement ID
+- [x] Maintenance's confirmed 4-stage workflow (User Requisition → Dept
+      Approval (Delegated) → IT Dispatch → Technician Execution) is
+      represented on P-009, with SLA/vendor/cost model left as TBD
+- [x] License Management (P-016/P-017) is clearly labeled Roadmap/not-MVP,
+      not presented as an approved MVP screen, despite having a dedicated
+      screen (`RAISE-DESIGN.md` v0.6/v0.7 §4.1A/§5.3 now also correctly say
+      Roadmap/not-MVP — the Design/PRD inconsistency previously open here is
+      resolved as of the v0.5 re-sync; see Document Status below)
+- [x] Six ESAPS-reference-only pages confirmed out of scope (PRD §15, §16
+      Resolved Question 35) are not referenced by any screen in this document
+      (checked during v0.5 re-sync — no drift found)
+- [x] `RAISE-FR-ORACLE-001`'s "Phase 6" code-comment label (clarified as not
+      a PRD phase, Design §6.4) is not referenced by P-011 Oracle FA /
+      Financial View (checked during v0.5 re-sync — no drift found)
+- [x] `RAISE-NFR-SEC-RBAC-001`'s confirmed MVP enforcement level (UI-only/
+      client-side, backend deferred to Roadmap) is noted on P-001 and P-009
+      without inventing a role list, permission matrix, or authentication
+      mechanism (all remain TBD per PRD §11)
 
 ---
 
-# 27. Prototype Deliverable Structure
+# 29. Prototype Deliverable Structure
 
 Recommended project structure:
 
@@ -1177,7 +1645,7 @@ If a visual prototype is created later:
 
 ---
 
-# 28. Next Step
+# 30. Next Step
 
 After prototype review:
 
@@ -1207,8 +1675,109 @@ The next artifact should be **Acceptance Criteria**, not source code.
 
 ## Document Status
 
-**Version:** 0.3 (re-verified against RAISE-PRD.md v0.3 and RAISE-DESIGN.md v0.4,
-2026-08-21 — no new screens created; two synchronization updates applied:)
+**Version:** 0.5 (re-synced against RAISE-PRD.md v0.9 and RAISE-DESIGN.md v0.7,
+2026-08-21 — no screens added or removed; the v0.4 `## NEEDS_PRD_CONFIRMATION` signal is
+closed/removed since its underlying Design defect is now fixed; several traceability
+notes updated to cite the current PRD/Design versions and the confirmed
+`RAISE-NFR-SEC-RBAC-001` MVP enforcement level; three specific drift checks performed
+with no drift found)
+
+**Change Log — v0.4 → v0.5 (2026-08-21):**
+
+1. **License Management Design/PRD inconsistency — resolved, `## NEEDS_PRD_CONFIRMATION`
+   closed.** `RAISE-DESIGN.md` v0.4's `## NEEDS_PRD_CONFIRMATION` item (that Design v0.5
+   §4.1A/§5.3 stated "Priority P0, Scope MVP" for `RAISE-FR-LICENSE-001`, contradicting
+   the PRD's Roadmap-only decision) is now fixed at the Design layer: `RAISE-DESIGN.md`
+   v0.6/v0.7 §4.1A/§5.3 both correctly state Roadmap/not-MVP, consistent with
+   `RAISE-PRD.md` v0.9 §6/§13/§17. This prototype's P-016/P-017 treatment required no
+   change (it was already Roadmap-labeled), but every citation of `RAISE-DESIGN.md`
+   v0.5's stale wording was updated to note the fix, and the `## NEEDS_PRD_CONFIRMATION`
+   section itself is removed from this revision (see closing note below).
+2. **Six ESAPS-reference-only pages confirmed out of scope** (PRD §15, §16 Resolved
+   Question 35; Design §22 "Out of Scope"): `Assignment.tsx`, `Auth.tsx` beyond Login,
+   `Inventory.tsx`, `NotificationCenter.tsx`, `Profile.tsx`, `Reports.tsx`, and
+   `ErrorPages.tsx` were checked against every screen in this document (P-001–P-017 and
+   the "Incidental" mapping notes) — **none of these pages/flows was ever referenced
+   here as a screen, a pending/uncertain element, or an implied requirement.** No change
+   was needed; recorded in the Review Checklist (§28) as a completed check for this
+   pass.
+3. **`RAISE-FR-ORACLE-001` "Phase 6" label clarification** (Design v0.7 §6.4; PRD §16
+   Resolved Question 37, Open Question 10a): checked **P-011 Oracle FA / Financial
+   View** — it never referenced "Phase 6" or `ReconciliationPage`, so no correction was
+   needed. The underlying open question (whether `ReconciliationPage` satisfies
+   `RAISE-FR-ORACLE-001` or needs a new requirement ID) remains unresolved in the PRD and
+   is not answered or assumed here.
+4. **`RAISE-NFR-SEC-RBAC-001` MVP enforcement level confirmed** (PRD §11, §16 Resolved
+   Question 38; Design v0.7 §16 Security Architecture — MVP Enforcement Level): a
+   UI-only/client-side permission check is acceptable for MVP, backend deferred to
+   Roadmap. Added a narrow clarifying note to **P-001 Login**, **§4 User Roles**, and
+   **P-009 Maintenance**'s RBAC-dependency note. This decision fixes only *where*
+   enforcement happens, not *what* the roles/permissions are — the role list, permission
+   matrix contents, and authentication mechanism remain **TBD**, and **no role model,
+   role name, or permission set was invented or assumed anywhere in this document** as a
+   result of this change.
+5. Version citations throughout (`RAISE-PRD.md` v0.6 → v0.9; `RAISE-DESIGN.md` v0.5 →
+   v0.7) were updated in the places that assert the *current* document version (header,
+   Screen Inventory §5 notes, P-016/P-017 Status Banners and Traceability sections, §27
+   Prototype Traceability Matrix, Document Status/Source lines). Historical citations
+   that record *when* a specific PRD Resolved Question was decided (e.g., "PRD v0.3 §16
+   Resolved Question 27") were left unchanged, since those are date-stamped historical
+   references, not claims about the current document version.
+6. No other requirement gaps, stale requirement references, or new screens/flows without
+   requirement backing were found against PRD v0.9 §17 / Design v0.7 §24 during this
+   pass.
+
+**Change Log — v0.3 → v0.4 (2026-08-21):**
+
+1. **`RAISE-FR-MAINT-001` 4-stage workflow shape bound to P-009 Maintenance**
+   (PRD v0.6 §6, §16 Resolved Question 33; Design v0.5 §5.1): P-009 now
+   documents the confirmed workflow (User Requisition → Dept Approval
+   (Delegated) → IT Dispatch → Technician Execution), the state model
+   (`PENDING_DEPT_APPROVAL → PENDING_IT_DISPATCH →
+   PLANNING/IN_PROGRESS/ON_HOLD → DONE`), and a per-stage screen concept for
+   each stage, including the delegated-approver banner concept. SLA per
+   stage, vendor model, cost model, and delegated-approver configuration
+   rules remain **TBD**, carried forward unchanged from PRD/Design — not
+   invented here. Added **Flow H — Maintenance Request (4-Stage Workflow)**
+   to §26 Core Prototype User Flows. §27 Prototype Traceability Matrix's
+   `RAISE-FR-MAINT-001` row status updated (not newly added) to reflect the
+   confirmed workflow shape.
+2. **Two new screens added for `RAISE-FR-LICENSE-001`: P-016 License
+   Inventory and P-017 License Detail** (PRD v0.6 §6, §16 Resolved Question
+   34; Design v0.5 §4.1A, §5.3). These mirror the already-built, tested
+   `frontend/src/pages/Licenses/` and `frontend/src/pages/LicenseDetail/`
+   code. Field model, renewal/expiry alert rule, seat/utilization tracking,
+   and vendor/cost tracking remain **TBD**, per the PRD — not invented here.
+   Added **Flow I — License Lookup** to §26. §5 Screen Inventory and §27
+   Prototype Traceability Matrix updated with both screens.
+   - **Important scope correction / discrepancy flagged:** `RAISE-PRD.md`
+     v0.6 §6/§13/§17 confirms `RAISE-FR-LICENSE-001` as **Enterprise
+     Roadmap, not Phase 1 MVP** (an earlier PRD pass had briefly and
+     incorrectly recorded it as P0/MVP before the actual business decision
+     was received; PRD §16 Resolved Question 34 documents the correction).
+     `RAISE-DESIGN.md` v0.5 §4.1A and §5.3 still state "Priority P0, Scope
+     MVP" for this requirement, which is now **stale relative to the PRD
+     and inconsistent with Design's own §14 (listing it under Enterprise
+     Roadmap item 8) and §22 (which lists it under the MVP boundary
+     instead)**. Per this agent's operating rule that Roadmap/Pilot
+     requirements do not get MVP screens unless the user confirms otherwise,
+     and because the task instruction for this sync explicitly requested
+     P-016/P-017, both screens were created **but labeled Roadmap / not-MVP
+     status banners** throughout (Screen Inventory, per-screen Status
+     Banners, Traceability Matrix, Core Flow) to stay consistent with the
+     PRD's more authoritative §17 Requirement Traceability Matrix rather
+     than Design's stale wording. See `## NEEDS_PRD_CONFIRMATION` below —
+     this is a Design-document defect (not a Prototype defect) that this
+     agent cannot fix directly, since editing `RAISE-DESIGN.md` is out of
+     scope for this document.
+3. **§5 Screen Inventory, §26 Core Prototype User Flows, §27 Prototype
+   Traceability Matrix, and §28 Prototype Review Checklist** updated to
+   reflect both changes above. Sections 22–30 were renumbered (previously
+   22–28) to make room for the two new screen sections (now §22 P-016, §23
+   P-017); no content beyond the two new sections and the items listed above
+   was altered during renumbering.
+4. No other requirement gaps or stale requirement references were found
+   against PRD v0.6 §17 / Design v0.5 §24 during this pass.
 
 **Change Log — v0.2 → v0.3 (2026-08-21):**
 
@@ -1243,9 +1812,36 @@ No screen additions or removals were made; no stale requirement references
 remain outside the two items above.
 
 **Status:** Draft for Prototype Review
-**Source:** [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.3 + [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.4
+**Source:** [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.9 + [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.7
 **Reference:** VERSCAN only
-**Next Action:** Review Prototype Scope and User Flows; downstream
-`RAISE-ACCEPTANCE-CRITERIA.md` should be synchronized next to cover
-`RAISE-AI-DOC-001`–`RAISE-AI-DOC-004` (as TBD/incidental) and the resolved
-Utilization KPI definition.
+**Next Action:** Review this v0.5 re-sync, in particular the closure of the v0.4
+`## NEEDS_PRD_CONFIRMATION` item (License Management Design/PRD inconsistency, now
+fixed at the Design layer) and the three drift checks performed (ESAPS-reference pages
+out of scope; "Phase 6" label; RBAC MVP enforcement level). Downstream
+`RAISE-ACCEPTANCE-CRITERIA.md` should be checked next for the same drift — in
+particular whether it still needs to (a) cover the confirmed `RAISE-FR-MAINT-001`
+4-stage workflow, (b) continue treating `RAISE-FR-LICENSE-001`/P-016/P-017 as
+out-of-MVP-scope, and (c) avoid inventing any RBAC role model while still reflecting
+the confirmed UI-only/client-side MVP enforcement level.
+
+---
+
+## NEEDS_PRD_CONFIRMATION
+
+**None outstanding as of this v0.5 re-sync.**
+
+The one `## NEEDS_PRD_CONFIRMATION` item raised in Prototype v0.4 — that
+`RAISE-DESIGN.md` v0.5 §4.1A/§5.3 stated `RAISE-FR-LICENSE-001` as "Priority P0, Scope
+MVP," contradicting the PRD's Roadmap-only decision — is now **closed**:
+`RAISE-DESIGN.md` v0.6/v0.7 §4.1A and §5.3 both state "Priority: Roadmap
+(not MVP-confirmed)" / "Scope: Enterprise Roadmap — not Phase 1 MVP," matching
+`RAISE-PRD.md` v0.9 §6/§13/§17 and Design's own §14/§22. No Design-document defect
+remains open against this prototype.
+
+This re-sync pass checked all three flagged PRD/Design changes (License Management
+Design/PRD consistency; six ESAPS-reference-only pages confirmed out of scope; Oracle FA
+"Phase 6" label clarification) and found no screen, flow, or "pending/uncertain" note in
+this document that required a change beyond citation/version updates and the RBAC
+enforcement-level clarifications already applied above. No new requirement, screen, or
+flow without PRD/Design backing was introduced or discovered during this pass, so no new
+confirmation is being requested.

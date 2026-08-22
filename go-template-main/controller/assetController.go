@@ -1,0 +1,140 @@
+package controller
+
+import (
+	"errors"
+	"net/http"
+	"singer/go-template-new-2026-06/logger"
+	"singer/go-template-new-2026-06/model"
+	"singer/go-template-new-2026-06/service"
+
+	"github.com/gofiber/fiber/v2"
+)
+
+type AssetController interface {
+	ListAssets(c *fiber.Ctx) error
+	GetAssetByID(c *fiber.Ctx) error
+	CreateAsset(c *fiber.Ctx) error
+	AssignAsset(c *fiber.Ctx) error
+}
+
+type assetController struct {
+	assetService service.AssetService
+}
+
+func NewAssetController(assetService service.AssetService) AssetController {
+	return &assetController{assetService: assetService}
+}
+
+// ListAssets godoc
+// GET /assets?search=&status=&department=&page=&limit=
+func (obj *assetController) ListAssets(c *fiber.Ctx) error {
+	log := logger.GetLoggerWithFiber(c)
+
+	var query model.AssetListQuery
+	if err := c.QueryParser(&query); err != nil {
+		log.Errorf("ListAssets parse error: %v", err)
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid query parameters",
+			"error":   err.Error(),
+		})
+	}
+	if query.Status == "all" {
+		query.Status = ""
+	}
+	if query.Department == "all" {
+		query.Department = ""
+	}
+
+	resp, err := obj.assetService.ListAssets(query)
+	if err != nil {
+		log.Errorf("ListAssets service error: %v", err)
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to retrieve assets",
+			"error":   err.Error(),
+		})
+	}
+
+	return c.Status(http.StatusOK).JSON(resp)
+}
+
+// GetAssetByID godoc
+// GET /assets/:id
+func (obj *assetController) GetAssetByID(c *fiber.Ctx) error {
+	log := logger.GetLoggerWithFiber(c)
+
+	id := c.Params("id")
+	if id == "" {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"message": "id is required"})
+	}
+
+	asset, err := obj.assetService.GetAsset(id)
+	if err != nil {
+		log.Errorf("GetAssetByID error: %v", err)
+		return c.Status(http.StatusNotFound).JSON(fiber.Map{
+			"message": "Asset not found",
+			"error":   err.Error(),
+		})
+	}
+
+	return c.Status(http.StatusOK).JSON(asset)
+}
+
+// CreateAsset godoc
+// POST /assets
+func (obj *assetController) CreateAsset(c *fiber.Ctx) error {
+	log := logger.GetLoggerWithFiber(c)
+
+	var input model.CreateAssetRequest
+	if err := c.BodyParser(&input); err != nil {
+		log.Errorf("CreateAsset parse error: %v", err)
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid request body",
+			"error":   err.Error(),
+		})
+	}
+
+	created, err := obj.assetService.CreateAsset(input)
+	if err != nil {
+		log.Errorf("CreateAsset service error: %v", err)
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to create asset",
+			"error":   err.Error(),
+		})
+	}
+
+	return c.Status(http.StatusCreated).JSON(created)
+}
+
+// AssignAsset godoc
+// POST /assets/:id/assign
+func (obj *assetController) AssignAsset(c *fiber.Ctx) error {
+	log := logger.GetLoggerWithFiber(c)
+
+	id := c.Params("id")
+	if id == "" {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"message": "id is required"})
+	}
+
+	var input model.AssignAssetRequest
+	if err := c.BodyParser(&input); err != nil {
+		log.Errorf("AssignAsset parse error: %v", err)
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid request body",
+			"error":   err.Error(),
+		})
+	}
+
+	updated, err := obj.assetService.AssignAsset(id, input)
+	if err != nil {
+		log.Errorf("AssignAsset service error: %v", err)
+		if errors.Is(err, service.ErrAssetNotFound) {
+			return c.Status(http.StatusNotFound).JSON(fiber.Map{"message": "Asset not found"})
+		}
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to assign asset",
+			"error":   err.Error(),
+		})
+	}
+
+	return c.Status(http.StatusOK).JSON(updated)
+}

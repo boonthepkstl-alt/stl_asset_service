@@ -1,11 +1,14 @@
+import apiClient from '@/services/api-client';
 import type { Asset, AssetListQuery, AssetListResult, AssignAssetInput, CreateAssetInput } from '@/types/asset';
 
 /**
- * Contract the AssetService depends on. MockAssetRepository (below) is the only
- * implementation that exists in Phase 4 — swap it for an HttpAssetRepository backed by
- * GET/POST /api/v1/assets (see API-SPECIFICATION.md and
- * ASSET-MANAGEMENT-API-CONTRACT.md) once the Go backend lands, with no change required
- * to AssetService or any page that consumes it.
+ * Contract the AssetService depends on. HttpAssetRepository (below) is the real
+ * implementation, backed by go-template-main's Asset Registry domain
+ * (go-template-main/controller/assetController.go, RAISE-FR-ASSET-001) -- gated off by
+ * default behind ASSET_API_ENABLED (config/featureFlags.ts) since most dev/test
+ * environments have no backend/Postgres running. MockAssetRepository is the fallback used
+ * whenever that flag is off. Swapping between them here is the only place AssetService or
+ * any page needs to change.
  */
 export interface AssetRepository {
   list(query: AssetListQuery): Promise<AssetListResult>;
@@ -88,4 +91,56 @@ export class MockAssetRepository implements AssetRepository {
     this.assets = this.assets.map((a) => (a.id === input.assetId ? updated : a));
     return simulateNetwork(updated);
   }
+}
+
+/**
+ * Backed by go-template-main's real Asset Registry endpoints
+ * (GET/POST /assets, GET /assets/:id, POST /assets/:id/assign). Response field names match
+ * the Go backend's AssetModel JSON tags exactly (go-template-main/model/assetModel.go), so no
+ * mapping layer is needed -- the wire shape and the Asset domain type are the same shape.
+ */
+export class HttpAssetRepository implements AssetRepository {
+  async list(query: AssetListQuery): Promise<AssetListResult> {
+    const params: Record<string, string | number> = {};
+    if (query.search) params.search = query.search;
+    if (query.status && query.status !== 'all') params.status = query.status;
+    if (query.department && query.department !== 'all') params.department = query.department;
+    if (query.page) params.page = query.page;
+    if (query.limit) params.limit = query.limit;
+
+    const response = await apiClient.get<AssetListResult>('/assets', { params });
+    return response.data;
+  }
+
+  async getById(id: string): Promise<Asset | null> {
+    try {
+      const response = await apiClient.get<Asset>(`/assets/${id}`);
+      return response.data;
+    } catch (error) {
+      if (isNotFound(error)) {
+        return null;
+      }
+      throw error;
+    }
+  }
+
+  async create(input: CreateAssetInput): Promise<Asset> {
+    const response = await apiClient.post<Asset>('/assets', input);
+    return response.data;
+  }
+
+  async assign(input: AssignAssetInput): Promise<Asset> {
+    const { assetId, ...body } = input;
+    const response = await apiClient.post<Asset>(`/assets/${assetId}/assign`, body);
+    return response.data;
+  }
+}
+
+function isNotFound(error: unknown): boolean {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'response' in error &&
+    (error as { response?: { status?: number } }).response?.status === 404
+  );
 }

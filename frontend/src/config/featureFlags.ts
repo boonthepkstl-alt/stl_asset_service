@@ -18,3 +18,8 @@ export const ROADMAP_ONLY_NAV_IDS = new Set(['licenses', 'ai']);
 // seeded data. Set to "true" only when a real go-template-main instance (with the
 // V1__Assets_Table.sql migration applied) is actually running at VITE_API_BASE_URL.
 export const ASSET_API_ENABLED = import.meta.env.VITE_ASSET_API_ENABLED === 'true';
+
+// Same reasoning as ASSET_API_ENABLED, for the Employee domain (go-template-main/controller/
+// employeeController.go). Independent flag since the two domains' backends can land/be
+// enabled separately.
+export const EMPLOYEE_API_ENABLED = import.meta.env.VITE_EMPLOYEE_API_ENABLED === 'true';

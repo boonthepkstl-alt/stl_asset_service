@@ -1,10 +1,13 @@
 import { employees as employeeFixtures } from '@/data/fixtures/mockData';
 import { assetService } from '@/services/asset-service';
-import { MockEmployeeRepository, type EmployeeRepository } from '@/services/employee-repository';
+import { EMPLOYEE_API_ENABLED } from '@/config/featureFlags';
+import { HttpEmployeeRepository, MockEmployeeRepository, type EmployeeRepository } from '@/services/employee-repository';
 import type { CreateEmployeeInput, Employee, EmployeeListQuery, EmployeeListResult, EmployeeSummary, UpdateEmployeeInput } from '@/types/employee';
 import type { Asset } from '@/types/asset';
 
-const repository: EmployeeRepository = new MockEmployeeRepository(employeeFixtures);
+// EMPLOYEE_API_ENABLED (config/featureFlags.ts) is off by default -- same reasoning as
+// asset-service.ts's ASSET_API_ENABLED.
+const repository: EmployeeRepository = EMPLOYEE_API_ENABLED ? new HttpEmployeeRepository() : new MockEmployeeRepository(employeeFixtures);
 
 /**
  * The stable frontend contract for Employee Management pages (pages/Employees,

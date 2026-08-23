@@ -75,13 +75,16 @@ func (a *authController) Login(c *fiber.Ctx) error {
 		MaxAge:   maxAge,
 	})
 
-	return c.Status(http.StatusOK).JSON(fiber.Map{
-		"status": "ok",
-		"data": fiber.Map{
-			"expires_at": tokenResp.ExpiresAt,
-			"user":       tokenResp.User,
-		},
-	})
+	// Bare object, token included in the body -- matches frontend/src/types/auth.ts's
+	// LoginResponse exactly. The stl_token cookie set above is dual transport (kept for a
+	// possible future cookie-based auth decision, per COMPANY-FOUNDATION-BASELINE.md Sec5.2),
+	// not the frontend's actual transport today. Role is uppercased for the frontend's Role
+	// union without touching the JWT claim/middleware.RequireRole's internal casing -- see
+	// model/authModel.go.
+	responseBody := *tokenResp
+	responseBody.User.Role = strings.ToUpper(responseBody.User.Role)
+
+	return c.Status(http.StatusOK).JSON(responseBody)
 }
 
 func (a *authController) Logout(c *fiber.Ctx) error {

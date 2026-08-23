@@ -287,17 +287,24 @@ func TestAuthLogin_Success(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 
+		// Bare object, camelCase, token in the body -- matches
+		// frontend/src/types/auth.ts's LoginResponse exactly (see model/authModel.go and
+		// controller/authController.go for why this isn't a {status,data} envelope with
+		// snake_case fields and a cookie-only token anymore: that shape silently broke every
+		// frontend login, since the frontend got `undefined` for token/expiresAt/user and
+		// never threw).
 		body := parseBody(t, resp)
-		assert.Equal(t, "ok", body["status"])
 		assert.NotEmpty(t, resp.Header.Get("Set-Cookie"))
+		assert.NotEmpty(t, body["token"])
+		assert.NotNil(t, body["expiresAt"])
 
-		data, ok := body["data"].(map[string]interface{})
-		assert.True(t, ok, "expected 'data' field in response")
-		assert.NotNil(t, data["expires_at"])
-		user, ok := data["user"].(map[string]interface{})
+		user, ok := body["user"].(map[string]interface{})
 		assert.True(t, ok, "expected 'user' field in response")
 		assert.Equal(t, "admin", user["username"])
-		assert.Equal(t, "admin", user["role"])
+		// Role is uppercased outward-facing to match the frontend's Role union
+		// ('EMPLOYEE' | 'IT_STAFF' | 'IT_MANAGER' | 'ADMIN') -- the JWT claim/
+		// middleware.RequireRole's internal "admin" check stays lowercase, unaffected.
+		assert.Equal(t, "ADMIN", user["role"])
 	})
 }
 

@@ -23,3 +23,8 @@ export const ASSET_API_ENABLED = import.meta.env.VITE_ASSET_API_ENABLED === 'tru
 // employeeController.go). Independent flag since the two domains' backends can land/be
 // enabled separately.
 export const EMPLOYEE_API_ENABLED = import.meta.env.VITE_EMPLOYEE_API_ENABLED === 'true';
+
+// Same reasoning as ASSET_API_ENABLED/EMPLOYEE_API_ENABLED, for the Ticket/Maintenance domain
+// (go-template-main/controller/ticketController.go, RAISE-FR-MAINT-001). Independent flag
+// since it depends on both the Asset and Employee domains already being resolvable server-side.
+export const TICKET_API_ENABLED = import.meta.env.VITE_TICKET_API_ENABLED === 'true';

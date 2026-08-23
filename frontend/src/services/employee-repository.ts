@@ -1,10 +1,11 @@
+import apiClient from '@/services/api-client';
 import type { CreateEmployeeInput, Employee, EmployeeListQuery, EmployeeListResult, UpdateEmployeeInput } from '@/types/employee';
 
 /**
- * Contract employeeService depends on. MockEmployeeRepository is the only implementation
- * in Phase 5A — swap it for an HttpEmployeeRepository backed by GET/POST /api/v1/employees
- * (see EMPLOYEE-MANAGEMENT-API-CONTRACT.md) once the Go backend lands, same pattern as
- * AssetRepository (Phase 4).
+ * Contract employeeService depends on. HttpEmployeeRepository (below) is the real
+ * implementation, backed by go-template-main's Employee domain
+ * (go-template-main/controller/employeeController.go) -- gated off by default behind
+ * EMPLOYEE_API_ENABLED (config/featureFlags.ts), same pattern as AssetRepository.
  */
 export interface EmployeeRepository {
   list(query: EmployeeListQuery): Promise<EmployeeListResult>;
@@ -97,4 +98,55 @@ export class MockEmployeeRepository implements EmployeeRepository {
     this.employees = this.employees.map((e) => (e.id === id ? updated : e));
     return simulateNetwork(updated);
   }
+}
+
+/**
+ * Backed by go-template-main's real Employee endpoints
+ * (GET/POST /employees, GET /employees/:id, PUT /employees/:id). Response field names match
+ * the Go backend's EmployeeModel JSON tags exactly, so no mapping layer is needed. GET
+ * /employees/:id supports lookup by either internal id or employee code, same dual lookup as
+ * MockEmployeeRepository.getById.
+ */
+export class HttpEmployeeRepository implements EmployeeRepository {
+  async list(query: EmployeeListQuery): Promise<EmployeeListResult> {
+    const params: Record<string, string> = {};
+    if (query.search) params.search = query.search;
+    if (query.department && query.department !== 'ALL') params.department = query.department;
+    if (query.location && query.location !== 'ALL') params.location = query.location;
+    if (query.status && query.status !== 'ALL') params.status = query.status;
+
+    const response = await apiClient.get<EmployeeListResult>('/employees', { params });
+    return response.data;
+  }
+
+  async getById(id: string): Promise<Employee | null> {
+    try {
+      const response = await apiClient.get<Employee>(`/employees/${id}`);
+      return response.data;
+    } catch (error) {
+      if (isNotFound(error)) {
+        return null;
+      }
+      throw error;
+    }
+  }
+
+  async create(input: CreateEmployeeInput): Promise<Employee> {
+    const response = await apiClient.post<Employee>('/employees', input);
+    return response.data;
+  }
+
+  async update(id: string, input: UpdateEmployeeInput): Promise<Employee> {
+    const response = await apiClient.put<Employee>(`/employees/${id}`, input);
+    return response.data;
+  }
+}
+
+function isNotFound(error: unknown): boolean {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'response' in error &&
+    (error as { response?: { status?: number } }).response?.status === 404
+  );
 }

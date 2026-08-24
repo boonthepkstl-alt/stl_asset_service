@@ -59,9 +59,15 @@ Next Step:
 **Maintenance rule:** log a new checkpoint immediately after every merge —
 same moment `DEVELOPMENT-LOG.md` and `CHANGELOG.md` get their rows. Leave a
 field `None` when genuinely empty; never leave it blank (a blank field
-reads as "forgot to check," `None` reads as "checked, nothing there").
+reads as "forgot to check," `None` reads as "checked, nothing there"). This
+file holds all three checkpoint levels defined in
+[`SESSION-CLOSEOUT-PROTOCOL.md`](SESSION-CLOSEOUT-PROTOCOL.md) — Task
+(§Level 1, below), Feature (§Level 2), and Phase (§Level 3). Run that
+protocol's 14-step checklist before ending any development session.
 
 ---
+
+## Level 1 — Task Checkpoints
 
 ## CHECKPOINT-2026-08-21-001
 
@@ -727,4 +733,109 @@ Commit: `7e8f356` (merge)
 
 **Known Issues:** Phases 5-10 have no target date — deliberately, since none are scheduled or business-confirmed yet.
 **Remaining Work:** Business to confirm/adjust Phase 7-10 naming and any scheduling.
-**Next Step:** Retroactive conversion of all prior checkpoints into the `CHECKPOINT-<date>-<NNN>` template (this file, current state).
+**Next Step:** Retroactive conversion of all prior checkpoints into the `CHECKPOINT-<date>-<NNN>` template (next checkpoint).
+
+---
+
+## CHECKPOINT-2026-08-24-008
+
+**Phase:** Phase 1 — Foundation
+**Feature:** Project tracking
+**Task:** Rewrite `PROJECT-CHECKPOINTS.md` using the structured per-checkpoint template; retroactively convert all 17 prior PRs
+
+**What was implemented:** All 17 merged PRs converted into `CHECKPOINT-<YYYY-MM-DD>-<NNN>` entries, with `NNN` resetting per day in actual merge order. Content (files/DB/API/frontend changes, PRD/Design/AC/Test Case references) pulled from `git show --stat` on each real merge commit, not reconstructed from memory.
+**What was modified:** `docs/project-management/PROJECT-CHECKPOINTS.md` (full rewrite).
+**What was fixed:** None.
+**What was added:** The fixed checkpoint template itself, included at the top of the file.
+**What was removed:** The prior narrative-style "Checkpoint: <name>" list format.
+
+**Files changed:** 1 file (+702/-79 at time of this checkpoint's own writing)
+**Database changes:** None. **API changes:** None. **Frontend changes:** None.
+
+**Tests:** N/A — documentation-only change.
+**Validation:** N/A — documentation-only change (all four fields).
+
+**Requirement Traceability:** N/A — process tooling, not a PRD requirement.
+
+**Git:**
+Branch: `docs/checkpoints-structured-template`
+Commit: **pending merge** — [PR #18](https://github.com/boonthepkstl-alt/stl_asset_service/pull/18) open, awaiting explicit merge instruction. Per this project's own Rule 14 (`SESSION-CLOSEOUT-PROTOCOL.md` §1), this checkpoint is **not** marked Completed until merged — status is 🚧 In Progress.
+
+**Known Issues:** None.
+**Remaining Work:** Merge PR #18.
+**Next Step:** Define a formal end-of-session close-out protocol (next checkpoint, same PR).
+
+---
+
+## CHECKPOINT-2026-08-24-009
+
+**Phase:** Phase 1 — Foundation
+**Feature:** Project tracking / process governance
+**Task:** Define the Development Session Close-Out Protocol and the three-level checkpoint model (Task / Feature / Phase)
+
+**What was implemented:** `SESSION-CLOSEOUT-PROTOCOL.md` — a 14-step close-out checklist, templates for Level 2 (Feature) and Level 3 (Phase) checkpoints, a status vocabulary (✅/🟡/🚧/🔴/⚪), and an explicit mapping from likely follow-up questions ("what changed since the last checkpoint?") to the evidence file that answers them.
+**What was modified:** `PROJECT-CHECKPOINTS.md` — added a `## Level 1 — Task Checkpoints` heading above the existing entries, plus new `## Level 2 — Feature Checkpoints` and `## Level 3 — Phase Checkpoints` sections (below).
+**What was fixed:** None.
+**What was added:** The Level 2 (`FEATURE-CHECKPOINT-project-tracking-governance`) and Level 3 (`PHASE-CHECKPOINT-1`) entries below, as the first real instances of the new model.
+**What was removed:** None.
+
+**Files changed:** `docs/project-management/SESSION-CLOSEOUT-PROTOCOL.md` (new), `docs/project-management/PROJECT-CHECKPOINTS.md` (extended)
+**Database changes:** None. **API changes:** None. **Frontend changes:** None.
+
+**Tests:** N/A — documentation-only change. Backend (`go build`/`vet`/`test`) and frontend (`tsc`/`lint`) re-verified green as part of this session's close-out step 3, confirming no source drift occurred during a docs-only session.
+**Validation:** N/A — documentation-only change for this task itself; the re-verification above is Step 3 of the close-out protocol, not validation of this task's own (nonexistent) code.
+
+**Requirement Traceability:** N/A — process tooling, not a PRD requirement.
+
+**Git:**
+Branch: `docs/checkpoints-structured-template`
+Commit: **pending merge** — part of [PR #18](https://github.com/boonthepkstl-alt/stl_asset_service/pull/18), same branch as CHECKPOINT-2026-08-24-008. Status: 🚧 In Progress until merged.
+
+**Known Issues:** The protocol is new and unproven — its real test is whether the next session actually follows it without being reminded.
+**Remaining Work:** Merge PR #18; the next session should be the first to demonstrate the protocol running against genuinely new work (e.g. the QR/Barcode checkpoint backlog item).
+**Next Step:** QR / Barcode (`RAISE-FR-OPS-001`) remains the recommended next feature-level checkpoint — see `CURRENT-STATUS.md` §4.
+
+---
+
+## Level 2 — Feature Checkpoints
+
+### FEATURE-CHECKPOINT-project-tracking-governance
+
+**Feature:** Project Tracking & Governance (the `docs/project-management/` layer itself — Timeline, Checkpoints, Changelog, Findings, Current Status, and this Close-Out Protocol)
+**Maps to Phase(s):** Phase 1 — Foundation
+**Maps to Requirement(s):** N/A — this feature is process tooling, not a PRD-traced product capability. Its "requirement" is the explicit instruction to make project state answerable from evidence, not AI memory.
+
+**Task Checkpoints included:** CHECKPOINT-2026-08-24-004, -005, -006, -007, -008, -009 (six checkpoints, one PR each — see Level 1 above for each PR's individual detail)
+
+**Progress Summary:** Introduced a single-file tracker, then split it into six focused files (`CURRENT-STATUS.md`, `DEVELOPMENT-LOG.md`, `PROJECT-TIMELINE.md`, `PROJECT-CHECKPOINTS.md`, `CHANGELOG.md`, `OPEN-FINDINGS.md`), redesigned the timeline as a 10-phase capability roadmap, and rewrote the checkpoint file around a structured, evidence-grounded template with an explicit three-level model and a 14-step session close-out checklist.
+
+**Acceptance Criteria Status:** N/A — no `RAISE-FR-*` AC group applies to internal process tooling. The functional bar for this feature is self-defined in `SESSION-CLOSEOUT-PROTOCOL.md` §3 ("How This Answers Follow-Up Questions") and has not yet been tested against a real follow-up question from a future session.
+
+**Status:** 🚧 In Progress — the tooling exists but PR #18 (which contains the last three checkpoints, including this one) has not merged yet, and the protocol has not yet been exercised on a session it wasn't written by.
+
+**Known Issues:** None structural. The protocol's effectiveness is unverified until reused.
+**Remaining Work:** Merge PR #18. Exercise the protocol on the next real development task and confirm it produces answerable checkpoints without needing this session's memory.
+**Next Recommended Task:** Start the QR / Barcode checkpoint (Phase 3 — Asset Management) and close it out using this protocol end-to-end, as the first real test.
+
+---
+
+## Level 3 — Phase Checkpoints
+
+### PHASE-CHECKPOINT-1
+
+**Phase:** Phase 1 — Foundation
+**Feature Checkpoints included:** `FEATURE-CHECKPOINT-project-tracking-governance` (this phase also contains the original template-audit and requirements-chain-confirmation work from CHECKPOINT-2026-08-21-001 through -22-002 and -22-005, and the chain re-sync/technical-docs work from -22-002, -24-002, -24-005 — no separate Feature Checkpoint has been written for those yet; see Known Issues)
+
+**Gate Criteria:** Per `PROJECT-TIMELINE.md`'s own Phase 1 definition — both company templates audited with a recorded KEEP/EXTEND/REFACTOR baseline, and the 7-stage requirements chain established. Gate would require: the chain no longer being Draft-status, and every open finding in `OPEN-FINDINGS.md` tagged as Foundation-scope (none currently are) being resolved.
+
+**Gate Verdict:** 🔴 **NOT PASSED**
+
+Reasons (per Rule 14 — not glossed over):
+- `RAISE-PRD.md` is still **v0.9, "Draft for Requirement Review"** — not an approved baseline.
+- `RAISE-DESIGN.md` (v0.8), `RAISE-PROTOTYPE.md` (v0.6), `RAISE-ACCEPTANCE-CRITERIA.md`/`RAISE-TEST-PLAN.md`/`RAISE-TEST-CASES.md`/`RAISE-TRACEABILITY-MATRIX.md` (all v0.5) are likewise still Draft.
+- Finding **F-10** (`RAISE-FR-ASSET-003` vs. `RAISE-FR-OPS-002` overlap) is an unresolved Foundation-level scope question, open since before this phase's own PRs began.
+- This is the expected state for an MVP still under active requirements refinement, not a defect — but per Rule 14, "baseline established" (this checkpoint's own Progress Summary language) must not be read as "Gate passed."
+
+**Known Issues:** No Feature Checkpoint yet exists for the original template-audit or requirements-chain work (CHECKPOINT-2026-08-21-001 through -22-002, -22-005) — only the most recent Project Tracking & Governance feature has one. Backfilling those is optional; they predate this protocol's own creation.
+**Remaining Work:** Move the PRD and downstream chain from Draft to an approved baseline (a business decision, not an engineering task) before this phase can pass its gate; resolve Finding F-10.
+**Next Recommended Task:** Not a Phase 1 task specifically — Phase 1 stays open-ended by design (see `PROJECT-TIMELINE.md`: "foundation work is continuous, not a fixed-end phase"). Recommended next work remains the Phase 3 QR/Barcode checkpoint, which does not depend on Phase 1's gate passing.

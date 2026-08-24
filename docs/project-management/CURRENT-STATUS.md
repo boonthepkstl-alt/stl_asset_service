@@ -9,7 +9,11 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-08-24, after PR #15.
+**As of:** 2026-08-24, after PR #17 (PR #18 — checkpoint template rewrite +
+session close-out protocol — open, pending merge). Every development
+session should close out per
+[`SESSION-CLOSEOUT-PROTOCOL.md`](SESSION-CLOSEOUT-PROTOCOL.md), which is
+what keeps this section current.
 
 ---
 

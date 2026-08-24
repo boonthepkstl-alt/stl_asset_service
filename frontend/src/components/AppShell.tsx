@@ -18,6 +18,7 @@ import { cn } from '@/lib/cn';
 import { navGroups, pageTitles } from '@/config/navigation';
 import { Avatar, Badge, Button, Dropdown, type DropdownItem } from '@/components/ui';
 import { useAuth } from '@/contexts/AuthContext';
+import { RaiseMark } from '@/components/RaiseMark';
 
 export interface AppShellNotification {
   id: string;
@@ -82,9 +83,7 @@ export function AppShell({ current, onNavigate, children, breadcrumb, notificati
       >
         <div className={cn('h-14 flex items-center border-b border-surface-200 shrink-0', collapsed ? 'justify-center px-2' : 'px-5')}>
           <div className="flex items-center gap-2.5">
-            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-brand-600 to-accent-600 flex items-center justify-center text-white font-bold text-body shrink-0 shadow-sm">
-              R
-            </div>
+            <RaiseMark className="h-8 w-8 text-body shrink-0" />
             {!collapsed && (
               <div className="leading-none">
                 <p className="text-title font-bold text-surface-900 tracking-tight">RAISE</p>

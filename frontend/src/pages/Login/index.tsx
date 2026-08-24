@@ -5,6 +5,7 @@ import { Button, Input } from '@/components/ui';
 import { ROUTES } from '@/config/constants';
 import { Eye, EyeOff } from 'lucide-react';
 import { cn } from '@/lib/cn';
+import { RaiseMark } from '@/components/RaiseMark';
 
 // Split-panel layout restyle, form fields/behavior unchanged (still username+password against
 // authService -- RAISE's actual auth mechanism is still TBD per RAISE-NFR-SEC-RBAC-001, see
@@ -190,25 +191,6 @@ function GoogleIcon({ className }: { className?: string }) {
         d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.2 4.2-4.1 5.5l6.6 5.4C41.4 36 44 30.5 44 24c0-1.2-.1-2.4-.4-3.5z"
       />
     </svg>
-  );
-}
-
-// Wordmark icon: the "R" square from a stakeholder-submitted brand proposal
-// (docs/project-foundation-baseline/RAISE-BRAND-STYLE-GUIDE.md Sec1). Updated 2026-08-24 to
-// Singer's confirmed CI (red-to-dark gradient, singer-* token) once RAISE's target
-// organization was confirmed -- see RAISE-PRD.md Sec16 Resolved Question 39. The small
-// upward-trending accent line (the proposed "growth stroke" direction) stays white for
-// legibility against the red. No dedicated logo asset/SVG file exists yet, this is still an
-// inline approximation, not a delivered mark.
-function RaiseMark({ className }: { className?: string }) {
-  return (
-    <div className={cn('relative flex items-center justify-center rounded-lg bg-gradient-to-br from-singer-600 to-surface-900 font-bold text-white shadow-sm', className)}>
-      R
-      <svg className="absolute -right-1 -top-1 h-3.5 w-3.5 text-white" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <path d="M4 17 L11 10 L15 14 L20 5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M15 5 H20 V10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    </div>
   );
 }
 

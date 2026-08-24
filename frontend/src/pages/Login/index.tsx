@@ -42,9 +42,7 @@ const Login: React.FC = () => {
       <div className="flex w-full flex-col justify-center px-6 py-12 sm:px-12 lg:w-1/2 lg:px-20 xl:px-28">
         <div className="mx-auto w-full max-w-sm">
           <div className="mb-8 flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-brand-600 to-accent-600 font-bold text-white shadow-sm">
-              R
-            </div>
+            <RaiseMark className="h-9 w-9" />
             <span className="text-title font-bold text-surface-900">RAISE</span>
           </div>
 
@@ -115,7 +113,7 @@ const Login: React.FC = () => {
               type="button"
               disabled
               title="Not available yet -- authentication mechanism is not yet finalized (RAISE-NFR-SEC-RBAC-001)"
-              className="inline-flex h-9 items-center justify-center gap-2 rounded-md border border-surface-300 bg-white text-body font-medium text-surface-400 opacity-60 cursor-not-allowed"
+              className="inline-flex h-9 items-center justify-center gap-2 rounded-md border border-surface-200 bg-white text-body font-medium text-surface-400 opacity-60 cursor-not-allowed hover:bg-surface-50"
             >
               <MicrosoftIcon className="h-4 w-4" />
               Microsoft
@@ -124,7 +122,7 @@ const Login: React.FC = () => {
               type="button"
               disabled
               title="Not available yet -- authentication mechanism is not yet finalized (RAISE-NFR-SEC-RBAC-001)"
-              className="inline-flex h-9 items-center justify-center gap-2 rounded-md border border-surface-300 bg-white text-body font-medium text-surface-400 opacity-60 cursor-not-allowed"
+              className="inline-flex h-9 items-center justify-center gap-2 rounded-md border border-surface-200 bg-white text-body font-medium text-surface-400 opacity-60 cursor-not-allowed hover:bg-surface-50"
             >
               <GoogleIcon className="h-4 w-4" />
               Google
@@ -134,7 +132,7 @@ const Login: React.FC = () => {
       </div>
 
       {/* Illustration panel */}
-      <div className="relative hidden overflow-hidden bg-gradient-to-br from-brand-600 to-accent-700 lg:flex lg:w-1/2 lg:items-center lg:justify-center">
+      <div className="relative hidden overflow-hidden bg-gradient-to-br from-brand-700 to-brand-900 lg:flex lg:w-1/2 lg:items-center lg:justify-center">
         <svg
           className="absolute inset-x-0 top-0 h-32 w-full text-white"
           viewBox="0 0 400 100"
@@ -150,7 +148,7 @@ const Login: React.FC = () => {
             <div className="text-4xl font-extrabold tracking-tight">RAISE</div>
             <p className="mt-2 text-body text-brand-100">Enterprise Asset Intelligence Platform</p>
           </div>
-          <AssetIllustration className="h-64 w-64 text-white/90" />
+          <AssetNetworkIllustration className="h-64 w-64" />
         </div>
       </div>
     </div>
@@ -193,15 +191,65 @@ function GoogleIcon({ className }: { className?: string }) {
   );
 }
 
-// Original abstract illustration (not a copy of any third-party asset) -- a person holding a
-// device, echoing "asset tracked via mobile scan" without reproducing anyone else's artwork.
-function AssetIllustration({ className }: { className?: string }) {
+// Wordmark icon: the "R" square from a stakeholder-submitted brand proposal
+// (docs/project-foundation-baseline/RAISE-BRAND-STYLE-GUIDE.md Sec1) -- a small upward-trending
+// accent line stands in for the proposed "growth stroke" direction, using the existing
+// success-* token (already #10b981, matching the proposal's green-accent option) rather than
+// introducing a new color -- no dedicated logo asset/SVG file exists yet, this is still an
+// inline approximation, not a delivered mark.
+function RaiseMark({ className }: { className?: string }) {
+  return (
+    <div className={cn('relative flex items-center justify-center rounded-lg bg-gradient-to-br from-brand-600 to-brand-800 font-bold text-white shadow-sm', className)}>
+      R
+      <svg className="absolute -right-1 -top-1 h-3.5 w-3.5 text-success-400" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M4 17 L11 10 L15 14 L20 5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M15 5 H20 V10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    </div>
+  );
+}
+
+// Original abstract illustration (not a copy of any third-party asset) -- a network of
+// connected asset nodes, replacing the earlier "person holding a device" motif to better read
+// as "Asset Intelligence" per the brand proposal's data-network direction. Accent nodes use
+// success-400 (green), the proposal's secondary/accent color; everything else is white/brand
+// tones already used on this panel.
+function AssetNetworkIllustration({ className }: { className?: string }) {
+  const nodes = [
+    { x: 100, y: 40, r: 9, accent: true },
+    { x: 45, y: 75, r: 6 },
+    { x: 155, y: 70, r: 7 },
+    { x: 70, y: 130, r: 8, accent: true },
+    { x: 135, y: 140, r: 6 },
+    { x: 100, y: 175, r: 5 },
+  ];
+  const edges: [number, number][] = [
+    [0, 1], [0, 2], [0, 3], [0, 4], [1, 3], [2, 4], [3, 5], [4, 5],
+  ];
   return (
     <svg className={className} viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <circle cx="100" cy="60" r="24" fill="white" fillOpacity="0.95" />
-      <rect x="70" y="88" width="60" height="80" rx="20" fill="white" fillOpacity="0.85" />
-      <rect x="118" y="70" width="26" height="46" rx="5" fill="white" transform="rotate(18 131 93)" />
-      <rect x="123" y="76" width="16" height="30" rx="2" fill="currentColor" opacity="0.5" transform="rotate(18 131 93)" />
+      {edges.map(([a, b], i) => (
+        <line
+          key={i}
+          x1={nodes[a].x}
+          y1={nodes[a].y}
+          x2={nodes[b].x}
+          y2={nodes[b].y}
+          stroke="white"
+          strokeOpacity="0.35"
+          strokeWidth="1.5"
+        />
+      ))}
+      {nodes.map((n, i) => (
+        <circle
+          key={i}
+          cx={n.x}
+          cy={n.y}
+          r={n.r}
+          fill={n.accent ? 'var(--color-success-400, #34d399)' : 'white'}
+          fillOpacity={n.accent ? 1 : 0.92}
+        />
+      ))}
     </svg>
   );
 }

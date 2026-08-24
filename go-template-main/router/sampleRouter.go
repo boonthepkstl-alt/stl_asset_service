@@ -83,6 +83,7 @@ func SetupRoutes(app *fiber.App, dbManager *repository.DBManager) {
 	protected.Get("/assets/:id", assetCtrl.GetAssetByID)
 	protected.Post("/assets", assetCtrl.CreateAsset)
 	protected.Post("/assets/:id/assign", assetCtrl.AssignAsset)
+	protected.Post("/assets/:id/checkin", assetCtrl.CheckInAsset)
 
 	// Employee domain, supporting RAISE-FR-ASSET-003 (custody/assignment). Same RBAC
 	// reasoning as /assets above -- no RequireRole gate for MVP.

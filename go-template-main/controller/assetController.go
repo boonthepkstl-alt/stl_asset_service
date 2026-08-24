@@ -15,6 +15,7 @@ type AssetController interface {
 	GetAssetByID(c *fiber.Ctx) error
 	CreateAsset(c *fiber.Ctx) error
 	AssignAsset(c *fiber.Ctx) error
+	CheckInAsset(c *fiber.Ctx) error
 }
 
 type assetController struct {
@@ -132,6 +133,31 @@ func (obj *assetController) AssignAsset(c *fiber.Ctx) error {
 		}
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Failed to assign asset",
+			"error":   err.Error(),
+		})
+	}
+
+	return c.Status(http.StatusOK).JSON(updated)
+}
+
+// CheckInAsset godoc
+// POST /assets/:id/checkin -- no request body, mirrors AssignAsset.
+func (obj *assetController) CheckInAsset(c *fiber.Ctx) error {
+	log := logger.GetLoggerWithFiber(c)
+
+	id := c.Params("id")
+	if id == "" {
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"message": "id is required"})
+	}
+
+	updated, err := obj.assetService.CheckInAsset(id)
+	if err != nil {
+		log.Errorf("CheckInAsset service error: %v", err)
+		if errors.Is(err, service.ErrAssetNotFound) {
+			return c.Status(http.StatusNotFound).JSON(fiber.Map{"message": "Asset not found"})
+		}
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to check in asset",
 			"error":   err.Error(),
 		})
 	}

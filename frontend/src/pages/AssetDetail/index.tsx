@@ -38,7 +38,9 @@ import type { RequisitionStatus, TicketCategory, PriorityLevel } from '@/data/fi
 import { useAsset } from '@/hooks/useAsset';
 import { useTickets } from '@/hooks/useTickets';
 import { useLicenses } from '@/hooks/useLicenses';
+import { useEmployees } from '@/hooks/useEmployees';
 import { ticketService } from '@/services/ticket-service';
+import { assetService } from '@/services/asset-service';
 import type { Ticket } from '@/types/ticket';
 import { cn } from '@/lib/cn';
 
@@ -91,6 +93,11 @@ export function AssetDetailPage() {
   const [selectedTicket] = useState<Ticket | null>(null);
   const [isDetailDrawerOpen, setIsDetailDrawerOpen] = useState(false);
   const [isNewTicketModalOpen, setIsNewTicketModalOpen] = useState(false);
+  const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+  const [assignEmployeeId, setAssignEmployeeId] = useState('');
+  const [isAssigning, setIsAssigning] = useState(false);
+  const [isCheckingIn, setIsCheckingIn] = useState(false);
+  const { employees } = useEmployees({});
 
   const [formTitle, setFormTitle] = useState('');
   const [formCategory, setFormCategory] = useState<TicketCategory>('Hardware Fault & Repair');
@@ -139,8 +146,44 @@ export function AssetDetailPage() {
     { id: 'comments', label: 'Comments', icon: <MessageSquare className="h-4 w-4" />, count: 2 },
   ];
 
+  const handleAssign = async () => {
+    if (!assignEmployeeId) {
+      push({ variant: 'warning', title: 'Select an employee', message: 'Choose who this asset should be assigned to.' });
+      return;
+    }
+    const employee = employees.find((e) => e.id === assignEmployeeId);
+    if (!employee) return;
+    setIsAssigning(true);
+    try {
+      await assetService.assignAsset({ assetId: asset.id, employeeId: employee.id, employeeName: employee.name });
+      refetch();
+      setIsAssignModalOpen(false);
+      setAssignEmployeeId('');
+      push({ variant: 'success', title: 'Asset assigned', message: `${asset.name} assigned to ${employee.name}.` });
+    } catch {
+      push({ variant: 'error', title: 'Assign failed', message: 'Could not assign this asset. Please try again.' });
+    } finally {
+      setIsAssigning(false);
+    }
+  };
+
+  const handleCheckIn = async () => {
+    setIsCheckingIn(true);
+    try {
+      await assetService.checkInAsset(asset.id);
+      refetch();
+      push({ variant: 'success', title: 'Asset checked in', message: `${asset.name} is now Available.` });
+    } catch {
+      push({ variant: 'error', title: 'Check-in failed', message: 'Could not check in this asset. Please try again.' });
+    } finally {
+      setIsCheckingIn(false);
+    }
+  };
+
   const quickActions = [
-    { label: 'Assign', icon: UserPlus, onClick: () => push({ variant: 'info', title: 'Assign asset', message: asset.name }) },
+    asset.assignedTo
+      ? { label: 'Check-in', icon: UserPlus, onClick: handleCheckIn }
+      : { label: 'Assign', icon: UserPlus, onClick: () => setIsAssignModalOpen(true) },
     { label: 'Transfer', icon: ArrowRightLeft, onClick: () => push({ variant: 'info', title: 'Transfer asset', message: asset.name }) },
     {
       label: 'Request IT Service',
@@ -248,6 +291,7 @@ export function AssetDetailPage() {
                   size="sm"
                   leftIcon={<a.icon className="h-4 w-4" />}
                   onClick={a.onClick}
+                  disabled={a.label === 'Check-in' && isCheckingIn}
                   className={a.danger ? 'text-error-600 hover:bg-error-50 border-error-200' : ''}
                 >
                   {a.label}
@@ -385,15 +429,18 @@ export function AssetDetailPage() {
 
         {tab === 'history' && (
           <Card>
-            <CardHeader title="Assignment History" description="Timeline of assignments and transfers" />
+            <CardHeader title="Assignment History" description="Current custody state for this asset" />
             <div className="p-5">
+              {/* Only the asset's current custody state is shown here, not a full timeline --
+                  the holder data model and historical custody log (RAISE-FR-ASSET-003) are
+                  still an open PRD question (Sec16 Q13), so no past-event history is invented. */}
               <div className="relative pl-6">
                 <div className="absolute left-2 top-2 bottom-2 w-px bg-surface-200" />
                 {[
-                  { date: '2024-01-15', title: 'Assigned to Sarah Chen', desc: 'Engineering · HQ - Floor 4', user: 'Admin' },
-                  { date: '2023-12-01', title: 'Transferred from Storage', desc: 'Moved to HQ - Floor 4', user: 'IT Operations' },
-                  { date: '2023-11-20', title: 'Received from Vendor', desc: 'Purchase order PO-2023-0142', user: 'Procurement' },
-                  { date: '2023-11-15', title: 'Asset Registered', desc: 'Created in system', user: 'Admin' },
+                  asset.assignedTo
+                    ? { date: asset.assignedDate || '—', title: `Assigned to ${asset.assignedTo}`, desc: `${asset.department} · ${asset.location}`, user: 'Current custody' }
+                    : { date: '—', title: 'Currently Available', desc: 'Not assigned to anyone', user: 'Current custody' },
+                  { date: asset.purchaseDate, title: 'Asset Registered', desc: `Purchased for ${asset.purchaseCost}`, user: 'Procurement' },
                 ].map((h, i) => (
                   <div key={i} className="relative pb-6 last:pb-0">
                     <div className="absolute -left-4 top-1 h-3 w-3 rounded-full bg-brand-500 ring-4 ring-white" />
@@ -646,6 +693,28 @@ export function AssetDetailPage() {
               </div>
             </div>
           </div>
+        </Modal>
+
+        <Modal
+          open={isAssignModalOpen}
+          onClose={() => setIsAssignModalOpen(false)}
+          title="Assign Asset"
+          description={`Assign ${asset.name} (${asset.code}) to an employee`}
+          footer={
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setIsAssignModalOpen(false)}>Cancel</Button>
+              <Button leftIcon={<UserPlus className="h-4 w-4" />} onClick={handleAssign} disabled={isAssigning}>
+                {isAssigning ? 'Assigning...' : 'Assign'}
+              </Button>
+            </div>
+          }
+        >
+          <Select
+            label="Employee"
+            value={assignEmployeeId}
+            onChange={(e) => setAssignEmployeeId(e.target.value)}
+            options={[{ value: '', label: 'Select an employee...' }, ...employees.map((e) => ({ value: e.id, label: `${e.name} (${e.department})` }))]}
+          />
         </Modal>
       </div>
     </AppShell>

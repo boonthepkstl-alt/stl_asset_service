@@ -15,6 +15,7 @@ export interface AssetRepository {
   getById(id: string): Promise<Asset | null>;
   create(input: CreateAssetInput): Promise<Asset>;
   assign(input: AssignAssetInput): Promise<Asset>;
+  checkIn(assetId: string): Promise<Asset>;
 }
 
 function simulateNetwork<T>(value: T, delayMs = 200): Promise<T> {
@@ -91,6 +92,22 @@ export class MockAssetRepository implements AssetRepository {
     this.assets = this.assets.map((a) => (a.id === input.assetId ? updated : a));
     return simulateNetwork(updated);
   }
+
+  async checkIn(assetId: string): Promise<Asset> {
+    const asset = this.assets.find((a) => a.id === assetId);
+    if (!asset) {
+      throw new Error(`Asset ${assetId} not found`);
+    }
+    const updated: Asset = {
+      ...asset,
+      status: 'Available',
+      assignedTo: null,
+      assignedEmployeeId: null,
+      assignedDate: undefined,
+    };
+    this.assets = this.assets.map((a) => (a.id === assetId ? updated : a));
+    return simulateNetwork(updated);
+  }
 }
 
 /**
@@ -132,6 +149,11 @@ export class HttpAssetRepository implements AssetRepository {
   async assign(input: AssignAssetInput): Promise<Asset> {
     const { assetId, ...body } = input;
     const response = await apiClient.post<Asset>(`/assets/${assetId}/assign`, body);
+    return response.data;
+  }
+
+  async checkIn(assetId: string): Promise<Asset> {
+    const response = await apiClient.post<Asset>(`/assets/${assetId}/checkin`, {});
     return response.data;
   }
 }

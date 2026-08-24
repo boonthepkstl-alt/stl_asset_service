@@ -129,6 +129,32 @@ func TestAssignAsset_UnknownIDReturnsNotFound(t *testing.T) {
 	assert.ErrorIs(t, err, ErrAssetNotFound)
 }
 
+func TestCheckInAsset_ClearsAssignmentAndSetsAvailable(t *testing.T) {
+	repo := newMockAssetRepository()
+	svc := NewAssetService(repo)
+
+	created, err := svc.CreateAsset(model.CreateAssetRequest{Name: "iPhone 15 Pro"})
+	assert.NoError(t, err)
+	_, err = svc.AssignAsset(created.ID, model.AssignAssetRequest{EmployeeID: "e1", EmployeeName: "Sarah Chen"})
+	assert.NoError(t, err)
+
+	checkedIn, err := svc.CheckInAsset(created.ID)
+
+	assert.NoError(t, err)
+	assert.Equal(t, "Available", checkedIn.Status)
+	assert.Nil(t, checkedIn.AssignedTo)
+	assert.Nil(t, checkedIn.AssignedEmployeeID)
+	assert.Nil(t, checkedIn.AssignedDate)
+}
+
+func TestCheckInAsset_UnknownIDReturnsNotFound(t *testing.T) {
+	svc := NewAssetService(newMockAssetRepository())
+
+	_, err := svc.CheckInAsset("does-not-exist")
+
+	assert.ErrorIs(t, err, ErrAssetNotFound)
+}
+
 func TestListAssets_ReturnsDataAndTotal(t *testing.T) {
 	repo := newMockAssetRepository()
 	svc := NewAssetService(repo)

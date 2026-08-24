@@ -22,6 +22,7 @@ type AssetService interface {
 	GetAsset(id string) (model.AssetModel, error)
 	CreateAsset(input model.CreateAssetRequest) (model.AssetModel, error)
 	AssignAsset(id string, input model.AssignAssetRequest) (model.AssetModel, error)
+	CheckInAsset(id string) (model.AssetModel, error)
 }
 
 type assetService struct {
@@ -113,6 +114,38 @@ func (s *assetService) AssignAsset(id string, input model.AssignAssetRequest) (m
 	updated, err := s.repo.Update(id, asset)
 	if err != nil {
 		log.Errorf("AssignAsset update error: %v", err)
+		return model.AssetModel{}, err
+	}
+	if !updated {
+		return model.AssetModel{}, ErrAssetNotFound
+	}
+
+	return asset, nil
+}
+
+// CheckInAsset is AssignAsset's inverse (RAISE-FR-OPS-002): clears the custody fields and
+// returns the asset to "Available". The detailed workflow (approval step, who may check in,
+// holder data model) is still an open question in RAISE-PRD.md Sec16 Q11-Q13, so this only
+// implements the confirmed, symmetric state transition -- no approval/permission logic is
+// invented here.
+func (s *assetService) CheckInAsset(id string) (model.AssetModel, error) {
+	log := logger.GetLogger()
+	log.Infof("CheckInAsset - id: %s", id)
+
+	asset, err := s.repo.GetByID(id)
+	if err != nil {
+		log.Errorf("CheckInAsset lookup error: %v", err)
+		return model.AssetModel{}, ErrAssetNotFound
+	}
+
+	asset.Status = "Available"
+	asset.AssignedTo = nil
+	asset.AssignedEmployeeID = nil
+	asset.AssignedDate = nil
+
+	updated, err := s.repo.Update(id, asset)
+	if err != nil {
+		log.Errorf("CheckInAsset update error: %v", err)
 		return model.AssetModel{}, err
 	}
 	if !updated {

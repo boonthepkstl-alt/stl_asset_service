@@ -37,6 +37,10 @@ func SetupRoutes(app *fiber.App, dbManager *repository.DBManager) {
 	employeeService := service.NewEmployeeService(employeeRepo)
 	employeeCtrl := controller.NewEmployeeController(employeeService)
 
+	ticketRepo := repository.NewTicketRepository(repository.NewTicketPGRepository())
+	ticketService := service.NewTicketService(ticketRepo, assetService, employeeService)
+	ticketCtrl := controller.NewTicketController(ticketService)
+
 	authService := service.NewAuthService()
 	authCtrl := controller.NewAuthController(authService)
 
@@ -86,4 +90,14 @@ func SetupRoutes(app *fiber.App, dbManager *repository.DBManager) {
 	protected.Get("/employees/:id", employeeCtrl.GetEmployeeByID)
 	protected.Post("/employees", employeeCtrl.CreateEmployee)
 	protected.Put("/employees/:id", employeeCtrl.UpdateEmployee)
+
+	// Ticket domain (RAISE-FR-MAINT-001, "IT Requisition & Maintenance"). Same RBAC reasoning
+	// as /assets and /employees above -- no RequireRole gate for MVP.
+	protected.Get("/tickets", ticketCtrl.ListTickets)
+	protected.Get("/tickets/:code", ticketCtrl.GetTicketByCode)
+	protected.Post("/tickets", ticketCtrl.CreateTicket)
+	protected.Post("/tickets/:code/approval", ticketCtrl.DecideApproval)
+	protected.Post("/tickets/:code/dispatch", ticketCtrl.Dispatch)
+	protected.Post("/tickets/:code/status", ticketCtrl.UpdateExecutionStatus)
+	protected.Get("/technicians", ticketCtrl.ListTechnicians)
 }

@@ -1,10 +1,11 @@
+import apiClient from '@/services/api-client';
 import type { Ticket, TicketListQuery, ApprovalDecisionInput, DispatchInput, StatusUpdateInput } from '@/types/ticket';
 import type { ITTechnician, TimelineEvent } from '@/data/fixtures/requisitionData';
 
 /**
- * Contract ticketService depends on. MockTicketRepository is the only implementation in
- * Phase 5B — swap it for an HttpTicketRepository backed by GET/POST /api/v1/tickets (see
- * MAINTENANCE-API-CONTRACT.md) once the Go backend lands, same pattern as
+ * Contract ticketService depends on. HttpTicketRepository (below) is the real implementation,
+ * backed by go-template-main's Ticket domain (go-template-main/controller/ticketController.go)
+ * -- gated off by default behind TICKET_API_ENABLED (config/featureFlags.ts), same pattern as
  * AssetRepository/EmployeeRepository.
  */
 export interface TicketRepository {
@@ -209,4 +210,97 @@ export class MockTicketRepository implements TicketRepository {
   async listTechnicians(): Promise<ITTechnician[]> {
     return simulateNetwork(this.technicians);
   }
+}
+
+/**
+ * Backed by go-template-main's real Ticket endpoints (GET/POST /tickets, GET /tickets/:code,
+ * POST /tickets/:code/{approval,dispatch,status}, GET /technicians). Response field names
+ * match the Go backend's TicketModel JSON tags exactly, so no mapping layer is needed.
+ *
+ * create/dispatch take an already-resolved `Ticket`/`ITTechnician` (built client-side by
+ * ticket-service.ts against MockTicketRepository's contract) but the backend independently
+ * resolves requesterId/assetId/technicianId server-side and rebuilds the snapshot itself --
+ * so here we extract just the ids the backend actually needs and let its response (not the
+ * locally-built object) be the source of truth for the returned Ticket.
+ *
+ * changeAsset/changeRequester are deliberately NOT implemented server-side yet (see
+ * go-template-main/repository/ticketRepository.go's doc comment -- not part of the confirmed
+ * AC-MAINT-001-03..09 set), so they throw here rather than silently no-op.
+ */
+export class HttpTicketRepository implements TicketRepository {
+  async list(query: TicketListQuery): Promise<{ data: Ticket[]; total: number }> {
+    const params: Record<string, string> = {};
+    if (query.search) params.search = query.search;
+    if (query.status && query.status !== 'ALL') params.status = query.status;
+    if (query.priority && query.priority !== 'ALL') params.priority = query.priority;
+    if (query.category && query.category !== 'ALL') params.category = query.category;
+    if (query.department && query.department !== 'ALL') params.department = query.department;
+    if (query.requesterName) params.requesterName = query.requesterName;
+
+    const response = await apiClient.get<{ data: Ticket[]; total: number }>('/tickets', { params });
+    return response.data;
+  }
+
+  async getByCode(ticketCode: string): Promise<Ticket | null> {
+    try {
+      const response = await apiClient.get<Ticket>(`/tickets/${ticketCode}`);
+      return response.data;
+    } catch (error) {
+      if (isNotFound(error)) {
+        return null;
+      }
+      throw error;
+    }
+  }
+
+  async create(ticket: Ticket): Promise<Ticket> {
+    const body = {
+      requesterId: ticket.requester.id,
+      assetId: ticket.asset.id,
+      category: ticket.category,
+      priority: ticket.priority,
+      title: ticket.title,
+      description: ticket.description,
+      location: ticket.location,
+    };
+    const response = await apiClient.post<Ticket>('/tickets', body);
+    return response.data;
+  }
+
+  async decideApproval(id: string, input: ApprovalDecisionInput): Promise<Ticket> {
+    const response = await apiClient.post<Ticket>(`/tickets/${id}/approval`, input);
+    return response.data;
+  }
+
+  async dispatch(id: string, input: DispatchInput, _tech: ITTechnician): Promise<Ticket> {
+    const response = await apiClient.post<Ticket>(`/tickets/${id}/dispatch`, input);
+    return response.data;
+  }
+
+  async updateExecutionStatus(id: string, input: StatusUpdateInput): Promise<Ticket> {
+    const response = await apiClient.post<Ticket>(`/tickets/${id}/status`, input);
+    return response.data;
+  }
+
+  async changeAsset(_id: string, _asset: Ticket['asset']): Promise<Ticket> {
+    throw new Error('changeAsset is not supported by the Ticket API yet -- see ticketRepository.go');
+  }
+
+  async changeRequester(_id: string, _requester: Ticket['requester'], _location?: string): Promise<Ticket> {
+    throw new Error('changeRequester is not supported by the Ticket API yet -- see ticketRepository.go');
+  }
+
+  async listTechnicians(): Promise<ITTechnician[]> {
+    const response = await apiClient.get<ITTechnician[]>('/technicians');
+    return response.data;
+  }
+}
+
+function isNotFound(error: unknown): boolean {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'response' in error &&
+    (error as { response?: { status?: number } }).response?.status === 404
+  );
 }

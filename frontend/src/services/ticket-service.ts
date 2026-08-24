@@ -1,10 +1,15 @@
 import { initialRequisitions, initialTechnicians, initialDelegationSettings } from '@/data/fixtures/requisitionData';
 import { assetService } from '@/services/asset-service';
 import { employeeService } from '@/services/employee-service';
-import { MockTicketRepository, type TicketRepository } from '@/services/ticket-repository';
+import { TICKET_API_ENABLED } from '@/config/featureFlags';
+import { HttpTicketRepository, MockTicketRepository, type TicketRepository } from '@/services/ticket-repository';
 import type { ApprovalDecisionInput, CreateTicketInput, DispatchInput, StatusUpdateInput, Ticket, TicketListQuery } from '@/types/ticket';
 
-const repository: TicketRepository = new MockTicketRepository(initialRequisitions, initialTechnicians);
+// TICKET_API_ENABLED (config/featureFlags.ts) is off by default -- same reasoning as
+// asset-service.ts's ASSET_API_ENABLED.
+const repository: TicketRepository = TICKET_API_ENABLED
+  ? new HttpTicketRepository()
+  : new MockTicketRepository(initialRequisitions, initialTechnicians);
 
 const SLA_HOURS: Record<CreateTicketInput['priority'], number> = { Critical: 2, High: 8, Medium: 24, Low: 48 };
 

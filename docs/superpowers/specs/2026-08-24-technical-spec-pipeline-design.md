@@ -1,5 +1,19 @@
 # Technical Spec Pipeline — Design Spec
 
+> **SUPERSEDED (2026-08-24, same day as written) — do not implement.**
+> This spec assumed `docs/08-architecture/`, `docs/09-api-db-spec/`, and a Technical Spec stage
+> did not exist yet, and that `frontend/`/`go-template-main` had no real code. Both premises were
+> already false when this spec was written: PRs #11–#15 (merged before this spec was drafted)
+> had already built real backend domains (Asset, Employee, Maintenance/Ticket, Auth) and already
+> added `docs/08-architecture/RAISE-HIGH-LEVEL-ARCHITECTURE.md`,
+> `docs/09-api-db-spec/RAISE-API-DB-SPEC.md`, and `docs/10-detailed-design/RAISE-DETAILED-DESIGN.md`
+> as **as-built** documentation — deliberately appended after `07-traceability-matrix`, not
+> renumbering it, per that commit's own message. See
+> [`CURRENT-STATUS.md`](../../project-management/CURRENT-STATUS.md) for the real project state.
+> This spec's renumbering plan (§1) and forward-looking pre-code framing (§2 agent descriptions)
+> both conflict with that reality. Kept here only as a record of what was proposed and why it was
+> withdrawn — not as a plan to execute.
+
 ## Purpose
 
 RAISE's deliverable chain currently covers Requirements → Design → Prototype → Acceptance

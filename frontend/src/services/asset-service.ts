@@ -23,4 +23,5 @@ export const assetService = {
   getAsset: (id: string): Promise<Asset | null> => repository.getById(id),
   createAsset: (input: CreateAssetInput): Promise<Asset> => repository.create(input),
   assignAsset: (input: AssignAssetInput): Promise<Asset> => repository.assign(input),
+  checkInAsset: (assetId: string): Promise<Asset> => repository.checkIn(assetId),
 };

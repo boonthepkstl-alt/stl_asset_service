@@ -116,4 +116,16 @@ describe('HttpAssetRepository', () => {
     expect(postMock).toHaveBeenCalledWith('/assets/a1/assign', { employeeId: 'e1', employeeName: 'Sarah Chen' });
     expect(result).toEqual(assigned);
   });
+
+  it('checkIn posts to /assets/:assetId/checkin and returns the updated asset', async () => {
+    const checkedIn = { ...sampleAsset, status: 'Available' as const, assignedTo: null };
+    postMock.mockResolvedValueOnce({ data: checkedIn });
+    const { HttpAssetRepository } = await import('@/services/asset-repository');
+    const repo = new HttpAssetRepository();
+
+    const result = await repo.checkIn('a1');
+
+    expect(postMock).toHaveBeenCalledWith('/assets/a1/checkin', {});
+    expect(result).toEqual(checkedIn);
+  });
 });

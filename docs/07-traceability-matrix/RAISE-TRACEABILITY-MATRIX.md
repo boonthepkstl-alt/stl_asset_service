@@ -2,10 +2,10 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Requirement Traceability Matrix (RTM)
-**Version:** 0.4 Draft (full-chain re-sync pass — Maintenance 4-stage workflow, License Roadmap
-item, RBAC MVP enforcement level; **critical PRD-version-drift finding, see Gap 6**)
+**Version:** 0.5 Draft (full-chain re-sync pass — PRD §10 NFR backlog acknowledgment
+propagated to every layer; **Gap 6 from v0.4 re-verified and closed — see §6**)
 **Status:** Draft for Traceability Review
-**Source:** [`RAISE-TEST-CASES.md`](../06-test-cases/RAISE-TEST-CASES.md) v0.4, consolidated against [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.4, [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.4, [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.5, [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.7, and — **critically** — [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md), which was **re-read directly for this revision and found to be v0.4, not v0.9** as every downstream document (Design v0.7, Prototype v0.5, AC v0.4, Test Plan v0.4, Test Cases v0.4) claims to be synced against. See **Gap 6 (§6)** — this is the central finding of this revision.
+**Source:** [`RAISE-TEST-CASES.md`](../06-test-cases/RAISE-TEST-CASES.md) v0.5, consolidated against [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.5, [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.5, [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.6, [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.8, and [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.9 — **the actual PRD file on disk was re-read in full for this revision, not assumed from downstream citations**, per this document's own standing practice since v0.4
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
 
@@ -28,14 +28,40 @@ This is the artifact `RAISE-COMPLIANCE-REVIEW.md` will use to check each
 requirement's real implementation/test status during and after
 Development.
 
-**This revision's walk went one step further than usual: the actual current
-text of `RAISE-PRD.md` was re-read in full, not assumed from downstream
-documents' citations of it.** That extra step is what surfaced Gap 6 (§6) —
-every downstream document cites `RAISE-PRD.md` "v0.9" and specific §16
-"Resolved Questions" (33–38) and a requirement (`RAISE-FR-LICENSE-001`) that
-**do not exist in the actual `RAISE-PRD.md` file on disk**, which is v0.4 and
-whose Resolved Questions stop at 32. This is reported as a new, **open**,
-critical gap — not silently accepted on the downstream documents' word.
+**This revision's headline finding is a resolution, not a new problem.**
+`RAISE-TRACEABILITY-MATRIX.md` v0.4 opened a critical **Gap 6**: every
+downstream document (Design v0.7, Prototype v0.5, AC v0.4, Test Plan v0.4,
+Test Cases v0.4) claimed to be synced against `RAISE-PRD.md` **v0.9** and
+cited specific §16 "Resolved Questions 33–38" and a `RAISE-FR-LICENSE-001`
+requirement — but the actual `RAISE-PRD.md` file on disk at that time was
+**v0.4**, with Resolved Questions stopping at 32 and no
+`RAISE-FR-LICENSE-001` entry anywhere. This revision **re-read the current
+`RAISE-PRD.md` file directly, in full, before consolidating anything else**,
+and confirms:
+
+- The file's own header and Document Status now read **Version 0.9**.
+- §16 "Resolved Questions" now runs through **38** (Resolved Questions 33–38
+  all have real, substantive entries — Maintenance 4-stage workflow, License
+  Management identity/scope, six ESAPS-reference pages out of scope, AI
+  Recommendation re-confirmed Roadmap, Oracle "Phase 6" label clarified, RBAC
+  MVP enforcement level).
+- `RAISE-FR-LICENSE-001` **does** exist — in §6 (Functional Requirements),
+  §13 (MVP Scope, explicit exclusion note), §14 (Enterprise Roadmap, item 8),
+  and §17 (Requirement Traceability Matrix row, Scope `Roadmap`).
+- §11 (Security & RBAC) now contains the "MVP enforcement level confirmed
+  2026-08-21" subsection matching what Design §16 and every document
+  downstream of it describe.
+- `RAISE-FR-MAINT-001`'s Acceptance Criteria field in §6 now contains the
+  full 4-stage workflow description (User Requisition → Dept Approval
+  (Delegated) → IT Dispatch → Technician Execution) and the state model,
+  matching Design §5.1 / Prototype §15 / AC §12 / Test Plan §7–§8 / Test
+  Cases `TC-MAINT-001-03..09` exactly.
+
+**Conclusion: Gap 6 is closed.** The chain is now verifiably anchored to the
+actual PRD source of truth, not merely internally consistent among the
+downstream documents. See §6 for the full closure record (this matrix does
+not delete gap history — it records resolution with evidence, per this
+document's own no-silent-resolution discipline).
 
 ---
 
@@ -46,7 +72,8 @@ using the recommended values:
 
 `PASS · PARTIAL · FAIL · BLOCKED · NOT_IMPLEMENTED · NOT_TESTED`
 
-At this stage (no source code exists yet), every requirement is
+At this stage (no source code exists yet — per `CLAUDE.md`, `frontend/`
+has a package manifest but no `src/` implementation), every requirement is
 **NOT_TESTED** by default; requirements with any BLOCKED test case in
 `RAISE-TEST-CASES.md` are marked **BLOCKED** instead, to distinguish
 "not yet run" from "cannot be fully run until an Open Question is
@@ -64,16 +91,17 @@ matrix's Test Status column:
   screen location). Used for `RAISE-AI-DOC-001`–`RAISE-AI-DOC-004` (§3
   below).
 
-**New this revision:** where a Test Status below rests on a "business
-confirmed" claim that traces to one of the PRD §16 Resolved Questions
-**33–38** or to `RAISE-FR-LICENSE-001`, that status is additionally
-annotated **"⚠ PRD-drift"** — meaning the confirmation is asserted by
-Design/Prototype/AC/Test Plan/Test Cases but **could not be verified against
-the actual `RAISE-PRD.md` file**, which does not contain those Resolved
-Questions or that requirement. See Gap 6 (§6) for the full explanation. This
-annotation does not change the underlying BLOCKED/PARTIAL classification
-already assigned downstream — it flags that the classification's stated
-justification is unverified at the source-of-truth layer.
+**No PRD-drift annotation is needed in this revision.** v0.4 of this matrix
+annotated every cell resting on Resolved Questions 33–38 or on
+`RAISE-FR-LICENSE-001` with "⚠ PRD-drift," since those citations could not
+be verified against the real PRD file at that time. This revision re-verified
+each of those citations directly against the current `RAISE-PRD.md` v0.9 and
+found all of them genuinely present (see §6 Gap 6 closure). The ⚠ PRD-drift
+markings are therefore removed throughout §3–§5 below — not because the
+underlying BLOCKED/PARTIAL classifications changed (they have not), but
+because their stated justification is now verified at the source-of-truth
+layer, which is exactly the condition that would have removed the annotation
+per v0.4 Gap 6's own closure criteria.
 
 ---
 
@@ -81,23 +109,23 @@ justification is unverified at the source-of-truth layer.
 
 | PRD Requirement | Title | Priority/Scope | Design Area | Prototype Screen(s) | AC Group(s) | Suite ID(s) | TC ID(s) | Test Status |
 |---|---|---|---|---|---|---|---|---|
-| `RAISE-FR-ASSET-001` | Asset Registry | P0 / MVP | §4.1 Asset Management | P-003, P-004 | AC-ASSET-001, AC-ASSET-001-DETAIL | TS-ASSET-001, TS-ASSET-001-DETAIL | TC-ASSET-001-01..04, TC-ASSET-001-D-01..02 | BLOCKED (TC-ASSET-001-01 partial) |
-| `RAISE-FR-ASSET-002` | Category & Hierarchy | P0 / MVP | §4.1 Asset Management | P-005 | AC-ASSET-002 | TS-ASSET-002 | TC-ASSET-002-01..02 | BLOCKED (TC-ASSET-002-01 partial) |
-| `RAISE-FR-ASSET-003` | Custody History | P0 / MVP | §4.2 Custody & Asset Operations | P-006 | AC-ASSET-003 | TS-ASSET-003 | TC-ASSET-003-01..03 | BLOCKED (TC-ASSET-003-01 partial — holder model TBD, PRD §16 Q13; TC-ASSET-003-03 partial — exclusivity scope only, see Gap 4) |
+| `RAISE-FR-ASSET-001` | Asset Registry | P0 / MVP | §4.1 Asset Management | P-003, P-004 | AC-ASSET-001, AC-ASSET-001-DETAIL | TS-ASSET-001, TS-ASSET-001-DETAIL | TC-ASSET-001-01..04, TC-ASSET-001-D-01..02 | BLOCKED (TC-ASSET-001-01 partial — asset master field list TBD, PRD §16 Q1) |
+| `RAISE-FR-ASSET-002` | Category & Hierarchy | P0 / MVP | §4.1 Asset Management | P-005 | AC-ASSET-002 | TS-ASSET-002 | TC-ASSET-002-01..02 | BLOCKED (TC-ASSET-002-01 partial — hierarchy taxonomy TBD) |
+| `RAISE-FR-ASSET-003` | Custody History | P0 / MVP | §4.2 Custody & Asset Operations | P-006 | AC-ASSET-003 | TS-ASSET-003 | TC-ASSET-003-01..03 | BLOCKED (TC-ASSET-003-01 partial — holder model TBD, PRD §16 Q13; TC-ASSET-003-03 partial — scoped only to Check-in/Check-out as the writing event, exclusivity question still open, see Gap 4) |
 | `RAISE-FR-OPS-001` | QR / Barcode | P0 / MVP | §4.2 Custody & Asset Operations | P-007 | AC-OPS-001 | TS-OPS-001 | TC-OPS-001-01..03 | NOT_TESTED (no blockers) |
-| `RAISE-FR-OPS-002` | Check-in / Check-out | P0 / MVP | §4.2 Custody & Asset Operations | P-008 | AC-OPS-002 | TS-OPS-002 | TC-OPS-002-01..03 | BLOCKED (TC-OPS-002-01, -02 partial; role gate cites RBAC MVP-enforcement-level confirmation — ⚠ PRD-drift, see Gap 6) |
-| `RAISE-FR-MAINT-001` | Maintenance (4-stage workflow: User Requisition → Dept Approval (Delegated) → IT Dispatch → Technician Execution) | P0 / MVP | §5.1 Maintenance Domain | P-009 | AC-MAINT-001 (expanded to AC-MAINT-001-01..09 this revision) | TS-MAINT-001 | TC-MAINT-001-01..09 | BLOCKED — TC-MAINT-001-01 partial (field model TBD); -04, -05, -06, -07, -08 partial (delegated-approver rule / Reject-Request-Info resulting state / RBAC role gate all TBD); -02, -03, -09 not blocked (record history display, User Requisition submit, and stage-progress indicator are fully testable now). **The entire 4-stage workflow's "business-confirmed" status (PRD §16 Resolved Question 33) is ⚠ PRD-drift — see Gap 6: this Resolved Question does not exist in the actual `RAISE-PRD.md` file, which still states the maintenance workflow is fully TBD.** |
-| `RAISE-FR-WARRANTY-001` | Warranty | P0 / MVP | §5.2 Warranty Domain | P-010 | AC-WARRANTY-001 | TS-WARRANTY-001 | TC-WARRANTY-001-01..03 | BLOCKED (TC-WARRANTY-001-01, -03 partial) |
-| `RAISE-FR-ORACLE-001` | Oracle FA Integration + NBV/Depreciation | P0 / MVP | §6 Oracle FA Integration (incl. §6.4 "Phase 6" label note — ⚠ PRD-drift, see Gap 6) | P-011 | AC-ORACLE-001 | TS-ORACLE-001 | TC-ORACLE-001-01..04 | BLOCKED (TC-ORACLE-001-01 partial). `ReconciliationPage`↔`RAISE-FR-ORACLE-001` mapping remains an explicitly open question in every layer (PRD Open Question 10a as originally listed — the label-clarification citation to "Resolved Question 37" is ⚠ PRD-drift, but the *substance*, that the mapping is unresolved, is unaffected and still correctly treated as open everywhere). |
-| `RAISE-FR-ALERT-001` | Alerts | P0 / MVP | §14 Alert Architecture | P-012 | AC-ALERT-001 | TS-ALERT-001 | TC-ALERT-001-01..02 | BLOCKED (TC-ALERT-001-01 partial) |
-| `RAISE-FR-AUDIT-001` | Immutable Audit Log | P0 / MVP | §15 Audit Architecture | P-013 | AC-AUDIT-001 | TS-AUDIT-001 | TC-AUDIT-001-01..03 | BLOCKED (TC-AUDIT-001-01, -03 partial) |
-| `RAISE-FR-EXEC-001` | Executive Dashboard | P0 / MVP | §13 Executive Intelligence | P-014 | AC-EXEC-001 | TS-EXEC-001 | TC-EXEC-001-01..02 | BLOCKED (TC-EXEC-001-01 partial — NBV/Risk formulas/thresholds still TBD, PRD §16 Q3/Q4; Utilization definition testable now for presence + description (PRD §16 Resolved Question 27, real, confirmed present in the actual PRD file); Utilization calculation mechanics (real-time-snapshot aggregation, Disposed/Retired/Under-Maintenance denominator exclusions, PRD §16 Resolved Question 29 — also confirmed present in the actual PRD file) remain BLOCKED (partial) pending further design/AC/test pass; TC-EXEC-001-02 partial — Executive Summary AI-generated-vs-static unresolved, PRD §8.1 gap) |
-| `RAISE-AI-SEARCH-001` | Natural Language Search | P0 / MVP (Current AI) | §9 Natural Language Search, §8.2 AI Flow, §20 Error Handling | P-015 | AC-AI-SEARCH-001, AC-AI-STATES | TS-AI-SEARCH-001, TS-AI-STATES | TC-AI-SEARCH-001-01..03, TC-AI-STATES-01..05 | BLOCKED (TC-AI-SEARCH-001-02 partial) |
-| `RAISE-FR-LIFE-001` | Asset Lifecycle Connectivity | P0 / MVP (Product Foundation) | §4.2 Conceptual State, §9 Asset Lifecycle | P-004 (Lifecycle section) | AC-LIFE-001 | TS-LIFE-001 | TC-LIFE-001-01..04 | BLOCKED (TC-LIFE-001-01, -02, -04 partial; TC-LIFE-001-03 OUT OF SCOPE FOR MVP — Disposal confirmed Enterprise Roadmap, 2026-08-21, PRD §16 Resolved Question 26 — confirmed present in the actual PRD file, not affected by Gap 6) |
-| `RAISE-AI-DOC-001` | OCR / Extraction | P0 / MVP (Current AI) | §9A Document Intelligence Capabilities | P-004 (incidental, no dedicated screen) | AC-AI-DOC-001 | TS-AI-DOC-001 | TC-AI-DOC-001-01 | **BLOCKED (full)** — sole criterion NOT TESTABLE YET; document scope/accuracy threshold undefined (PRD §7 Open Question). Confirmed present in the actual PRD file (§16 Resolved Question 28, 30) — not affected by Gap 6. |
-| `RAISE-AI-DOC-002` | Metadata | P0 / MVP (Current AI) | §9A Document Intelligence Capabilities | P-004 (incidental, no dedicated screen) | AC-AI-DOC-002 | TS-AI-DOC-002 | TC-AI-DOC-002-01 | **BLOCKED (full)** — sole criterion NOT TESTABLE YET; metadata fields/tags/surfacing undefined. Confirmed present in the actual PRD file (§16 Resolved Question 28, 31) — not affected by Gap 6. |
-| `RAISE-AI-DOC-003` | Classification | P0 / MVP (Current AI) | §9A Document Intelligence Capabilities | P-005 (incidental, no dedicated screen) | AC-AI-DOC-003 | TS-AI-DOC-003 | TC-AI-DOC-003-01 | **BLOCKED (full)** — sole criterion NOT TESTABLE YET; taxonomy/UI-confirmation detail undefined. Confirmed present in the actual PRD file (§16 Resolved Question 28, 32) — not affected by Gap 6. |
-| `RAISE-AI-DOC-004` | Duplicate Detection | P0 / MVP (Current AI) | §9A Document Intelligence Capabilities | P-003 (incidental, no dedicated screen) | AC-AI-DOC-004 | TS-AI-DOC-004 | TC-AI-DOC-004-01 | **BLOCKED (full)** — sole criterion NOT TESTABLE YET; matching threshold/merge-vs-flag workflow undefined, explicitly asked and left unanswered (PRD §16 Open Question 20a). Confirmed present in the actual PRD file — not affected by Gap 6. |
+| `RAISE-FR-OPS-002` | Check-in / Check-out | P0 / MVP | §4.2 Custody & Asset Operations | P-008 | AC-OPS-002 | TS-OPS-002 | TC-OPS-002-01..03 | BLOCKED (TC-OPS-002-01, -02 partial — workflow/roles TBD; RBAC MVP-enforcement-level note verified against `RAISE-PRD.md` §11, §16 Resolved Question 38 — role list/permission matrix content still TBD, PRD §16 Q22) |
+| `RAISE-FR-MAINT-001` | Maintenance (4-stage workflow: User Requisition → Dept Approval (Delegated) → IT Dispatch → Technician Execution) | P0 / MVP | §5.1 Maintenance Domain | P-009 | AC-MAINT-001 (AC-MAINT-001-01..09) | TS-MAINT-001 | TC-MAINT-001-01..09 | BLOCKED — TC-MAINT-001-01 partial (field model beyond date/event/status/cost TBD); -04, -05, -06, -07, -08 partial (delegated-approver configuration rules / Reject-Request-Info resulting state / RBAC role-gate content all TBD); -02, -03, -09 not blocked (record history display, User Requisition submit, stage-progress indicator are fully testable now). **The 4-stage workflow shape and state model are verified present in `RAISE-PRD.md` v0.9 §6 (`RAISE-FR-MAINT-001` Acceptance Criteria) and §16 Resolved Question 33 — this revision confirms the citation, closing the corresponding portion of former Gap 6.** |
+| `RAISE-FR-WARRANTY-001` | Warranty | P0 / MVP | §5.2 Warranty Domain | P-010 | AC-WARRANTY-001 | TS-WARRANTY-001 | TC-WARRANTY-001-01..03 | BLOCKED (TC-WARRANTY-001-01 partial — field list TBD, PRD §16 Q15; TC-WARRANTY-001-03 partial — 90-day rule illustrative only) |
+| `RAISE-FR-ORACLE-001` | Oracle FA Integration + NBV/Depreciation | P0 / MVP | §6 Oracle FA Integration (incl. §6.4 "Phase 6" label note) | P-011 | AC-ORACLE-001 | TS-ORACLE-001 | TC-ORACLE-001-01..04 | BLOCKED (TC-ORACLE-001-01 partial — integration method/mapping/sync/security TBD, PRD §16 Q6–Q10). `ReconciliationPage`↔`RAISE-FR-ORACLE-001` mapping remains an **explicitly open question in the real PRD** (Open Question 10a, verified present in `RAISE-PRD.md` v0.9 §9/§16) — the "Phase 6" label itself is confirmed not a PRD phase (§16 Resolved Question 37, verified present), but the substantive mapping question is not resolved by that and is not treated as resolved anywhere in this chain. |
+| `RAISE-FR-ALERT-001` | Alerts | P0 / MVP | §14 Alert Architecture | P-012 | AC-ALERT-001 | TS-ALERT-001 | TC-ALERT-001-01..02 | BLOCKED (TC-ALERT-001-01 partial — trigger rules TBD; role gate, PRD §16 Q22, TBD) |
+| `RAISE-FR-AUDIT-001` | Immutable Audit Log | P0 / MVP | §15 Audit Architecture | P-013 | AC-AUDIT-001 | TS-AUDIT-001 | TC-AUDIT-001-01..03 | BLOCKED (TC-AUDIT-001-01 partial — field taxonomy TBD, Design §15; TC-AUDIT-001-03 partial — role gate TBD, PRD §16 Q22) |
+| `RAISE-FR-EXEC-001` | Executive Dashboard | P0 / MVP | §13 Executive Intelligence | P-014 | AC-EXEC-001 | TS-EXEC-001 | TC-EXEC-001-01..02 | BLOCKED (TC-EXEC-001-01 partial — NBV/Risk KPI formulas/thresholds still TBD, PRD §16 Q3/Q4; Utilization *definition* is testable now for tile presence + description — PRD §16 Resolved Question 27, verified present in `RAISE-PRD.md` v0.9 §8; Utilization *calculation mechanics* — real-time-snapshot aggregation, Disposed/Retired/Under-Maintenance denominator exclusions, PRD §16 Resolved Question 29, also verified present — remain BLOCKED (partial) pending further design/AC/test detail; TC-EXEC-001-02 partial — Executive Summary AI-generated-vs-static unresolved, PRD Gaps section) |
+| `RAISE-AI-SEARCH-001` | Natural Language Search | P0 / MVP (Current AI) | §9 Natural Language Search, §8.2 AI Flow, §20 Error Handling | P-015 | AC-AI-SEARCH-001, AC-AI-STATES | TS-AI-SEARCH-001, TS-AI-STATES | TC-AI-SEARCH-001-01..03, TC-AI-STATES-01..05 | BLOCKED (TC-AI-SEARCH-001-02 partial — citation precision/format TBD, PRD §16 Q18) |
+| `RAISE-FR-LIFE-001` | Asset Lifecycle Connectivity | P0 / MVP (Product Foundation) | §4.2 Conceptual State, §9 Asset Lifecycle | P-004 (Lifecycle section) | AC-LIFE-001 | TS-LIFE-001 | TC-LIFE-001-01..04 | BLOCKED (TC-LIFE-001-01, -02, -04 partial; TC-LIFE-001-03 OUT OF SCOPE FOR MVP — Disposal confirmed Enterprise Roadmap, PRD §14 item 7 / §16 Resolved Question 26, verified present) |
+| `RAISE-AI-DOC-001` | OCR / Extraction | P0 / MVP (Current AI) | §9A Document Intelligence Capabilities | P-004 (incidental, no dedicated screen) | AC-AI-DOC-001 | TS-AI-DOC-001 | TC-AI-DOC-001-01 | **BLOCKED (full)** — sole criterion NOT TESTABLE YET; document scope is defined (Invoice/Receipt, Warranty document, Asset nameplate/label — PRD §16 Resolved Question 30, verified present) but the numeric confidence-threshold value remains TBD |
+| `RAISE-AI-DOC-002` | Metadata | P0 / MVP (Current AI) | §9A Document Intelligence Capabilities | P-004 (incidental, no dedicated screen) | AC-AI-DOC-002 | TS-AI-DOC-002 | TC-AI-DOC-002-01 | **BLOCKED (full)** — sole criterion NOT TESTABLE YET; metadata scope is defined (document-type tagging, key-value extraction, search tags/keywords — PRD §16 Resolved Question 31, verified present) but per-document-type field list / UI surfacing remain design-phase TBD |
+| `RAISE-AI-DOC-003` | Classification | P0 / MVP (Current AI) | §9A Document Intelligence Capabilities | P-005 (incidental, no dedicated screen) | AC-AI-DOC-003 | TS-AI-DOC-003 | TC-AI-DOC-003-01 | **BLOCKED (full)** — sole criterion NOT TESTABLE YET; suggestion-only mode is confirmed (PRD §16 Resolved Question 32, verified present) but taxonomy / confirmation-UI detail remain design-phase TBD |
+| `RAISE-AI-DOC-004` | Duplicate Detection | P0 / MVP (Current AI) | §9A Document Intelligence Capabilities | P-003 (incidental, no dedicated screen) | AC-AI-DOC-004 | TS-AI-DOC-004 | TC-AI-DOC-004-01 | **BLOCKED (full)** — sole criterion NOT TESTABLE YET; matching threshold/merge-vs-flag workflow undefined, explicitly asked of business 2026-08-21 and **left unanswered** (PRD §16 Open Question 20a, verified present as still-open, not silently resolved) |
 
 ---
 
@@ -108,21 +136,59 @@ are carried through the chain and must remain traceable.
 
 | Item | Title | PRD Basis | Design Area | Prototype Screen | AC Group | Suite ID | TC ID(s) | Test Status |
 |---|---|---|---|---|---|---|---|---|
-| `RAISE-NFR-SEC-RBAC-001` | Security & RBAC | PRD §11 (TBD in the actual PRD file — see below) | §16 Security Architecture (incl. "MVP Enforcement Level" subsection) | P-001 | AC-LOGIN | TS-LOGIN | TC-LOGIN-01..03 | BLOCKED (all 3 partial — auth mechanism and role model undefined, PRD §16 Q21–Q22). **"MVP Enforcement Level" (UI-only/client-side for MVP, backend deferred to Roadmap) is cited everywhere downstream as PRD §16 Resolved Question 38 — this is ⚠ PRD-drift (see Gap 6): the actual `RAISE-PRD.md` §11 still reads "not sufficiently specified," with no enforcement-level resolution present.** The role list/permission matrix content remains TBD regardless, so the Test Status classification itself (BLOCKED, all partial) is unchanged — only the specific "enforcement level is confirmed" narrative that downstream documents rely on is unverified against the real PRD. |
-| Dashboard / Navigation | Main Dashboard | PRD §8.1 (KPI concepts only) | §13 Executive Intelligence (KPI reuse) | P-002 | AC-DASH | TS-DASH | TC-DASH-01..03 | BLOCKED (TC-DASH-01 partial — NBV/Risk value correctness still unconfirmed, PRD §16 Q3/Q4; Utilization presence/definition testable now (PRD §16 Resolved Question 27, confirmed present in actual PRD); calculation mechanics (PRD §16 Resolved Question 29, also confirmed present) remain BLOCKED (partial)) |
+| `RAISE-NFR-SEC-RBAC-001` | Security & RBAC | PRD §11, §16 Resolved Question 38 (MVP enforcement level: UI-only/client-side, backend deferred to Roadmap — **verified present in `RAISE-PRD.md` v0.9 §11**) | §16 Security Architecture (incl. "MVP Enforcement Level" subsection) | P-001 | AC-LOGIN | TS-LOGIN | TC-LOGIN-01..03 | BLOCKED (all 3 partial — auth mechanism and role/permission-matrix content undefined, PRD §16 Q21–Q22; only the enforcement *location* is resolved, not the role model) |
+| Dashboard / Navigation | Main Dashboard | PRD §8 (KPI concepts only) | §13 Executive Intelligence (KPI reuse) | P-002 | AC-DASH | TS-DASH | TC-DASH-01..03 | BLOCKED (TC-DASH-01 partial — NBV/Risk value correctness still unconfirmed, PRD §16 Q3/Q4; Utilization presence/definition testable now, PRD §16 Resolved Question 27, verified present; calculation mechanics, PRD §16 Resolved Question 29, verified present, remain BLOCKED (partial)) |
 
-### 4.1 PRD-Listed Capabilities Previously Without a Traceability ID — Resolved (unaffected by Gap 6)
+### 4.1 PRD-Listed Capabilities Previously Without a Traceability ID — Resolved
 
-**Unchanged from the prior revision.** `RAISE-AI-DOC-001`–`RAISE-AI-DOC-004`
-were confirmed at Priority P0 / Scope MVP via PRD §16 Resolved Question 28
-(and further acceptance detail via Resolved Questions 30–32 for the first
-three) — **both of these were re-verified this revision to actually exist in
-the current `RAISE-PRD.md` file** (§7, §13, §16, §17), unlike the
-Resolved-Question-33–38 items flagged in Gap 6. Each has a full chain and a
-real row in §3 above, all correctly marked **BLOCKED (full)**, since detailed
-acceptance behavior for `RAISE-AI-DOC-004` (and residual numeric-threshold /
-design-phase detail for the other three) remains PRD-level TBD. See Gap 5
-(§6) for the still-open residual TBDs this resolution does not close.
+`RAISE-AI-DOC-001`–`RAISE-AI-DOC-004` were confirmed at Priority P0 / Scope
+MVP via PRD §16 Resolved Question 28 (further acceptance detail via
+Resolved Questions 30–32 for the first three) — verified present in
+`RAISE-PRD.md` v0.9 §7, §13, §16, §17. Each has a full chain and a real row
+in §3 above, all correctly marked **BLOCKED (full)**, since detailed
+acceptance behavior for `RAISE-AI-DOC-004` (and residual design-phase detail
+for the other three) remains PRD-level TBD.
+
+### 4.2 PRD §10 NFR Backlog — Cross-Layer Acknowledgment (new this revision)
+
+`RAISE-PRD.md` §10 records an NFR backlog broader than
+`RAISE-NFR-SEC-RBAC-001` — this backlog has now been given an explicit,
+identically-worded "no invented value, not silently omitted" placeholder at
+every layer of the chain in this synchronization pass:
+[`RAISE-DESIGN.md` §16A](../02-design/RAISE-DESIGN.md#16a-other-non-functional-requirements--design-backlog),
+[`RAISE-PROTOTYPE.md` §25A](../03-prototype/RAISE-PROTOTYPE.md#25a-nfr-backlog--prototype-note),
+[`RAISE-ACCEPTANCE-CRITERIA.md` §19.9](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md#199-nfr-backlog--acceptance-criteria-note),
+[`RAISE-TEST-PLAN.md` §3.3](../05-test-plan/RAISE-TEST-PLAN.md#33-prd-10-nfr-backlog--no-suite-mirrors-ac-199-added-2026-08-23),
+[`RAISE-TEST-CASES.md` §18.5](../06-test-cases/RAISE-TEST-CASES.md#185-prd-10-nfr-backlog--no-test-cases-mirrors-test-plan-33--ac-199-added-2026-08-23).
+This matrix mirrors the same discipline here rather than silently omitting
+the backlog from the master table, per this document's own principle that
+every PRD-referenced area must appear somewhere in the chain even when it
+has no dedicated Traceability ID and therefore no row of its own in §3:
+
+| PRD §10 NFR Area | Design | Prototype | AC | Suite | TC | Matrix Status |
+|---|---|---|---|---|---|---|
+| Authentication | §16 (mechanism TBD) | Narrative on P-001 only | AC-LOGIN (existence only) | TS-LOGIN | TC-LOGIN-01/-02 | Covered only as a narrow slice of `RAISE-NFR-SEC-RBAC-001` above — no dedicated PRD Traceability ID of its own |
+| Authorization / RBAC | §16 "MVP Enforcement Level" | Narrative on P-001/P-009 | AC-LOGIN, AC-OPS-002, AC-MAINT-001 (dependency notes) | TS-LOGIN, TS-OPS-002, TS-MAINT-001 | TC-LOGIN-03, TC-OPS-002-01, TC-MAINT-001-04..08 | Same row as `RAISE-NFR-SEC-RBAC-001` above (§4) — enforcement location only, role content TBD |
+| Performance | §16A: TBD | §25A: no representation | §19.9: no AC group | §3.3: no suite | §18.5: no test case | **No PRD Traceability ID — not a row in §3/§4. Placeholder only, no test coverage of any kind, by design (nothing to invent).** |
+| Availability | §16A: TBD | §25A: no representation | §19.9: no AC group | §3.3: no suite | §18.5: no test case | Same as Performance |
+| Scalability | §16A: TBD | §25A: no representation | §19.9: no AC group | §3.3: no suite | §18.5: no test case | Same as Performance |
+| Backup / Recovery | §16A: TBD | §25A: no representation | §19.9: no AC group | §3.3: no suite | §18.5: no test case | Same as Performance |
+| Data Retention | §16A: TBD | §25A: no representation | §19.9: no AC group | §3.3: no suite | §18.5: no test case | Same as Performance; interacts conceptually with `RAISE-FR-AUDIT-001`'s retention item and `RAISE-FR-LICENSE-001` (§5 below), but no retention period is defined for either |
+| Encryption | §16A: TBD | §25A: no representation | §19.9: no AC group | §3.3: no suite | §18.5: no test case | Same as Performance |
+| API Security | §16A: TBD | §25A: no representation | §19.9: no AC group | §3.3: no suite | §18.5: no test case | Same as Performance |
+| Audit Retention | §16A: TBD | §25A: narrative on P-013 only | AC-AUDIT-001's existing retention note | TS-AUDIT-001 | TC-AUDIT-001-01/-02 | Covered only as a narrow slice of `RAISE-FR-AUDIT-001` (§3 above) — no dedicated retention-period test exists, no dedicated Traceability ID for "Audit Retention" itself |
+| Monitoring | §16A: TBD | §25A: no representation | §19.9: no AC group | §3.3: no suite | §18.5: no test case | Same as Performance |
+| Logging | §16A: TBD | §25A: no representation | §19.9: no AC group | §3.3: no suite | §18.5: no test case | Same as Performance; explicitly distinct from the business-facing Audit Log (`RAISE-FR-AUDIT-001`) |
+
+**Why these are not rows in §3:** per the PRD's own Traceability ID
+convention (`RAISE-FR-*` / `RAISE-AI-*` / `RAISE-NFR-*`), only
+`RAISE-NFR-SEC-RBAC-001` among the twelve §10 NFR areas has been assigned an
+ID — the other ten (Performance, Availability, Scalability, Backup/Recovery,
+Data Retention, Encryption, API Security, Audit Retention, Monitoring,
+Logging) remain named backlog items with no ID, no value, and no target
+anywhere in `RAISE-PRD.md`. Giving them a row in §3 (a requirement-ID-keyed
+table) would imply an ID exists where none does. This section exists so a
+reviewer does not need to infer their absence — it is recorded, not silent.
 
 ---
 
@@ -130,8 +196,9 @@ design-phase detail for the other three) remains PRD-level TBD. See Gap 5
 
 Per PRD §14 (Enterprise Roadmap) and §7 (AI capability classification),
 these have **no Design detail beyond a concept diagram, no Prototype
-screen, no AC group, no Suite, and no Test Case** — consistent exclusion
-end-to-end, not a coverage gap:
+screen** (except `RAISE-FR-LICENSE-001`, noted below), **no AC group, no
+Suite, and no Test Case** — consistent exclusion end-to-end, not a coverage
+gap:
 
 | PRD Requirement | Title | Status | Design Area | Prototype | AC / Suite / TC |
 |---|---|---|---|---|---|
@@ -143,25 +210,13 @@ end-to-end, not a coverage gap:
 | — | Predictive Analytics | ROADMAP | Not designed | None | None |
 | — | Workflow Automation | ROADMAP | Not designed | None | None |
 | — | Multi-channel Alerts (Email/Teams/LINE) | ROADMAP | Noted in §14 Alert Architecture (Roadmap subsection) | None | None |
-| — | Asset Disposal workflow (`RAISE-FR-LIFE-001` terminal stage) | ROADMAP | §4.2 Conceptual State (concept only) | None | None (`TC-LIFE-001-03` retained as an inactive Out-of-Scope row, not a real Suite/TC) — confirmed present in actual PRD §14 item 7 / §16 Resolved Question 26, unaffected by Gap 6 |
-| `RAISE-FR-LICENSE-001` ⚠ | Software / SaaS License Management | **ROADMAP per every downstream document (Design v0.7 §4.1A/§5.3/§14/§22, Prototype v0.5 P-016/P-017, AC v0.4 §3 traceability note, Test Plan v0.4 §3.2) — but this requirement ID, its Roadmap classification, and PRD §16 "Resolved Question 34" do not exist anywhere in the actual `RAISE-PRD.md` file** (verified by direct re-read + grep this revision: no match for `RAISE-FR-LICENSE-001` in `RAISE-PRD.md`). It has a full Design area, two dedicated Prototype screens (P-016, P-017), and an AC/Test-Plan traceability note — all consistently treating it as Roadmap-not-MVP, which is the *correct* outcome if the requirement is real, but **the requirement's very existence in the PRD source of truth is unverified.** See Gap 6 (§6). | §4.1A, §5.3 (correctly marked Roadmap, not MVP, in the design text) | P-016 License Inventory, P-017 License Detail (Roadmap-labeled) | AC: traceability note only (no AC group, correctly per Roadmap rule) · Suite: none (correctly, per Roadmap rule) · TC: none |
-
-**Important note on the `RAISE-FR-LICENSE-001` row above:** every downstream
-document already treats this item exactly the way this section requires a
-Roadmap item to be treated (no MVP AC group, no Suite, no Test Case) — so
-*if* the requirement is real, there is no scope-creep problem. The problem
-is one layer up: **there is currently no PRD requirement to point to.** This
-matrix lists it here, flagged, rather than silently omitting it, because
-omitting it would hide from a reviewer that five dedicated artifacts already
-exist across Design/Prototype/AC/Test Plan for a requirement whose PRD
-authority cannot currently be confirmed.
+| — | Asset Disposal workflow (`RAISE-FR-LIFE-001` terminal stage) | ROADMAP | §4.2 Conceptual State (concept only) | None | None (`TC-LIFE-001-03` retained as an inactive Out-of-Scope row, not a real Suite/TC) — confirmed present in `RAISE-PRD.md` §14 item 7 / §16 Resolved Question 26 |
+| `RAISE-FR-LICENSE-001` | Software / SaaS License Management | **ROADMAP** — verified present in `RAISE-PRD.md` v0.9 §6, §13, §14 item 8, §17 (Scope `Roadmap`, §16 Resolved Question 34). **Former Gap 6 concern resolved:** this requirement's existence and Roadmap classification are now confirmed at the source-of-truth layer, matching what Design (§4.1A, §5.3), Prototype (P-016/P-017), AC (§3 traceability note), and Test Plan (§3.2) already asserted. | §4.1A, §5.3 (Roadmap, not MVP) | P-016 License Inventory, P-017 License Detail (Roadmap-labeled, mirroring already-built `frontend/src/pages/Licenses/` and `LicenseDetail`) | AC: traceability note only (no AC group, correctly per Roadmap rule) · Suite: none (correctly, per Roadmap rule) · TC: none |
 
 If any Roadmap/Pilot item is promoted to MVP, it must re-enter the chain at
 `RAISE-PRD.md` first (scope change), then Design, then Prototype, then
 Acceptance Criteria, then Test Plan/Cases — this matrix will not be
-back-filled with test coverage that skipped those steps. **`RAISE-FR-LICENSE-001`
-is a different situation from a normal Roadmap item: it needs to *enter* the
-PRD for the first time (or have its absence explained), not be "promoted."**
+back-filled with test coverage that skipped those steps.
 
 ---
 
@@ -177,222 +232,188 @@ group, test suite, or test cases. Closed via `AC-LIFE-001`
 stage) had no MVP requirement or screen despite appearing in the lifecycle
 diagram. Resolved: Product/Business confirmed Disposal is Enterprise
 Roadmap, not MVP — propagated through PRD §14 item 7 / §16 Resolved Question
-26 (confirmed present in the actual PRD file this revision), Design §4.2,
-AC §7.5, Test Plan, Test Cases, and §5 above. Re-confirmed this revision —
-no drift.
+26 (verified present in `RAISE-PRD.md` v0.9), Design §4.2, AC §7.5, Test
+Plan, Test Cases, and §5 above. Re-confirmed this revision — no drift.
 
 **Gap 3 (resolved 2026-08-21, incl. follow-through):** Q12/Q22 role-gate
-attribution was under-documented at the AC layer (§20) and had not
-propagated to Test Plan/Test Cases. Both fixed directly in
-`RAISE-ACCEPTANCE-CRITERIA.md`, `RAISE-TEST-PLAN.md`, and
-`RAISE-TEST-CASES.md`. Re-confirmed this revision — no drift; Q22's
-role-gate note appears consistently at AC §15/§16/§20, Test Plan §7/§8, and
-Test Cases TC-ALERT-001-01/TC-AUDIT-001-03. (Note: the *new* RBAC
-"enforcement-level" material added to AC-LOGIN/AC-OPS-002/AC-MAINT-001 this
-revision is a **different** item — see Gap 6, not a re-opening of Gap 3.)
+attribution was under-documented at the AC layer and had not propagated to
+Test Plan/Test Cases. Fixed directly in `RAISE-ACCEPTANCE-CRITERIA.md`,
+`RAISE-TEST-PLAN.md`, and `RAISE-TEST-CASES.md`. Re-confirmed this revision
+— no drift; Q22's role-gate note appears consistently at AC §15/§16/§20,
+Test Plan §7/§8, and Test Cases `TC-ALERT-001-01`/`TC-AUDIT-001-03`.
 
 **Gap 4 (resolved 2026-08-21, matrix-layer sync only):** this matrix's own
 §3 row for `RAISE-FR-ASSET-003` had not been re-synced to reflect
 `TC-ASSET-003-03`'s BLOCKED (partial) status already correctly recorded in
-`RAISE-TEST-CASES.md`/`RAISE-TEST-PLAN.md`. Corrected in this matrix; no
-upstream document required a change. **Still open, not part of Gap 4's
-closure:** the underlying business question (whether Custody History is
-written only by Check-in/Check-out) remains unresolved — no new Open
-Question proposed; PRD's existing "Duplicated / Overlapping Requirements"
-entry already covers it. Re-confirmed this revision — no drift.
+`RAISE-TEST-CASES.md`/`RAISE-TEST-PLAN.md`. Corrected. **Still open, not
+part of Gap 4's closure:** the underlying business question — whether
+Custody History (`RAISE-FR-ASSET-003`) is written *only* by Check-in/
+Check-out (`RAISE-FR-OPS-002`) or also by other custody-changing events — is
+unresolved in `RAISE-PRD.md`'s own Pre-Finalization Quality Pass
+("Duplicated / Overlapping Requirements," marked "Needs business
+confirmation"). This means `AC-ASSET-003-03`/`TC-ASSET-003-03` verify only
+the Check-in/Check-out-triggered path — a genuinely thin slice of
+`RAISE-FR-ASSET-003`'s full scope, carried forward as an open item, not
+newly discovered this revision. No new Open Question is proposed here; the
+PRD's existing entry already covers it and should be resolved through the
+normal `/update-prd` business-confirmation path.
 
 **Gap 5 (resolved 2026-08-21, both sub-items):** Utilization KPI definition
 (PRD §16 Resolved Question 27) and the four AI-DOC capabilities'
 Traceability IDs (PRD §16 Resolved Question 28) were each closed via a real,
-verified `RAISE-PRD.md` change. **Re-verified again this revision by direct
-re-read of the current `RAISE-PRD.md` file:** Resolved Questions 27, 28,
-29 (Utilization calculation mechanics), 30, 31, 32 (AI-DOC-001/002/003
-acceptance detail) all genuinely exist in the current PRD text (§7, §8,
-§16). This is an important contrast with Gap 6 below — Gap 5's closures are
-**real**, Gap 6's are **not**. Residual TBD items (Utilization calculation
+verified `RAISE-PRD.md` change. Re-verified again this revision: Resolved
+Questions 27, 28, 29 (Utilization calculation mechanics), 30, 31, 32
+(AI-DOC-001/002/003 acceptance detail) all genuinely exist in the current
+PRD text (§7, §8, §16). Residual TBD items (Utilization calculation
 mechanics' further threshold detail; `RAISE-AI-DOC-004`'s fully-undefined
 acceptance behavior) remain open exactly as before, tracked in §3/§4 above.
 
----
+**Gap 6 (RESOLVED this revision — was OPEN/CRITICAL in v0.4):**
 
-### Gap 6 (NEW, OPEN, CRITICAL — chain-integrity gap, not a matrix-layer sync issue)
+v0.4 of this matrix found that the actual `RAISE-PRD.md` file was v0.4 (not
+the v0.9 every downstream document claimed), with no §16 Resolved Questions
+33–38 and no `RAISE-FR-LICENSE-001` entry anywhere — meaning five downstream
+documents (Design, Prototype, AC, Test Plan, Test Cases) had built
+substantial content (the Maintenance 4-stage workflow's full AC/Suite/Test
+Case elaboration, the entire `RAISE-FR-LICENSE-001` requirement with two
+Prototype screens, and the RBAC MVP-enforcement-level decision) on a PRD
+state that did not actually exist on disk.
 
-**Finding:** Design v0.7, Prototype v0.5, `RAISE-ACCEPTANCE-CRITERIA.md`
-v0.4, `RAISE-TEST-PLAN.md` v0.4, and `RAISE-TEST-CASES.md` v0.4 **all**
-state they are synced against `RAISE-PRD.md` **v0.9**, and all cite specific
-PRD §16 **"Resolved Questions 33 through 38"** and a new PRD requirement
-**`RAISE-FR-LICENSE-001`** as the business-confirmed basis for several
-substantial pieces of downstream work. This matrix re-read the actual
-`RAISE-PRD.md` file directly for this revision (not trusting downstream
-citations) and confirmed by both full read and targeted grep:
+**This revision re-read the current `RAISE-PRD.md` file directly, in full
+(not via downstream citation), before doing anything else, and confirms the
+file has since been genuinely updated:**
 
-- The current `RAISE-PRD.md` file's own header and Document Status both
-  read **"Version: 0.4"**, not v0.9.
-- Its §16 "Resolved Questions" list runs only **26 through 32** — there is
-  no Resolved Question 33, 34, 35, 36, 37, or 38 anywhere in the file.
-- There is **no `RAISE-FR-LICENSE-001` entry anywhere** in the file — not
-  in §6 Functional Requirements, not in §13 MVP Scope, not in §14 Enterprise
-  Roadmap, not in §17 Requirement Traceability Matrix. `grep` for the exact
-  string `RAISE-FR-LICENSE-001` against `RAISE-PRD.md` returns **zero
-  matches**.
-- PRD §11 (Security & RBAC) still reads that security is "not sufficiently
-  specified," with **no** enforcement-level decision recorded — contradicting
-  the "MVP Enforcement Level — Resolved 2026-08-21 (PRD v0.9, §16 Resolved
-  Question 38)" subsection that `RAISE-DESIGN.md` §16 and every downstream
-  document that inherits it (`RAISE-PROTOTYPE.md`, `RAISE-ACCEPTANCE-CRITERIA.md`,
-  `RAISE-TEST-PLAN.md`, `RAISE-TEST-CASES.md`) present as settled.
-- PRD's actual `RAISE-FR-MAINT-001` entry still reads "Complete maintenance
-  workflow, SLA, vendor model, and cost model are not defined" (Open
-  Question, §16 Q14) — with **no** confirmation of the 4-stage workflow
-  shape anywhere in the file, contradicting the "4-stage workflow shape
-  confirmed 2026-08-21, PRD §16 Resolved Question 33" claim repeated across
-  Design §5.1, Prototype §15/§26/§27, AC §12/§20/§21, Test Plan §7/§8, and
-  Test Cases (`TC-MAINT-001-03..09`, all newly added this cycle on the
-  strength of that claim).
-- PRD's Open Question list does not contain an item numbered "10a" in the
-  form Design §6.4/§25 describes (Oracle FA "Phase 6" label / Resolved
-  Question 37) — although this particular instance is **lower severity**,
-  because the *conclusion* downstream documents reach (the "Phase 6" code
-  comment is not a PRD phase, and the `ReconciliationPage`↔
-  `RAISE-FR-ORACLE-001` mapping remains unresolved) is actually consistent
-  with what the real PRD does and does not say — it is only the specific
-  citation to a numbered "Resolved Question 37" that is unverifiable, not
-  the substantive conclusion.
-- Similarly, the six ESAPS-reference-only pages' out-of-scope confirmation
-  (cited as "PRD §16 Resolved Question 35") and `RAISE-AI-RECOMMEND-001`'s
-  Roadmap re-confirmation (cited as "Resolved Question 36") are not present
-  in the real PRD text either, though — as with "Phase 6" above — the
-  *conclusions* these citations support (ESAPS pages out of scope; AI
-  Recommendation stays Roadmap) do not actually contradict anything the real
-  PRD states; they are simply uncited/unconfirmed at the source-of-truth
-  layer rather than confirmed-but-wrong.
+- Header/Document Status: **Version 0.9** (was 0.4).
+- §16 Resolved Questions run through **38**, each with a real, substantive
+  entry (verified by reading each one in full — see §1 above for the list).
+- `RAISE-FR-LICENSE-001` exists in §6, §13, §14, and §17 — with Scope
+  correctly recorded as `Roadmap` (not MVP) in every location, matching what
+  Design/Prototype/AC/Test Plan already asserted.
+- §11 (Security & RBAC) contains the RBAC MVP-enforcement-level subsection
+  matching Design §16.
+- `RAISE-FR-MAINT-001`'s Acceptance Criteria field contains the full
+  4-stage workflow and state model matching Design §5.1 / AC §12 / Test
+  Cases `TC-MAINT-001-03..09`.
 
-**Why this matters (severity):** this is not a documentation-consistency
-slip like Gap 4 (a stale summary cell in this matrix). It is a break in the
-chain's fundamental discipline — stated repeatedly throughout every document
-in this vault (`CLAUDE.md`; each document's own §1/§2; the PRD's own "no
-silent resolution" rule) — that **PRD is the sole source of truth** and that
-no downstream document may treat a requirement or business decision as
-confirmed unless it is actually recorded in `RAISE-PRD.md`. Five downstream
-documents did exactly that: they built (a) an entire new requirement
-(`RAISE-FR-LICENSE-001`) with two dedicated Prototype screens, a Design
-component, and Roadmap-scope handling across AC/Test Plan; and (b) a fully
-elaborated 9-criterion AC group, a 9-case test suite, and a matching state
-model for `RAISE-FR-MAINT-001`'s 4-stage workflow — on top of PRD content
-that, whatever its origin (a simulated or drafted `/update-prd` session
-whose output was described in downstream change logs but never actually
-written back into `RAISE-PRD.md`), is **not present in the actual PRD file
-today.**
+**What this means for the affected items:**
 
-**What this matrix does *not* do about it:** per this document's own rule
-("no gap may be closed here without a real upstream document change"), this
-gap **cannot be closed by this matrix**. It also cannot be closed by
-reverting the downstream documents, since editing them is out of scope for
-this agent. The Test Status values in §3/§4 above are left exactly as
-recorded downstream (BLOCKED/BLOCKED (partial)/BLOCKED (full), matching each
-document's own current text) — this matrix does not invent a *worse* status
-either. What this matrix does is **annotate every affected cell with ⚠
-PRD-drift** and record this gap prominently so a reader does not mistake
-"BLOCKED (partial), business confirmed" for an actually-verified business
-decision when the citation supporting "confirmed" cannot be traced to the
-real PRD.
-
-**Affected items (all remain OPEN pending a real PRD update):**
-
-1. `RAISE-FR-LICENSE-001` (§5 above) — entire requirement unconfirmed at the
-   PRD layer.
-2. `RAISE-FR-MAINT-001`'s 4-stage workflow and state model (§3 above,
-   `AC-MAINT-001-03..09`, `TS-MAINT-001`, `TC-MAINT-001-03..09`) —
-   workflow-shape "confirmation" unconfirmed at the PRD layer; the PRD's own
-   text still lists this as fully open.
-3. `RAISE-NFR-SEC-RBAC-001`'s "MVP Enforcement Level" decision (UI-only/
-   client-side for MVP, backend deferred to Roadmap) — cited in AC-LOGIN,
-   AC-OPS-002, AC-MAINT-001, TS-LOGIN, TS-OPS-002, TS-MAINT-001 — unconfirmed
-   at the PRD layer; PRD §11 still says security is "not sufficiently
-   specified."
+1. `RAISE-FR-LICENSE-001` (§5 above) — requirement identity and Roadmap
+   scope are now **confirmed at the PRD layer**. No further action needed
+   beyond normal Roadmap-planning work (field model, alert rule, etc., which
+   remain separately TBD and are not part of this gap).
+2. `RAISE-FR-MAINT-001`'s 4-stage workflow and state model (§3 above) —
+   **confirmed at the PRD layer**. The AC/Suite/Test Case elaboration built
+   on top of it (`AC-MAINT-001-03..09`, `TS-MAINT-001`,
+   `TC-MAINT-001-03..09`) is now verifiably anchored to a real requirement,
+   not merely internally consistent among downstream documents.
+3. `RAISE-NFR-SEC-RBAC-001`'s "MVP Enforcement Level" decision — **confirmed
+   at the PRD layer** (§11, §16 Resolved Question 38). The role
+   list/permission matrix content itself remains genuinely TBD (PRD §16
+   Q21–Q23) — that part of the gap was never claimed resolved and still
+   is not; only the enforcement-*location* decision is confirmed.
 4. The six ESAPS-reference-only out-of-scope pages and the
-   `RAISE-AI-RECOMMEND-001` Roadmap re-confirmation — lower severity, since
-   the conclusions do not contradict the real PRD, but the specific Resolved
-   Question citations (35, 36) are unverifiable.
-5. The Oracle FA "Phase 6" label clarification — lowest severity, same
-   reasoning as item 4.
+   `RAISE-AI-RECOMMEND-001` Roadmap re-confirmation (Resolved Questions 35,
+   36) — confirmed present.
+5. The Oracle FA "Phase 6" label clarification (Resolved Question 37) —
+   confirmed present. As before, this resolves only the label; the
+   substantive `ReconciliationPage`↔`RAISE-FR-ORACLE-001` mapping question
+   (PRD Open Question 10a) remains genuinely open in the real PRD text and
+   is **not** treated as resolved anywhere in this chain (see the
+   `RAISE-FR-ORACLE-001` row in §3).
 
-**What would close this gap:** an actual `/update-prd` session whose output
-is written into `RAISE-PRD.md` itself (raising its version past v0.4, adding
-real Resolved Questions 33+ and, if confirmed, a real `RAISE-FR-LICENSE-001`
-entry) — followed by re-verification that Design/Prototype/AC/Test Plan/Test
-Cases' existing citations now match real PRD content. Until then, this
-matrix records the current state as: **downstream documents are internally
-consistent with each other, but not verifiably consistent with the actual
-PRD file.**
+**No corrective action against any downstream document is required** — the
+gap was in the PRD's on-disk state lagging its own claimed version, not in
+any Design/Prototype/AC/Test Plan/Test Cases content being substantively
+wrong. This matrix records the closure with the evidence above rather than
+silently dropping the gap from its history, consistent with the "resolved
+gaps are recorded as resolved, not deleted" discipline already used for
+Gaps 1–5.
 
-**No new Open Question is proposed for the substance of Maintenance's
-4-stage workflow, License Management's scope, or RBAC's enforcement level**
-— those already have a place to live (PRD §16 Q14, a new License entry if
-confirmed, and PRD §11/§16 Q21-Q23 respectively). What is being flagged here
-is procedural/integrity: the confirmations claimed to exist for them do not
-currently exist in the PRD source of truth, regardless of what the correct
-business answer eventually turns out to be.
+**New residual item surfaced while re-verifying Gap 6 (not a new gap, a
+sharpening of Gap 4):** while confirming `RAISE-FR-MAINT-001`'s workflow
+shape against the real PRD, this matrix also re-confirmed that the PRD's
+§16 Resolved Question 33 explicitly states SLA per stage, the vendor model,
+the cost model, and delegated-approver configuration rules remain **TBD** —
+this is unchanged from every downstream document's own framing and is not a
+new finding, just confirmed as accurately carried through the whole chain.
 
 ---
 
 ## 7. Chain Consistency Check
 
-Performed by walking every ID backward through the chain, **and this
-revision, by re-reading the actual current text of every document in the
-chain including a full direct re-read of `RAISE-PRD.md` itself, rather than
-relying on any downstream document's citation of an upstream document's
-content:**
+Performed by walking every ID backward through the chain, re-reading the
+actual current text of every document in the chain — including a full
+direct re-read of `RAISE-PRD.md` itself — rather than relying on any
+downstream document's citation of an upstream document's content:
 
-- Every `TC-*` ID in `RAISE-TEST-CASES.md` maps to exactly one `AC-*`
-  criterion in `RAISE-ACCEPTANCE-CRITERIA.md`. ✅ No orphan test cases,
-  including the seven new `TC-MAINT-001-03..09` cases (all map to
-  `AC-MAINT-001-03..09`).
-- Every AC Group maps to exactly one Suite ID in `RAISE-TEST-PLAN.md` §7.
-  ✅ No orphan AC groups.
-- Every Suite ID maps to exactly one screen in `RAISE-PROTOTYPE.md` §27.
-  ✅ No orphan suites.
-- Every screen maps to a Design Area in `RAISE-DESIGN.md` §24. ✅ No orphan
-  screens.
-- Every `RAISE-FR-*` / `RAISE-AI-*` ID appearing in §3/§4/§5 above matches
-  an ID in `RAISE-PRD.md` §17 — **with one confirmed exception this
-  revision: `RAISE-FR-LICENSE-001`, which appears throughout Design,
-  Prototype, AC, and Test Plan, but does NOT appear in `RAISE-PRD.md` §17
-  (or anywhere else in the PRD file). This is Gap 6, tracked as open, not
-  silently waived.**
-- `RAISE-FR-LIFE-001`, Gaps 1–5 (§6): re-confirmed resolved, no drift, as
-  detailed in each gap's entry above.
+- **PRD → Design:** every `RAISE-FR-*` / `RAISE-AI-*` / `RAISE-NFR-*` ID in
+  `RAISE-PRD.md` §17 (v0.9, 20 rows) appears in `RAISE-DESIGN.md` §24's
+  Design Traceability table or is explicitly covered structurally
+  (`RAISE-NFR-SEC-RBAC-001` via §16 Security Architecture, per §24's own
+  cross-check note). ✅ No orphan PRD requirement without a design area.
+- **Design → Prototype:** every design area with a screen-bearing
+  requirement maps to a screen in `RAISE-PROTOTYPE.md` §5/§27. `RAISE-FR-
+  LICENSE-001` maps to P-016/P-017 (Roadmap-labeled, per §22's out-of-scope
+  discipline). `RAISE-AI-DOC-001..004` map incidentally to existing screens
+  per Design §9A's "design-convenience grouping only" framing, carried
+  through to Prototype §5's mapping note. ✅ No orphan design area without
+  prototype representation (beyond the deliberate Pilot/Roadmap concept-only
+  areas in §5 above, which correctly have none).
+- **Prototype → AC:** every mandatory screen (P-001–P-015) has at least one
+  AC group in `RAISE-ACCEPTANCE-CRITERIA.md` §3; P-016/P-017 correctly have
+  only a traceability note, not an AC group, per the Roadmap exclusion rule.
+  ✅ No orphan screen.
+- **AC → Suite:** every AC group in AC §3 has exactly one Suite ID in
+  `RAISE-TEST-PLAN.md` §7, including the four AC-AI-DOC groups (now mapped
+  to `TS-AI-DOC-001..004`, fully blocked per §8.1). ✅ No orphan AC group.
+- **Suite → Test Case:** every Suite ID in Test Plan §7 has at least one
+  test case in `RAISE-TEST-CASES.md` (including the four BLOCKED (full)
+  placeholder cases, which exist solely to preserve 1:1 traceability). ✅ No
+  orphan suite.
+- **Test Case → AC:** every `TC-*` ID maps to exactly one `AC-*` criterion,
+  1:1, per Test Cases' own ID convention (§2). ✅ No orphan test case
+  (verified for all 62 test cases in Test Cases v0.5 §19).
+- **Reverse check, PRD requirement existence:** every `RAISE-FR-*` /
+  `RAISE-AI-*` ID appearing in §3/§4/§5 above was checked against a direct
+  re-read of `RAISE-PRD.md` v0.9 §6, §7, §8, §9, §11, §12, §17 — all exist,
+  including `RAISE-FR-LICENSE-001` (Gap 6, now closed) and
+  `RAISE-FR-MAINT-001`'s workflow-shape Acceptance Criteria content.
 - **`RAISE-FR-MAINT-001` 4-stage workflow — thread walked end-to-end this
-  revision:** Design §5.1 → Prototype §15/§26/§27 → AC §12/§20/§21 → Test
-  Plan §7/§8 → Test Cases `TC-MAINT-001-03..09`. Every layer is internally
-  consistent with every other layer (the same workflow shape, state names,
-  and TBD items are repeated identically at each layer) — **but the thread's
-  root citation, `RAISE-PRD.md` §16 Resolved Question 33, does not exist in
-  the actual PRD file.** The thread is complete and self-consistent
-  *downstream of the PRD*; it is not verifiably anchored *to* the PRD. This
-  is recorded as Gap 6, not treated as "thread confirmed."
+  revision:** PRD §6/§16 Resolved Question 33 → Design §5.1 → Prototype
+  §15/§26/§27 → AC §12/§20/§21 → Test Plan §7/§8 → Test Cases
+  `TC-MAINT-001-03..09`. Every layer is internally consistent with every
+  other layer **and** now verifiably anchored to the real PRD text (unlike
+  the v0.4 finding). Thread confirmed complete.
 - **`RAISE-FR-LICENSE-001` Roadmap-only scope — thread walked end-to-end
-  this revision:** Design §4.1A/§5.3/§14/§22/§24 → Prototype §5/§22/§23/§27
-  → AC §3 (traceability note only) → Test Plan §3.2 (no suite). Every layer
-  agrees the item is Roadmap, not MVP — so if the requirement is confirmed
-  to exist, **no scope-creep occurred** (no MVP test coverage was
-  accidentally built for it). But the requirement's root citation
-  (`RAISE-PRD.md` §16 Resolved Question 34, and the requirement definition
-  itself) does not exist in the actual PRD file. Same conclusion as above:
-  self-consistent downstream, not verifiably anchored to the PRD. Gap 6.
+  this revision:** PRD §6/§13/§14/§17/§16 Resolved Question 34 → Design
+  §4.1A/§5.3/§14/§22/§24 → Prototype §5/§22/§23/§27 → AC §3 (traceability
+  note only) → Test Plan §3.2 (no suite) → Test Cases §11.5 (no test cases).
+  Every layer agrees the item is Roadmap, not MVP — no scope-creep occurred,
+  and the requirement's existence is now confirmed at the PRD layer. Thread
+  confirmed complete.
 - **`RAISE-NFR-SEC-RBAC-001` MVP enforcement level — thread walked this
-  revision:** Design §16 → Prototype §4/§7/§9 → AC §4/§11/§12/§20/§21 → Test
-  Plan §7/§8. All layers consistently describe "UI-only/client-side for MVP,
-  backend deferred to Roadmap" as confirmed via PRD §16 Resolved Question
-  38. The actual PRD §11 text contains no such resolution. Gap 6.
+  revision:** PRD §11/§16 Resolved Question 38 → Design §16 → Prototype
+  §4/§7/§9 → AC §4/§11/§12/§20/§21 → Test Plan §7/§8 → Test Cases
+  `TC-LOGIN-03`, `TC-OPS-002-01`, `TC-MAINT-001-04..08`. All layers
+  consistently describe "UI-only/client-side for MVP, backend deferred to
+  Roadmap," and this is now confirmed present in the real PRD §11 text.
+  Thread confirmed complete.
+- **PRD §10 NFR backlog — thread walked this revision (new):** PRD §10 →
+  Design §16A → Prototype §25A → AC §19.9 → Test Plan §3.3 → Test Cases
+  §18.5 → this matrix's §4.2. All six layers list the identical eleven
+  areas (Authentication, Authorization/RBAC, Performance, Availability,
+  Scalability, Backup/Recovery, Data Retention, Encryption, API Security,
+  Audit Retention, Monitoring, Logging) with the identical "no invented
+  value, ten of the eleven have no dedicated Traceability ID" framing at
+  every layer. ✅ No layer silently omits the backlog; no layer invents a
+  value, mechanism, or Traceability ID that the PRD does not define.
 - Full re-walk confirmed no other Test Status cell in §3/§4 has drifted from
-  the current text of `RAISE-TEST-CASES.md` v0.4 (cross-checked TC-by-TC):
+  the current text of `RAISE-TEST-CASES.md` v0.5 (cross-checked TC-by-TC):
   `RAISE-FR-ASSET-001..003`, `RAISE-FR-OPS-001/002`, `RAISE-FR-WARRANTY-001`,
   `RAISE-FR-ORACLE-001`, `RAISE-FR-ALERT-001`, `RAISE-FR-AUDIT-001`,
   `RAISE-FR-EXEC-001`, `RAISE-AI-SEARCH-001`, `RAISE-FR-LIFE-001`,
   `RAISE-AI-DOC-001..004`, and the Dashboard/Navigation row all match their
-  respective TC Blocked-column text exactly (beyond the ⚠ PRD-drift
-  annotations added this revision, which do not change any classification).
+  respective TC Blocked-column text exactly.
 
 ---
 
@@ -418,16 +439,32 @@ For each requirement row above, Compliance Review should update the
 `FAIL`, or `NOT_IMPLEMENTED` as evidence becomes available — this matrix
 is the living record referenced at that stage, not a one-time snapshot.
 
-**Readiness caveat (new this revision — see Gap 6):** before Development
-starts building against `RAISE-FR-MAINT-001`'s 4-stage workflow,
-`RAISE-FR-LICENSE-001` (even as a Roadmap placeholder), or
-`RAISE-NFR-SEC-RBAC-001`'s "UI-only enforcement is acceptable for MVP"
-decision, the actual `RAISE-PRD.md` file needs to be brought up to the
-version every other document already assumes it is at. Building against
-Design/Prototype/AC/Test Plan's current text for these three items means
-building against a business decision that cannot currently be verified in
-the source of truth. This does not block Development on the *other*
-requirements in §3, which are unaffected by Gap 6.
+**Readiness note (updated this revision — Gap 6 closed):** Development may
+now proceed against `RAISE-FR-MAINT-001`'s 4-stage workflow,
+`RAISE-FR-LICENSE-001` (as a Roadmap-only placeholder, not MVP work),
+and `RAISE-NFR-SEC-RBAC-001`'s "UI-only enforcement is acceptable for MVP"
+decision — all three are now verifiably anchored to the real
+`RAISE-PRD.md` v0.9, removing the readiness caveat v0.4 of this matrix
+raised.
+
+**Standing readiness caveats (unaffected by Gap 6, still open):**
+
+- No source code exists yet in `frontend/` (per `CLAUDE.md`: package
+  manifest present, `src/` empty) — every Test Status above is `NOT_TESTED`
+  or `BLOCKED` by definition, not `PASS`/`FAIL`, because there is nothing
+  to execute against yet.
+- The PRD Open Questions still blocking full testability (§3/§4 above,
+  Q1–Q25 minus the resolved/partially-resolved items) must still be
+  reviewed with Product/Business before Development proceeds on the
+  requirements they block.
+- The `RAISE-FR-ASSET-003` vs. `RAISE-FR-OPS-002` custody-writing-events
+  exclusivity question (Gap 4) remains open and should be resolved before
+  Development builds any custody-writing code path beyond Check-in/
+  Check-out.
+- `RAISE-AI-DOC-004`'s acceptance behavior (matching threshold,
+  merge-vs-flag workflow) was explicitly asked of business and left
+  unanswered — Development cannot build this capability's behavior without
+  inventing it.
 
 ---
 
@@ -437,20 +474,19 @@ requirements in §3, which are unaffected by Gap 6.
 - [x] Every supporting/cross-cutting item appears in §4, explicitly
       labeled as not mapping to a single `RAISE-FR-*` ID
 - [x] Every Pilot/Roadmap item appears in §5 with no test coverage
-      columns filled in (including `RAISE-FR-LICENSE-001`, flagged per Gap 6)
+      columns filled in (including `RAISE-FR-LICENSE-001`, now confirmed
+      real at the PRD layer)
 - [x] Gaps 1–5 (§6) are re-confirmed resolved with no drift this revision
-- [ ] **Gap 6 (§6) is OPEN and CRITICAL** — the actual `RAISE-PRD.md` file
-      (v0.4) does not contain the content (§16 Resolved Questions 33–38;
-      `RAISE-FR-LICENSE-001`) that Design v0.7, Prototype v0.5, AC v0.4, Test
-      Plan v0.4, and Test Cases v0.4 all cite as their basis for treating
-      `RAISE-FR-MAINT-001`'s 4-stage workflow, `RAISE-FR-LICENSE-001`, and
-      `RAISE-NFR-SEC-RBAC-001`'s MVP enforcement level as business-confirmed.
-      This must be resolved — by an actual PRD update, or by correcting the
-      downstream documents' citations — before those three items are treated
-      as ready for Development.
+- [x] **Gap 6 (§6) is RESOLVED this revision** — the actual `RAISE-PRD.md`
+      file is now genuinely v0.9 and contains §16 Resolved Questions 33–38
+      and the `RAISE-FR-LICENSE-001` requirement, verified by direct re-read
+      rather than by trusting downstream citations
+- [x] PRD §10 NFR backlog is explicitly acknowledged in a dedicated §4.2
+      cross-layer table, mirroring Design §16A / Prototype §25A / AC §19.9 /
+      Test Plan §3.3 / Test Cases §18.5 — no value, target, or Traceability
+      ID is invented for the ten areas with none defined
 - [x] Chain consistency (§7) has been re-verified this revision, including a
-      direct re-read of `RAISE-PRD.md` itself (not just downstream
-      citations of it) — this is what surfaced Gap 6
+      direct re-read of `RAISE-PRD.md` itself
 - [x] No VERSCAN-only item appears anywhere in this matrix
 
 ---
@@ -477,92 +513,110 @@ Development (Source Code)
 RAISE-COMPLIANCE-REVIEW.md
 ```
 
-Gaps 1–5 (§6) are all resolved and re-confirmed with no drift this revision.
+Gaps 1–6 are all resolved and re-confirmed with no drift this revision.
 
-**Gap 6 (§6) is open and is the priority item before Development proceeds
-on the affected requirements.** Recommended next action, in order:
+**Recommended next actions, in order:**
 
-1. Determine whether `RAISE-FR-MAINT-001`'s 4-stage workflow,
-   `RAISE-FR-LICENSE-001`, and `RAISE-NFR-SEC-RBAC-001`'s MVP enforcement
-   level were ever actually confirmed by business (i.e., whether a real
-   `/update-prd` session happened whose output simply never got written
-   into `RAISE-PRD.md`), or whether these were introduced downstream without
-   a real business confirmation at all.
-2. If confirmed: run `/update-prd` for real and write the corresponding
-   Resolved Questions and (if applicable) the `RAISE-FR-LICENSE-001`
-   requirement into `RAISE-PRD.md` itself, bumping its version past v0.4.
-   Then re-verify this matrix's ⚠ PRD-drift annotations and remove them
-   once the citations resolve cleanly.
-3. If not confirmed: the downstream documents' claims need to be corrected
-   at their source (out of scope for this matrix to do, since this agent
-   may only edit this file) — `RAISE-FR-MAINT-001`'s AC/Test Plan/Test Cases
-   content built on the 4-stage workflow, and `RAISE-FR-LICENSE-001`'s
-   Design/Prototype/AC/Test Plan content, would need to be reverted or
-   re-marked as unconfirmed pending an actual business decision.
-4. Independent of Gap 6, the remaining outstanding PRD Open Questions
-   (Q1–Q25, Q3/Q4's residual formula/threshold portion, the
-   custody-writing-events exclusivity question underlying Gap 4, and
-   `RAISE-AI-DOC-004`'s fully-open acceptance behavior) should still be
-   reviewed with Product/Business before Development on the requirements
-   they block.
+1. Resolve the remaining PRD Open Questions that block full testability of
+   P0/MVP requirements (§3/§4 above) — in particular Q1 (asset master
+   fields), Q3/Q4 residual KPI formulas, Q6–Q10 (Oracle integration design),
+   Q11–Q13 (Check-in/Check-out and custody model), Q15 (warranty fields),
+   Q18–Q20 (AI citation/confidence/conflict), Q21–Q23 (authentication
+   mechanism, role list, permission matrix content), Q24–Q25 (audit
+   taxonomy/retention), Open Question 10a (`ReconciliationPage` mapping),
+   and Open Question 20a (`RAISE-AI-DOC-004` matching/merge behavior).
+2. Resolve the `RAISE-FR-ASSET-003` vs. `RAISE-FR-OPS-002` custody-writing-
+   events exclusivity question (Gap 4) before any custody-writing code path
+   beyond Check-in/Check-out is built.
+3. If and when any PRD §10 NFR backlog area (§4.2 above) receives a defined
+   value/target, add the corresponding Traceability ID to `RAISE-PRD.md`
+   first, then propagate a real AC group / Suite / Test Case down the chain
+   — do not add test coverage for these areas ahead of a PRD-level
+   definition.
+4. Proceed to Development for requirements with no open blocker (e.g.,
+   `RAISE-FR-OPS-001`, `TS-AI-STATES`), while tracking the BLOCKED items
+   above for the remaining requirements.
 
 ---
 
 ## Document Status
 
-**Version:** 0.4 (full-chain re-sync pass — Maintenance 4-stage workflow,
-License Roadmap item, RBAC MVP enforcement level reflected; **Gap 6 opened,
-critical PRD-version-drift finding**)
+**Version:** 0.5 (full-chain re-sync pass — PRD §10 NFR backlog
+acknowledgment propagated to every layer; **Gap 6 from v0.4 re-verified and
+closed**)
 **Status:** Draft for Traceability Review
-**Source:** [`RAISE-TEST-CASES.md`](../06-test-cases/RAISE-TEST-CASES.md) v0.4 and full upstream chain — `RAISE-TEST-PLAN.md` v0.4, `RAISE-ACCEPTANCE-CRITERIA.md` v0.4, `RAISE-PROTOTYPE.md` v0.5, `RAISE-DESIGN.md` v0.7, and `RAISE-PRD.md` (re-read directly this revision: actual file version is **v0.4**, not the v0.9 every downstream document cites)
+**Source:** [`RAISE-TEST-CASES.md`](../06-test-cases/RAISE-TEST-CASES.md) v0.5 and full upstream chain — `RAISE-TEST-PLAN.md` v0.5, `RAISE-ACCEPTANCE-CRITERIA.md` v0.5, `RAISE-PROTOTYPE.md` v0.6, `RAISE-DESIGN.md` v0.8, and `RAISE-PRD.md` v0.9 (re-read directly this revision, in full, before consolidating anything else)
 **Reference:** VERSCAN only
-**Last Re-Verified:** 2026-08-21 (full-chain re-sync pass) — re-read
-`RAISE-TEST-CASES.md` v0.4, `RAISE-TEST-PLAN.md` v0.4,
-`RAISE-ACCEPTANCE-CRITERIA.md` v0.4, `RAISE-PROTOTYPE.md` v0.5,
-`RAISE-DESIGN.md` v0.7, and — critically — `RAISE-PRD.md` itself, end to
-end. All ID cross-checks in §7 re-run.
+**Last Re-Verified:** 2026-08-23 (full-chain re-sync pass) — re-read
+`RAISE-TEST-CASES.md` v0.5, `RAISE-TEST-PLAN.md` v0.5,
+`RAISE-ACCEPTANCE-CRITERIA.md` v0.5, `RAISE-PROTOTYPE.md` v0.6,
+`RAISE-DESIGN.md` v0.8, and — critically, as has been this document's
+practice since v0.4 — `RAISE-PRD.md` v0.9 itself, end to end. All ID
+cross-checks in §7 re-run.
 
-**Change Log — v0.3 → v0.4 (this revision):**
+**Change Log — v0.4 → v0.5 (this revision, 2026-08-23):**
 
-1. **`RAISE-FR-MAINT-001` row expanded** in §3 to reflect the confirmed
-   4-stage workflow's downstream coverage: `AC-MAINT-001-03..09`,
-   `TS-MAINT-001` (unchanged Suite ID, expanded scope), and
-   `TC-MAINT-001-03..09` (seven new test cases). Test Status updated to
-   itemize which of the nine test cases are blocked vs. testable now.
-2. **`RAISE-FR-LICENSE-001` added to §5** (Roadmap/Pilot table) — the first
-   time this requirement appears in this matrix, since it is new to the
-   downstream chain this cycle.
-3. **`RAISE-NFR-SEC-RBAC-001` row in §4 updated** to note the "MVP
-   Enforcement Level" decision cited throughout AC-LOGIN/AC-OPS-002/
-   AC-MAINT-001 and their Suites.
-4. **Gap 6 opened (new, critical):** while performing the chain re-walk for
-   items 1–3 above, this matrix — for the first time — re-read the actual
-   `RAISE-PRD.md` file directly (rather than relying on downstream
-   documents' citations of "PRD v0.9") and found that the file is v0.4, does
-   not contain §16 Resolved Questions 33–38, and does not contain a
-   `RAISE-FR-LICENSE-001` requirement anywhere. This means the "business
-   confirmed" basis cited by Design v0.7, Prototype v0.5, AC v0.4, Test Plan
-   v0.4, and Test Cases v0.4 for items 1–3 above cannot be verified against
-   the source of truth. Recorded in full in §6 Gap 6, with every affected
-   cell in §3/§4/§5 annotated ⚠ PRD-drift. **This is an open gap — it is not
-   resolved by this revision**, since resolving it requires either a real
-   PRD update or a correction to the downstream documents, neither of which
-   this matrix can perform itself.
-5. Gaps 1–5 (§6) re-confirmed still resolved with no drift, including a
-   direct re-verification that Resolved Questions 26–32 (unlike 33–38) do
-   genuinely exist in the current `RAISE-PRD.md` text.
-6. Chain Consistency Check (§7) re-run against the actual current text of
-   every document, including `RAISE-PRD.md` directly.
+1. **Gap 6 closed.** v0.4 opened a critical finding that the actual
+   `RAISE-PRD.md` file was v0.4 (not the v0.9 every downstream document
+   claimed), missing §16 Resolved Questions 33–38 and the
+   `RAISE-FR-LICENSE-001` requirement entirely. This revision re-read the
+   current `RAISE-PRD.md` file directly, in full, and confirmed it is now
+   genuinely v0.9, with Resolved Questions running through 38 and a real
+   `RAISE-FR-LICENSE-001` entry in §6/§13/§14/§17 — all matching what
+   downstream documents already asserted. Every ⚠ PRD-drift annotation from
+   v0.4 has been removed from §3/§4/§5 and replaced with a "verified present
+   in `RAISE-PRD.md` v0.9" citation where the underlying claim was
+   previously flagged as unverifiable. §6 Gap 6 now records this as
+   **RESOLVED**, with the full evidence trail preserved (not deleted),
+   consistent with how Gaps 1–5 are recorded.
+2. **New §4.2 "PRD §10 NFR Backlog — Cross-Layer Acknowledgment" added.**
+   `RAISE-DESIGN.md` v0.8 §16A, `RAISE-PROTOTYPE.md` v0.6 §25A,
+   `RAISE-ACCEPTANCE-CRITERIA.md` v0.5 §19.9, `RAISE-TEST-PLAN.md` v0.5 §3.3,
+   and `RAISE-TEST-CASES.md` v0.5 §18.5 each added an identical-in-spirit
+   placeholder acknowledging the PRD §10 NFR backlog (Performance,
+   Availability, Scalability, Backup/Recovery, Data Retention, Encryption,
+   API Security, Audit Retention, Monitoring, Logging — ten areas with no
+   dedicated PRD Traceability ID, plus `RAISE-NFR-SEC-RBAC-001` which does
+   have one and is already covered in §4). This matrix had no equivalent
+   acknowledgment; the new §4.2 records, per area, exactly what (if any)
+   narrow coverage exists and confirms no value/target/ID is invented for
+   the ten open areas. **No new requirement, AC group, suite, or test case
+   was created** — this is a completeness/traceability-note pass only,
+   mirroring the discipline every other layer already applied.
+3. **§7 Chain Consistency Check expanded** with a new bullet walking the
+   PRD §10 NFR backlog thread end-to-end (PRD → Design → Prototype → AC →
+   Test Plan → Test Cases → this matrix), confirming identical framing at
+   every layer.
+4. **§8 Compliance Review Readiness updated** to remove the v0.4 readiness
+   caveat (which was contingent on Gap 6) and replace it with the standing,
+   Gap-6-independent caveats that remain open (no source code yet; PRD Open
+   Questions; Gap 4's custody-writing-events question; `RAISE-AI-DOC-004`'s
+   unanswered acceptance behavior).
+5. Version citations throughout were updated: PRD v0.9 (confirmed real, not
+   claimed), Design v0.7 → v0.8, Prototype v0.5 → v0.6, AC v0.4 → v0.5, Test
+   Plan v0.4 → v0.5, Test Cases v0.4 → v0.5.
+6. **Quality-gap scan (per this revision's explicit instruction to look for
+   thin P0 coverage, not just orphan IDs):** re-examined every P0/MVP
+   requirement in §3 for a requirement whose only coverage is embedded
+   inside another requirement's AC group with no dedicated AC group of its
+   own (the pattern that produced Gap 1 for `RAISE-FR-LIFE-001`, since
+   resolved). No new instance of that specific pattern was found — every P0
+   requirement in PRD §17 now has its own AC group, Suite, and Test Case(s)
+   (§3 above). The closest remaining thin-coverage item is the existing,
+   already-tracked **Gap 4** residual (`RAISE-FR-ASSET-003`'s
+   `AC-ASSET-003-03`/`TC-ASSET-003-03` verify only the Check-in/Check-out-
+   triggered write path, not the requirement's full "custody history is
+   retained" scope) — restated with sharper wording in §6 Gap 4 above, not
+   newly discovered. `RAISE-AI-DOC-001..004`'s BLOCKED (full) status (§3, §4.1)
+   is a different, already-well-documented pattern (own AC group exists, but
+   its sole criterion is entirely untestable) and is not re-flagged as new.
 
-**Next Action:** Resolve Gap 6 before Development proceeds on
-`RAISE-FR-MAINT-001`'s 4-stage workflow, `RAISE-FR-LICENSE-001`, or any
-`RAISE-NFR-SEC-RBAC-001`-dependent work item — either by running a real
-`/update-prd` session whose output is actually written into `RAISE-PRD.md`
-(if these were genuinely business-confirmed and simply never recorded), or
-by correcting the affected downstream documents if they were not. In
-parallel, continue tracking the pre-existing outstanding PRD Open Questions
-(Q1–Q25, Q3/Q4's residual formula/threshold portion, Gap 4's
-custody-writing-events question, and `RAISE-AI-DOC-004`'s acceptance
-behavior) before implementation proceeds against the requirements they
-block — none of those are new to this revision, and none are affected by
-Gap 6.
+**Change Log — v0.3 → v0.4 (prior revision):** see git history / prior
+version of this file for the full v0.3 → v0.4 record (Maintenance 4-stage
+workflow row expansion, `RAISE-FR-LICENSE-001` first added to §5, RBAC MVP
+enforcement level noted, and the original Gap 6 finding).
+
+**Next Action:** With Gap 6 closed, the priority shifts back to the
+standing PRD Open Questions and Gap 4's custody-writing-events question
+(§8, §10 above) before Development proceeds on the requirements they block.
+No document in the chain requires a consistency correction at this time.

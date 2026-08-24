@@ -220,3 +220,25 @@ Spec/Detailed Design/NFR ตามแนวทาง 7 stage เดิม) — �
   reset ให้ `git status` และ `git reflog` เช็คก่อนเสมอว่ามีงานของ session อื่นค้างอยู่หรือไม่ ถ้าต้อง
   ทำงานแยกจาก branch ปัจจุบันโดยไม่รบกวน session อื่น ให้ใช้ `git worktree add` แยกไดเรกทอรีแทนการ
   `git checkout` สลับ branch ตรงๆ ในไดเรกทอรีเดิม
+
+## กฎบังคับ: Development Session Close-Out Protocol
+
+**ก่อนจบทุก development session ที่แตะ code หรือ docs ให้รัน 14 ขั้นตอนใน
+[`docs/project-management/SESSION-CLOSEOUT-PROTOCOL.md`](docs/project-management/SESSION-CLOSEOUT-PROTOCOL.md)
+เสมอ** — นี่คือกฎกลางของ AI Agent ในโปรเจกต์นี้ ไม่ใช่ข้อเสนอแนะที่เลือกทำหรือไม่ก็ได้ สรุปสั้น:
+ตรวจ `git status`/diff → ตรวจไฟล์ที่เปลี่ยน → รัน Test/Build/Validation จริง (ห้ามสมมติว่ายังผ่านอยู่)
+→ เทียบกับ Requirement → เทียบกับ checkpoint ก่อนหน้า → สร้าง checkpoint ใหม่ → อัปเดต
+`PROJECT-TIMELINE.md`/`DEVELOPMENT-LOG.md`/`CHANGELOG.md`/`CURRENT-STATUS.md` → ระบุ Known
+Issues/Remaining Work/Next Recommended Task ตรงๆ → **ห้ามรายงานว่า "Completed" ถ้า Acceptance
+Criteria ยังไม่ผ่าน** (ใช้ ✅/🟡/🚧/🔴/⚪ ตามคำศัพท์ใน SESSION-CLOSEOUT-PROTOCOL.md §4 แทน)
+
+**Checkpoint มี 3 ระดับ** (นิยามเต็มใน `SESSION-CLOSEOUT-PROTOCOL.md` §2, บันทึกจริงใน
+[`docs/project-management/PROJECT-CHECKPOINTS.md`](docs/project-management/PROJECT-CHECKPOINTS.md)):
+**Level 1 (Task)** — AI ทำอะไรไปในงานนี้; **Level 2 (Feature)** — feature นี้ไปถึงไหนแล้ว
+(rollup ของ Task checkpoints); **Level 3 (Phase)** — phase นี้พร้อมผ่าน Gate หรือยัง (rollup ของ
+Feature checkpoints พร้อม Gate verdict เทียบกับ `RAISE-TRACEABILITY-MATRIX.md`)
+
+**เป้าหมายของกฎนี้:** คำถามแบบ "ตั้งแต่เริ่ม Phase 5C เราพัฒนาอะไรไปบ้าง?", "ตั้งแต่ checkpoint
+ล่าสุดมีอะไรเปลี่ยนแปลง?", หรือ "ตอนนี้ project มีอะไรยังไม่เสร็จและอะไรเป็น blocker?" **ต้องตอบได้จาก
+หลักฐานใน Timeline + Checkpoint + Git + Test + Traceability Matrix เท่านั้น ห้ามตอบจาก memory ของ
+AI session เอง** — ถ้าตอบแบบนั้นไม่ได้ แปลว่ามีช่องว่างในการบันทึก ให้แก้ที่การบันทึก ไม่ใช่เดาคำตอบ

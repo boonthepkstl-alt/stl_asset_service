@@ -55,7 +55,7 @@ const Login: React.FC = () => {
             <div className="mt-6 rounded-md bg-error-50 p-3 text-body text-error-700">{error}</div>
           )}
 
-          <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+          <form onSubmit={handleSubmit} className="login-form-accent mt-6 space-y-4">
             <Input
               id="username"
               label="Username"
@@ -97,7 +97,7 @@ const Login: React.FC = () => {
               </div>
             </div>
 
-            <Button type="submit" loading={loading} className="w-full">
+            <Button type="submit" variant="brand" loading={loading} className="w-full">
               Sign in
             </Button>
           </form>
@@ -131,8 +131,10 @@ const Login: React.FC = () => {
         </div>
       </div>
 
-      {/* Illustration panel */}
-      <div className="relative hidden overflow-hidden bg-gradient-to-br from-brand-700 to-brand-900 lg:flex lg:w-1/2 lg:items-center lg:justify-center">
+      {/* Illustration panel -- dark slate/near-black, not solid Singer red: red is used only as
+          an accent (see the nodes below and the Sign-in button) since a large red fill would
+          collide with the existing alert/error meaning red carries elsewhere in this UI. */}
+      <div className="relative hidden overflow-hidden bg-gradient-to-br from-surface-900 to-black lg:flex lg:w-1/2 lg:items-center lg:justify-center">
         <svg
           className="absolute inset-x-0 top-0 h-32 w-full text-white"
           viewBox="0 0 400 100"
@@ -146,7 +148,7 @@ const Login: React.FC = () => {
         <div className="relative z-10 flex flex-col items-center gap-8 px-12 text-center text-white">
           <div>
             <div className="text-4xl font-extrabold tracking-tight">RAISE</div>
-            <p className="mt-2 text-body text-brand-100">Enterprise Asset Intelligence Platform</p>
+            <p className="mt-2 text-body text-surface-300">Enterprise Asset Intelligence Platform</p>
           </div>
           <AssetNetworkIllustration className="h-64 w-64" />
         </div>
@@ -192,16 +194,17 @@ function GoogleIcon({ className }: { className?: string }) {
 }
 
 // Wordmark icon: the "R" square from a stakeholder-submitted brand proposal
-// (docs/project-foundation-baseline/RAISE-BRAND-STYLE-GUIDE.md Sec1) -- a small upward-trending
-// accent line stands in for the proposed "growth stroke" direction, using the existing
-// success-* token (already #10b981, matching the proposal's green-accent option) rather than
-// introducing a new color -- no dedicated logo asset/SVG file exists yet, this is still an
+// (docs/project-foundation-baseline/RAISE-BRAND-STYLE-GUIDE.md Sec1). Updated 2026-08-24 to
+// Singer's confirmed CI (red-to-dark gradient, singer-* token) once RAISE's target
+// organization was confirmed -- see RAISE-PRD.md Sec16 Resolved Question 39. The small
+// upward-trending accent line (the proposed "growth stroke" direction) stays white for
+// legibility against the red. No dedicated logo asset/SVG file exists yet, this is still an
 // inline approximation, not a delivered mark.
 function RaiseMark({ className }: { className?: string }) {
   return (
-    <div className={cn('relative flex items-center justify-center rounded-lg bg-gradient-to-br from-brand-600 to-brand-800 font-bold text-white shadow-sm', className)}>
+    <div className={cn('relative flex items-center justify-center rounded-lg bg-gradient-to-br from-singer-600 to-surface-900 font-bold text-white shadow-sm', className)}>
       R
-      <svg className="absolute -right-1 -top-1 h-3.5 w-3.5 text-success-400" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <svg className="absolute -right-1 -top-1 h-3.5 w-3.5 text-white" viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <path d="M4 17 L11 10 L15 14 L20 5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
         <path d="M15 5 H20 V10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
@@ -211,9 +214,9 @@ function RaiseMark({ className }: { className?: string }) {
 
 // Original abstract illustration (not a copy of any third-party asset) -- a network of
 // connected asset nodes, replacing the earlier "person holding a device" motif to better read
-// as "Asset Intelligence" per the brand proposal's data-network direction. Accent nodes use
-// success-400 (green), the proposal's secondary/accent color; everything else is white/brand
-// tones already used on this panel.
+// as "Asset Intelligence." Accent nodes updated 2026-08-24 from green to Singer red
+// (singer-400), per the confirmed Singer CI -- everything else stays white against the dark
+// panel background.
 function AssetNetworkIllustration({ className }: { className?: string }) {
   const nodes = [
     { x: 100, y: 40, r: 9, accent: true },
@@ -246,7 +249,7 @@ function AssetNetworkIllustration({ className }: { className?: string }) {
           cx={n.x}
           cy={n.y}
           r={n.r}
-          fill={n.accent ? 'var(--color-success-400, #34d399)' : 'white'}
+          fill={n.accent ? 'var(--color-singer-400, #ec4f79)' : 'white'}
           fillOpacity={n.accent ? 1 : 0.92}
         />
       ))}

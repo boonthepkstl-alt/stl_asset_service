@@ -2,7 +2,7 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document Type:** Product Requirements Document
-**Version:** 0.9 Draft — all six `## NEEDS_PRD_CONFIRMATION` items from `docs/template-analysis/FRONTEND-FOUNDATION-BASELINE.md` §4 now closed out (RAISE-FR-MAINT-001 4-stage workflow business-confirmed; License Management confirmed **Roadmap-only** — `RAISE-FR-LICENSE-001` added; six ESAPS-reference-only pages confirmed **out of scope**; RAISE-AI-RECOMMEND-001 re-confirmed **Roadmap-only, no MVP subset**; Oracle FA Reconciliation "Phase 6" code-comment label confirmed **not a PRD phase** (the separate `ReconciliationPage`↔`RAISE-FR-ORACLE-001` mapping question remains **unanswered** — carried forward as Open Question 10a); `RAISE-NFR-SEC-RBAC-001` MVP enforcement level confirmed **UI-only/client-side, backend deferred to Roadmap**). See Document Status change log at the bottom of this file for full history, including a correction to an earlier inaccurate draft of License Management's scope.
+**Version:** 0.10 Draft — target organization confirmed: **RAISE is developed for direct use by Singer (Thailand)** (§16 Resolved Question 39), not a generic platform — a branding/identity fact, no functional scope change. All six `## NEEDS_PRD_CONFIRMATION` items from `docs/template-analysis/FRONTEND-FOUNDATION-BASELINE.md` §4 remain closed out (RAISE-FR-MAINT-001 4-stage workflow business-confirmed; License Management confirmed **Roadmap-only** — `RAISE-FR-LICENSE-001` added; six ESAPS-reference-only pages confirmed **out of scope**; RAISE-AI-RECOMMEND-001 re-confirmed **Roadmap-only, no MVP subset**; Oracle FA Reconciliation "Phase 6" code-comment label confirmed **not a PRD phase** (the separate `ReconciliationPage`↔`RAISE-FR-ORACLE-001` mapping question remains **unanswered** — carried forward as Open Question 10a); `RAISE-NFR-SEC-RBAC-001` MVP enforcement level confirmed **UI-only/client-side, backend deferred to Roadmap**). See Document Status change log at the bottom of this file for full history, including a correction to an earlier inaccurate draft of License Management's scope.
 **Status:** Draft for Requirement Review
 **Primary Source:** RAISE — Enterprise Asset Intelligence Platform — Final(1).pdf, ADT-RAISE Hackathon Pitch Day, 26 July 2026 (via `RAISE-PRD.md` v0.1 draft supplied 2026-08-20)
 **Source of Truth:** RAISE Hackathon Proposal / RAISE business objectives and MVP scope
@@ -939,6 +939,25 @@ recorded here explicitly so it is not mistaken for a resolved item alongside 29�
     out the last of the six `## NEEDS_PRD_CONFIRMATION` items logged in
     `docs/template-analysis/FRONTEND-FOUNDATION-BASELINE.md` §4.
 
+39. **Is RAISE being built for direct use by a named organization, or is it a
+    general-purpose platform with no specific end customer?** — Raised
+    2026-08-24 while reviewing a stakeholder-submitted visual identity proposal that
+    asked whether to apply a specific company's Corporate Identity (CI) colors.
+    Business confirmed, **2026-08-24: RAISE is developed for direct use by Singer
+    (Thailand)** — not a generic/reference platform. This is consistent with, but not
+    previously stated as plainly as, the `singer/go-template-new-2026-06` module
+    namespace of the company Go backend template
+    (`docs/company-foundation-baseline/COMPANY-FOUNDATION-BASELINE.md`), which had
+    been treated as an internal naming detail rather than a confirmed business fact
+    until now. **Effect of this resolution:** Singer's Corporate Identity (red primary,
+    white/gray/dark secondary) is now a legitimate basis for visual-design decisions —
+    see `docs/project-foundation-baseline/RAISE-BRAND-STYLE-GUIDE.md` for the
+    CI-aligned styling guidance and its explicit caution against using red as a large
+    background fill (red already carries alert/breakdown/error meaning elsewhere in
+    an asset-management UI). This does **not** change any functional requirement,
+    priority, or scope item elsewhere in this PRD — it is a branding/identity fact,
+    not a new `RAISE-FR-*`/`RAISE-AI-*`/`RAISE-NFR-*` requirement.
+
 ---
 
 ## 17. Requirement Traceability Matrix
@@ -1173,9 +1192,22 @@ implements the requirement; Test Case passes; Requirement Compliance Review pass
 
 ## Document Status
 
-**Version:** 0.9 (Draft for Requirement Review)
+**Version:** 0.10 (Draft for Requirement Review)
 **Status:** Draft for Requirement Review
 **Primary Source:** RAISE — Enterprise Asset Intelligence Platform — Final(1).pdf, ADT-RAISE Hackathon Pitch Day, 26 July 2026
+
+**Change Log — v0.9 → v0.10 (2026-08-24, business confirmation via direct stakeholder
+conversation):**
+
+1. **Target organization confirmed** (new [§16 Resolved Question 39](#16-open-questions)):
+   business confirmed that **RAISE is being developed for direct use by Singer
+   (Thailand)**, not as a generic/reference platform — raised while reviewing a
+   stakeholder visual-identity proposal that asked whether to apply Singer's Corporate
+   Identity colors. No functional requirement, priority, or scope item changes as a
+   result — this is a branding/identity fact only, recorded so it isn't silently
+   assumed from the `singer/go-template-new-2026-06` backend module namespace. See
+   `docs/project-foundation-baseline/RAISE-BRAND-STYLE-GUIDE.md` for the resulting
+   CI-aligned styling guidance.
 
 **Change Log — v0.8 → v0.9 (2026-08-21, via `/update-prd` session, live user
 confirmation):**

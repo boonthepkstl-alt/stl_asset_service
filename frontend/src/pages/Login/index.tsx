@@ -132,10 +132,11 @@ const Login: React.FC = () => {
         </div>
       </div>
 
-      {/* Illustration panel -- dark slate/near-black, not solid Singer red: red is used only as
-          an accent (see the nodes below and the Sign-in button) since a large red fill would
-          collide with the existing alert/error meaning red carries elsewhere in this UI. */}
-      <div className="relative hidden overflow-hidden bg-gradient-to-br from-surface-900 to-black lg:flex lg:w-1/2 lg:items-center lg:justify-center">
+      {/* Illustration panel -- back to the blue gradient (per explicit feedback: no black
+          panel), not solid Singer red: red is used only as an accent (see the nodes below and
+          the Sign-in button) since a large red fill would collide with the existing alert/error
+          meaning red carries elsewhere in this UI. */}
+      <div className="relative hidden overflow-hidden bg-gradient-to-br from-brand-700 to-brand-900 lg:flex lg:w-1/2 lg:items-center lg:justify-center">
         <svg
           className="absolute inset-x-0 top-0 h-32 w-full text-white"
           viewBox="0 0 400 100"

@@ -1,7 +1,7 @@
 import React, { type ReactNode } from 'react';
 import { cn } from '@/lib/cn';
 
-export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success';
+export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success' | 'brand';
 export type ButtonSize = 'sm' | 'md' | 'lg' | 'icon';
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -20,6 +20,10 @@ const variantClasses: Record<ButtonVariant, string> = {
   ghost: 'text-surface-600 hover:bg-surface-100 hover:text-surface-900 active:bg-surface-200',
   danger: 'bg-error-600 text-white hover:bg-error-700 active:bg-error-800 shadow-sm',
   success: 'bg-success-600 text-white hover:bg-success-700 active:bg-success-800 shadow-sm',
+  // Singer (Thailand) Corporate Identity red -- opt-in only, used where a page explicitly
+  // requests it (currently: Login's Sign-in button). See index.css's --color-singer-* comment
+  // and RAISE-BRAND-STYLE-GUIDE.md Sec2 -- kept separate from `danger` (error-*) on purpose.
+  brand: 'bg-singer-600 text-white hover:bg-singer-700 active:bg-singer-800 shadow-sm hover:shadow-md',
 };
 
 const sizeClasses: Record<ButtonSize, string> = {

@@ -61,6 +61,31 @@
   --color-error-900: #7f1d1d;
   --color-error-950: #450a0a;
 
+  /* Singer (Thailand) Corporate Identity red -- RAISE is developed for Singer's direct use,
+     confirmed 2026-08-24 (see docs/01-requirements/RAISE-PRD.md Sec16 Resolved Question 39
+     and docs/project-foundation-baseline/RAISE-BRAND-STYLE-GUIDE.md Sec2). Deliberately a
+     separate scale from both --color-brand-* (still blue, used everywhere else in the app)
+     and --color-error-* (the semantic danger/error red) -- keeps Singer's red-as-CI-accent
+     from colliding with existing danger buttons/error states elsewhere.
+     600/800 confirmed 2026-08-24 by inspecting computed styles on the live
+     singerthai.co.th site: rgb(229, 0, 64) (#e50040) on .action.primary CTAs and the
+     header bar, rgb(168, 3, 49) (#a80331) as a pressed/darker button state -- these two
+     anchor the scale; the rest are interpolated, not independently sourced.
+     Use as an accent/interactive color only (buttons, focus states, highlights) -- never as a
+     large background fill, since red already carries alert/breakdown/error meaning in this
+     asset-management UI. */
+  --color-singer-50: #fdeef1;
+  --color-singer-100: #fbd7de;
+  --color-singer-200: #f7afc0;
+  --color-singer-300: #f2809c;
+  --color-singer-400: #ec4f79;
+  --color-singer-500: #e8265a;
+  --color-singer-600: #e50040;
+  --color-singer-700: #c10036;
+  --color-singer-800: #a80331;
+  --color-singer-900: #7a0224;
+  --color-singer-950: #400113;
+
   --color-surface-0: #ffffff;
   --color-surface-50: #f8fafc;
   --color-surface-100: #f1f5f9;
@@ -198,6 +223,15 @@ body {
 }
 .input-base.error:focus {
   box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.2);
+}
+
+/* Singer CI focus-red override, scoped to the Login form only (two-class specificity beats the
+   single-class .input-base:focus rule above) -- every other form in the app keeps the default
+   blue focus ring. See RAISE-BRAND-STYLE-GUIDE.md Sec2/Sec4 and index.css's --color-singer-*
+   comment for why this isn't a global change. */
+.login-form-accent .input-base:focus {
+  border-color: #e50040;
+  box-shadow: 0 0 0 2px rgba(229, 0, 64, 0.2);
 }
 
 .text-balance {

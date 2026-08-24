@@ -2,11 +2,29 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Prototype Specification
-**Version:** 0.5 Draft
+**Version:** 0.6 Draft
 **Status:** Draft for Prototype Review
-**Source:** [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.9 + [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.7 (§23 Prototype Preparation, §9A Document Intelligence Capabilities, §5.1 Maintenance Domain, §5.3 License Domain, §6.4 ReconciliationPage / "Phase 6" Label, §16 Security Architecture — MVP Enforcement Level, §15/§22 Out of Scope)
+**Source:** [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.9 + [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.8 (§23 Prototype Preparation, §9A Document Intelligence Capabilities, §5.1 Maintenance Domain, §5.3 License Domain, §6.4 ReconciliationPage / "Phase 6" Label, §16 Security Architecture — MVP Enforcement Level, §16A Other Non-Functional Requirements — Design Backlog, §15/§22 Out of Scope)
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
+
+**Version note (2026-08-23 re-sync, v0.5 → v0.6):** this pass re-verifies against
+`RAISE-PRD.md` v0.9 (unchanged since the v0.5 sync) and `RAISE-DESIGN.md` v0.8 (advanced
+from v0.7, which this prototype was last synced against). One Design-only change was
+checked for drift in this pass:
+
+4. **Design v0.8 added [§16A Other Non-Functional Requirements — Design
+   Backlog](../02-design/RAISE-DESIGN.md#16a-other-non-functional-requirements--design-backlog),**
+   an explicit design-layer placeholder for the broader PRD §10 NFR backlog
+   (Performance, Availability, Scalability, Backup/Recovery, Data Retention,
+   Encryption, API Security, Audit Retention, Monitoring, Logging) that sits
+   outside `RAISE-NFR-SEC-RBAC-001`. None of these areas carries a dedicated
+   PRD Traceability ID, has a defined value/target/mechanism, or implies any
+   new screen — Design itself only added a status-tracking table, not a new
+   requirement or design area. This prototype adds the same kind of explicit
+   completeness placeholder (new §25A below) so that no PRD §10 NFR area is
+   silently absent from this document either, without inventing any UI,
+   value, or mechanism the PRD/Design do not define. See §25A for detail.
 
 **Version note (2026-08-21 re-sync, v0.4 → v0.5):** this pass re-verifies against
 `RAISE-PRD.md` v0.9 and `RAISE-DESIGN.md` v0.7 (both moved forward from v0.6/v0.5, which
@@ -1312,6 +1330,46 @@ not be treated as fully specified until business/design input resolves them.
 
 ---
 
+# 25A. NFR Backlog — Prototype Note
+
+[`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md#16a-other-non-functional-requirements--design-backlog)
+§16A (added in Design v0.8) records that
+[`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md#10-non-functional-requirements)
+§10's broader NFR backlog — Performance, Availability, Scalability,
+Backup/Recovery, Data Retention, Encryption, API Security, Audit Retention,
+Monitoring, Logging — has **no defined value, target, or mechanism** and (unlike
+`RAISE-NFR-SEC-RBAC-001`) **no dedicated PRD Traceability ID**. This prototype
+therefore does **not** add a screen, UI element, or placeholder tile for any of
+these eleven areas — there is nothing testable or visualizable yet, and doing so
+would invent UI ahead of an undefined requirement.
+
+This section exists only so the prototype layer explicitly acknowledges the same
+backlog Design §16A tracks, rather than silently having no reference to it at
+all:
+
+| PRD §10 NFR Area | Prototype Status |
+|---|---|
+| Authentication | No screen beyond P-001's generic auth action placeholder (§7) — mechanism TBD |
+| Authorization / RBAC | Covered narratively on P-001/P-009 (MVP enforcement level only — UI-only/client-side, per `RAISE-NFR-SEC-RBAC-001`); role list/permission content TBD, no role model shown |
+| Performance | No prototype representation — no target defined in PRD/Design |
+| Availability | No prototype representation — no target defined in PRD/Design |
+| Scalability | No prototype representation — no target defined in PRD/Design |
+| Backup / Recovery | No prototype representation — no policy defined in PRD/Design |
+| Data Retention | No prototype representation — no policy defined in PRD/Design |
+| Encryption | No prototype representation — no requirement defined in PRD/Design |
+| API Security | No prototype representation — no requirement defined in PRD/Design |
+| Audit Retention | No prototype representation beyond P-013's generic Audit Log screen (§19) — retention period is explicitly out of scope for that screen's mock data, see P-013 |
+| Monitoring | No prototype representation — no requirement defined in PRD/Design |
+| Logging | No prototype representation — distinct from the business-facing Audit Log (P-013), which is an application-domain screen, not an operational logging NFR |
+
+Only `RAISE-NFR-SEC-RBAC-001` (Authorization/RBAC) has PRD-confirmed,
+prototype-relevant content (the MVP enforcement-level decision, already reflected
+on P-001 and P-009) — the other ten areas remain fully TBD at every layer
+(PRD → Design → Prototype) and are recorded here for traceability completeness
+only, not as a commitment to future screens.
+
+---
+
 # 26. Core Prototype User Flows
 
 ## Flow A — Find Asset
@@ -1575,6 +1633,14 @@ is unchanged — Design §6.4's "Phase 6" label clarification and the still-open
 requirement ID or change this row's status; P-011 Oracle FA / Financial View was checked
 and does not reference "Phase 6" or `ReconciliationPage`.
 
+**v0.6 re-sync (2026-08-23, against PRD v0.9 [unchanged] / Design v0.8):** no rows added,
+removed, or requiring a status change in this matrix. Design v0.8 added §16A (PRD §10 NFR
+backlog placeholder) — none of those eleven NFR areas carries a PRD Traceability ID, so
+none is a candidate row in this requirement-ID-keyed matrix; the completeness
+acknowledgment for them is instead recorded narratively in new [§25A NFR Backlog —
+Prototype Note](#25a-nfr-backlog--prototype-note), consistent with how Design §24 excludes
+the same areas from its own traceability table and points to §16A instead.
+
 ---
 
 # 28. Prototype Review Checklist
@@ -1614,6 +1680,11 @@ Before moving to Acceptance Criteria:
       client-side, backend deferred to Roadmap) is noted on P-001 and P-009
       without inventing a role list, permission matrix, or authentication
       mechanism (all remain TBD per PRD §11)
+- [x] PRD §10 / Design §16A's broader NFR backlog (Performance, Availability,
+      Scalability, Backup/Recovery, Data Retention, Encryption, API Security,
+      Audit Retention, Monitoring, Logging) is explicitly acknowledged (§25A)
+      rather than silently absent from this document — no screen or UI value
+      is invented for any of these areas (checked during v0.6 re-sync)
 
 ---
 
@@ -1675,12 +1746,42 @@ The next artifact should be **Acceptance Criteria**, not source code.
 
 ## Document Status
 
-**Version:** 0.5 (re-synced against RAISE-PRD.md v0.9 and RAISE-DESIGN.md v0.7,
-2026-08-21 — no screens added or removed; the v0.4 `## NEEDS_PRD_CONFIRMATION` signal is
-closed/removed since its underlying Design defect is now fixed; several traceability
-notes updated to cite the current PRD/Design versions and the confirmed
-`RAISE-NFR-SEC-RBAC-001` MVP enforcement level; three specific drift checks performed
-with no drift found)
+**Version:** 0.6 (re-synced against RAISE-PRD.md v0.9 [unchanged] and RAISE-DESIGN.md
+v0.8, 2026-08-23 — no screens added or removed; one new completeness section added
+(§25A) mirroring Design's own §16A gap-closure pass; no `## NEEDS_PRD_CONFIRMATION`
+signal raised)
+
+**Change Log — v0.5 → v0.6 (2026-08-23, design-completeness gap-closure sync):**
+
+1. **PRD §10 / Design §16A NFR backlog given an explicit prototype-layer
+   placeholder.** Design v0.8 added [§16A Other Non-Functional Requirements —
+   Design Backlog](../02-design/RAISE-DESIGN.md#16a-other-non-functional-requirements--design-backlog),
+   an explicit design-status table for the PRD §10 NFR backlog (Performance,
+   Availability, Scalability, Backup/Recovery, Data Retention, Encryption, API
+   Security, Audit Retention, Monitoring, Logging) that sits outside
+   `RAISE-NFR-SEC-RBAC-001`. This prototype had no equivalent acknowledgment
+   anywhere in the document — new **[§25A NFR Backlog — Prototype
+   Note](#25a-nfr-backlog--prototype-note)** now records, per area, that no
+   screen/UI value is shown (or, for Authorization/RBAC and the Audit Log's
+   generic screen, exactly what narrow content already exists and why the rest
+   remains TBD). **No new screen, value, target, or mechanism was invented** —
+   this pass only makes sure the prototype document does not silently omit
+   these eleven areas, matching the discipline Design itself applied in its
+   v0.7 → v0.8 pass.
+2. **§27 Prototype Traceability Matrix** cross-check note updated with a v0.6
+   re-sync entry explaining why the PRD §10 NFR backlog areas are not rows in
+   that requirement-ID-keyed table (no PRD Traceability ID) and pointing to the
+   new §25A instead, mirroring Design §24's equivalent reasoning.
+3. **§28 Prototype Review Checklist** gained a new checklist item confirming
+   the PRD §10 / Design §16A NFR backlog is explicitly acknowledged rather than
+   silently absent.
+4. **No new requirement, screen, flow, or capability was invented.** This pass
+   only adds a structural placeholder for content the PRD/Design already state
+   as backlog/TBD — no `## NEEDS_PRD_CONFIRMATION` signal is raised, because
+   nothing found in this pass requires UI for a capability the PRD does not
+   already define a value for.
+5. Header metadata updated: Version bumped to 0.6; Design Source updated to
+   reference Design v0.8 (PRD unchanged at v0.9, re-verified during this pass).
 
 **Change Log — v0.4 → v0.5 (2026-08-21):**
 
@@ -1812,36 +1913,34 @@ No screen additions or removals were made; no stale requirement references
 remain outside the two items above.
 
 **Status:** Draft for Prototype Review
-**Source:** [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.9 + [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.7
+**Source:** [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.9 + [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.8
 **Reference:** VERSCAN only
-**Next Action:** Review this v0.5 re-sync, in particular the closure of the v0.4
-`## NEEDS_PRD_CONFIRMATION` item (License Management Design/PRD inconsistency, now
-fixed at the Design layer) and the three drift checks performed (ESAPS-reference pages
-out of scope; "Phase 6" label; RBAC MVP enforcement level). Downstream
+**Next Action:** Review this v0.6 re-sync, in particular the new §25A NFR Backlog —
+Prototype Note added to mirror Design v0.8's §16A gap-closure pass. Downstream
 `RAISE-ACCEPTANCE-CRITERIA.md` should be checked next for the same drift — in
 particular whether it still needs to (a) cover the confirmed `RAISE-FR-MAINT-001`
 4-stage workflow, (b) continue treating `RAISE-FR-LICENSE-001`/P-016/P-017 as
-out-of-MVP-scope, and (c) avoid inventing any RBAC role model while still reflecting
-the confirmed UI-only/client-side MVP enforcement level.
+out-of-MVP-scope, (c) avoid inventing any RBAC role model while still reflecting
+the confirmed UI-only/client-side MVP enforcement level, and (d) acknowledge the PRD
+§10 / Design §16A NFR backlog explicitly rather than omitting it.
 
 ---
 
 ## NEEDS_PRD_CONFIRMATION
 
-**None outstanding as of this v0.5 re-sync.**
+**None outstanding as of this v0.6 re-sync.**
 
-The one `## NEEDS_PRD_CONFIRMATION` item raised in Prototype v0.4 — that
-`RAISE-DESIGN.md` v0.5 §4.1A/§5.3 stated `RAISE-FR-LICENSE-001` as "Priority P0, Scope
-MVP," contradicting the PRD's Roadmap-only decision — is now **closed**:
-`RAISE-DESIGN.md` v0.6/v0.7 §4.1A and §5.3 both state "Priority: Roadmap
-(not MVP-confirmed)" / "Scope: Enterprise Roadmap — not Phase 1 MVP," matching
-`RAISE-PRD.md` v0.9 §6/§13/§17 and Design's own §14/§22. No Design-document defect
-remains open against this prototype.
-
-This re-sync pass checked all three flagged PRD/Design changes (License Management
-Design/PRD consistency; six ESAPS-reference-only pages confirmed out of scope; Oracle FA
-"Phase 6" label clarification) and found no screen, flow, or "pending/uncertain" note in
-this document that required a change beyond citation/version updates and the RBAC
-enforcement-level clarifications already applied above. No new requirement, screen, or
+This re-sync pass checked the one flagged Design change (v0.7 → v0.8: new §16A PRD §10
+NFR backlog placeholder) and found no screen, flow, or "pending/uncertain" note in this
+document that required a change beyond adding an equivalent completeness
+acknowledgment (new §25A) and citation/version updates. No new requirement, screen, or
 flow without PRD/Design backing was introduced or discovered during this pass, so no new
 confirmation is being requested.
+
+The one `## NEEDS_PRD_CONFIRMATION` item historically raised in Prototype v0.4 — that
+`RAISE-DESIGN.md` v0.5 §4.1A/§5.3 stated `RAISE-FR-LICENSE-001` as "Priority P0, Scope
+MVP," contradicting the PRD's Roadmap-only decision — remains **closed** (fixed at the
+Design layer in v0.6/v0.7 and re-verified unchanged in Design v0.8): `RAISE-DESIGN.md`
+§4.1A and §5.3 still state "Priority: Roadmap (not MVP-confirmed)" / "Scope: Enterprise
+Roadmap — not Phase 1 MVP," matching `RAISE-PRD.md` v0.9 §6/§13/§17 and Design's own
+§14/§22. No Design-document defect is open against this prototype.

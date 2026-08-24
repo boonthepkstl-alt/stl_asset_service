@@ -2,9 +2,9 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Test Cases
-**Version:** 0.4 Draft
+**Version:** 0.5 Draft
 **Status:** Draft for Test Case Review
-**Source:** [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.4 §7 (Test Suites) + §8 (Blocked Items) + §8.1 (Fully-Blocked Suites — AI Document Intelligence Capabilities), expanding [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md)
+**Source:** [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.5 §7 (Test Suites) + §8 (Blocked Items) + §8.1 (Fully-Blocked Suites — AI Document Intelligence Capabilities) + §3.3 (PRD §10 NFR Backlog — No Suite), expanding [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.5
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
 
@@ -388,6 +388,46 @@ illustrative example are described.
 
 ---
 
+## 18.5. PRD §10 NFR Backlog — No Test Cases (mirrors Test Plan §3.3 / AC §19.9, added 2026-08-23)
+
+**Added 2026-08-23, re-sync against `RAISE-TEST-PLAN.md` v0.5 §3.3.** Test Plan v0.5 §3.3
+added an explicit per-area acknowledgment of the PRD §10 / Design §16A / Prototype §25A /
+AC §19.9 NFR backlog — Performance, Availability, Scalability, Backup/Recovery, Data
+Retention, Encryption, API Security, Audit Retention, Monitoring, Logging (ten areas
+outside `RAISE-NFR-SEC-RBAC-001`) — recording that **no test suite is created** for any of
+them because no AC group exists for any of them (Test Plan §3.3, itself mirroring AC v0.5
+§19.9). This document mirrors that same completeness discipline at the Test Case layer,
+per its own §1/§2 principle (no test case without a matching AC criterion):
+
+| PRD §10 NFR Area | Test Case Status |
+|---|---|
+| Authentication | Already covered narrowly by `TC-LOGIN-01`/`-02` (existence of success/error states only; mechanism BLOCKED — see §3 above) |
+| Authorization / RBAC | Already covered narrowly by `TC-LOGIN-03`, `TC-OPS-002-01`, `TC-MAINT-001-04..08` (MVP enforcement level only, per `RAISE-NFR-SEC-RBAC-001`); role list/permission matrix content BLOCKED — see §3, §10, §11 above |
+| Performance | No test case — no target defined in PRD/Design/Prototype/AC |
+| Availability | No test case — no target defined in PRD/Design/Prototype/AC |
+| Scalability | No test case — no target defined in PRD/Design/Prototype/AC |
+| Backup / Recovery | No test case — no policy defined in PRD/Design/Prototype/AC |
+| Data Retention | No test case — no policy defined in PRD/Design/Prototype/AC |
+| Encryption | No test case — no requirement defined in PRD/Design/Prototype/AC |
+| API Security | No test case — no requirement defined in PRD/Design/Prototype/AC |
+| Audit Retention | No test case beyond the general Q24–Q25 (taxonomy/retention) blocked scope already carried by `TC-AUDIT-001-01`/`-02` (§15 above, per `RAISE-TEST-PLAN.md` §3.3/§8 TS-AUDIT-001 row) — no dedicated retention-period test case exists |
+| Monitoring | No test case — no requirement defined in PRD/Design/Prototype/AC |
+| Logging | No test case — distinct from the business-facing Audit Log test cases (`TC-AUDIT-001-*`), which test an application-domain acceptance criterion, not an operational logging NFR |
+
+**No test case is written for any of the ten open areas.** Writing one now would invent
+both the acceptance threshold and the requirement identity, since no AC group exists to
+derive a test case from (this document's own convention, §2: `TC-<same-suffix-as-AC-ID>`
+— there is no AC ID to suffix). If any of these ten areas is later given a defined
+value/target and a dedicated AC group in `RAISE-ACCEPTANCE-CRITERIA.md`, and a
+corresponding suite added to `RAISE-TEST-PLAN.md`, corresponding test cases must be added
+here at that time — not before. This section exists only so this document does not
+silently omit reference to the PRD §10 backlog, matching the discipline already applied
+at the Prototype (§25A), Acceptance Criteria (§19.9), and Test Plan (§3.3) layers. This
+section adds **zero** new test cases and does not change the §19 Test Case Summary totals
+below.
+
+---
+
 ## 19. Test Case Summary
 
 | Suite | Total TCs | Fully Testable | Partially Blocked | Blocked (Full) | Out of Scope |
@@ -487,6 +527,9 @@ Before moving to the Requirement Traceability Matrix / Development:
 - [ ] No test case was written for a Pilot/Roadmap capability
       (Risk Scoring, Lifecycle Prediction, AI Recommendation, etc.)
 - [ ] No VERSCAN-only behavior appears as an expected result
+- [x] PRD §10 / Design §16A / Prototype §25A / AC §19.9 / Test Plan §3.3's NFR backlog is
+      explicitly acknowledged (§18.5) rather than silently absent from this document — no
+      test case is invented for any of the ten open areas
 
 ---
 
@@ -520,8 +563,42 @@ Suite ID → TC ID) into one master table for compliance review.
 
 ## Document Status
 
-**Version:** 0.4 (re-verified against `RAISE-TEST-PLAN.md` v0.4, 2026-08-21 — three
-synchronization updates applied:)
+**Version:** 0.5 (re-synced against `RAISE-TEST-PLAN.md` v0.5, 2026-08-23)
+
+**Change Log — v0.4 → v0.5 (2026-08-23):**
+
+1. **New §18.5 "PRD §10 NFR Backlog — No Test Cases" added, mirroring Test Plan v0.5 §3.3
+   (itself mirroring AC v0.5 §19.9).** Test Plan v0.5 added an explicit per-area
+   acknowledgment of the PRD §10 / Design §16A / Prototype §25A NFR backlog (Performance,
+   Availability, Scalability, Backup/Recovery, Data Retention, Encryption, API Security,
+   Audit Retention, Monitoring, Logging), recording that no `TS-NFR-*` suite exists for
+   any of the ten open areas because no AC group exists for any of them. This document had
+   no equivalent acknowledgment — new §18.5 now records, per area, that no test case
+   exists (or, for Authentication/Authorization-RBAC and Audit Retention, exactly what
+   narrow test case coverage already exists via `TC-LOGIN-*`, `TC-OPS-002-01`,
+   `TC-MAINT-001-04..08`, and `TC-AUDIT-001-01`). **No new test case was invented** —
+   this pass only ensures the document does not silently omit reference to these ten
+   areas, consistent with this document's own §2 convention (no test case without a
+   matching AC ID). §19 Test Case Summary totals are unchanged (62 TCs; the new section
+   adds zero test cases).
+2. **Test Case Review Checklist (§20)** gained a new checklist item confirming the PRD
+   §10 NFR backlog is explicitly acknowledged rather than silently absent.
+3. **Verified 1:1 AC-to-TC coverage against AC v0.5.** AC v0.5's only substantive change
+   versus AC v0.4 was the addition of §19.9 (a traceability-note-only section with no new
+   AC group, mirrored above) — confirmed that AC-LOGIN through AC-AI-DOC-004, and the
+   License Management Roadmap-only traceability note, are unchanged in substance, so no
+   existing test case (§3–§18.4) required a content correction. In particular,
+   `TC-MAINT-001-03` through `-09` (added at v0.4) already cover `AC-MAINT-001-03..09`
+   in full — the Test Plan's suggestion to re-check this coverage found it already
+   complete, requiring no new test cases.
+4. Version citations in the document header were updated from Test Plan v0.4 / AC (v0.4
+   implied) to Test Plan v0.5 / AC v0.5.
+
+No other suite required changes; `TC-LOGIN-*`, `TC-DASH-*`, `TC-ASSET-001-*`,
+`TC-ASSET-001-D-*`, `TC-LIFE-001-*`, `TC-ASSET-002-*`, `TC-ASSET-003-*`, `TC-OPS-001-*`,
+`TC-OPS-002-*`, `TC-MAINT-001-*`, `TC-WARRANTY-001-*`, `TC-ORACLE-001-*`, `TC-ALERT-001-*`,
+`TC-AUDIT-001-*`, `TC-EXEC-001-*`, `TC-AI-SEARCH-001-*`, `TC-AI-STATES-*`, and
+`TC-AI-DOC-001-01`–`TC-AI-DOC-004-01` are unaffected by Test Plan v0.5's changes.
 
 **Change Log — v0.3 → v0.4 (2026-08-21):**
 
@@ -588,6 +665,8 @@ No other suite's test cases required changes; `TC-DASH-*`, `TC-ASSET-001-*`,
    fully testable, 23 partially blocked, 4 blocked (full), 1 out of scope).
 
 **Status:** Draft for Test Case Review
-**Source:** [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.4
+**Source:** [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.5
 **Reference:** VERSCAN only
-**Next Action:** Review test cases and confirm blocked-item scoping before Traceability Matrix
+**Next Action:** Review the v0.5 update (new §18.5 NFR Backlog — No Test Cases, mirroring
+Test Plan §3.3 / AC §19.9) before Traceability Matrix. Confirm blocked-item scoping
+remains accurate, then proceed to `RAISE-TRACEABILITY-MATRIX.md`.

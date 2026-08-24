@@ -2,9 +2,9 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Test Plan
-**Version:** 0.4 Draft
+**Version:** 0.5 Draft
 **Status:** Draft for Test Plan Review
-**Source:** [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.4, cross-checked against [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.9, [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.7, [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.5
+**Source:** [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.5, cross-checked against [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.9, [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.8, [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.6
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
 
@@ -80,6 +80,39 @@ status), the following have **no MVP test suite** in this plan:
 If any of these is promoted to MVP through business/product review, a
 corresponding AC group must be added to `RAISE-ACCEPTANCE-CRITERIA.md`
 first — this Test Plan will not test ahead of Acceptance Criteria.
+
+### 3.3 PRD §10 NFR Backlog — No Suite (mirrors AC §19.9, added 2026-08-23)
+
+`RAISE-ACCEPTANCE-CRITERIA.md` v0.5 §19.9 added an explicit acknowledgment of the PRD
+§10 / Design §16A / Prototype §25A NFR backlog — Performance, Availability,
+Scalability, Backup/Recovery, Data Retention, Encryption, API Security, Audit
+Retention, Monitoring, Logging (ten areas outside `RAISE-NFR-SEC-RBAC-001`) — recording
+that **no AC group is written** for any of them because none has a defined value,
+target, mechanism, or dedicated PRD Traceability ID. This Test Plan mirrors that same
+completeness discipline here, per its own §2 principle (no suite without a
+corresponding AC group):
+
+| PRD §10 NFR Area | Test Suite Status |
+|---|---|
+| Authentication | Already covered narrowly by `TS-LOGIN` (existence of success/error/access-denied states only; mechanism BLOCKED per §8) |
+| Authorization / RBAC | Already covered narrowly by `TS-LOGIN`, `TS-OPS-002`, `TS-MAINT-001` (MVP enforcement level only, per `RAISE-NFR-SEC-RBAC-001`); role list/permission matrix content BLOCKED per §8 |
+| Performance | No test suite — no target defined in PRD/Design/Prototype/AC |
+| Availability | No test suite — no target defined in PRD/Design/Prototype/AC |
+| Scalability | No test suite — no target defined in PRD/Design/Prototype/AC |
+| Backup / Recovery | No test suite — no policy defined in PRD/Design/Prototype/AC |
+| Data Retention | No test suite — no policy defined in PRD/Design/Prototype/AC |
+| Encryption | No test suite — no requirement defined in PRD/Design/Prototype/AC |
+| API Security | No test suite — no requirement defined in PRD/Design/Prototype/AC |
+| Audit Retention | No test suite beyond `TS-AUDIT-001`'s existing BLOCKED retention-period item (§8) — no dedicated retention suite exists |
+| Monitoring | No test suite — no requirement defined in PRD/Design/Prototype/AC |
+| Logging | No test suite — distinct from the business-facing Audit Log suite (`TS-AUDIT-001`), which tests an application-domain acceptance criterion, not an operational logging NFR |
+
+**No `TS-NFR-*` suite is created for the ten open areas.** If any of these ten areas is
+later given a defined value/target and a dedicated AC group in
+`RAISE-ACCEPTANCE-CRITERIA.md`, a corresponding test suite must be added here at that
+time — not before. This section exists only so this Test Plan does not silently omit
+reference to the PRD §10 backlog, matching the discipline AC v0.5 §19.9 applied at its
+own layer.
 
 ---
 
@@ -361,6 +394,9 @@ Before moving to Test Cases:
 - [ ] Test data requirements are marked conceptual pending schema
       finalization
 - [ ] No VERSCAN-only behavior appears as a test suite or criterion
+- [x] PRD §10 / Design §16A / Prototype §25A / AC §19.9's NFR backlog is explicitly
+      acknowledged (§3.3) rather than silently absent from this document — no
+      `TS-NFR-*` suite is invented for any of the ten open areas
 
 ---
 
@@ -394,8 +430,32 @@ the BLOCKED distinctions in §8.
 
 ## Document Status
 
-**Version:** 0.4 (re-verified against `RAISE-ACCEPTANCE-CRITERIA.md` v0.4, 2026-08-21 —
-four synchronization updates applied:)
+**Version:** 0.5 (re-synced against `RAISE-ACCEPTANCE-CRITERIA.md` v0.5, 2026-08-23)
+
+**Change Log — v0.4 → v0.5 (2026-08-23):**
+
+1. **New §3.3 "PRD §10 NFR Backlog — No Suite" added, mirroring AC v0.5 §19.9.** AC v0.5
+   added an explicit per-area acknowledgment of the PRD §10 / Design §16A / Prototype
+   §25A NFR backlog (Performance, Availability, Scalability, Backup/Recovery, Data
+   Retention, Encryption, API Security, Audit Retention, Monitoring, Logging), recording
+   that no AC group exists for any of the ten open areas because none has a defined
+   value, target, mechanism, or dedicated PRD Traceability ID. This Test Plan had no
+   equivalent acknowledgment — new §3.3 now records, per area, that no `TS-NFR-*` suite
+   exists (or, for Authentication/Authorization-RBAC and Audit Retention, exactly what
+   narrow suite coverage already exists via `TS-LOGIN`, `TS-OPS-002`, `TS-MAINT-001`, and
+   `TS-AUDIT-001`). **No new suite, level, or exit criterion was invented** — this pass
+   only ensures the document does not silently omit reference to these ten areas,
+   consistent with this Test Plan's own §2 principle (no suite without a corresponding
+   AC group).
+2. **Test Plan Review Checklist (§12)** gained a new checklist item confirming the PRD
+   §10 NFR backlog is explicitly acknowledged rather than silently absent.
+3. Version citations in the document header were updated from AC v0.4 / Design v0.7 /
+   Prototype v0.5 to AC v0.5 / Design v0.8 / Prototype v0.6 (PRD unchanged at v0.9). No
+   existing test suite (§7), Blocked Item (§8), or Traceability Matrix row (§9) required
+   correction — AC v0.5's only substantive change was the addition of §19.9 itself (a
+   traceability-note-only section with no new AC group), so every AC group this Test
+   Plan already maps 1:1 to (AC-LOGIN through AC-AI-DOC-004, plus the License Management
+   Roadmap-only note) remains unchanged in substance since AC v0.4.
 
 **Change Log — v0.3 → v0.4 (2026-08-21):**
 
@@ -465,9 +525,10 @@ TS-WARRANTY-001, TS-ORACLE-001, TS-ALERT-001, TS-AUDIT-001, TS-AI-SEARCH-001, an
 TS-AI-STATES are unaffected by AC v0.3's changes.
 
 **Status:** Draft for Test Plan Review
-**Source:** [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.4
+**Source:** [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.5
 **Reference:** VERSCAN only
-**Next Action:** Review the v0.4 update (TS-MAINT-001 stage-transition coverage, License
-Management no-suite confirmation, RBAC enforcement-level wording refresh) before Test
-Cases. `RAISE-TEST-CASES.md` should be checked next for the same drift, in particular
-whether it already covers (or needs to add coverage for) TC-MAINT-001-03..09.
+**Next Action:** Review the v0.5 update (new §3.3 NFR Backlog — No Suite, mirroring AC
+§19.9) before Test Cases. `RAISE-TEST-CASES.md` should be checked next for the same
+drift, in particular whether it already covers (or needs to add coverage for)
+TC-MAINT-001-03..09, and whether it needs an equivalent NFR-backlog acknowledgment note
+of its own.

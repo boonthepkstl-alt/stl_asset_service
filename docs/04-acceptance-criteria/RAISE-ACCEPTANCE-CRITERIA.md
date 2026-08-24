@@ -2,9 +2,9 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Acceptance Criteria
-**Version:** 0.4 Draft
+**Version:** 0.5 Draft
 **Status:** Draft for Acceptance Review
-**Source:** [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.5 §27 (Prototype Traceability Matrix) + §5, §7–§23 (per-screen specs / AI Scope Boundary), cross-checked against [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.9 and [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.7
+**Source:** [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.6 §27 (Prototype Traceability Matrix) + §5, §7–§23, §25A (per-screen specs / AI Scope Boundary / NFR Backlog Prototype Note), cross-checked against [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.9 and [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.8
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
 
@@ -69,6 +69,7 @@ detail is "TBD" or "conceptual," the corresponding criterion is marked
 | [AC-AI-DOC-002](#196-ac-ai-doc-002--p-004-asset-detail-incidental--metadata) | P-004 (incidental) | RAISE-AI-DOC-002 | Not testable yet |
 | [AC-AI-DOC-003](#197-ac-ai-doc-003--p-005-category--hierarchy-incidental--classification) | P-005 (incidental) | RAISE-AI-DOC-003 | Not testable yet |
 | [AC-AI-DOC-004](#198-ac-ai-doc-004--p-003-asset-registry-incidental--duplicate-detection) | P-003 (incidental) | RAISE-AI-DOC-004 | Not testable yet |
+| [§19.9 NFR Backlog Note](#199-nfr-backlog--acceptance-criteria-note) | none (cross-cutting) | PRD §10 NFR backlog (no dedicated Traceability ID, except `RAISE-NFR-SEC-RBAC-001`) | Not testable yet (traceability note only — no AC group) |
 
 "Testable" = every criterion in the group can be verified today from Prototype-defined
 behavior. "Partially testable" = at least one criterion is blocked on an Open Question.
@@ -738,6 +739,50 @@ detail remains equally undefined in both versions.
 
 ---
 
+## 19.9. NFR Backlog — Acceptance Criteria Note
+
+**Added 2026-08-23, re-sync against `RAISE-PROTOTYPE.md` v0.6 §25A.** Prototype v0.6
+added [§25A NFR Backlog — Prototype
+Note](../03-prototype/RAISE-PROTOTYPE.md#25a-nfr-backlog--prototype-note), an explicit
+per-area status table for the broader
+[`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md#10-non-functional-requirements) §10 NFR
+backlog (Performance, Availability, Scalability, Backup/Recovery, Data Retention,
+Encryption, API Security, Audit Retention, Monitoring, Logging) that sits outside
+`RAISE-NFR-SEC-RBAC-001`. This section mirrors that same completeness discipline at the
+Acceptance Criteria layer, so this document does not silently omit any reference to
+those ten areas.
+
+**No new AC group is written for any of the ten areas**, because none of them has a
+defined value, target, mechanism, or dedicated PRD Traceability ID (Prototype §25A;
+`RAISE-DESIGN.md` §16A) — writing Given/When/Then criteria now would invent both the
+acceptance threshold and the requirement identity. This is consistent with this
+document's own derivation principle (§2): a criterion is only written where the
+Prototype spec already describes a concrete element, state, or flow, and Prototype
+§25A explicitly states these ten areas have **no prototype representation at all**.
+
+| PRD §10 NFR Area | Acceptance Criteria Status |
+|---|---|
+| Authentication | Already covered narrowly by AC-LOGIN (§4) — existence of success/error/access-denied states only; mechanism NOT TESTABLE YET (PRD §16 Q21) |
+| Authorization / RBAC | Already covered narrowly by AC-LOGIN, AC-OPS-002, AC-MAINT-001 RBAC-dependency notes (MVP enforcement level only, per `RAISE-NFR-SEC-RBAC-001`); role list/permission matrix content NOT TESTABLE YET (PRD §16 Q22) |
+| Performance | No AC group — no target defined in PRD/Design/Prototype |
+| Availability | No AC group — no target defined in PRD/Design/Prototype |
+| Scalability | No AC group — no target defined in PRD/Design/Prototype |
+| Backup / Recovery | No AC group — no policy defined in PRD/Design/Prototype |
+| Data Retention | No AC group — no policy defined in PRD/Design/Prototype |
+| Encryption | No AC group — no requirement defined in PRD/Design/Prototype |
+| API Security | No AC group — no requirement defined in PRD/Design/Prototype |
+| Audit Retention | No AC group beyond AC-AUDIT-001's existing NOT TESTABLE YET retention-period note (§16) — no dedicated retention criterion exists |
+| Monitoring | No AC group — no requirement defined in PRD/Design/Prototype |
+| Logging | No AC group — distinct from the business-facing Audit Log AC group (AC-AUDIT-001), which is an application-domain acceptance criterion, not an operational logging NFR |
+
+Only `RAISE-NFR-SEC-RBAC-001` (Authorization/RBAC) has PRD-confirmed, criterion-relevant
+content today (the MVP enforcement-level decision, already reflected in AC-LOGIN,
+AC-OPS-002, and AC-MAINT-001's dependency notes) — the other ten areas remain fully TBD
+at every layer (PRD → Design → Prototype → Acceptance Criteria) and are recorded here for
+traceability completeness only, not as a commitment to future criteria.
+
+---
+
 ## 20. Not-Yet-Testable Summary
 
 The following PRD Open Questions (§16) block full testability of the
@@ -810,6 +855,14 @@ The underlying acceptance *behavior* for all four remains undefined, which is wh
 four rows immediately above this note — not a missing-Traceability-ID note — now
 represent the blocker.
 
+**New in this revision (2026-08-23, Prototype v0.6 §25A re-sync):** the PRD §10 NFR
+backlog (Performance, Availability, Scalability, Backup/Recovery, Data Retention,
+Encryption, API Security, Audit Retention, Monitoring, Logging) is not a row in this
+table because none of these ten areas carries a dedicated PRD Traceability ID or a
+defined value/target — there is no criterion to mark blocked. See new §19.9 above for
+the explicit per-area acknowledgment (mirroring Prototype §25A / Design §16A) that no
+AC group exists for these areas and why.
+
 ---
 
 ## 21. Acceptance Criteria Review Checklist
@@ -837,6 +890,11 @@ Before moving to Test Plan:
 - [x] AC-ORACLE-001 does not reference the stale "Phase 6" code-comment label or assume
       `ReconciliationPage` satisfies `RAISE-FR-ORACLE-001` (PRD Open Question 10a remains
       open and unresolved here)
+- [x] PRD §10 / Design §16A / Prototype §25A's broader NFR backlog (Performance,
+      Availability, Scalability, Backup/Recovery, Data Retention, Encryption, API
+      Security, Audit Retention, Monitoring, Logging) is explicitly acknowledged (§19.9)
+      rather than silently absent from this document — no AC group is invented for any
+      of these areas
 
 ---
 
@@ -870,10 +928,42 @@ as blocked pending business confirmation.
 
 ## Document Status
 
-**Version:** 0.4 (re-synced against `RAISE-PROTOTYPE.md` v0.5, `RAISE-PRD.md` v0.9, and
-`RAISE-DESIGN.md` v0.7, 2026-08-21 — Prototype had advanced through several sync passes
-[v0.3 → v0.5] since this document was last updated at v0.3, against Prototype v0.2; this
-pass reconciles that gap)
+**Version:** 0.5 (re-synced against `RAISE-PROTOTYPE.md` v0.6, `RAISE-PRD.md` v0.9
+[unchanged], and `RAISE-DESIGN.md` v0.8, 2026-08-23)
+
+**Change Log — v0.4 → v0.5 (2026-08-23):**
+
+1. **PRD §10 / Design §16A / Prototype §25A NFR backlog given an explicit Acceptance
+   Criteria-layer acknowledgment.** Prototype v0.6 added [§25A NFR Backlog — Prototype
+   Note](../03-prototype/RAISE-PROTOTYPE.md#25a-nfr-backlog--prototype-note), mirroring
+   Design v0.8's §16A, to record that the PRD §10 NFR backlog (Performance,
+   Availability, Scalability, Backup/Recovery, Data Retention, Encryption, API
+   Security, Audit Retention, Monitoring, Logging) has no defined value, target, or
+   dedicated PRD Traceability ID outside `RAISE-NFR-SEC-RBAC-001`, and that the
+   Prototype adds no screen/UI element for any of these ten areas. This document had no
+   equivalent acknowledgment — new **§19.9 NFR Backlog — Acceptance Criteria Note** now
+   records, per area, that no AC group is written (or, for Authentication/
+   Authorization-RBAC and Audit Retention, exactly what narrow criterion content
+   already exists elsewhere in this document). **No new AC group, criterion, value, or
+   threshold was invented** — this pass only ensures the document does not silently
+   omit reference to these ten areas, matching the discipline Design and Prototype
+   applied in their own v0.7→v0.8 / v0.5→v0.6 passes.
+2. **AC Index (§3)** gained a row pointing to §19.9 (marked "Not testable yet —
+   traceability note only, no AC group," consistent with how the License Management
+   Roadmap note is handled in §3's existing prose).
+3. **Not-Yet-Testable Summary (§20)** gained a note explaining why the PRD §10 NFR
+   backlog areas are not rows in that table (no PRD Traceability ID for ten of the
+   eleven areas) and pointing to the new §19.9 instead.
+4. **Acceptance Criteria Review Checklist (§21)** gained a new checklist item
+   confirming the PRD §10 / Design §16A / Prototype §25A NFR backlog is explicitly
+   acknowledged rather than silently absent.
+5. Version citations in the document header were updated from Prototype v0.5 / Design
+   v0.7 to Prototype v0.6 / Design v0.8 (PRD unchanged at v0.9). No other AC group
+   required correction — all existing AC groups (Login through AI-Doc-004, and the
+   License Management Roadmap-only note) were checked against the corresponding
+   Prototype v0.6 sections and found unchanged in substance since v0.5, since Prototype
+   v0.6's only content change was the addition of §25A itself (no screen, flow, or
+   requirement was added, removed, or altered).
 
 **Change Log — v0.3 → v0.4 (2026-08-21):**
 
@@ -948,11 +1038,11 @@ No other screen changes were found in Prototype v0.3; no existing criterion beyo
 the two items above required correction.
 
 **Status:** Draft for Acceptance Review
-**Source:** [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.5, [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.9, [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.7
+**Source:** [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.6, [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.9, [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.8
 **Reference:** VERSCAN only
-**Next Action:** Review the v0.4 update (4-stage Maintenance workflow criteria,
-License Management Roadmap-only traceability note, RBAC enforcement-level
-clarifications, "Phase 6" drift check) and resolve blocking Open Questions (§20) before
-Test Plan. `RAISE-TEST-PLAN.md` / `RAISE-TEST-CASES.md` should be checked next for the
-same drift, in particular whether they already cover (or need to add coverage for) the
-new AC-MAINT-001-03..09 stage-transition criteria.
+**Next Action:** Review the v0.5 update (new §19.9 NFR Backlog — Acceptance Criteria
+Note, mirroring Prototype §25A / Design §16A) and resolve blocking Open Questions (§20)
+before Test Plan. `RAISE-TEST-PLAN.md` / `RAISE-TEST-CASES.md` should be checked next
+for the same drift, in particular whether they already cover (or need to add coverage
+for) the AC-MAINT-001-03..09 stage-transition criteria, and whether they need an
+equivalent NFR-backlog acknowledgment note of their own.

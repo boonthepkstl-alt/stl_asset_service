@@ -50,6 +50,8 @@ which requirements are BLOCKED on an open PRD question vs. ready to build.
 | 2026-08-24 | [#11](https://github.com/boonthepkstl-alt/stl_asset_service/pull/11) | **Add RAISE Maintenance/Ticket domain** (`RAISE-FR-MAINT-001`) |
 | 2026-08-24 | [#12](https://github.com/boonthepkstl-alt/stl_asset_service/pull/12) | Sync deliverable chain: NFR backlog acknowledgment + traceability Gap 6 fix |
 | 2026-08-24 | [#13](https://github.com/boonthepkstl-alt/stl_asset_service/pull/13) | **Add Asset Check-in** (`RAISE-FR-OPS-002`), wire real Assign flow |
+| 2026-08-24 | [#14](https://github.com/boonthepkstl-alt/stl_asset_service/pull/14) | Add project timeline/checkpoint tracker (`docs/project-management/`) |
+| 2026-08-24 | *(this PR)* | Add High-Level Architecture, API/DB Spec, and Detailed Design docs (`docs/08-architecture/`, `docs/09-api-db-spec/`, `docs/10-detailed-design/`) |
 
 *(To regenerate/verify this table: `git log --merges --oneline --format="%h %ad %s" --date=short` plus `gh pr view <n> --json title,mergedAt` for each PR number.)*
 

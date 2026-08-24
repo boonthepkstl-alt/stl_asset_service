@@ -54,6 +54,19 @@ Run this before ending any development session that touched code or docs:
     the status vocabulary in §4. A build that compiles and tests that pass
     are necessary, not sufficient, for "Completed."
 
+## 1a. Baseline Checkpoints (a fourth, rare type)
+
+A **Baseline Checkpoint** is not part of the normal per-task cadence — it's
+a live re-scan of `git` and the actual source tree (not reconstructed from
+prior history), used only when re-establishing project governance or
+marking a major milestone (e.g. right after this protocol itself was
+adopted). Where a Level 1-3 checkpoint documents *what changed*, a
+Baseline Checkpoint documents *what verifiably exists right now*, so later
+checkpoints have a trustworthy zero point to diff against. It runs Steps
+1-3 of the checklist for real (not from memory) across the whole repo, not
+one task's diff, and is recorded in `PROJECT-CHECKPOINTS.md` under its own
+`## Baseline Checkpoints` heading.
+
 ## 2. The Three Checkpoint Levels
 
 | Level | Question it answers | Cadence | Where it lives |

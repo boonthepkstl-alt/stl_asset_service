@@ -839,3 +839,49 @@ Reasons (per Rule 14 — not glossed over):
 **Known Issues:** No Feature Checkpoint yet exists for the original template-audit or requirements-chain work (CHECKPOINT-2026-08-21-001 through -22-002, -22-005) — only the most recent Project Tracking & Governance feature has one. Backfilling those is optional; they predate this protocol's own creation.
 **Remaining Work:** Move the PRD and downstream chain from Draft to an approved baseline (a business decision, not an engineering task) before this phase can pass its gate; resolve Finding F-10.
 **Next Recommended Task:** Not a Phase 1 task specifically — Phase 1 stays open-ended by design (see `PROJECT-TIMELINE.md`: "foundation work is continuous, not a fixed-end phase"). Recommended next work remains the Phase 3 QR/Barcode checkpoint, which does not depend on Phase 1's gate passing.
+
+---
+
+## Baseline Checkpoints
+
+A Baseline Checkpoint (defined in
+[`SESSION-CLOSEOUT-PROTOCOL.md`](SESSION-CLOSEOUT-PROTOCOL.md) §1a) is a
+live re-scan of git and the actual source tree — not reconstructed from
+prior history — recorded only at governance-establishment or
+major-milestone moments, so later checkpoints have a verified zero point.
+
+### BASELINE-CHECKPOINT-2026-08-24
+
+**Established immediately after:** PR #20 merged (the Development Session
+Close-Out Protocol became a binding `CLAUDE.md` rule).
+**Purpose:** the first Baseline Checkpoint under the new protocol — verify
+and record what genuinely exists right now, by direct inspection, not by
+citing earlier checkpoints.
+
+**Git state (scanned live):**
+- HEAD: `a08e81b` — "Merge pull request #20 from boonthepkstl-alt/docs/claude-md-session-protocol-rule"
+- Total commits: 49 · Merged PRs: 20 (#1–#20, all merged)
+- Commit date range: 2026-08-21 → 2026-08-24
+- Local `main` == `origin/main` (no divergence at scan time)
+- No open PRs at scan time
+
+**Backend (`go-template-main`) — scanned live:**
+- Real domains: Asset Registry (+ Assign/Check-in), Employee, Maintenance/Ticket, Auth (demo-only)
+- 50 `Test*` functions across `service/*_test.go`, `controller/*_test.go`, `middleware/*_test.go`
+- SQL migrations present: `V0__Initial_Table.sql` (template demo, not RAISE), `V1__Assets_Table.sql`, `V2__Employees_Table.sql`, `V3__Tickets_Table.sql`
+- `go build ./...` → **Pass** · `go vet ./...` → **Pass** · `go test ./...` → **Pass** (all packages)
+
+**Frontend (`frontend/`) — scanned live:**
+- 20 page folders under `src/pages/`, 19 service modules under `src/services/` (excluding `*.test.ts`)
+- 36 test files, **127 tests passing**
+- `npx tsc --noEmit` → **Pass** · `npm run lint` → **Pass** (0 warnings) · `npm run build` → **Pass** (main bundle ~634 kB / gzip ~175 kB — still over the 500 kB chunk-size advisory, Finding **F-18**, not blocking)
+
+**Requirement Traceability:** Cross-checked against `RAISE-TRACEABILITY-MATRIX.md` v0.5 §3 at scan time — no change in BLOCKED/NOT_TESTED status since `CURRENT-STATUS.md` was last written; QR/Barcode (`RAISE-FR-OPS-001`) remains the only MVP requirement listed with no blocker.
+
+**Open Findings at scan time:** F-01 through F-19 in `OPEN-FINDINGS.md`, none newly resolved or newly discovered by this scan.
+
+**Verdict:** This baseline **confirms** — does not contradict — every fact already recorded in `CURRENT-STATUS.md`, `DEVELOPMENT-LOG.md`, and the Level 1-3 checkpoints above as of PR #20. No drift was found between the documented state and the actual repository state at scan time.
+
+**Known Issues:** None newly found by this scan (see `OPEN-FINDINGS.md` for the standing list).
+**Remaining Work:** None specific to establishing this baseline.
+**Next Recommended Task:** QR / Barcode (`RAISE-FR-OPS-001`) — per `CURRENT-STATUS.md` §4 and `PHASE-CHECKPOINT-1`'s recommendation, unchanged by this scan.

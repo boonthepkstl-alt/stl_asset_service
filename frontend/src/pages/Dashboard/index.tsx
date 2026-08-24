@@ -68,7 +68,7 @@ export function DashboardPage() {
         { label: 'Assigned', value: stats.assigned, icon: UserCheck, color: 'accent', sub: 'in active use' },
         { label: 'In Maintenance', value: stats.inMaintenance, icon: Wrench, color: 'warning', sub: 'under repair' },
         { label: 'Expired Warranty', value: stats.expiredWarranty, icon: AlertTriangle, color: 'error', sub: 'needs attention' },
-        { label: 'Software Licenses', value: stats.softwareLicenseCount, icon: KeyRound, color: 'brand', sub: 'active contracts' },
+        { label: 'Software Licenses', value: stats.softwareLicenseCount, icon: KeyRound, color: 'singer', sub: 'active contracts' },
         { label: 'Monthly Depreciation', value: `$${(staticKpis.monthlyDepreciation / 1000).toFixed(1)}K`, icon: TrendingDown, color: 'accent', sub: 'illustrative — no depreciation model yet' },
         { label: 'Monthly Cost', value: `$${(staticKpis.monthlyCost / 1000).toFixed(1)}K`, icon: DollarSign, color: 'success', sub: 'illustrative — no depreciation model yet' },
       ]
@@ -80,6 +80,10 @@ export function DashboardPage() {
     warning: { bg: 'bg-warning-50', text: 'text-warning-600' },
     error: { bg: 'bg-error-50', text: 'text-error-600' },
     accent: { bg: 'bg-accent-50', text: 'text-accent-600' },
+    // Singer CI accent -- used only on Software Licenses, deliberately not on Total Assets
+    // (which sits directly above the error-colored Expired Warranty card and would read as a
+    // second alert in the same column). See RAISE-BRAND-STYLE-GUIDE.md Sec2/Sec4.
+    singer: { bg: 'bg-singer-50', text: 'text-singer-600' },
   };
 
   return (

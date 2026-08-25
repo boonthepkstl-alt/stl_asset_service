@@ -26,12 +26,13 @@ changes user-visible or API-visible behavior. Pure documentation-sync PRs
   real formula).
 
 ### Added
-- **Audit Log (first cut)** — Asset Detail's "Audit" tab now shows real,
-  recorded activity for that asset (create/assign/check-in), each with
-  the actual person who did it and when, instead of a fixed example
-  list. Entries cannot be edited or deleted through the app. Only Asset
-  activity is covered so far — Maintenance ticket activity isn't logged
-  yet.
+- **Audit Log** — Asset Detail's "Audit" tab now shows real, recorded
+  activity for that asset (create/assign/check-in), each with the
+  actual person who did it and when, instead of a fixed example list.
+  Entries cannot be edited or deleted through the app. Maintenance
+  ticket activity (create/approve/dispatch/status updates) is now
+  recorded too, though there is no dedicated screen to view it yet —
+  it's captured internally, ready for a future viewing surface.
 - **QR / Barcode identification** — "Print QR Code" (Assets list and Asset
   Detail) now generates a real, scannable QR code linking to the asset's
   record, with a working download button. "Scan QR" on the Assets list

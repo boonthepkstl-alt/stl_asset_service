@@ -57,7 +57,6 @@ so the history of what was once open stays visible.
 |---|---|---|---|---|
 | F-18 | Frontend bundle size | Production bundle ~634 kB (gzip ~175 kB), over the 500 kB chunk-size warning threshold | `npm run build` output | Open — not urgent at current scale; code-splitting is the standard fix |
 | F-19 | Backend error responses | Several `500` paths include the raw underlying Go error string in the JSON response | `RAISE-DETAILED-DESIGN.md` §7 | Open — acceptable pre-production, would need auditing before public exposure |
-| F-20 | Checkpoint coverage | PRs #19-28 (CLAUDE.md refresh, session-protocol rule, baseline checkpoint, next-step protocol, Singer CI branding x5, timeline checkpoint links) have `DEVELOPMENT-LOG.md` rows (backfilled in [PR #29](https://github.com/boonthepkstl-alt/stl_asset_service/pull/29)'s close-out) but no Level 1 Task Checkpoint entries in `PROJECT-CHECKPOINTS.md` — checkpointing lapsed after CHECKPOINT-2026-08-24-009 (PR #18) until CHECKPOINT-2026-08-25-001 (PR #29) | `PROJECT-CHECKPOINTS.md` (gap between the two dated entries) | Open — backfilling 10 PRs' worth of detailed checkpoints accurately needs per-PR diff review, deferred rather than guessed |
 
 ## Correctly Fenced (not a problem — listed for completeness)
 
@@ -74,3 +73,4 @@ so the history of what was once open stays visible.
 | R-01 | Login contract | Backend response envelope (snake_case, cookie-only token) didn't match frontend's expected bare camelCase object with token in body | [PR #10](https://github.com/boonthepkstl-alt/stl_asset_service/pull/10) |
 | R-02 | Traceability drift | Matrix claimed to be current against a PRD version it had not re-verified (Gap 6) | [PR #12](https://github.com/boonthepkstl-alt/stl_asset_service/pull/12) |
 | R-03 | react-template-main build failure | Unused imports broke the build | [PR #6](https://github.com/boonthepkstl-alt/stl_asset_service/pull/6) |
+| R-04 | Checkpoint coverage | PRs #19-28 had `DEVELOPMENT-LOG.md` rows but no Level 1 Task Checkpoint entries in `PROJECT-CHECKPOINTS.md` — checkpointing had lapsed after `CHECKPOINT-2026-08-24-009` (PR #18) until `CHECKPOINT-2026-08-25-001` (PR #29) | Backfilled as `CHECKPOINT-2026-08-24-010` through `-019`, reconstructed from real `gh pr view` metadata, not memory — [PR #36](https://github.com/boonthepkstl-alt/stl_asset_service/pull/36) |

@@ -4,139 +4,150 @@
 Overwritten in place each time the protocol is re-run — do not treat an
 old copy of this file as still valid; re-run Step 11 (Recalculate) first.
 
-**Run date:** 2026-08-25, immediately after `CHECKPOINT-2026-08-25-003` (PR #33, Executive Dashboard KPI first cut).
+**Run date:** 2026-08-25, immediately after `CHECKPOINT-2026-08-25-004` (PR #35, Ticket-domain audit hook-in).
 
 ---
 
 ## Current State
 
-- **Current phase:** Phase 1 — Foundation (ongoing) running concurrently with Phase 3 — Asset Management, Phase 6 — Audit & Reconciliation (🟡 Audit Log first cut, Ticket-domain hook-in outstanding), and Phase 8 — Executive Dashboard & Reporting (🟡 plain-count KPIs shipped; NBV/Risk/Utilization mechanics not started, blocked on PRD).
-- **Current feature:** None actively in progress. Last feature-level work: Executive Dashboard KPI first cut (`RAISE-FR-EXEC-001`), scoped to plain-count tiles only, built in PR #33.
-- **Current task:** None in progress. Last task checkpoint: `CHECKPOINT-2026-08-25-003`.
-- **Last completed checkpoint:** `CHECKPOINT-2026-08-25-003` (Level 1, merged via [PR #33](https://github.com/boonthepkstl-alt/stl_asset_service/pull/33)).
-- **Current status:** 🟢 Both codebases verified green (backend `go build`/`vet`/`test`; frontend `tsc`/`lint`/`vitest` 132/132/`build`) as of this checkpoint.
-- **Open blockers (for the recommended next step specifically):** None for the Ticket-domain audit hook-in itself (it's additive instrumentation on an already-built domain, same shape as the Asset-domain hook-in already shipped in PR #31). The *other* remaining `RAISE-FR-EXEC-001` work (NBV/Risk/Utilization mechanics) is genuinely blocked on PRD §16 Q3/Q4/Q29 — not a scoping problem, a business-decision one.
-- **Open findings:** F-01 through F-20 in `OPEN-FINDINGS.md`, unchanged this session.
-- **Remaining work:** Ticket-domain audit hook-in (deferred in PR #31, still open); NBV/Risk/Utilization-mechanics KPIs (blocked, not actionable without a PRD answer).
-- **Dependencies:** Ticket domain (`RAISE-FR-MAINT-001`) and `AuditService.Record` (both already built) — the hook-in is pure composition of two existing things, not a new domain.
-- **Plan vs. actual variance:** None — this session executed exactly the item the prior `NEXT-STEP.md` recommended (Executive Dashboard KPI first cut), with no scope drift.
+- **Current phase:** Phase 1 — Foundation (ongoing) running concurrently with Phase 3 — Asset Management, Phase 6 — Audit & Reconciliation (🟡 Audit Log now covers Asset + Ticket domains; Oracle FA Integration not started), and Phase 8 — Executive Dashboard & Reporting (🟡 plain-count KPIs shipped; NBV/Risk/Utilization mechanics blocked on PRD).
+- **Current feature:** None actively in progress. Last feature-level work: Ticket-domain audit hook-in, extending PR #31 to a second domain, built in PR #35.
+- **Current task:** None in progress. Last task checkpoint: `CHECKPOINT-2026-08-25-004`.
+- **Last completed checkpoint:** `CHECKPOINT-2026-08-25-004` (Level 1, merged via [PR #35](https://github.com/boonthepkstl-alt/stl_asset_service/pull/35)).
+- **Current status:** 🟢 Both codebases verified green (backend `go build`/`vet`/`test`; frontend `tsc`/`lint`/`vitest` 134/134/`build`) as of this checkpoint.
+- **Open blockers:** Every remaining MVP item in `CURRENT-STATUS.md` §4 is genuinely "Blocked on a business decision" (Warranty, Alerts, Oracle FA Integration, Natural Language Search, Document Intelligence, User/Role Management backend) or the NBV/Risk/Utilization-mechanics remainder of Executive Dashboard (PRD §16 Q3/Q4/Q29). None of these can be scoped down further without inventing an answer — see Priority Application below for why this session does **not** manufacture a fake "buildable" pick.
+- **Open findings:** F-01 through F-20 in `OPEN-FINDINGS.md`, unchanged this session. F-20 (missing Level 1 checkpoints for PR #19-28) remains the one open item that is neither blocked nor speculative — see Priority Application.
+- **Remaining work:** None outstanding from the Ticket-domain audit hook-in itself. A future Ticket-side (or unified) audit *viewing* UI was explicitly not built — see `CHECKPOINT-2026-08-25-004`'s Remaining Work — but building one wasn't asked for and isn't assumed here.
+- **Dependencies:** N/A — no fresh dependency chain to trace; every remaining item's blocker is a PRD answer, not a missing prerequisite domain.
+- **Plan vs. actual variance:** None — this session executed exactly the item the prior `NEXT-STEP.md` recommended (Ticket-domain audit hook-in), with no scope drift.
 
 ## Incomplete Work Inventory (classified)
 
 | Item | Classification | Note |
 |---|---|---|
-| Ticket-domain audit hook-in | `ENHANCEMENT` (already-scoped extension, not blocked) | Deferred in PR #31 — see `CHECKPOINT-2026-08-25-002` Remaining Work. No PRD answer needed; same pattern already proven on the Asset domain |
-| NBV/Risk/Utilization-mechanics KPIs (`RAISE-FR-EXEC-001` remainder) | `FINDING`-adjacent (blocked on business decision) | PRD §16 Q3/Q4/Q29 — cannot be scoped down further without guessing a formula |
-| `TC-OPS-001-01..03` / `TC-AUDIT-001-01/03` / `TC-EXEC-001-01/02` formal execution | `VALIDATION` | Test-case sign-off, not a code task |
+| Missing Level 1 checkpoints for PR #19-28 | `FINDING` (F-20) | Documentation debt — real, actionable, not blocked, but also not a product feature |
+| NBV/Risk/Utilization-mechanics KPIs (`RAISE-FR-EXEC-001` remainder) | Blocked on business decision | PRD §16 Q3/Q4/Q29 |
 | Warranty field list (`RAISE-FR-WARRANTY-001`) | `FINDING` (F-01) | Blocked — PRD §16 Q15 |
 | Check-in/out workflow detail (`RAISE-FR-OPS-002`) | `FINDING` (F-02) | Blocked — PRD §16 Q11-13 |
 | `RAISE-FR-ASSET-003` vs. `RAISE-FR-OPS-002` overlap | `FINDING` (F-10) | Unresolved scope question |
-| Missing Level 1 checkpoints for PR #19-28 | `FINDING` (F-20) | Documentation debt, not a product feature |
+| Alerts, Oracle FA Integration, NL Search, Document Intelligence, User/Role Management backend | Blocked on business decision | See `CURRENT-STATUS.md` §4 for each item's specific open question |
+| Ticket-domain audit *viewing* UI | Not started, not requested | Entries are recorded (PR #35) but nothing displays them yet — a new task if/when asked for |
+| `TC-OPS-001-01..03` / `TC-AUDIT-001-01/03` / `TC-EXEC-001-01/02` formal execution | `VALIDATION` | Test-case sign-off, not a code task |
 | No real user/auth store | `TECHNICAL_DEBT` | Accepted — Roadmap-confirmed, not actionable now |
 | Frontend bundle size (F-18) | `TECHNICAL_DEBT` | Not urgent |
 | License, AI Decision Center, Risk/Lifecycle/Recommendation | `ENHANCEMENT` (out of scope) | Roadmap-only — do not select |
 
 ## Priority Application
 
-Per `NEXT-STEP-PROTOCOL.md` §Step 3: both items that were "needs a
-scoped-down first cut" candidates (Audit Log, Executive Dashboard) are now
-built to the extent possible without inventing TBD content. No fresh item
-remains in that category. The next tier down is "already-scoped
-extension of a shipped first cut" — exactly one candidate qualifies:
-Ticket-domain audit hook-in. Unlike the NBV/Risk/Utilization-mechanics
-remainder of Executive Dashboard (which needs a PRD answer before any
-further code can be written without guessing), the Ticket-domain hook-in
-needs no new decision at all — `AuditService.Record` and the Ticket
-domain's mutation points (`CreateTicket`/`DecideApproval`/`Dispatch`/
-`UpdateExecutionStatus`) both already exist; this is pure composition,
-the same shape as connecting two already-built pipes.
+Per `NEXT-STEP-PROTOCOL.md` §Step 3: for the first time in this session's
+run of picks (QR/Barcode → Audit Log → Executive Dashboard →
+Ticket-domain audit extension), **no fresh code-buildable item remains**.
+Every "needs a scoped-down first cut" and "already-scoped extension"
+candidate identified across the last four checkpoints has been built.
+What's left splits into exactly two honest categories: (1) items
+genuinely blocked on a PRD/business-decision answer, where writing code
+now would mean guessing a formula, field list, or role model the
+business hasn't confirmed — not permitted per this protocol's own rules;
+and (2) documentation debt (F-20) and test-execution sign-off, neither of
+which is a "next feature" in the sense the last four picks were.
+
+This is the point the prior `NEXT-STEP.md` runs anticipated ("recalculate
+... expecting the honest answer to be 'everything left is blocked on a
+PRD/business decision,' and say so plainly rather than inventing a new
+'buildable' category that doesn't exist" — `CHECKPOINT-2026-08-25-002`'s
+own framing). That prediction is now correct. The responsible move is to
+say so, not to stretch F-20 or test-execution into a manufactured "primary
+next step" of equivalent weight to the four feature checkpoints just
+shipped.
 
 ---
 
 ## Primary Next Step
 
-**Wire Ticket-domain mutations into the existing Audit Log
-(`AuditService.Record`) — extend PR #31's Asset-domain coverage to
-`CreateTicket`/`DecideApproval`/`Dispatch`/`UpdateExecutionStatus`, on
-both the backend controller and the frontend mock ticket repository.**
+**None identified that fits this session's established "scoped-down
+first cut / already-scoped extension" pattern.** The two next-best
+candidates are of a different kind entirely, and the choice between them
+is a judgment call for whoever is directing this project, not something
+this protocol should decide unilaterally:
 
-## Why This Is Next
+1. **Backfill F-20** (Level 1 checkpoints for PR #19-28) — pure
+   documentation debt, zero risk, no PRD dependency, but also not
+   product-facing.
+2. **Ask the business to resolve one specific open PRD question** (PRD
+   §16 — pick from Q3/Q4/Q29 NBV/Risk/Utilization, Q6-Q10 Oracle
+   integration, Q15 Warranty fields, Q20a Duplicate Detection, or Q22
+   role model) — whichever answer lands first reopens exactly one
+   "needs a scoped-down first cut" item.
 
-It is the only remaining item that is both genuinely actionable (no PRD
-answer needed) and non-speculative (reuses two already-built pieces
-verbatim). Every other open item is either a business-decision blocker
-(NBV/Risk/Utilization formulas, Warranty field list, Check-in/out
-workflow detail) or a documentation/test-execution task, not a code task.
+## Why Neither Is Auto-Selected
+
+Per Rule 14 and this protocol's "don't invent, mark gaps" principle:
+picking (1) would silently reframe housekeeping as feature progress;
+picking (2) requires a business decision this session cannot make on its
+own. Recommending both, explicitly, and deferring the choice is more
+honest than picking one and presenting it as equivalent to the last four
+shipped checkpoints.
 
 ## Dependencies
 
-`RAISE-FR-MAINT-001` (Ticket/Maintenance domain) and `RAISE-FR-AUDIT-001`
-(`AuditService.Record`, `recordMockAuditEntry`) — both already built and
-stable; this is a consumer of both, not a new domain or a new pattern.
+N/A for both candidates — (1) needs only `gh pr view`/diff access already
+used for the PR #18-29 backfill precedent; (2) needs a business answer,
+not a technical dependency.
 
 ## Expected Output
 
-- **Inspect existing implementation first** (Step 8.1) — re-read
-  `go-template-main/controller/ticketController.go` and
-  `go-template-main/controller/assetController.go`'s `recordAudit`
-  helper (added in PR #31) before writing anything, to reuse the exact
-  same best-effort-write pattern rather than inventing a second one.
-- Backend: add a `recordAudit`-equivalent call (or promote the existing
-  one to a shared helper if it can be reused verbatim) after each of
-  `CreateTicket`/`DecideApproval`/`Dispatch`/`UpdateExecutionStatus`
-  succeeds, with `entityType: "ticket"` and the ticket's code/id as
-  `entityID`.
-- Frontend: same hook-in on `MockTicketRepository`'s equivalent methods
-  in `frontend/src/services/ticket-repository.ts`, calling
-  `recordMockAuditEntry` exactly as `MockAssetRepository` already does
-  (`frontend/src/services/asset-repository.ts`).
-- Do **not** add a Ticket-specific "Audit" tab UI unless one is
-  requested — `AC-AUDIT-001-03` only requires that entries be viewable
-  somewhere; whether that's a new UI surface or an extension of an
-  existing one is a scope question to raise, not assume.
+If (1) is chosen: repeat the same evidence-based backfill process already
+used for PR #18-29 (`CHECKPOINT-2026-08-25-001`'s own §"docs/qr-barcode-closeout"
+precedent) — `gh pr view <n> --json ...`/diff for PRs #19-28, write Level 1
+checkpoints from that real evidence, not from memory.
+
+If (2) is chosen: whichever PRD answer lands, re-run this protocol's Steps
+1-7 from scratch against the traceability matrix's state *at that time* —
+don't assume the newly-unblocked item is automatically "the" next pick
+without re-checking the others too.
 
 ## Acceptance Criteria
 
-`AC-AUDIT-001-01` (already-confirmed text, re-used from PR #31 — see
-`CHECKPOINT-2026-08-25-002`) — this task extends its coverage to a second
-domain, it doesn't change what the AC requires.
+N/A — neither candidate has a product AC; (1) is docs-process, (2) is a
+business decision, not a build task.
 
 ## Validation Method
 
-- Backend: `go build ./...`, `go vet ./...`, `gofmt -l`, `go test ./...`.
-- Frontend: `tsc --noEmit`, `npm run lint`, `npx vitest run`, `npm run build`.
-- Browser-verify: perform a ticket mutation (e.g. approve a requisition),
-  confirm a new audit entry appears (wherever it's surfaced) with
-  `entityType: "ticket"`, correct actor/action/timestamp.
+N/A for this recalculation itself. Whichever candidate is chosen next,
+its own validation method should be written fresh once real code work
+starts (per Step 8/9 of the protocol), not inherited from this entry.
 
 ## Related Checkpoint
 
-`CHECKPOINT-2026-08-25-002` (PR #31, the Asset-domain pattern this task
-extends) and `CHECKPOINT-2026-08-25-003` (this recalculation's basis).
+`CHECKPOINT-2026-08-25-002`, `-003`, `-004` (the three checkpoints whose
+own "Next Step" fields predicted this session would eventually run out of
+scoped-down picks) and `CURRENT-STATUS.md` §4 (current backlog triage).
 
 ## Related Git Branch/Commit
 
-None yet — not started.
+None — no code branch is recommended by this recalculation.
 
 ---
 
 ## Risks / Blockers
 
-None identified — this is composition of two already-shipped, already-
-tested pieces. The only judgment call is where entries surface in the UI
-(see Expected Output's note on not inventing a new tab without asking).
+The real risk here is process, not code: treating F-20 backfill as
+"progress" of the same kind as the last four feature checkpoints would
+misrepresent the project's actual state to a future reader of
+`PROJECT-CHECKPOINTS.md`. Keep the distinction explicit if either
+candidate is picked next.
 
-## Files to Update (after implementation, per Step 10)
+## Files to Update (after whichever is chosen, per Step 10)
 
-`PROJECT-TIMELINE.md` (Phase 6 status), `PROJECT-CHECKPOINTS.md` (new
-Level 1 checkpoint), `DEVELOPMENT-LOG.md`, `CURRENT-STATUS.md`,
-`CHANGELOG.md`, this file (`NEXT-STEP.md`, recalculated per Step 11).
+If (1): `PROJECT-CHECKPOINTS.md`, `DEVELOPMENT-LOG.md` (if new PRs
+result), `OPEN-FINDINGS.md` (resolve F-20), this file. If (2): the full
+deliverable chain from `RAISE-PRD.md` downward, per this project's
+established "PRD change → re-verify every downstream document" rule.
 
 ## After Completion
 
-Recalculate from updated project state. Once the Ticket-domain hook-in
-ships, every remaining "needs a scoped-down first cut" and
-"already-scoped extension" item will be exhausted — re-run Steps 1-7 at
-that point expecting the honest answer to be "everything left is blocked
-on a PRD/business decision," and say so plainly rather than inventing a
-new "buildable" category that doesn't exist.
+This file should stop being auto-recalculated as "pick the next scoped
+build" once both remaining categories here are exhausted or chosen from
+— the next real re-run of this protocol should start from whichever of
+(1)/(2) actually happened, not from assuming another first-cut candidate
+will appear on its own.

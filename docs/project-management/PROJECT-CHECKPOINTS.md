@@ -759,7 +759,7 @@ Commit: `7e8f356` (merge)
 
 **Git:**
 Branch: `docs/checkpoints-structured-template`
-Commit: **pending merge** — [PR #18](https://github.com/boonthepkstl-alt/stl_asset_service/pull/18) open, awaiting explicit merge instruction. Per this project's own Rule 14 (`SESSION-CLOSEOUT-PROTOCOL.md` §1), this checkpoint is **not** marked Completed until merged — status is 🚧 In Progress.
+Commit: `afd23d7` (merge commit, [PR #18](https://github.com/boonthepkstl-alt/stl_asset_service/pull/18), merged 2026-08-24). *(Corrected 2026-08-25 during the F-20 backfill — this line originally read "pending merge" and was never updated after the merge actually happened; fixing a stale factual claim, not a status change.)*
 
 **Known Issues:** None.
 **Remaining Work:** Merge PR #18.
@@ -789,11 +789,336 @@ Commit: **pending merge** — [PR #18](https://github.com/boonthepkstl-alt/stl_a
 
 **Git:**
 Branch: `docs/checkpoints-structured-template`
-Commit: **pending merge** — part of [PR #18](https://github.com/boonthepkstl-alt/stl_asset_service/pull/18), same branch as CHECKPOINT-2026-08-24-008. Status: 🚧 In Progress until merged.
+Commit: `afd23d7` (merge commit, [PR #18](https://github.com/boonthepkstl-alt/stl_asset_service/pull/18), merged 2026-08-24), same branch as CHECKPOINT-2026-08-24-008. *(Corrected 2026-08-25 during the F-20 backfill — same stale "pending merge" issue as -008.)*
 
 **Known Issues:** The protocol is new and unproven — its real test is whether the next session actually follows it without being reminded.
 **Remaining Work:** Merge PR #18; the next session should be the first to demonstrate the protocol running against genuinely new work (e.g. the QR/Barcode checkpoint backlog item).
 **Next Step:** QR / Barcode (`RAISE-FR-OPS-001`) remains the recommended next feature-level checkpoint — see `CURRENT-STATUS.md` §4.
+
+---
+
+**Backfill note (2026-08-25):** checkpoints -010 through -019 below (PRs #19-28) were not recorded when merged — this is finding **F-20** in `OPEN-FINDINGS.md`, closed by this backfill. They are reconstructed entirely from `gh pr view <n> --json title,body,files,mergeCommit,mergedAt` output (real merged-PR metadata, including each PR's own contemporaneous test-plan checkboxes), not from memory. PR #28's checkpoint is numbered `-019` to keep same-day merge order (it was the last 2026-08-24 merge, at 15:23), even though it is being written after `CHECKPOINT-2026-08-25-001` through `-004` — those were authored in real time as their PRs merged, before this gap was discovered.
+
+## CHECKPOINT-2026-08-24-010
+
+**Phase:** Phase 1 — Foundation
+**Feature:** Project tracking / process governance
+**Task:** Refresh `CLAUDE.md` to match actual project state
+
+**What was implemented:** Rewrote `CLAUDE.md` §1 (project status), §3 (docs/ folder map), §4 (deliverable chain diagram), §5 (agent/skill gap description), and closing guidance — the file had drifted to claim `frontend/src/` was empty and no Technical Spec pipeline existed, when PRs #7-#15 had already built real backend domains (Asset, Employee, Maintenance/Ticket, demo Auth), real frontend code, and as-built docs (`docs/08-architecture/` through `docs/10-detailed-design/`).
+**What was modified:** `CLAUDE.md` (+89/-40).
+**What was fixed:** The stale "empty frontend" / "no pipeline" claims themselves.
+**What was added:** `docs/project-foundation-baseline/RAISE-BRAND-STYLE-GUIDE.md` (new, +97); `docs/superpowers/specs/2026-08-24-technical-spec-pipeline-design.md` (new, +167) — records a Technical Spec pipeline design that was drafted then withdrawn (SUPERSEDED) once this drift was discovered, per the PR body.
+**What was removed:** None.
+
+**Files changed:** 3 files (+353/-40) — see [PR #19](https://github.com/boonthepkstl-alt/stl_asset_service/pull/19).
+**Database changes:** None. **API changes:** None. **Frontend changes:** None.
+
+**Tests:** N/A — documentation-only change.
+**Validation:** N/A — documentation-only change.
+
+**Requirement Traceability:** N/A — process/documentation tooling, not a PRD requirement.
+
+**Git:**
+Branch: `docs/claude-md-refresh`
+Commit: `28aa7d5` (merge commit, [PR #19](https://github.com/boonthepkstl-alt/stl_asset_service/pull/19), merged 2026-08-24T13:30:39Z)
+
+**Known Issues:** None.
+**Remaining Work:** None for this task itself.
+**Next Step:** Make the close-out protocol a binding `CLAUDE.md` rule (next checkpoint).
+
+---
+
+## CHECKPOINT-2026-08-24-011
+
+**Phase:** Phase 1 — Foundation
+**Feature:** Project tracking / process governance
+**Task:** Make the Development Session Close-Out Protocol a binding `CLAUDE.md` rule
+
+**What was implemented:** A new `CLAUDE.md` section making `SESSION-CLOSEOUT-PROTOCOL.md`'s 14-step checklist mandatory for every AI agent working in this repo, summarizing the checklist, the 3-level checkpoint model, and the protocol's design goal (project-state questions must be answerable from Timeline + Checkpoint + Git + Test + Traceability evidence, never AI memory). Built on the just-merged CLAUDE.md refresh (PR #19) rather than the stale pre-refresh version.
+**What was modified:** `CLAUDE.md` (+22/-0).
+**What was fixed:** None.
+**What was added:** None (new section within the existing file).
+**What was removed:** None.
+
+**Files changed:** 1 file (+22/-0) — see [PR #20](https://github.com/boonthepkstl-alt/stl_asset_service/pull/20).
+**Database changes:** None. **API changes:** None. **Frontend changes:** None.
+
+**Tests:** N/A — documentation-only change.
+**Validation:** N/A — documentation-only change.
+
+**Requirement Traceability:** N/A — process tooling.
+
+**Git:**
+Branch: `docs/claude-md-session-protocol-rule`
+Commit: `a08e81b` (merge commit, [PR #20](https://github.com/boonthepkstl-alt/stl_asset_service/pull/20), merged 2026-08-24T13:34:44Z)
+
+**Known Issues:** None.
+**Remaining Work:** None for this task itself.
+**Next Step:** Establish a Baseline Checkpoint from a live git/source scan (next checkpoint).
+
+---
+
+## CHECKPOINT-2026-08-24-012
+
+**Phase:** Phase 1 — Foundation
+**Feature:** Project tracking / process governance
+**Task:** Add `BASELINE-CHECKPOINT-2026-08-24` from a live git/source-code scan
+
+**What was implemented:** Defined **Baseline Checkpoints** as a fourth checkpoint type (`SESSION-CLOSEOUT-PROTOCOL.md` §1a) — a live re-scan of git and the actual source tree, distinct from routine Task/Feature/Phase checkpoints, used only at governance-establishment or major-milestone moments. Ran that scan for real: Git HEAD `a08e81b`, 49 commits, 20 merged PRs (#1-#20), 2026-08-21→08-24, no local/origin divergence; backend 4 real domains, 50 `Test*` functions, `go build`/`vet`/`test` all pass; frontend 20 pages, 19 services, 36 test files / 127 tests passing, `tsc`/`lint`/`build` all pass. Cross-checked against the traceability matrix and `OPEN-FINDINGS.md` — no drift found.
+**What was modified:** `docs/project-management/CURRENT-STATUS.md` (+5/-3, "As of" line now points at the baseline); `SESSION-CLOSEOUT-PROTOCOL.md` (+13/-0, the new §1a).
+**What was fixed:** None.
+**What was added:** `BASELINE-CHECKPOINT-2026-08-24` entry in `PROJECT-CHECKPOINTS.md` (+46/-0).
+**What was removed:** None.
+
+**Files changed:** 3 files (+64/-3) — see [PR #21](https://github.com/boonthepkstl-alt/stl_asset_service/pull/21).
+**Database changes:** None. **API changes:** None. **Frontend changes:** None.
+
+**Tests:** The baseline scan itself re-ran `go build`/`vet`/`test` and `tsc`/`lint`/`vitest`/`build` for real, per the PR body — not asserted from memory.
+**Validation:** As above — all green at scan time.
+
+**Requirement Traceability:** N/A — process tooling; the baseline scan cross-references the traceability matrix but doesn't change it.
+
+**Git:**
+Branch: `docs/baseline-checkpoint-2026-08-24`
+Commit: `4cced08` (merge commit, [PR #21](https://github.com/boonthepkstl-alt/stl_asset_service/pull/21), merged 2026-08-24T14:10:16Z)
+
+**Known Issues:** None.
+**Remaining Work:** None for this task itself.
+**Next Step:** Add the Next-Step Development Protocol and run it (next checkpoint).
+
+---
+
+## CHECKPOINT-2026-08-24-013
+
+**Phase:** Phase 1 — Foundation
+**Feature:** Project tracking / process governance
+**Task:** Add the Next-Step Development Protocol and run it against current state
+
+**What was implemented:** `NEXT-STEP-PROTOCOL.md` — the evidence-driven decision process for choosing what to work on next (determine state → classify incomplete work → apply priority → check dependencies/scope → select one primary next step → explain the decision → implement only after approval → checkpoint → update project state → recalculate). Companion to `SESSION-CLOSEOUT-PROTOCOL.md`. Then actually ran it against the project's real state (all 12 required sources inspected) and recorded the result in `NEXT-STEP.md`: **Primary Next Step: QR/Barcode Identification (`RAISE-FR-OPS-001`)** — the only MVP requirement the traceability matrix listed with zero blockers at that time.
+**What was modified:** None (new files only).
+**What was fixed:** None.
+**What was added:** `docs/project-management/NEXT-STEP-PROTOCOL.md` (+143/-0), `docs/project-management/NEXT-STEP.md` (+134/-0).
+**What was removed:** None.
+
+**Files changed:** 2 files (+277/-0) — see [PR #22](https://github.com/boonthepkstl-alt/stl_asset_service/pull/22).
+**Database changes:** None. **API changes:** None. **Frontend changes:** None.
+
+**Tests:** N/A — documentation-only change.
+**Validation:** N/A — documentation-only change.
+
+**Requirement Traceability:** Identifies `RAISE-FR-OPS-001` as the next target; does not itself implement it (explicitly not implemented in this PR — approval required first, per this project's established pattern).
+
+**Git:**
+Branch: `docs/next-step-protocol`
+Commit: `dea0154` (merge commit, [PR #22](https://github.com/boonthepkstl-alt/stl_asset_service/pull/22), merged 2026-08-24T14:10:36Z)
+
+**Known Issues:** None.
+**Remaining Work:** Implement QR/Barcode once approved (this happened later, see `CHECKPOINT-2026-08-25-001`).
+**Next Step:** QR/Barcode Identification, pending approval.
+
+---
+
+## CHECKPOINT-2026-08-24-014
+
+**Phase:** Phase 2 — Authentication / RBAC
+**Feature:** Login page branding
+**Task:** Apply stakeholder brand proposal to the Login page
+
+**What was implemented:** Implemented the visual identity proposal from `RAISE-BRAND-STYLE-GUIDE.md`, scoped to the Login page and shared Button component only (not a platform-wide re-theme). Logo mark gained a small upward-stroke accent using the existing `success-*` token; illustration panel changed to a deep-blue-only gradient (`brand-700`→`brand-900`) with an abstract asset-network illustration (green-accented nodes) replacing the old "person holding a device" motif; Inter + Prompt fonts actually loaded via Google Fonts for the first time (previously named in the CSS stack but never loaded); primary Button got a `hover:shadow-md` lift; SSO buttons got a light-gray hover background.
+**What was modified:** `frontend/src/pages/Login/index.tsx` (+62/-14), `frontend/index.html` (+3/-0), `frontend/src/components/ui/Button.tsx` (+1/-1), `frontend/src/index.css` (+2/-2), `docs/project-foundation-baseline/RAISE-BRAND-STYLE-GUIDE.md` (+38/-22, also corrected a stale premise that `frontend/src` was empty when the guide was written).
+**What was fixed:** `RAISE-BRAND-STYLE-GUIDE.md`'s stale "empty frontend" premise (see above).
+**What was added:** None (new files).
+**What was removed:** None.
+
+**Files changed:** 5 files (+106/-39) — see [PR #23](https://github.com/boonthepkstl-alt/stl_asset_service/pull/23).
+**Database changes:** None. **API changes:** None. **Frontend changes:** Login page visual restyle; shared Button gets a new hover state.
+
+**Tests:**
+- Unit Test: none new for this UI-only change.
+- Integration/E2E: none exist in this project.
+
+**Validation (per the PR's own test plan):**
+- `npx tsc --noEmit` — clean
+- `npm run lint` — 0 warnings
+- `npx vitest run` — 127/127 pass
+- `npm run build` — succeeds
+- Manually verified in-browser at 1440×900: logo mark accent, network illustration, Thai text rendering — all correct
+
+**Requirement Traceability:** N/A — visual/branding change, not tied to a `RAISE-FR-*` requirement.
+
+**Git:**
+Branch: `frontend/login-brand-styling`
+Commit: `c0be51c` (merge commit, [PR #23](https://github.com/boonthepkstl-alt/stl_asset_service/pull/23), merged 2026-08-24T14:27:47Z)
+
+**Known Issues:** None at merge time — superseded hours later once Singer's real CI was confirmed (next checkpoint).
+**Remaining Work:** None for this task itself (superseded, not incomplete).
+**Next Step:** Re-theme to Singer's confirmed CI once the business answered which brand direction to use.
+
+---
+
+## CHECKPOINT-2026-08-24-015
+
+**Phase:** Phase 2 — Authentication / RBAC
+**Feature:** Login page branding
+**Task:** Re-theme Login to Singer's confirmed Corporate Identity (red accent)
+
+**What was implemented:** Business confirmed 2026-08-24 that RAISE is developed for Singer (Thailand)'s direct use (PRD §16 Resolved Question 39, PRD bumped to v0.10). Re-themed Login to Singer's actual CI, superseding the generic palette from PR #23 a few hours earlier. Color sourced from the real `singerthai.co.th` site's computed styles (not guessed): `#E50040` on CTA/header, `#A80331` as a pressed state — anchoring a new `singer-*` Tailwind scale kept deliberately separate from `brand-*` and `error-*` to avoid colliding with existing button/alert semantics. New opt-in `Button variant="brand"` used only on Login's Sign-in button. Illustration panel went dark slate/near-black (not solid red), per the stakeholder's own UX caution that red already means alert/breakdown in this app. Red applied as accent-only: network nodes, Sign-in button, focus ring (scoped via `.login-form-accent`), logo mark.
+**What was modified:** `frontend/src/pages/Login/index.tsx` (+18/-15), `frontend/src/components/ui/Button.tsx` (+5/-1), `frontend/src/index.css` (+34/-0), `docs/project-foundation-baseline/RAISE-BRAND-STYLE-GUIDE.md` (+88/-17), `docs/01-requirements/RAISE-PRD.md` (+34/-2, new Resolved Question 39, v0.9→v0.10).
+**What was fixed:** None (supersedes, doesn't fix, PR #23's palette).
+**What was added:** `singer-*` color scale; `Button variant="brand"`.
+**What was removed:** None (PR #23's generic palette values are overwritten, not the code paths).
+
+**Files changed:** 5 files (+179/-35) — see [PR #24](https://github.com/boonthepkstl-alt/stl_asset_service/pull/24).
+**Database changes:** None. **API changes:** None. **Frontend changes:** Login re-themed to Singer red accents on a dark panel.
+
+**Validation (per the PR's own test plan):**
+- `npx tsc --noEmit` — clean
+- `npm run lint` — 0 warnings
+- `npx vitest run` — 127/127 pass
+- `npm run build` — succeeds
+- Manually verified in-browser at 1440×900: dark panel with red-accented nodes, red logo mark, red Sign-in button, red focus ring — all correct
+
+**Requirement Traceability:**
+PRD: `RAISE-PRD.md` §16 Resolved Question 39 (new).
+
+**Git:**
+Branch: `frontend/singer-ci-login-branding`
+Commit: `1887a19` (merge commit, [PR #24](https://github.com/boonthepkstl-alt/stl_asset_service/pull/24), merged 2026-08-24T14:47:30Z)
+
+**Known Issues:** The near-black panel was later reverted per direct user feedback (see `CHECKPOINT-2026-08-24-017`) — not a defect in this PR, a subsequent design change.
+**Remaining Work:** None for this task itself.
+**Next Step:** Extend the Singer CI logo mark to the app shell sidebar.
+
+---
+
+## CHECKPOINT-2026-08-24-016
+
+**Phase:** Cross-Cutting Work
+**Feature:** Shared UI components
+**Task:** Extend Singer CI logo mark to the app shell sidebar
+
+**What was implemented:** Extracted the Singer-red `RaiseMark` from `Login/index.tsx` into a shared `frontend/src/components/RaiseMark.tsx`; `AppShell`'s sidebar header (used by every authenticated page) now uses this shared mark instead of its old blue-to-indigo gradient box, making the logo visually consistent from Login through the whole app. Deliberately did not touch Dashboard's KPI cards/charts/buttons — Dashboard already uses red (`error-*`) extensively for real alert meaning, and extending Singer red further would collide with the "red is accent-only, never a second meaning" caution in the brand guide.
+**What was modified:** `frontend/src/components/AppShell.tsx` (+2/-3), `frontend/src/pages/Login/index.tsx` (+1/-19, the extraction).
+**What was fixed:** None.
+**What was added:** `frontend/src/components/RaiseMark.tsx` (new, +21/-0).
+**What was removed:** The inline `RaiseMark`-equivalent markup previously duplicated in `Login/index.tsx`.
+
+**Files changed:** 3 files (+24/-22) — see [PR #25](https://github.com/boonthepkstl-alt/stl_asset_service/pull/25).
+**Database changes:** None. **API changes:** None. **Frontend changes:** Shared logo component; sidebar header visual change.
+
+**Validation (per the PR's own test plan):**
+- `npx tsc --noEmit` — clean
+- `npm run lint` — 0 warnings
+- `npx vitest run` — 127/127 pass
+- `npm run build` — succeeds
+- Manually verified in-browser: sidebar logo renders in Singer red/dark on Dashboard, consistent with Login, all KPI/alert colors unchanged
+
+**Requirement Traceability:** N/A — visual/branding change.
+
+**Git:**
+Branch: `frontend/singer-ci-shell-logo`
+Commit: `70aaae1` (merge commit, [PR #25](https://github.com/boonthepkstl-alt/stl_asset_service/pull/25), merged 2026-08-24T15:08:59Z)
+
+**Known Issues:** None.
+**Remaining Work:** Whether primary buttons/CTAs platform-wide should also move to Singer red is an explicitly separate, larger decision, not made here.
+**Next Step:** Revert the Login illustration panel to blue per direct user feedback (next checkpoint).
+
+---
+
+## CHECKPOINT-2026-08-24-017
+
+**Phase:** Phase 2 — Authentication / RBAC
+**Feature:** Login page branding
+**Task:** Revert Login illustration panel from black back to blue
+
+**What was implemented:** Direct user feedback: the near-black illustration panel introduced in PR #24 wasn't wanted. Reverted the panel background to the blue gradient (`brand-700`→`brand-900`) used before that change. Everything else from the Singer CI pass was kept unchanged: red-accented network nodes, red Sign-in button, red logo mark, red focus ring — red stays accent-only.
+**What was modified:** `frontend/src/pages/Login/index.tsx` (+5/-4).
+**What was fixed:** Reverted an unwanted design change (not a code defect).
+**What was added:** None.
+**What was removed:** The near-black panel background.
+
+**Files changed:** 1 file (+5/-4) — see [PR #26](https://github.com/boonthepkstl-alt/stl_asset_service/pull/26).
+**Database changes:** None. **API changes:** None. **Frontend changes:** Login illustration panel background reverted to blue.
+
+**Validation (per the PR's own test plan):**
+- `npx tsc --noEmit` — clean
+- `npm run lint` — 0 warnings
+- Manually verified in-browser: blue panel with red-accented nodes renders correctly; Dashboard (unaffected) still shows the red sidebar logo mark
+
+**Requirement Traceability:** N/A — visual/branding change.
+
+**Git:**
+Branch: `frontend/login-panel-revert-to-blue`
+Commit: `8c0f7b8` (merge commit, [PR #26](https://github.com/boonthepkstl-alt/stl_asset_service/pull/26), merged 2026-08-24T15:09:22Z)
+
+**Known Issues:** None.
+**Remaining Work:** None for this task itself.
+**Next Step:** Extend Singer CI accent to the Dashboard's Software Licenses KPI card only.
+
+---
+
+## CHECKPOINT-2026-08-24-018
+
+**Phase:** Cross-Cutting Work
+**Feature:** Dashboard KPI styling
+**Task:** Add Singer CI accent to the Software Licenses KPI card
+
+**What was implemented:** Extended Singer's confirmed CI to the Dashboard, per explicit confirmation on scope: only the "Software Licenses" KPI card (previously generic blue `brand`) now uses the `singer-*` red scale. Deliberately not applied to "Total Assets" (also previously `brand`) — it sits directly above the `error`-colored "Expired Warranty" card in the same grid column, so recoloring it red would read as a second alert stacked in one column. Every other KPI card unchanged (Available/success, Assigned/accent, In Maintenance/warning, Expired Warranty/error, Monthly Depreciation/accent, Monthly Cost/success) since those already carry real alert/status meaning.
+**What was modified:** `frontend/src/pages/Dashboard/index.tsx` (+5/-1).
+**What was fixed:** None.
+**What was added:** None.
+**What was removed:** None.
+
+**Files changed:** 1 file (+5/-1) — see [PR #27](https://github.com/boonthepkstl-alt/stl_asset_service/pull/27).
+**Database changes:** None. **API changes:** None. **Frontend changes:** Dashboard KPI card color change (Software Licenses only).
+
+**Validation (per the PR's own test plan):**
+- `npx tsc --noEmit` — clean
+- `npm run lint` — 0 warnings
+- `npx vitest run` — 127/127 pass
+- `npm run build` — succeeds
+- Manually verified in-browser: Software Licenses card shows the Singer red icon, Total Assets stays blue, no visual collision with Expired Warranty
+
+**Requirement Traceability:** N/A — visual/branding change; not the backend KPI/formula work `RAISE-FR-EXEC-001` (Phase 8) actually scopes.
+
+**Git:**
+Branch: `frontend/dashboard-singer-ci-kpi`
+Commit: `1ee80f1` (merge commit, [PR #27](https://github.com/boonthepkstl-alt/stl_asset_service/pull/27), merged 2026-08-24T15:23:58Z)
+
+**Known Issues:** None.
+**Remaining Work:** None for this task itself.
+**Next Step:** Backfill `PROJECT-TIMELINE.md` checkpoint links for PRs #18-27 (next checkpoint).
+
+---
+
+## CHECKPOINT-2026-08-24-019
+
+**Phase:** Phase 1 — Foundation
+**Feature:** Project tracking / process governance
+**Task:** Add PR #18-27 checkpoint links to `PROJECT-TIMELINE.md`
+
+**What was implemented:** Backfilled the Checkpoint field for phases with real work landed since PR #17 (the last time the file's checkpoint links were touched): Phase 1 gained #18-22 (checkpoint template, CLAUDE.md refresh, close-out protocol rule, baseline checkpoint, next-step protocol — all this phase's own tracking-layer deliverable); Phase 2 gained #23/#24/#26 (three Login restyles, none touching the auth mechanism itself); a new "Cross-Cutting Work" section was added for #25 (shell-wide logo) and #27 (Dashboard KPI accent), since neither fit one phase's Deliverables cleanly. Phases 3-10 were left unchanged — no domain work had shipped since #17 affecting those.
+**What was modified:** `docs/project-management/PROJECT-TIMELINE.md` (+21/-2).
+**What was fixed:** None.
+**What was added:** The "Cross-Cutting Work" section.
+**What was removed:** None.
+
+**Files changed:** 1 file (+21/-2) — see [PR #28](https://github.com/boonthepkstl-alt/stl_asset_service/pull/28).
+**Database changes:** None. **API changes:** None. **Frontend changes:** None.
+
+**Tests:** N/A — documentation-only change.
+**Validation:** N/A — documentation-only change.
+
+**Requirement Traceability:** N/A — process tooling.
+
+**Git:**
+Branch: `docs/timeline-checkpoints-18-27`
+Commit: `d714b9f` (merge commit, [PR #28](https://github.com/boonthepkstl-alt/stl_asset_service/pull/28), merged 2026-08-25T13:12:00Z)
+
+**Known Issues:** None.
+**Remaining Work:** None for this task itself.
+**Next Step:** This backfill (F-20 closure) itself — see `CHECKPOINT-2026-08-25-005` below. At the time PR #28 actually merged, the real next step taken was QR/Barcode Identification (`CHECKPOINT-2026-08-25-001`).
 
 ---
 
@@ -923,6 +1248,79 @@ Commit: `862b7a1` (implementation), merged via `20e0afd` (merge commit, [PR #33]
 **Known Issues:** (1) Software License count still comes from the frontend's mock license service regardless of `DASHBOARD_API_ENABLED` — there is no backend License table to query (`RAISE-FR-LICENSE-001` is Roadmap-only), so this is a permanent characteristic of the current architecture, not a bug. (2) NBV, Risk score, and Utilization's calculation mechanics are **not started** at all (not approximated, not stubbed) — PRD §16 Q3/Q4/Q29 remain the blocker. (3) Monthly Depreciation/Monthly Cost and the AI Insights/AI Portfolio Health panel remain static illustrative fixture content — they were never computed logic, so there was nothing to "move" for them in this cut.
 **Remaining Work:** The NBV/Risk/Utilization-mechanics half of `RAISE-FR-EXEC-001` cannot proceed without a PRD §16 Q3/Q4/Q29 answer — this is a business-decision blocker, not a scoping task.
 **Next Step:** Per `CURRENT-STATUS.md` §4, no fresh "needs a scoped-down first cut" item remains. The next actionable, non-invented task is the already-scoped Ticket-domain audit hook-in (extends PR #31 — see that checkpoint's Remaining Work) unless a PRD answer unblocks something else first.
+
+---
+
+## CHECKPOINT-2026-08-25-004
+
+**Phase:** Phase 6 — Audit & Reconciliation
+**Feature:** Immutable Audit Log — Ticket-domain extension
+**Task:** Close the gap PR #31 explicitly deferred: wire `AuditService.Record` into the Ticket domain's mutation points, exactly the same pattern already proven on the Asset domain
+
+**What was implemented:** A `recordAudit` helper on `ticketController.go`, identical in shape to `assetController.go`'s, wired into `CreateTicket` ("Ticket created"), `DecideApproval` ("Ticket Approved"/"Ticket Rejected"), `Dispatch` ("Ticket dispatched to <technician>"), and `UpdateExecutionStatus` ("Ticket status updated to <status>"). Frontend `MockTicketRepository`'s equivalent four methods now call the same shared `recordMockAuditEntry` helper `MockAssetRepository` already uses.
+**What was modified:** `go-template-main/router/sampleRouter.go` (`NewTicketController` now takes `auditService`); `frontend/src/services/audit-service.test.ts` (2 new tests).
+**What was fixed:** None — this closes a documented gap, not a bug.
+**What was added:** The `recordAudit` helper and its four call sites in `ticketController.go`; the four `recordMockAuditEntry` calls in `ticket-repository.ts`.
+**What was removed:** None.
+
+**Files changed:** 4 files (+91/-7) — see [PR #35](https://github.com/boonthepkstl-alt/stl_asset_service/pull/35) for the full diff.
+**Database changes:** None (writes into the existing `audit_logs` table from PR #31, `entity_type: "ticket"`). **API changes:** None — no new route; existing `/tickets/*` mutation endpoints now have a recording side effect. **Frontend changes:** `MockTicketRepository` now writes into the shared mock audit store; no UI change (deliberately no new Ticket-side "Audit" view — see Known Issues).
+
+**Tests:**
+- Unit Test: `frontend/src/services/audit-service.test.ts` (+2 cases: ticket create recording, and approve/dispatch/status-update each appending their own entry) — 134/134 frontend tests passing overall.
+- Integration Test: None added — same gap as the rest of this codebase.
+- E2E Test: None — no E2E framework exists in this project.
+
+**Validation:**
+- Build: `go build ./...` ✅, `npm run build` ✅
+- Lint: `go vet ./...` ✅, `npm run lint` ✅ (0 warnings)
+- Test: `go test ./...` ✅, `npx vitest run` ✅ (134/134)
+- Type Check: `npx tsc --noEmit` ✅
+- Manual browser verification (Chrome preview, `raise-frontend` dev server): approved a real ticket (`REQ-2026-0043`) via the Dept Sign-off action in the running app, then confirmed via a dynamic `import()` of `audit-service.ts` executed in the page that a real entry existed — `actor: "Demo Admin"`, `action: "Ticket Approved"`, `entityType: "ticket"`, correct `entityId`, real ISO timestamp. This is a live check against the running mock store, not only the unit tests' assertions.
+
+**Requirement Traceability:**
+PRD: `RAISE-FR-AUDIT-001`
+Design: `RAISE-DESIGN.md` §15 — same confirmed-subset scope as PR #31, now applied to a second domain; no new field was introduced beyond what PR #31 already modeled.
+Acceptance Criteria: `AC-AUDIT-001-01` — its own worked example is Check-in/Check-out (Asset domain, PR #31); this PR extends coverage to a second "significant system activity" category (ticket lifecycle transitions) without changing what the AC requires.
+Test Case: `TC-AUDIT-001-01`/`-03` traceability matrix status is unchanged by this PR (still partial, per PR #31's Known Issues — field taxonomy and role gate remain the blockers, unrelated to domain coverage breadth).
+
+**Git:**
+Branch: `feature/ticket-domain-audit-hookin`
+Commit: `9741bff` (implementation), merged via `5b52672` (merge commit, [PR #35](https://github.com/boonthepkstl-alt/stl_asset_service/pull/35))
+
+**Known Issues:** (1) Same best-effort, non-atomic audit-write trade-off as PR #31 — a rare write failure logs but doesn't fail the ticket mutation. (2) No UI currently displays Ticket-domain audit entries — they are recorded and queryable via `GET /audit-logs`/`auditService.listAuditLogs`, but no page renders them yet (deliberate — `AC-AUDIT-001-03` only requires viewability to exist somewhere, and inventing a UI surface wasn't asked for). (3) `TicketDetail`'s existing "Audit Trail" tab is unrelated — it renders the ticket's own pre-existing `timeline` field, not this `audit_logs` table; the two systems now coexist without conflict but could read as confusingly similar names to a future reader.
+**Remaining Work:** If a Ticket-side (or unified cross-domain) audit viewing UI is wanted, that's a new, explicitly-scoped task — not assumed here. Otherwise, `RAISE-FR-AUDIT-001`'s remaining gaps (field taxonomy, role gate) are both business-decision blockers, not code tasks.
+**Next Step:** Per `CURRENT-STATUS.md` §4, no fresh "needs a scoped-down first cut" or "already-scoped extension" item remains identified. The next actionable code task would need either a new PRD answer (unblocking Warranty/Alerts/Executive Dashboard's remainder/etc.) or an explicit new instruction (e.g. a cross-domain audit viewing UI) — recalculate `NEXT-STEP.md` accordingly rather than inventing a category that doesn't currently exist.
+
+---
+
+## CHECKPOINT-2026-08-25-005
+
+**Phase:** Phase 1 — Foundation
+**Feature:** Project tracking / process governance
+**Task:** Backfill Level 1 checkpoints for PR #19-28, closing finding F-20
+
+**What was implemented:** `CHECKPOINT-2026-08-24-010` through `-019`, reconstructed entirely from `gh pr view <n> --json title,body,files,mergeCommit,mergedAt` output for PRs #19-28 — real merged-PR metadata and each PR's own contemporaneous test-plan checkboxes, not memory. Numbered `-010`..`-019` to preserve 2026-08-24's real merge order (continuing from `-009`); PR #28's checkpoint is `-019` even though it's written after `-001`..`-004` chronologically in *authoring* time, since those four were written in real time as their PRs merged on 2026-08-25, before this gap was noticed.
+**What was modified:** Also corrected two stale factual errors found while inserting this backfill: `CHECKPOINT-2026-08-24-008` and `-009` both still said "pending merge" for PR #18's commit, months after it had actually merged (`afd23d7`) — updated to the real merge commit hash, per the maintenance rule's allowance to fix factual errors in past entries.
+**What was fixed:** The two stale "pending merge" lines above.
+**What was added:** 10 new Level 1 checkpoint entries (`-010` through `-019`).
+**What was removed:** None.
+
+**Files changed:** 1 file (`PROJECT-CHECKPOINTS.md`) — this backfill plus the two corrections.
+**Database changes:** None. **API changes:** None. **Frontend changes:** None.
+
+**Tests:** N/A — documentation-only change.
+**Validation:** N/A — documentation-only change. Cross-checked: `grep -n "^## CHECKPOINT-"` confirms no duplicate or out-of-sequence IDs after insertion.
+
+**Requirement Traceability:** N/A — process/documentation tooling. Directly resolves `OPEN-FINDINGS.md` finding F-20.
+
+**Git:**
+Branch: `docs/ticket-audit-closeout` (added as a second commit onto the still-open PR #36, rather than a new branch, since both are docs-only close-out work and this avoids a `PROJECT-CHECKPOINTS.md` merge conflict between two simultaneously-open PRs)
+Commit: pending — part of PR #36, not yet merged at the time this entry was written.
+
+**Known Issues:** None.
+**Remaining Work:** None for this task itself — F-20 is fully closed once this merges.
+**Next Step:** Per the recalculated `NEXT-STEP.md` (see `CHECKPOINT-2026-08-25-004`'s own Next Step), the remaining choice is between more documentation debt (none identified) and waiting on a PRD business-decision answer.
 
 ---
 

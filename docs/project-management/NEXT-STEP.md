@@ -4,131 +4,138 @@
 Overwritten in place each time the protocol is re-run — do not treat an
 old copy of this file as still valid; re-run Step 11 (Recalculate) first.
 
-**Run date:** 2026-08-24, immediately after `BASELINE-CHECKPOINT-2026-08-24`.
+**Run date:** 2026-08-25, immediately after `CHECKPOINT-2026-08-25-001` (PR #29, QR/Barcode).
 
 ---
 
 ## Current State
 
-- **Current phase:** Phase 1 — Foundation (ongoing, `PHASE-CHECKPOINT-1` = 🔴 NOT PASSED, by design — see `PROJECT-CHECKPOINTS.md`) running concurrently with Phase 3 — Asset Management (🟡 core complete, extensions partial).
-- **Current feature:** None actively in progress. Last feature-level work: `FEATURE-CHECKPOINT-project-tracking-governance` (🚧 In Progress — PR #21, the Baseline Checkpoint itself, is open awaiting merge).
-- **Current task:** None in progress. Last task checkpoint: `BASELINE-CHECKPOINT-2026-08-24`.
-- **Last completed checkpoint:** `CHECKPOINT-2026-08-24-009` (Level 1, merged via PR #18) → `BASELINE-CHECKPOINT-2026-08-24` (open, PR #21, not yet merged — per Rule 14, treat as `VALIDATING`, not `COMPLETED`, until merged).
-- **Current status:** 🟢 Both codebases verified green (backend `go build`/`vet`/`test`; frontend `tsc`/`lint`/`vitest`/`build`) as of the baseline scan. No source drift.
-- **Open blockers (for the recommended next step specifically):** None.
-- **Open findings:** F-01 through F-19 in `OPEN-FINDINGS.md`, all still open, none newly discovered.
-- **Remaining work:** Merge PR #21 (administrative, not a development task); pick the next feature-level task (this document).
-- **Dependencies:** Asset Registry domain (`RAISE-FR-ASSET-001`) — already built (PR #7).
-- **Plan vs. actual variance:** This session's actual work was governance/tooling (checkpoints, timeline, protocols) rather than a new feature domain — explicitly user-directed, not drift.
+- **Current phase:** Phase 1 — Foundation (ongoing) running concurrently with Phase 3 — Asset Management (🟡 core complete, extensions partial — QR/Barcode, part of this phase's scope, is now ✅ Built).
+- **Current feature:** None actively in progress. Last feature-level work: QR/Barcode Identification (`RAISE-FR-OPS-001`), built end-to-end in PR #29.
+- **Current task:** None in progress. Last task checkpoint: `CHECKPOINT-2026-08-25-001`.
+- **Last completed checkpoint:** `CHECKPOINT-2026-08-25-001` (Level 1, merged via [PR #29](https://github.com/boonthepkstl-alt/stl_asset_service/pull/29)).
+- **Current status:** 🟢 Both codebases verified green (backend `go build`/`vet`/`test`; frontend `tsc`/`lint`/`vitest` 128/128/`build`) as of this checkpoint.
+- **Open blockers (for the recommended next step specifically):** Both remaining "buildable" candidates (Audit Log, Executive Dashboard) are only *partially* unblocked — see Priority Application below. Unlike QR/Barcode, neither is a clean `NOT_TESTED (no blockers)` pick.
+- **Open findings:** F-01 through F-20 in `OPEN-FINDINGS.md`. F-20 is new this session (missing Level 1 checkpoints for PRs #19-28 — not blocking, but should be closed eventually).
+- **Remaining work:** None outstanding from the QR/Barcode task itself. Formal `TC-OPS-001-01..03` execution is still open (see `CHECKPOINT-2026-08-25-001` Known Issues) but is a test-authoring/execution task, not a code task.
+- **Dependencies:** Asset Registry domain (`RAISE-FR-ASSET-001`) — already built; both new candidates below build on it directly.
+- **Plan vs. actual variance:** None — this session executed exactly the item the prior `NEXT-STEP.md` recommended (QR/Barcode), with no scope drift.
 
 ## Incomplete Work Inventory (classified)
 
 | Item | Classification | Note |
 |---|---|---|
-| Merge PR #21 | `VALIDATION` | Administrative, not a dev task |
-| QR / Barcode (`RAISE-FR-OPS-001`) | `REQUIRED` | P0/MVP, confirmed, **no blocker** |
+| `TC-OPS-001-01..03` formal execution | `VALIDATION` | Test-case sign-off, not a code task — see F-20-adjacent note in `CHECKPOINT-2026-08-25-001` |
+| Audit Log scoped cut (`RAISE-FR-AUDIT-001`) | `ENHANCEMENT` (partially blocked) | `TC-AUDIT-001-01` partial (field taxonomy TBD), `TC-AUDIT-001-03` partial (role gate TBD) — but logging mutations that already happen needs no invented taxonomy |
+| Executive Dashboard backend move (`RAISE-FR-EXEC-001`) | `ENHANCEMENT` (partially blocked) | `TC-EXEC-001-01` partial (NBV/Risk KPI formulas TBD); Utilization tile presence/description is testable now (PRD §16 Resolved Q27) but calculation mechanics remain partial (Resolved Q29) |
 | Warranty field list (`RAISE-FR-WARRANTY-001`) | `FINDING` (F-01) | Blocked — PRD §16 Q15 |
 | Check-in/out workflow detail (`RAISE-FR-OPS-002`) | `FINDING` (F-02) | Blocked — PRD §16 Q11-13 |
 | `RAISE-FR-ASSET-003` vs. `RAISE-FR-OPS-002` overlap | `FINDING` (F-10) | Unresolved scope question |
-| Audit Log scoped cut (`RAISE-FR-AUDIT-001`) | `ENHANCEMENT` | Buildable narrow, but not P0-unblocked like OPS-001 |
-| Executive Dashboard backend move (`RAISE-FR-EXEC-001`) | `ENHANCEMENT` | Buildable narrow |
+| Missing Level 1 checkpoints for PR #19-28 | `FINDING` (F-20) | Documentation debt, not a product feature |
 | No real user/auth store | `TECHNICAL_DEBT` | Accepted — Roadmap-confirmed, not actionable now |
 | Frontend bundle size (F-18) | `TECHNICAL_DEBT` | Not urgent |
 | License, AI Decision Center, Risk/Lifecycle/Recommendation | `ENHANCEMENT` (out of scope) | Roadmap-only — do not select |
 
 ## Priority Application
 
-Per `NEXT-STEP-PROTOCOL.md` §Step 3: no `BLOCKER` or unmet `Critical/P0` item exists **except** QR/Barcode, which is itself the highest-priority `REQUIRED` item with zero dependency gaps. Everything else in the table above is either a `FINDING` genuinely blocked on a PRD answer (can't be started without inventing an answer), `TECHNICAL_DEBT` correctly deferred, or explicitly out of scope. This makes the selection in Step 6 unambiguous rather than close.
+Per `NEXT-STEP-PROTOCOL.md` §Step 3: QR/Barcode was the last item cleanly
+listed `NOT_TESTED (no blockers)` — that category is now empty. The next
+tier is "needs a scoped-down first cut": both Audit Log and Executive
+Dashboard have a **real AC** but a **partially blocked** test case (one
+sub-item TBD, others testable now). Per Rule 14, this must be stated
+honestly rather than reframed as unblocked. Between the two, Audit Log is
+selected as primary because its blocked sub-item (field taxonomy) affects
+only *which* fields get logged, not *whether* logging can start — a
+first-cut implementation can log the mutations that already happen
+(create/assign/check-in/status-change) without inventing the still-open
+taxonomy, the same "narrow, no invented workflow" shape used for
+Check-in/Check-out and Maintenance previously. Executive Dashboard's
+blocked sub-item (KPI formulas) more directly affects the number the
+feature exists to show, making a safe narrow cut harder to draw cleanly.
 
 ---
 
 ## Primary Next Step
 
-**Implement QR / Barcode Identification (`RAISE-FR-OPS-001`) — backend + frontend, both sides.**
+**Scope a first-cut Immutable Audit Log (`RAISE-FR-AUDIT-001`) — log
+mutations that already occur (asset create/assign/check-in/status-change,
+ticket create/approve/dispatch/complete) without inventing the still-TBD
+full field taxonomy or role-gate content.**
 
 ## Why This Is Next
 
-It is the *only* MVP requirement the traceability matrix lists as
-`NOT_TESTED (no blockers)` — every other open MVP item is genuinely
-blocked on an unanswered PRD question (Warranty, Check-in/out detail,
-Oracle, Alerts, AI capabilities) or is Roadmap-only. Its sole dependency
-(`RAISE-FR-ASSET-001`) is already built and stable. This is the same
-reasoning already used to select Check-in/Check-out and Maintenance as
-prior checkpoints — pick the unblocked P0 item, not the interesting one.
+It is the best-positioned "needs a scoped-down first cut" item: the
+domains it would log (Asset, Ticket) already exist and already perform
+these mutations, so a first cut is additive instrumentation, not new
+business logic requiring invented rules. Executive Dashboard's TBD item
+(KPI formulas) is closer to the feature's core value and riskier to cut
+narrowly without approximating an unconfirmed number.
 
 ## Dependencies
 
-`RAISE-FR-ASSET-001` (Asset Registry) — **satisfied**, built in PR #7.
+`RAISE-FR-ASSET-001` (Asset Registry), `RAISE-FR-ASSET-003`/`RAISE-FR-OPS-002`
+(Assign/Check-in), `RAISE-FR-MAINT-001` (Maintenance/Ticket) — all already
+built and stable; this is a consumer of their existing mutation points, not
+a new domain.
 
 ## Expected Output
 
-- Backend: an endpoint that resolves a QR/barcode payload (most simply,
-  the existing `code` field, e.g. `AST-0004`) to its Asset record — likely
-  reusable directly via the existing `GET /assets/:id` lookup path (which
-  already supports lookup by `id`; confirm/extend to also match `code` if
-  it doesn't already) rather than a new endpoint, unless generation
-  (producing a scannable QR image) requires a dedicated route.
-- Frontend: wire the existing "Scan QR" button (`pages/Assets/index.tsx`)
-  and "Print QR" quick action (`pages/AssetDetail/index.tsx`, currently a
-  placeholder toast — same dead-end pattern the Assign button had before
-  Check-in/Check-out fixed it) to real behavior: scan → look up → navigate
-  to Asset Detail; print → render/download an actual QR encoding the asset
-  code.
-- **Inspect existing implementation first** (Step 8.1) before assuming
-  scope — confirm exactly what the two existing buttons currently do and
-  what `GET /assets/:id` currently accepts.
+- Backend: an append-only audit log table/model recording, at minimum,
+  actor, action, entity type/id, and timestamp for the mutations that
+  already exist today (do **not** invent the full field taxonomy from
+  Design §15 — that's the TBD half of `TC-AUDIT-001-01`).
+- Frontend: a read-only Audit view (the existing "Audit" tab stub on
+  Asset Detail, and/or a dedicated Audit page if one already exists as a
+  placeholder — **inspect existing implementation first**, per Step 8.1,
+  before assuming what's already there).
+- Explicitly leave the role-gate question (`TC-AUDIT-001-03`, PRD §16 Q22)
+  as `TBD`/visible-to-all-authenticated-users-for-now rather than
+  inventing a permission model.
 
 ## Acceptance Criteria
 
-`AC-OPS-001`, sourced from `RAISE-PRD.md`'s own AC text for
-`RAISE-FR-OPS-001`: *"Users can use QR / Barcode information to identify
-an asset; the identified asset can be connected to its asset record."*
-Two testable behaviors: (1) identify an asset from QR/barcode data, (2)
-navigate from that identification to the real asset record. No workflow
-detail, permission model, or field format is specified beyond this — do
-not invent stricter criteria than the PRD states.
+`AC-AUDIT-001`, per `RAISE-ACCEPTANCE-CRITERIA.md` — do not invent stricter
+criteria than what's written there; confirm the exact AC text before
+starting, since this document did not re-quote it verbatim.
 
 ## Validation Method
 
-- Backend: `go build ./...`, `go vet ./...`, `gofmt -l`, `go test ./...`
-  (new mocked service-layer tests for any new/changed lookup logic).
+- Backend: `go build ./...`, `go vet ./...`, `gofmt -l`, `go test ./...`.
 - Frontend: `tsc --noEmit`, `npm run lint`, `npx vitest run`, `npm run build`.
-- Browser-verify end-to-end: scan (or manually enter) a code → resolves to
-  the correct Asset Detail page; Print QR renders a real, scannable code
-  (not a toast).
+- Browser-verify: perform a mutation (e.g. assign an asset), confirm it
+  appears in the audit view with correct actor/action/timestamp.
 
 ## Related Checkpoint
 
-`BASELINE-CHECKPOINT-2026-08-24` and `PHASE-CHECKPOINT-1` (both recommend
-this same item). Prior pattern reference: `CHECKPOINT-2026-08-24-003`
-(Asset Check-in — same "confirmed, narrow, no invented workflow" shape).
+`CHECKPOINT-2026-08-25-001` (this recalculation's basis) and
+`CURRENT-STATUS.md` §4 (same recommendation, "needs a scoped-down first
+cut" category).
 
 ## Related Git Branch/Commit
 
-None yet — not started. Would follow the established naming convention,
-e.g. `backend/qr-barcode` or `frontend/qr-barcode-wiring` depending on
-whether backend work is needed or this turns out to be frontend-only.
+None yet — not started.
 
 ---
 
 ## Risks / Blockers
 
-None blocking. Minor open question to resolve *during* implementation,
-not before: whether QR "generation" needs a dedicated backend
-capability/library or can be done client-side from the existing `code`
-field (likely the latter, given the AC only requires identify-and-connect,
-not a specific encoding format).
+Two TBDs are explicitly out of scope for a first cut, not silently
+resolved: (1) full field taxonomy (Design §15) — log a minimal field set
+now, extend later once PRD §16 answers land; (2) role-gate content (PRD
+§16 Q22) — leave visible to all authenticated users for now rather than
+guessing a permission matrix.
 
 ## Files to Update (after implementation, per Step 10)
 
-`PROJECT-TIMELINE.md` (Phase 3 status), `PROJECT-CHECKPOINTS.md` (new
-Level 1 checkpoint), `DEVELOPMENT-LOG.md`, `CURRENT-STATUS.md`,
-`CHANGELOG.md`, this file (`NEXT-STEP.md`, recalculated per Step 11).
+`PROJECT-TIMELINE.md`, `PROJECT-CHECKPOINTS.md` (new Level 1 checkpoint),
+`DEVELOPMENT-LOG.md`, `CURRENT-STATUS.md`, `CHANGELOG.md`, this file
+(`NEXT-STEP.md`, recalculated per Step 11).
 
 ## After Completion
 
 Recalculate from updated project state — do not assume the next pick
-after this one is Warranty/Audit/Alerts just because they're next in
-`CURRENT-STATUS.md`'s backlog list; re-run Steps 1-7 against the
-traceability matrix's state *at that time*, since answering PRD open
-questions between now and then could change the priority order.
+after this one is Executive Dashboard just because it's the other
+candidate listed here; re-run Steps 1-7 against the traceability matrix's
+state *at that time*, since answering PRD open questions between now and
+then could change the priority order (e.g. if PRD §16 Q3/Q4 gets answered
+first, Executive Dashboard could become the cleaner unblocked pick).

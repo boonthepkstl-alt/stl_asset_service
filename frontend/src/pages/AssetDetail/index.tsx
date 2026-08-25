@@ -40,6 +40,7 @@ import { useAsset } from '@/hooks/useAsset';
 import { useTickets } from '@/hooks/useTickets';
 import { useLicenses } from '@/hooks/useLicenses';
 import { useEmployees } from '@/hooks/useEmployees';
+import { useAuditLogs } from '@/hooks/useAuditLogs';
 import { ticketService } from '@/services/ticket-service';
 import { assetService } from '@/services/asset-service';
 import type { Ticket } from '@/types/ticket';
@@ -74,6 +75,8 @@ export function AssetDetailPage() {
   const { push } = useToast();
   const { asset, loading, error, notFound, refetch } = useAsset(assetId);
   const [tab, setTab] = useState('overview');
+
+  const { entries: auditEntries, refetch: refetchAuditEntries } = useAuditLogs({ entityType: 'asset', entityId: asset?.id ?? '' });
 
   const { tickets, refetch: refetchTickets } = useTickets({});
   const assetTickets = useMemo(
@@ -159,6 +162,7 @@ export function AssetDetailPage() {
     try {
       await assetService.assignAsset({ assetId: asset.id, employeeId: employee.id, employeeName: employee.name });
       refetch();
+      refetchAuditEntries();
       setIsAssignModalOpen(false);
       setAssignEmployeeId('');
       push({ variant: 'success', title: 'Asset assigned', message: `${asset.name} assigned to ${employee.name}.` });
@@ -174,6 +178,7 @@ export function AssetDetailPage() {
     try {
       await assetService.checkInAsset(asset.id);
       refetch();
+      refetchAuditEntries();
       push({ variant: 'success', title: 'Asset checked in', message: `${asset.name} is now Available.` });
     } catch {
       push({ variant: 'error', title: 'Check-in failed', message: 'Could not check in this asset. Please try again.' });
@@ -582,20 +587,23 @@ export function AssetDetailPage() {
           <Card>
             <CardHeader title="Audit Logs" description="System audit trail for this asset" />
             <div className="p-5">
-              <div className="space-y-2">
-                {[
-                  { action: 'Asset status changed to "In Maintenance"', user: 'David Kim', time: '2025-07-28 14:32' },
-                  { action: 'Asset details updated', user: 'Sarah Chen', time: '2025-07-15 09:12' },
-                  { action: 'Asset created', user: 'Admin', time: '2024-01-10 08:30' },
-                ].map((log, i) => (
-                  <div key={i} className="flex items-center gap-3 py-2 border-b border-surface-100 last:border-0">
-                    <ClipboardList className="h-4 w-4 text-surface-400 shrink-0" />
-                    <p className="text-body text-surface-700 flex-1">{log.action}</p>
-                    <p className="text-caption text-surface-500">{log.user}</p>
-                    <p className="text-caption text-surface-400 w-32 text-right">{log.time}</p>
-                  </div>
-                ))}
-              </div>
+              {auditEntries.length === 0 ? (
+                <p className="text-body text-surface-500">
+                  No audit entries yet for this asset in this session — entries are recorded going forward
+                  (create/assign/check-in). Pre-existing seeded assets have no history to backfill.
+                </p>
+              ) : (
+                <div className="space-y-2">
+                  {auditEntries.map((entry) => (
+                    <div key={entry.id} className="flex items-center gap-3 py-2 border-b border-surface-100 last:border-0">
+                      <ClipboardList className="h-4 w-4 text-surface-400 shrink-0" />
+                      <p className="text-body text-surface-700 flex-1">{entry.action}</p>
+                      <p className="text-caption text-surface-500">{entry.actor}</p>
+                      <p className="text-caption text-surface-400 w-40 text-right">{new Date(entry.createdAt).toLocaleString()}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </Card>
         )}

@@ -1,4 +1,5 @@
 import apiClient from '@/services/api-client';
+import { recordMockAuditEntry } from '@/services/audit-repository';
 import type { Asset, AssetListQuery, AssetListResult, AssignAssetInput, CreateAssetInput } from '@/types/asset';
 
 /**
@@ -77,6 +78,7 @@ export class MockAssetRepository implements AssetRepository {
       specs: [],
     };
     this.assets = [created, ...this.assets];
+    recordMockAuditEntry('Asset created', 'asset', created.id);
     return simulateNetwork(created);
   }
 
@@ -93,6 +95,7 @@ export class MockAssetRepository implements AssetRepository {
       assignedDate: new Date().toISOString().split('T')[0],
     };
     this.assets = this.assets.map((a) => (a.id === input.assetId ? updated : a));
+    recordMockAuditEntry(`Asset assigned to ${input.employeeName}`, 'asset', input.assetId);
     return simulateNetwork(updated);
   }
 
@@ -109,6 +112,7 @@ export class MockAssetRepository implements AssetRepository {
       assignedDate: undefined,
     };
     this.assets = this.assets.map((a) => (a.id === assetId ? updated : a));
+    recordMockAuditEntry('Asset checked in', 'asset', assetId);
     return simulateNetwork(updated);
   }
 }

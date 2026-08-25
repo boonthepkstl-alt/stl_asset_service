@@ -2,6 +2,7 @@ package controller
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"singer/go-template-new-2026-06/logger"
 	"singer/go-template-new-2026-06/model"
@@ -20,10 +21,28 @@ type AssetController interface {
 
 type assetController struct {
 	assetService service.AssetService
+	auditService service.AuditService
 }
 
-func NewAssetController(assetService service.AssetService) AssetController {
-	return &assetController{assetService: assetService}
+func NewAssetController(assetService service.AssetService, auditService service.AuditService) AssetController {
+	return &assetController{assetService: assetService, auditService: auditService}
+}
+
+// recordAudit is a best-effort audit write (RAISE-FR-AUDIT-001): logged on failure, but does
+// not fail the primary request. This is a deliberate first-cut trade-off, not an oversight --
+// there is no outbox/transactional-write pattern here, so a rare audit-write failure means a
+// mutation could complete without a matching audit entry. Making both writes atomic would need
+// a shared transaction across the asset and audit repositories, which is a larger change than
+// this first cut's scope (see NEXT-STEP.md's "needs a scoped-down first cut" framing).
+func (obj *assetController) recordAudit(c *fiber.Ctx, action, entityID string) {
+	log := logger.GetLoggerWithFiber(c)
+	actor, _ := c.Locals("username").(string)
+	if actor == "" {
+		actor = "unknown"
+	}
+	if _, err := obj.auditService.Record(actor, action, "asset", entityID); err != nil {
+		log.Errorf("recordAudit failed (action=%s entity=asset/%s): %v", action, entityID, err)
+	}
 }
 
 // ListAssets godoc
@@ -104,6 +123,7 @@ func (obj *assetController) CreateAsset(c *fiber.Ctx) error {
 		})
 	}
 
+	obj.recordAudit(c, "Asset created", created.ID)
 	return c.Status(http.StatusCreated).JSON(created)
 }
 
@@ -138,6 +158,7 @@ func (obj *assetController) AssignAsset(c *fiber.Ctx) error {
 		})
 	}
 
+	obj.recordAudit(c, fmt.Sprintf("Asset assigned to %s", input.EmployeeName), id)
 	return c.Status(http.StatusOK).JSON(updated)
 }
 
@@ -163,5 +184,6 @@ func (obj *assetController) CheckInAsset(c *fiber.Ctx) error {
 		})
 	}
 
+	obj.recordAudit(c, "Asset checked in", id)
 	return c.Status(http.StatusOK).JSON(updated)
 }

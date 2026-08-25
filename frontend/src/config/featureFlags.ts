@@ -28,3 +28,8 @@ export const EMPLOYEE_API_ENABLED = import.meta.env.VITE_EMPLOYEE_API_ENABLED ==
 // (go-template-main/controller/ticketController.go, RAISE-FR-MAINT-001). Independent flag
 // since it depends on both the Asset and Employee domains already being resolvable server-side.
 export const TICKET_API_ENABLED = import.meta.env.VITE_TICKET_API_ENABLED === 'true';
+
+// Same reasoning as the flags above, for the Immutable Audit Log domain
+// (go-template-main/controller/auditController.go, RAISE-FR-AUDIT-001). Independent flag since
+// it can land/be enabled separately from the domains it observes.
+export const AUDIT_API_ENABLED = import.meta.env.VITE_AUDIT_API_ENABLED === 'true';

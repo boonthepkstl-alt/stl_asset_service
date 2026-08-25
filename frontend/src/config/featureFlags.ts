@@ -33,3 +33,10 @@ export const TICKET_API_ENABLED = import.meta.env.VITE_TICKET_API_ENABLED === 't
 // (go-template-main/controller/auditController.go, RAISE-FR-AUDIT-001). Independent flag since
 // it can land/be enabled separately from the domains it observes.
 export const AUDIT_API_ENABLED = import.meta.env.VITE_AUDIT_API_ENABLED === 'true';
+
+// Same reasoning as the flags above, for the Executive Dashboard's Asset-derived KPI
+// computation (go-template-main/controller/dashboardController.go, RAISE-FR-EXEC-001).
+// Independent flag since it can land/be enabled separately from ASSET_API_ENABLED itself --
+// this domain composes over the Asset domain server-side, not the frontend's own
+// assetService, so enabling it doesn't require ASSET_API_ENABLED to also be on.
+export const DASHBOARD_API_ENABLED = import.meta.env.VITE_DASHBOARD_API_ENABLED === 'true';

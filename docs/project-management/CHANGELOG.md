@@ -17,6 +17,12 @@ changes user-visible or API-visible behavior. Pure documentation-sync PRs
 ## 2026-08-25
 
 ### Added
+- **Audit Log (first cut)** — Asset Detail's "Audit" tab now shows real,
+  recorded activity for that asset (create/assign/check-in), each with
+  the actual person who did it and when, instead of a fixed example
+  list. Entries cannot be edited or deleted through the app. Only Asset
+  activity is covered so far — Maintenance ticket activity isn't logged
+  yet.
 - **QR / Barcode identification** — "Print QR Code" (Assets list and Asset
   Detail) now generates a real, scannable QR code linking to the asset's
   record, with a working download button. "Scan QR" on the Assets list

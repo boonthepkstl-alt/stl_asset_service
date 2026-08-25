@@ -9,14 +9,15 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-08-25, after PR #29 (`CHECKPOINT-2026-08-25-001`). The
+**As of:** 2026-08-25, after PR #31 (`CHECKPOINT-2026-08-25-002`). The
 `BASELINE-CHECKPOINT-2026-08-24` scan is still the last full live
-re-verification against `git`/source; this update applies PR #21-#29's
-changes on top of it (Singer CI branding, timeline checkpoint links, and
-QR/Barcode) without re-running a full baseline scan — see
-[`OPEN-FINDINGS.md`](OPEN-FINDINGS.md) F-20 for the checkpoint-coverage
-gap this left between PR #18 and PR #29. Every development session should
-close out per
+re-verification against `git`/source; this update applies PR #21-#31's
+changes on top of it (Singer CI branding, timeline checkpoint links,
+QR/Barcode, and Audit Log first cut) without re-running a full baseline
+scan — see [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md) F-20 for the
+checkpoint-coverage gap this left between PR #18 and PR #29 (PR #29
+onward has Level 1 checkpoints). Every development session should close
+out per
 [`SESSION-CLOSEOUT-PROTOCOL.md`](SESSION-CLOSEOUT-PROTOCOL.md), which is
 what keeps this section current.
 
@@ -59,6 +60,7 @@ intentionally out of MVP scope (Roadmap).
 | Maintenance / Ticket | `RAISE-FR-MAINT-001` | ✅ Built — 4-stage workflow shape only; SLA/vendor/cost model TBD |
 | Auth | supports `RAISE-NFR-SEC-RBAC-001` | ✅ Built, demo-only — hardcoded single user, no real user store |
 | QR / Barcode lookup | `RAISE-FR-OPS-001` | ✅ Built — [PR #29](https://github.com/boonthepkstl-alt/stl_asset_service/pull/29). `GET /assets/:id` now resolves by `code` too (dual lookup); real QR generation + Scan QR flow live on both Assets list and Asset Detail. Manually browser-verified; formal `TC-OPS-001-01..03` execution not yet run (`OPEN-FINDINGS.md` — noted in the CHECKPOINT-2026-08-25-001 Known Issues) |
+| Audit Log (first cut) | `RAISE-FR-AUDIT-001` | 🟡 Built, narrow scope — [PR #31](https://github.com/boonthepkstl-alt/stl_asset_service/pull/31). `GET /audit-logs` + recording on Asset create/assign/check-in only (Ticket domain not yet hooked in). No update/delete path exists (immutability by omission). Field set limited to Actor/Action/Entity/Timestamp — Before/After/Source/Result and the audit-review role gate remain TBD, so `TC-AUDIT-001-01`/`-03` stay partial per the traceability matrix |
 
 ### Frontend features still Mock-only (no backend endpoint exists)
 
@@ -68,7 +70,6 @@ intentionally out of MVP scope (Roadmap).
 | License | `RAISE-FR-LICENSE-001` | Confirmed Roadmap, not MVP |
 | AI Decision Center | `RAISE-AI-RECOMMEND-001` | Confirmed Roadmap |
 | Alerts | `RAISE-FR-ALERT-001` | Trigger rules/channels TBD |
-| Audit Log | `RAISE-FR-AUDIT-001` | Field taxonomy TBD |
 | Executive Dashboard | `RAISE-FR-EXEC-001` | NBV/Risk KPI formulas TBD |
 | Oracle FA Integration | `RAISE-FR-ORACLE-001` | Integration method/mapping/sync/security all TBD |
 | Natural Language Search | `RAISE-AI-SEARCH-001` | Citation precision/format TBD |
@@ -86,11 +87,12 @@ traceability matrix — QR / Barcode (`RAISE-FR-OPS-001`), the last such
 item, was built in PR #29 (see §3 above).
 
 **Needs a scoped-down first cut** (real AC exists, some fields TBD — same
-pattern as Maintenance/Check-in and now QR/Barcode): Audit Log
-(`RAISE-FR-AUDIT-001`, could log mutations that already happen without
-inventing a taxonomy), Executive Dashboard (`RAISE-FR-EXEC-001`, could move
-existing client-side KPI math to a backend endpoint without inventing the
-still-TBD formulas). These are the recommended next candidates.
+pattern as Maintenance/Check-in, QR/Barcode, and now Audit Log): Executive
+Dashboard (`RAISE-FR-EXEC-001`, could move existing client-side KPI math to
+a backend endpoint without inventing the still-TBD formulas). This is the
+recommended next candidate. Audit Log's own remaining scope (Ticket-domain
+hook-in) is a smaller, already-scoped extension of PR #31 rather than a
+fresh "first cut" pick.
 
 **Blocked on a business decision:** Warranty, Alerts, Oracle FA Integration,
 Natural Language Search, Document Intelligence, User/Role Management

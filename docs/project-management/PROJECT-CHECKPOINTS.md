@@ -840,6 +840,49 @@ Commit: `c408f8f` (implementation), merged via `625ceec` (merge commit, [PR #29]
 
 ---
 
+## CHECKPOINT-2026-08-25-002
+
+**Phase:** Phase 6 — Audit & Reconciliation
+**Feature:** Immutable Audit Log (first cut)
+**Task:** Implement `RAISE-FR-AUDIT-001` scoped to what's confirmed: log mutations that already happen (Asset create/assign/check-in) without inventing the still-open field taxonomy or role-gate content
+
+**What was implemented:** A new Audit Log domain end to end — backend `audit_logs` table, model, repository (Create + List only), service, and a read-only `GET /audit-logs` controller; frontend `audit-repository.ts`/`audit-service.ts` (Mock + Http, gated by a new `AUDIT_API_ENABLED` flag) and a `useAuditLogs` hook. Recording is wired into `CreateAsset`/`AssignAsset`/`CheckInAsset` on the backend and into `MockAssetRepository.create/assign/checkIn` on the frontend mock, so both paths produce real entries.
+**What was modified:** `go-template-main/controller/assetController.go` (best-effort `recordAudit` call after each mutation succeeds); `router/sampleRouter.go` (wiring + new route); `frontend/src/services/asset-repository.ts` (mock recording hook-in); `frontend/src/pages/AssetDetail/index.tsx` (Audit tab now reads real entries, refetched after Assign/Check-in).
+**What was fixed:** None — this is new functionality, not a bugfix.
+**What was added:** `go-template-main/model/auditModel.go`, `repository/auditRepository.go` + `auditPGRepository.go`, `service/auditService.go` (+ test), `controller/auditController.go`, `sql/pg/V4__Audit_Table.sql`; `frontend/src/types/audit.ts`, `services/audit-repository.ts`, `services/audit-service.ts` (+ test), `hooks/useAuditLogs.ts`.
+**What was removed:** The hardcoded fake 3-entry audit array previously inline in `AssetDetail/index.tsx`'s Audit tab.
+
+**Files changed:** 17 files (+719/-17) — see [PR #31](https://github.com/boonthepkstl-alt/stl_asset_service/pull/31) for the full diff.
+**Database changes:** New table `audit_logs` (`sql/pg/V4__Audit_Table.sql`) — additive, no existing table touched. **API changes:** New read-only endpoint `GET /audit-logs`; no existing endpoint's contract changed (the mutating endpoints it observes keep their existing request/response shapes, audit recording is a side effect, not a new response field). **Frontend changes:** New Audit domain service/repository/hook; Asset Detail's Audit tab behavior changed from static fake data to live entries.
+
+**Tests:**
+- Unit Test: `go-template-main/service/auditService_test.go` (3 new cases); `frontend/src/services/audit-service.test.ts` (3 new cases) — 131/131 frontend tests passing overall.
+- Integration Test: None added — same gap as the rest of this codebase (no integration-test layer exists yet).
+- E2E Test: None — no E2E framework exists in this project.
+
+**Validation:**
+- Build: `go build ./...` ✅, `npm run build` ✅
+- Lint: `go vet ./...` ✅, `npm run lint` ✅ (0 warnings)
+- Test: `go test ./...` ✅, `npx vitest run` ✅ (131/131)
+- Type Check: `npx tsc --noEmit` ✅
+- Manual browser verification (Chrome preview, `raise-frontend` dev server): performed Check-in then Assign on a seeded asset; both actions immediately produced a correctly-attributed, correctly-timestamped audit entry on the Audit tab, newest-first, replacing the prior static fake list.
+
+**Requirement Traceability:**
+PRD: `RAISE-FR-AUDIT-001`
+Design: `RAISE-DESIGN.md` §15 "Audit Architecture" — implements exactly the confirmed subset (Actor/Action/Entity/Timestamp), not the "design candidate" fields (Before/After, Source, Result) it explicitly flags as unconfirmed.
+Acceptance Criteria: `AC-AUDIT-001-01` (entry created with minimum fields) — met for Asset-domain mutations. `AC-AUDIT-001-02` (entries cannot be modified/deleted through normal application operation) — met by omission (no Update/Delete method exists at any layer). `AC-AUDIT-001-03` (authorized user can view entries) — met structurally (entries are viewable); the "authorized" role-gate part is **not** enforced, since PRD §16 Q22 leaves the role model undefined — same reasoning already applied to every other RAISE domain route.
+Test Case: `TC-AUDIT-001-01` (partial — field taxonomy TBD), `TC-AUDIT-001-02` (not blocked — met), `TC-AUDIT-001-03` (partial — role gate TBD). This checkpoint does not change the traceability matrix's `BLOCKED` status for `RAISE-FR-AUDIT-001` — see Known Issues.
+
+**Git:**
+Branch: `feature/audit-log-first-cut`
+Commit: `8aef31b` (implementation), merged via `33f9164` (merge commit, [PR #31](https://github.com/boonthepkstl-alt/stl_asset_service/pull/31))
+
+**Known Issues:** (1) Audit writes are best-effort, non-atomic with the primary mutation they observe — a rare audit-write failure would let a mutation succeed without a matching entry; documented in `assetController.go`'s `recordAudit` comment as a deliberate first-cut trade-off, not an oversight. (2) Ticket-domain mutations (create/approve/dispatch/status update) are **not** wired to the audit log in this cut — Asset-domain coverage alone satisfies `AC-AUDIT-001-01`'s own example (Check-in/Check-out), but full domain coverage is incomplete. (3) `TC-AUDIT-001-01`/`-03` remain partially blocked in the traceability matrix; this implementation does not resolve the underlying PRD/Design open questions, only builds what's already confirmed.
+**Remaining Work:** Wire Ticket-domain mutations into the same `AuditService.Record` call, once/if that's prioritized; re-run `TC-AUDIT-001-01..03` formally and update the traceability matrix if/when Design §15's field taxonomy and PRD §16 Q22's role gate get answered.
+**Next Step:** Per `CURRENT-STATUS.md` §4, the next "needs a scoped-down first cut" candidate is Executive Dashboard (`RAISE-FR-EXEC-001`) — real AC exists, KPI formulas TBD, same narrow-first-cut pattern.
+
+---
+
 ## Level 2 — Feature Checkpoints
 
 ### FEATURE-CHECKPOINT-project-tracking-governance

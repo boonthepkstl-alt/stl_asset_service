@@ -33,10 +33,26 @@ type TicketController interface {
 
 type ticketController struct {
 	ticketService service.TicketService
+	auditService  service.AuditService
 }
 
-func NewTicketController(ticketService service.TicketService) TicketController {
-	return &ticketController{ticketService: ticketService}
+func NewTicketController(ticketService service.TicketService, auditService service.AuditService) TicketController {
+	return &ticketController{ticketService: ticketService, auditService: auditService}
+}
+
+// recordAudit is the Ticket domain's counterpart to assetController.go's recordAudit --
+// same best-effort, non-atomic trade-off (RAISE-FR-AUDIT-001's first cut, PR #31), now extended
+// to a second domain per that PR's own documented "Remaining Work" (see
+// docs/project-management/PROJECT-CHECKPOINTS.md CHECKPOINT-2026-08-25-002).
+func (obj *ticketController) recordAudit(c *fiber.Ctx, action, entityID string) {
+	log := logger.GetLoggerWithFiber(c)
+	actor, _ := c.Locals("username").(string)
+	if actor == "" {
+		actor = "unknown"
+	}
+	if _, err := obj.auditService.Record(actor, action, "ticket", entityID); err != nil {
+		log.Errorf("recordAudit failed (action=%s entity=ticket/%s): %v", action, entityID, err)
+	}
 }
 
 // ListTickets godoc
@@ -117,6 +133,7 @@ func (obj *ticketController) CreateTicket(c *fiber.Ctx) error {
 		log.Errorf("CreateTicket service error: %v", err)
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"message": "Failed to create ticket", "error": err.Error()})
 	}
+	obj.recordAudit(c, "Ticket created", created.ID)
 	return c.Status(http.StatusCreated).JSON(created)
 }
 
@@ -128,7 +145,12 @@ func (obj *ticketController) DecideApproval(c *fiber.Ctx) error {
 		if err := parseInto(body, &input); err != nil {
 			return model.TicketModel{}, err
 		}
-		return obj.ticketService.DecideApproval(id, input)
+		updated, err := obj.ticketService.DecideApproval(id, input)
+		if err != nil {
+			return model.TicketModel{}, err
+		}
+		obj.recordAudit(c, fmt.Sprintf("Ticket %sd", input.Decision), updated.ID)
+		return updated, nil
 	})
 }
 
@@ -140,7 +162,16 @@ func (obj *ticketController) Dispatch(c *fiber.Ctx) error {
 		if err := parseInto(body, &input); err != nil {
 			return model.TicketModel{}, err
 		}
-		return obj.ticketService.Dispatch(id, input)
+		updated, err := obj.ticketService.Dispatch(id, input)
+		if err != nil {
+			return model.TicketModel{}, err
+		}
+		technicianName := "an unassigned technician"
+		if updated.ITAssignment.TechnicianName != nil {
+			technicianName = *updated.ITAssignment.TechnicianName
+		}
+		obj.recordAudit(c, fmt.Sprintf("Ticket dispatched to %s", technicianName), updated.ID)
+		return updated, nil
 	})
 }
 
@@ -152,7 +183,12 @@ func (obj *ticketController) UpdateExecutionStatus(c *fiber.Ctx) error {
 		if err := parseInto(body, &input); err != nil {
 			return model.TicketModel{}, err
 		}
-		return obj.ticketService.UpdateExecutionStatus(id, input)
+		updated, err := obj.ticketService.UpdateExecutionStatus(id, input)
+		if err != nil {
+			return model.TicketModel{}, err
+		}
+		obj.recordAudit(c, fmt.Sprintf("Ticket status updated to %s", input.Status), updated.ID)
+		return updated, nil
 	})
 }
 

@@ -1,4 +1,5 @@
 import apiClient from '@/services/api-client';
+import { recordMockAuditEntry } from '@/services/audit-repository';
 import type { Ticket, TicketListQuery, ApprovalDecisionInput, DispatchInput, StatusUpdateInput } from '@/types/ticket';
 import type { ITTechnician, TimelineEvent } from '@/data/fixtures/requisitionData';
 
@@ -73,6 +74,7 @@ export class MockTicketRepository implements TicketRepository {
 
   async create(ticket: Ticket): Promise<Ticket> {
     this.tickets = [ticket, ...this.tickets];
+    recordMockAuditEntry('Ticket created', 'ticket', ticket.id);
     return simulateNetwork(ticket);
   }
 
@@ -112,6 +114,7 @@ export class MockTicketRepository implements TicketRepository {
         }
       )
     );
+    recordMockAuditEntry(`Ticket ${input.decision}d`, 'ticket', id);
     return simulateNetwork(updated);
   }
 
@@ -144,6 +147,7 @@ export class MockTicketRepository implements TicketRepository {
         }
       )
     );
+    recordMockAuditEntry(`Ticket dispatched to ${tech.name}`, 'ticket', id);
     return simulateNetwork(updated);
   }
 
@@ -184,6 +188,7 @@ export class MockTicketRepository implements TicketRepository {
         }
       )
     );
+    recordMockAuditEntry(`Ticket status updated to ${input.status}`, 'ticket', id);
     return simulateNetwork(updated);
   }
 

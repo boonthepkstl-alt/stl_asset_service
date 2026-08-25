@@ -883,6 +883,49 @@ Commit: `8aef31b` (implementation), merged via `33f9164` (merge commit, [PR #31]
 
 ---
 
+## CHECKPOINT-2026-08-25-003
+
+**Phase:** Phase 8 — Executive Dashboard & Reporting
+**Feature:** Executive Dashboard KPIs (first cut)
+**Task:** Implement `RAISE-FR-EXEC-001` scoped to exactly what's already confirmed: relocate the existing client-side plain-count KPI computation to a real backend endpoint, without adding or approximating any NBV/Risk/Utilization-mechanics formula
+
+**What was implemented:** A new read-only Dashboard domain — backend `GET /dashboard/stats` computing status counts (Available/Assigned/In Maintenance/Retired), expired-warranty count, and department/type distribution by composing over the existing `AssetService` (no new table, no new SQL); frontend `dashboard-repository.ts` (Mock + Http, gated by a new `DASHBOARD_API_ENABLED` flag) feeding the same shape `dashboard-service.ts` always produced.
+**What was modified:** `go-template-main/router/sampleRouter.go` (wiring); `frontend/src/services/dashboard-service.ts` (now composes the repository's stats with `licenseService`'s software license count and applies color assignment, instead of computing everything inline); `frontend/src/types/dashboard.ts` (added colorless `DistributionCount` as the base of `DistributionSlice`); `frontend/src/config/featureFlags.ts` (new flag).
+**What was fixed:** None — this is a relocation, not a bugfix.
+**What was added:** `go-template-main/model/dashboardModel.go`, `service/dashboardService.go` (+ 4 tests), `controller/dashboardController.go`; `frontend/src/services/dashboard-repository.ts` (+ http test).
+**What was removed:** The inline computation previously living directly in `dashboard-service.ts`'s `getDashboardStats` (moved into `dashboard-repository.ts`'s `MockDashboardRepository`, same logic, not deleted).
+
+**Files changed:** 10 files (+414/-30) — see [PR #33](https://github.com/boonthepkstl-alt/stl_asset_service/pull/33) for the full diff.
+**Database changes:** None (no new table — composes over the existing `assets` table via `AssetService`). **API changes:** New read-only endpoint `GET /dashboard/stats`; no existing endpoint's contract changed. **Frontend changes:** New Dashboard repository/flag; `dashboard-service.ts`'s output shape and values are unchanged when the flag is off (default) — verified by browser comparison, not just assumed.
+
+**Tests:**
+- Unit Test: `go-template-main/service/dashboardService_test.go` (4 new cases); `frontend/src/services/dashboard-repository.http.test.ts` (1 new case) — 132/132 frontend tests passing overall, including the 4 pre-existing `dashboard-service.test.ts` cases unchanged.
+- Integration Test: None added — same gap as the rest of this codebase.
+- E2E Test: None — no E2E framework exists in this project.
+
+**Validation:**
+- Build: `go build ./...` ✅, `npm run build` ✅
+- Lint: `go vet ./...` ✅, `npm run lint` ✅ (0 warnings)
+- Test: `go test ./...` ✅, `npx vitest run` ✅ (132/132)
+- Type Check: `npx tsc --noEmit` ✅
+- Manual browser verification (Chrome preview, `raise-frontend` dev server): Dashboard page rendered with the flag at its default (off) — same KPI numbers, same department/type distribution values and colors, no console errors, confirming the relocated mock-path logic reproduces the original inline computation exactly.
+
+**Requirement Traceability:**
+PRD: `RAISE-FR-EXEC-001`
+Design: N/A cited directly in this checkpoint — see `RAISE-DESIGN.md`'s Executive Intelligence section for the full KPI tile list this first cut only partially covers.
+Acceptance Criteria: `AC-EXEC-001` — met only for the plain-count sub-scope (status counts, expired warranty, distributions); the NBV/Risk/Utilization-mechanics sub-scope is untouched and remains not-yet-testable per the traceability matrix.
+Test Case: `TC-EXEC-001-01` (partial — NBV/Risk formulas TBD, unchanged by this PR), `TC-EXEC-001-02` (partial — AI-generated-vs-static Executive Summary unresolved, unrelated to this PR's scope). This checkpoint does not change the traceability matrix's status for `RAISE-FR-EXEC-001` — see Known Issues.
+
+**Git:**
+Branch: `feature/executive-dashboard-kpi-backend`
+Commit: `862b7a1` (implementation), merged via `20e0afd` (merge commit, [PR #33](https://github.com/boonthepkstl-alt/stl_asset_service/pull/33))
+
+**Known Issues:** (1) Software License count still comes from the frontend's mock license service regardless of `DASHBOARD_API_ENABLED` — there is no backend License table to query (`RAISE-FR-LICENSE-001` is Roadmap-only), so this is a permanent characteristic of the current architecture, not a bug. (2) NBV, Risk score, and Utilization's calculation mechanics are **not started** at all (not approximated, not stubbed) — PRD §16 Q3/Q4/Q29 remain the blocker. (3) Monthly Depreciation/Monthly Cost and the AI Insights/AI Portfolio Health panel remain static illustrative fixture content — they were never computed logic, so there was nothing to "move" for them in this cut.
+**Remaining Work:** The NBV/Risk/Utilization-mechanics half of `RAISE-FR-EXEC-001` cannot proceed without a PRD §16 Q3/Q4/Q29 answer — this is a business-decision blocker, not a scoping task.
+**Next Step:** Per `CURRENT-STATUS.md` §4, no fresh "needs a scoped-down first cut" item remains. The next actionable, non-invented task is the already-scoped Ticket-domain audit hook-in (extends PR #31 — see that checkpoint's Remaining Work) unless a PRD answer unblocks something else first.
+
+---
+
 ## Level 2 — Feature Checkpoints
 
 ### FEATURE-CHECKPOINT-project-tracking-governance

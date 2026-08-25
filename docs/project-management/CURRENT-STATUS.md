@@ -9,15 +9,15 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-08-25, after PR #31 (`CHECKPOINT-2026-08-25-002`). The
+**As of:** 2026-08-25, after PR #33 (`CHECKPOINT-2026-08-25-003`). The
 `BASELINE-CHECKPOINT-2026-08-24` scan is still the last full live
-re-verification against `git`/source; this update applies PR #21-#31's
+re-verification against `git`/source; this update applies PR #21-#33's
 changes on top of it (Singer CI branding, timeline checkpoint links,
-QR/Barcode, and Audit Log first cut) without re-running a full baseline
-scan — see [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md) F-20 for the
-checkpoint-coverage gap this left between PR #18 and PR #29 (PR #29
-onward has Level 1 checkpoints). Every development session should close
-out per
+QR/Barcode, Audit Log first cut, and Executive Dashboard KPI first cut)
+without re-running a full baseline scan — see
+[`OPEN-FINDINGS.md`](OPEN-FINDINGS.md) F-20 for the checkpoint-coverage
+gap this left between PR #18 and PR #29 (PR #29 onward has Level 1
+checkpoints). Every development session should close out per
 [`SESSION-CLOSEOUT-PROTOCOL.md`](SESSION-CLOSEOUT-PROTOCOL.md), which is
 what keeps this section current.
 
@@ -61,16 +61,7 @@ intentionally out of MVP scope (Roadmap).
 | Auth | supports `RAISE-NFR-SEC-RBAC-001` | ✅ Built, demo-only — hardcoded single user, no real user store |
 | QR / Barcode lookup | `RAISE-FR-OPS-001` | ✅ Built — [PR #29](https://github.com/boonthepkstl-alt/stl_asset_service/pull/29). `GET /assets/:id` now resolves by `code` too (dual lookup); real QR generation + Scan QR flow live on both Assets list and Asset Detail. Manually browser-verified; formal `TC-OPS-001-01..03` execution not yet run (`OPEN-FINDINGS.md` — noted in the CHECKPOINT-2026-08-25-001 Known Issues) |
 | Audit Log (first cut) | `RAISE-FR-AUDIT-001` | 🟡 Built, narrow scope — [PR #31](https://github.com/boonthepkstl-alt/stl_asset_service/pull/31). `GET /audit-logs` + recording on Asset create/assign/check-in only (Ticket domain not yet hooked in). No update/delete path exists (immutability by omission). Field set limited to Actor/Action/Entity/Timestamp — Before/After/Source/Result and the audit-review role gate remain TBD, so `TC-AUDIT-001-01`/`-03` stay partial per the traceability matrix |
-
-### Frontend features still Mock-only (no backend endpoint exists)
-
-| Feature | Requirement | Blocking reason |
-|---|---|---|
-| Warranty | `RAISE-FR-WARRANTY-001` | Field list beyond `warrantyExpiry` is Open Question (PRD §16 Q15) |
-| License | `RAISE-FR-LICENSE-001` | Confirmed Roadmap, not MVP |
-| AI Decision Center | `RAISE-AI-RECOMMEND-001` | Confirmed Roadmap |
-| Alerts | `RAISE-FR-ALERT-001` | Trigger rules/channels TBD |
-| Executive Dashboard | `RAISE-FR-EXEC-001` | NBV/Risk KPI formulas TBD |
+| Executive Dashboard KPIs (first cut) | `RAISE-FR-EXEC-001` | 🟡 Built, narrow scope — [PR #33](https://github.com/boonthepkstl-alt/stl_asset_service/pull/33). `GET /dashboard/stats` computes status counts, expired-warranty count, and department/type distribution from real Asset data. Software License count still comes from the frontend's mock license service (no backend License table exists — Roadmap-only). NBV/Risk KPI formulas and Utilization's calculation mechanics remain **not started** (PRD §16 Q3/Q4/Q29 TBD) — `TC-EXEC-001-01/-02` stay partial per the traceability matrix; Monthly Depreciation/Cost and the AI Insights panel remain static illustrative content, unchanged |
 | Oracle FA Integration | `RAISE-FR-ORACLE-001` | Integration method/mapping/sync/security all TBD |
 | Natural Language Search | `RAISE-AI-SEARCH-001` | Citation precision/format TBD |
 | Document Intelligence | `RAISE-AI-DOC-001..004` | Confidence thresholds / field lists / matching rules undefined |
@@ -86,13 +77,17 @@ Triaged against [`RAISE-TRACEABILITY-MATRIX.md`](../07-traceability-matrix/RAISE
 traceability matrix — QR / Barcode (`RAISE-FR-OPS-001`), the last such
 item, was built in PR #29 (see §3 above).
 
-**Needs a scoped-down first cut** (real AC exists, some fields TBD — same
-pattern as Maintenance/Check-in, QR/Barcode, and now Audit Log): Executive
-Dashboard (`RAISE-FR-EXEC-001`, could move existing client-side KPI math to
-a backend endpoint without inventing the still-TBD formulas). This is the
-recommended next candidate. Audit Log's own remaining scope (Ticket-domain
-hook-in) is a smaller, already-scoped extension of PR #31 rather than a
-fresh "first cut" pick.
+**Needs a scoped-down first cut:** None remaining as a *fresh* pick —
+Audit Log (PR #31) and Executive Dashboard (PR #33) were the last two
+items in this category, both now built to the extent possible without
+inventing TBD content. Two already-scoped **extensions** of existing
+first cuts remain buildable without inventing anything new:
+Ticket-domain audit hook-in (extends PR #31 — wire `AuditService.Record`
+into `CreateTicket`/`DecideApproval`/`Dispatch`/`UpdateExecutionStatus`,
+same pattern already proven on the Asset domain), and nothing further is
+currently drawable on Executive Dashboard without an NBV/Risk/Utilization
+formula decision (§16 Q3/Q4/Q29) — that one genuinely needs a business
+answer, not just more scoping discipline.
 
 **Blocked on a business decision:** Warranty, Alerts, Oracle FA Integration,
 Natural Language Search, Document Intelligence, User/Role Management

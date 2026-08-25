@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Upload, QrCode, Eye, Edit, Trash2, ArrowRightLeft, Wrench, Filter, X, Sparkles, Send } from 'lucide-react';
+import { Plus, Upload, QrCode, Eye, Edit, Trash2, ArrowRightLeft, Wrench, Filter, X, Sparkles, Send, ScanLine } from 'lucide-react';
 import { AppShell } from '@/components/AppShell';
-import { Button, Badge, Avatar, StatusBadge, Select, Modal, ConfirmDialog, useToast, Alert } from '@/components/ui';
+import { Button, Badge, Avatar, StatusBadge, Select, Modal, ConfirmDialog, useToast, Alert, Input } from '@/components/ui';
 import { DataTable, type Column } from '@/components/DataTable';
+import { AssetQrCode } from '@/components/AssetQrCode';
 import { departments, locations } from '@/data/fixtures/mockData';
 import { getAssetIcon } from '@/data/asset-icons';
 import { useAssets } from '@/hooks/useAssets';
+import { assetService } from '@/services/asset-service';
 import type { Asset } from '@/types/asset';
 
 // Ported from src/pages/AssetList.tsx — see ASSET-MANAGEMENT-MIGRATION.md for the
@@ -23,6 +25,10 @@ export function AssetsPage() {
   const [showFilters, setShowFilters] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Asset | null>(null);
   const [qrAsset, setQrAsset] = useState<Asset | null>(null);
+  const [scanOpen, setScanOpen] = useState(false);
+  const [scanCode, setScanCode] = useState('');
+  const [scanError, setScanError] = useState<string | null>(null);
+  const [scanning, setScanning] = useState(false);
   const [aiQuery, setAiQuery] = useState('');
   const [aiInterpretation, setAiInterpretation] = useState<{ filters: { label: string; value: string }[]; count: number } | null>(null);
 
@@ -59,6 +65,43 @@ export function AssetsPage() {
     setAiInterpretation(null);
     setStatusFilter('all');
     setDeptFilter('all');
+  };
+
+  const openScan = () => {
+    setScanCode('');
+    setScanError(null);
+    setScanOpen(true);
+  };
+
+  const closeScan = () => {
+    setScanOpen(false);
+    setScanCode('');
+    setScanError(null);
+  };
+
+  // RAISE-FR-OPS-001 (QR/Barcode Identification). This input is intentionally a plain
+  // auto-focused text field rather than a camera view: real enterprise barcode/QR scanner
+  // hardware works as a "keyboard wedge" -- it types the decoded code into whichever input has
+  // focus, exactly like this one. Submits look up the asset by code (or id) and jump straight
+  // to its record, satisfying "the identified asset can be connected to its asset record."
+  const handleScanSubmit = async () => {
+    const code = scanCode.trim();
+    if (!code) return;
+    setScanning(true);
+    setScanError(null);
+    try {
+      const found = await assetService.getAsset(code);
+      if (!found) {
+        setScanError(`No asset found for "${code}".`);
+        return;
+      }
+      closeScan();
+      navigate(`/assets/${found.id}`);
+    } catch {
+      setScanError('Unable to look up that code. Please try again.');
+    } finally {
+      setScanning(false);
+    }
   };
 
   const columns: Column<Asset>[] = [
@@ -133,7 +176,7 @@ export function AssetsPage() {
           </div>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" leftIcon={<Upload className="h-4 w-4" />}>Import</Button>
-            <Button variant="outline" size="sm" leftIcon={<QrCode className="h-4 w-4" />}>Scan QR</Button>
+            <Button variant="outline" size="sm" leftIcon={<QrCode className="h-4 w-4" />} onClick={openScan}>Scan QR</Button>
             <Button size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={() => navigate('/assets/create')}>New Asset</Button>
           </div>
         </div>
@@ -249,25 +292,28 @@ export function AssetsPage() {
         />
 
         <Modal open={!!qrAsset} onClose={() => setQrAsset(null)} title="QR Code" description={qrAsset ? `${qrAsset.name} — ${qrAsset.code}` : ''} size="sm">
-          <div className="flex flex-col items-center gap-4 py-4">
-            <div className="p-4 border-2 border-surface-200 rounded-lg">
-              <svg viewBox="0 0 100 100" className="h-40 w-40">
-                <rect width="100" height="100" fill="white" />
-                {Array.from({ length: 256 }).map((_, i) => {
-                  const x = (i % 16) * 6 + 2;
-                  const y = Math.floor(i / 16) * 6 + 2;
-                  const fill = (i * 7 + 3) % 3 === 0 || (i * 13 + 5) % 5 === 0;
-                  return fill ? <rect key={i} x={x} y={y} width="5" height="5" fill="#0f172a" /> : null;
-                })}
-                <rect x="2" y="2" width="20" height="20" fill="none" stroke="#0f172a" strokeWidth="3" />
-                <rect x="78" y="2" width="20" height="20" fill="none" stroke="#0f172a" strokeWidth="3" />
-                <rect x="2" y="78" width="20" height="20" fill="none" stroke="#0f172a" strokeWidth="3" />
-              </svg>
+          {qrAsset && <AssetQrCode assetCode={qrAsset.code} />}
+        </Modal>
+
+        <Modal open={scanOpen} onClose={closeScan} title="Scan QR / Barcode" description="Scan a code or enter it manually to jump to that asset's record." size="sm">
+          <div className="flex flex-col gap-4 py-2">
+            <div className="flex items-center justify-center h-16 w-16 mx-auto rounded-full bg-surface-100">
+              <ScanLine className="h-7 w-7 text-surface-500" />
             </div>
-            <p className="text-body text-surface-600 text-center">Scan to view asset details</p>
-            <div className="flex gap-3">
-              <Button variant="outline" onClick={() => setQrAsset(null)}>Close</Button>
-              <Button leftIcon={<QrCode className="h-4 w-4" />}>Download QR</Button>
+            <Input
+              autoFocus
+              placeholder="Scan or type asset code..."
+              value={scanCode}
+              onChange={(e) => setScanCode(e.target.value)}
+              onKeyDown={(e) => { if (e.key === 'Enter') handleScanSubmit(); }}
+              error={scanError ?? undefined}
+              helpText={scanError ? undefined : 'Most scanners type directly into this field — just point and scan.'}
+            />
+            <div className="flex justify-end gap-3">
+              <Button variant="outline" onClick={closeScan}>Cancel</Button>
+              <Button onClick={handleScanSubmit} disabled={!scanCode.trim() || scanning}>
+                {scanning ? 'Looking up...' : 'Go to asset'}
+              </Button>
             </div>
           </div>
         </Modal>

@@ -34,6 +34,13 @@ describe('assetService', () => {
     expect(result).toBeNull();
   });
 
+  it('getAsset resolves by code as well as id (RAISE-FR-OPS-001 QR/Barcode)', async () => {
+    const assetService = await freshAssetService();
+    const target = (await assetService.listAssets({})).data[0];
+    const result = await assetService.getAsset(target.code);
+    expect(result?.id).toBe(target.id);
+  });
+
   it('createAsset adds a new asset that listAssets then returns', async () => {
     const assetService = await freshAssetService();
     const before = await assetService.listAssets({});

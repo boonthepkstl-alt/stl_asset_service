@@ -37,6 +37,9 @@ func SetupRoutes(app *fiber.App, dbManager *repository.DBManager) {
 	assetService := service.NewAssetService(assetRepo)
 	assetCtrl := controller.NewAssetController(assetService, auditService)
 
+	dashboardService := service.NewDashboardService(assetService)
+	dashboardCtrl := controller.NewDashboardController(dashboardService)
+
 	employeeRepo := repository.NewEmployeeRepository(repository.NewEmployeePGRepository())
 	employeeService := service.NewEmployeeService(employeeRepo)
 	employeeCtrl := controller.NewEmployeeController(employeeService)
@@ -111,4 +114,9 @@ func SetupRoutes(app *fiber.App, dbManager *repository.DBManager) {
 	// reasoning as the domains above -- no RequireRole gate, since AC-AUDIT-001-03's
 	// "audit-review access" role model is undefined (PRD Sec16 Q22).
 	protected.Get("/audit-logs", auditCtrl.ListAuditLogs)
+
+	// RAISE-FR-EXEC-001 (Executive Dashboard KPIs) -- first cut. Composed over AssetService,
+	// so it's declared after that service exists above. Same RBAC reasoning as the other
+	// domains -- no RequireRole gate for MVP.
+	protected.Get("/dashboard/stats", dashboardCtrl.GetDashboardStats)
 }

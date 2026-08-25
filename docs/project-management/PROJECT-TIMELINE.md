@@ -104,16 +104,16 @@ happened. Every phase's **Checkpoint** row should link to a real entry in
 
 | Field | |
 |---|---|
-| **Start Date** | Not scheduled |
+| **Start Date** | 2026-08-25 (Audit Log first cut only; Oracle FA Integration not started) |
 | **Target Date** | Not scheduled |
-| **Actual Start** | — |
-| **Actual Completion** | — |
-| **Status** | ⚪ Not started — blocked on open PRD questions |
+| **Actual Start** | 2026-08-25 |
+| **Actual Completion** | Not complete — Audit Log first cut done for the Asset domain only; Ticket-domain hook-in and Oracle FA Integration remain not started |
+| **Status** | 🟡 Audit Log first cut shipped · Oracle FA Integration not started |
 | **Scope** | Immutable Audit Log (`RAISE-FR-AUDIT-001`) and Oracle FA Integration + reconciliation (`RAISE-FR-ORACLE-001`), both confirmed MVP/P0 but with substantial open detail. |
-| **Deliverables** | None yet. A scoped-down first cut is plausible without inventing anything: an append-only log of mutations that already happen (asset create/assign/check-in, ticket create/approve/dispatch/status) — see `CURRENT-STATUS.md` §4. |
+| **Deliverables** | `go-template-main` Audit domain (model/repository/service/controller, `sql/pg/V4__Audit_Table.sql`), read-only `GET /audit-logs`; recording wired into Asset create/assign/check-in only (Ticket create/approve/dispatch/status intentionally **not** yet wired — documented remaining work, not silently dropped); frontend `HttpAuditRepository`/`MockAuditRepository` behind a feature flag; Asset Detail's "Audit" tab now shows real entries. |
 | **Dependencies** | Phase 3 and Phase 4 (there must be real mutations to audit before an audit log is meaningful). |
-| **Risks** | Audit event taxonomy undefined (Design §15) — **finding tracked in `OPEN-FINDINGS.md`**; Oracle integration method/mapping/sync/security are all TBD (PRD §16 Q6–Q10) and represent this project's largest single external-dependency risk — the "Phase 6" label on the existing `ReconciliationPage` code comment was confirmed **not** a real PRD phase (Resolved Q37), so this numbering is coincidental, not inherited from that comment. |
-| **Checkpoint** | None yet — not started. |
+| **Risks** | Audit event taxonomy undefined (Design §15) — **finding tracked in `OPEN-FINDINGS.md`**; the audit-review role gate is undefined (PRD §16 Q22), so `GET /audit-logs` has no RequireRole gate for MVP; `TC-AUDIT-001-01`/`-03` remain partial in the traceability matrix pending those two answers. Oracle integration method/mapping/sync/security are all TBD (PRD §16 Q6–Q10) and represent this project's largest single external-dependency risk — the "Phase 6" label on the existing `ReconciliationPage` code comment was confirmed **not** a real PRD phase (Resolved Q37), so this numbering is coincidental, not inherited from that comment. |
+| **Checkpoint** | [PR #31](https://github.com/boonthepkstl-alt/stl_asset_service/pull/31) — see `PROJECT-CHECKPOINTS.md`. Oracle FA Integration: none yet — not started. |
 
 ## Phase 7 — Alerts & Notifications
 

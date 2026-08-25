@@ -134,16 +134,16 @@ happened. Every phase's **Checkpoint** row should link to a real entry in
 
 | Field | |
 |---|---|
-| **Start Date** | Not scheduled |
+| **Start Date** | 2026-08-25 |
 | **Target Date** | Not scheduled |
-| **Actual Start** | — |
-| **Actual Completion** | — |
-| **Status** | ⚪ Not started as a backend — a client-computed mock version already exists |
+| **Actual Start** | 2026-08-25 |
+| **Actual Completion** | Not complete — the plain-count KPI tiles (status counts, expired warranty, department/type distribution) moved to a real backend endpoint; NBV/Risk/Utilization-mechanics tiles, the trend chart, and Monthly Depreciation/Cost remain client-side/static, unchanged |
+| **Status** | 🟡 Plain-count KPI backend shipped · NBV/Risk formulas still not started (blocked) |
 | **Scope** | `RAISE-FR-EXEC-001` — KPI tiles (NBV, Risk, Utilization, etc.), acquisitions/retirements trend, department/type distribution. Utilization's *presence and description* are confirmed (PRD §16 Resolved Q27); its *calculation mechanics* and the NBV/Risk formulas are not (Q3–Q4, Resolved Q29 partial). |
-| **Deliverables** | Existing (mock-only): `frontend/src/services/dashboard-service.ts`, `pages/Dashboard/`. A scoped-down first cut could move the already-real KPI computations to backend query endpoints without inventing the still-TBD formulas — see `CURRENT-STATUS.md` §4. |
-| **Dependencies** | Phase 3 (asset data), Phase 5 (license count KPI), Phase 6 (Oracle-sourced NBV, if that's the intended source). |
-| **Risks** | Building real formulas here before Phase 6's Oracle integration lands risks a KPI that has to be recalculated once real financial data is wired in. |
-| **Checkpoint** | None yet — not started. |
+| **Deliverables** | `go-template-main` Dashboard domain (model/service/controller, `GET /dashboard/stats`, no new table — composes over the existing Asset domain); frontend `HttpDashboardRepository`/`MockDashboardRepository` behind a new `DASHBOARD_API_ENABLED` flag. Deliberately excludes Software License count (no backend License table — Roadmap-only) and every NBV/Risk/Utilization-mechanics figure (still PRD §16 Q3/Q4/Q29 TBD) — those remain exactly as they were (static illustrative content or Mock-only), not silently approximated. |
+| **Dependencies** | Phase 3 (asset data) — satisfied. Phase 5 (license count KPI), Phase 6 (Oracle-sourced NBV) remain dependencies for the *not-yet-built* half of this phase. |
+| **Risks** | Building real NBV/Risk formulas here before Phase 6's Oracle integration lands still risks a KPI that has to be recalculated once real financial data is wired in — unchanged risk, not yet triggered since this cut didn't touch those tiles. |
+| **Checkpoint** | [PR #33](https://github.com/boonthepkstl-alt/stl_asset_service/pull/33) — see `PROJECT-CHECKPOINTS.md`. |
 
 ## Phase 9 — AI Document Intelligence & Search
 

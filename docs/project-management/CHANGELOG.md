@@ -16,6 +16,15 @@ changes user-visible or API-visible behavior. Pure documentation-sync PRs
 
 ## 2026-08-25
 
+### Changed
+- **Executive Dashboard KPIs (internal, first cut)** — the Total Assets,
+  Available, Assigned, In Maintenance, Expired Warranty, and department/
+  type distribution numbers on the Dashboard are now computed by the
+  backend instead of in the browser. No visible change for users — same
+  numbers, same layout. Software License count, Monthly Depreciation/
+  Cost, and the AI Insights panel are unchanged (still not backed by a
+  real formula).
+
 ### Added
 - **Audit Log (first cut)** — Asset Detail's "Audit" tab now shows real,
   recorded activity for that asset (create/assign/check-in), each with

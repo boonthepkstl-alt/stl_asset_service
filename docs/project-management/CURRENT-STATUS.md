@@ -9,16 +9,17 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-08-25, after PR #35 (`CHECKPOINT-2026-08-25-004`). The
+**As of:** 2026-08-25, after PR #36 (`CHECKPOINT-2026-08-25-005`). The
 `BASELINE-CHECKPOINT-2026-08-24` scan is still the last full live
-re-verification against `git`/source; this update applies PR #21-#35's
+re-verification against `git`/source; this update applies PR #21-#36's
 changes on top of it (Singer CI branding, timeline checkpoint links,
-QR/Barcode, Audit Log first cut + Ticket-domain extension, and
-Executive Dashboard KPI first cut) without re-running a full baseline
-scan — see [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md) F-20 for the
-checkpoint-coverage gap this left between PR #18 and PR #29 (PR #29
-onward has Level 1 checkpoints). Every development session should
-close out per
+QR/Barcode, Audit Log first cut + Ticket-domain extension, Executive
+Dashboard KPI first cut, and the PR #19-28 checkpoint backfill) without
+re-running a full baseline scan. The checkpoint-coverage gap between PR
+#18 and PR #29 that was tracked as F-20 is now closed — see
+[`OPEN-FINDINGS.md`](OPEN-FINDINGS.md) R-04 — `PROJECT-CHECKPOINTS.md`
+now has a complete, unbroken Level 1 sequence from PR #1 onward. Every
+development session should close out per
 [`SESSION-CLOSEOUT-PROTOCOL.md`](SESSION-CLOSEOUT-PROTOCOL.md), which is
 what keeps this section current.
 

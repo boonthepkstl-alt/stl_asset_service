@@ -14,6 +14,23 @@ changes user-visible or API-visible behavior. Pure documentation-sync PRs
 
 ---
 
+## 2026-08-25
+
+### Added
+- **QR / Barcode identification** — "Print QR Code" (Assets list and Asset
+  Detail) now generates a real, scannable QR code linking to the asset's
+  record, with a working download button. "Scan QR" on the Assets list
+  opens a scan/entry field (works with a real barcode scanner or manual
+  typing) that jumps straight to the matching asset.
+
+### Fixed
+- **QR Code display** — the previous "Print QR Code" modal showed a
+  decorative pattern that only looked like a QR code and could not
+  actually be scanned; its download button did nothing. Both now work.
+- **Asset lookup by code** — looking up an asset by its printed/scanned
+  code (e.g. "AST-0004") now works; previously only the internal record
+  id was recognized.
+
 ## 2026-08-24
 
 ### Added

@@ -9,11 +9,14 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-08-24, after PR #20. Verified live against `git`/source
-code in `BASELINE-CHECKPOINT-2026-08-24`
-([`PROJECT-CHECKPOINTS.md`](PROJECT-CHECKPOINTS.md)) — no drift found
-between this file and the actual repository state at scan time. Every
-development session should close out per
+**As of:** 2026-08-25, after PR #29 (`CHECKPOINT-2026-08-25-001`). The
+`BASELINE-CHECKPOINT-2026-08-24` scan is still the last full live
+re-verification against `git`/source; this update applies PR #21-#29's
+changes on top of it (Singer CI branding, timeline checkpoint links, and
+QR/Barcode) without re-running a full baseline scan — see
+[`OPEN-FINDINGS.md`](OPEN-FINDINGS.md) F-20 for the checkpoint-coverage
+gap this left between PR #18 and PR #29. Every development session should
+close out per
 [`SESSION-CLOSEOUT-PROTOCOL.md`](SESSION-CLOSEOUT-PROTOCOL.md), which is
 what keeps this section current.
 
@@ -55,13 +58,13 @@ intentionally out of MVP scope (Roadmap).
 | Employee | supports `RAISE-FR-ASSET-003` | ✅ Built |
 | Maintenance / Ticket | `RAISE-FR-MAINT-001` | ✅ Built — 4-stage workflow shape only; SLA/vendor/cost model TBD |
 | Auth | supports `RAISE-NFR-SEC-RBAC-001` | ✅ Built, demo-only — hardcoded single user, no real user store |
+| QR / Barcode lookup | `RAISE-FR-OPS-001` | ✅ Built — [PR #29](https://github.com/boonthepkstl-alt/stl_asset_service/pull/29). `GET /assets/:id` now resolves by `code` too (dual lookup); real QR generation + Scan QR flow live on both Assets list and Asset Detail. Manually browser-verified; formal `TC-OPS-001-01..03` execution not yet run (`OPEN-FINDINGS.md` — noted in the CHECKPOINT-2026-08-25-001 Known Issues) |
 
 ### Frontend features still Mock-only (no backend endpoint exists)
 
 | Feature | Requirement | Blocking reason |
 |---|---|---|
 | Warranty | `RAISE-FR-WARRANTY-001` | Field list beyond `warrantyExpiry` is Open Question (PRD §16 Q15) |
-| QR / Barcode | `RAISE-FR-OPS-001` | **No blocker listed** — see §4 |
 | License | `RAISE-FR-LICENSE-001` | Confirmed Roadmap, not MVP |
 | AI Decision Center | `RAISE-AI-RECOMMEND-001` | Confirmed Roadmap |
 | Alerts | `RAISE-FR-ALERT-001` | Trigger rules/channels TBD |
@@ -78,14 +81,16 @@ intentionally out of MVP scope (Roadmap).
 Triaged against [`RAISE-TRACEABILITY-MATRIX.md`](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md)
 §3–§5 — re-check that file before picking an item, it may have changed.
 
-**Buildable now:** QR / Barcode (`RAISE-FR-OPS-001`) — the only MVP
-requirement listed `NOT_TESTED (no blockers)`.
+**Buildable now:** None currently listed `NOT_TESTED (no blockers)` in the
+traceability matrix — QR / Barcode (`RAISE-FR-OPS-001`), the last such
+item, was built in PR #29 (see §3 above).
 
 **Needs a scoped-down first cut** (real AC exists, some fields TBD — same
-pattern as Maintenance/Check-in): Audit Log (`RAISE-FR-AUDIT-001`, could log
-mutations that already happen without inventing a taxonomy), Executive
-Dashboard (`RAISE-FR-EXEC-001`, could move existing client-side KPI math to
-a backend endpoint without inventing the still-TBD formulas).
+pattern as Maintenance/Check-in and now QR/Barcode): Audit Log
+(`RAISE-FR-AUDIT-001`, could log mutations that already happen without
+inventing a taxonomy), Executive Dashboard (`RAISE-FR-EXEC-001`, could move
+existing client-side KPI math to a backend endpoint without inventing the
+still-TBD formulas). These are the recommended next candidates.
 
 **Blocked on a business decision:** Warranty, Alerts, Oracle FA Integration,
 Natural Language Search, Document Intelligence, User/Role Management

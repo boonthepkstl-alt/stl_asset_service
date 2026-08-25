@@ -62,13 +62,13 @@ happened. Every phase's **Checkpoint** row should link to a real entry in
 | **Start Date** | 2026-08-22 |
 | **Target Date** | — (in progress; no committed end date) |
 | **Actual Start** | 2026-08-22 |
-| **Actual Completion** | Not complete — Asset Registry and Assign/Check-in are done; Category & Hierarchy and full Custody History are partial |
+| **Actual Completion** | Not complete — Asset Registry, Assign/Check-in, and QR/Barcode are done; Category & Hierarchy and full Custody History are partial |
 | **Status** | 🟡 Core complete, extensions partial |
-| **Scope** | Asset Registry CRUD (`RAISE-FR-ASSET-001`); Category & Hierarchy (`RAISE-FR-ASSET-002`); Custody History (`RAISE-FR-ASSET-003`) via Assign/Check-in (`RAISE-FR-OPS-002`, partial); Warranty as an Asset field (`RAISE-FR-WARRANTY-001`'s only confirmed field, `warrantyExpiry`); QR/Barcode (`RAISE-FR-OPS-001`, not started). |
-| **Deliverables** | `go-template-main` Asset domain (model/repository/service/controller), `sql/pg/V1__Assets_Table.sql`; Employee domain supporting custody (`sql/pg/V2__Employees_Table.sql`); frontend `HttpAssetRepository`/`HttpEmployeeRepository` behind feature flags; real Assign/Check-in UI on Asset Detail. |
+| **Scope** | Asset Registry CRUD (`RAISE-FR-ASSET-001`); Category & Hierarchy (`RAISE-FR-ASSET-002`); Custody History (`RAISE-FR-ASSET-003`) via Assign/Check-in (`RAISE-FR-OPS-002`, partial); Warranty as an Asset field (`RAISE-FR-WARRANTY-001`'s only confirmed field, `warrantyExpiry`); QR/Barcode (`RAISE-FR-OPS-001`, ✅ built PR #29). |
+| **Deliverables** | `go-template-main` Asset domain (model/repository/service/controller), `sql/pg/V1__Assets_Table.sql`; Employee domain supporting custody (`sql/pg/V2__Employees_Table.sql`); frontend `HttpAssetRepository`/`HttpEmployeeRepository` behind feature flags; real Assign/Check-in UI on Asset Detail; real QR generation + Scan QR lookup-and-navigate flow (`AssetQrCode`, `lib/qr.ts`), dual id/code lookup on both the mock repository and backend SQL. |
 | **Dependencies** | Phase 1 (chain + scaffolding); loosely Phase 2 (custody/transfer permission model is still undecided, see Risks). |
-| **Risks** | Holder data model undefined (PRD §16 Q13) — **F-02**; category/hierarchy taxonomy undefined — traceability matrix `TC-ASSET-002-01` partial; QR/Barcode has no listed blocker and is the next natural checkpoint but is not yet started. |
-| **Checkpoint** | [PR #7](https://github.com/boonthepkstl-alt/stl_asset_service/pull/7), [#8](https://github.com/boonthepkstl-alt/stl_asset_service/pull/8), [#9](https://github.com/boonthepkstl-alt/stl_asset_service/pull/9), [#13](https://github.com/boonthepkstl-alt/stl_asset_service/pull/13) — see `PROJECT-CHECKPOINTS.md`. |
+| **Risks** | Holder data model undefined (PRD §16 Q13) — **F-02**; category/hierarchy taxonomy undefined — traceability matrix `TC-ASSET-002-01` partial; QR/Barcode's formal `TC-OPS-001-01..03` execution is still pending despite the implementation being done and manually verified. |
+| **Checkpoint** | [PR #7](https://github.com/boonthepkstl-alt/stl_asset_service/pull/7), [#8](https://github.com/boonthepkstl-alt/stl_asset_service/pull/8), [#9](https://github.com/boonthepkstl-alt/stl_asset_service/pull/9), [#13](https://github.com/boonthepkstl-alt/stl_asset_service/pull/13), [#29](https://github.com/boonthepkstl-alt/stl_asset_service/pull/29) — see `PROJECT-CHECKPOINTS.md`. |
 
 ## Phase 4 — ITSM (IT Service Management / Maintenance)
 

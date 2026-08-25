@@ -59,7 +59,8 @@ func (obj *assetController) ListAssets(c *fiber.Ctx) error {
 }
 
 // GetAssetByID godoc
-// GET /assets/:id
+// GET /assets/:id -- :id may be either the internal id or the asset's `code` (e.g. "AST-0004"),
+// the value actually encoded in a printed/scanned QR/barcode (RAISE-FR-OPS-001).
 func (obj *assetController) GetAssetByID(c *fiber.Ctx) error {
 	log := logger.GetLoggerWithFiber(c)
 

@@ -80,7 +80,10 @@ type AssignAssetRequest struct {
 }
 
 // PostgreSQL SQL -- the only engine this domain targets.
-var SQL_asset_pg_get = `SELECT id, code, name, category, type, status, condition, location, department, assigned_to, assigned_employee_id, assigned_date, purchase_date, purchase_cost, current_value, warranty_expiry, vendor, serial_number, specs FROM assets WHERE id = $1`
+// Dual lookup by id or code -- same convention as Employee/Ticket's GetByCode. Added for
+// RAISE-FR-OPS-001 (QR/Barcode): a printed/scanned code encodes the asset's `code` (e.g.
+// "AST-0004"), not its internal UUID `id`, so identification-by-code must resolve here too.
+var SQL_asset_pg_get = `SELECT id, code, name, category, type, status, condition, location, department, assigned_to, assigned_employee_id, assigned_date, purchase_date, purchase_cost, current_value, warranty_expiry, vendor, serial_number, specs FROM assets WHERE id = $1 OR code = $1`
 
 var SQL_asset_pg_insert = `INSERT INTO assets (id, code, name, category, type, status, condition, location, department, assigned_to, assigned_employee_id, assigned_date, purchase_date, purchase_cost, current_value, warranty_expiry, vendor, serial_number, specs)
 	VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)`

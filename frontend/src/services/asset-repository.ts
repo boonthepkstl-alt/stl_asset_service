@@ -46,8 +46,11 @@ export class MockAssetRepository implements AssetRepository {
     return simulateNetwork({ data: filtered, total: filtered.length });
   }
 
+  // Dual lookup by id or code -- mirrors go-template-main's SQL_asset_pg_get (RAISE-FR-OPS-001):
+  // a printed/scanned QR/barcode encodes the asset's `code` (e.g. "AST-0004"), not its internal
+  // id, so the mock repository must resolve that too, not just the http-backed one.
   async getById(id: string): Promise<Asset | null> {
-    return simulateNetwork(this.assets.find((a) => a.id === id) ?? null);
+    return simulateNetwork(this.assets.find((a) => a.id === id || a.code === id) ?? null);
   }
 
   async create(input: CreateAssetInput): Promise<Asset> {

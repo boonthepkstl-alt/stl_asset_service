@@ -32,6 +32,7 @@ import {
 } from 'lucide-react';
 import { Card, CardHeader, Button, Badge, StatusBadge, Avatar, Tabs, EmptyState, useToast, SectionCard, Drawer, Modal, Input, Select, Textarea } from '@/components/ui';
 import { AppShell } from '@/components/AppShell';
+import { AssetQrCode } from '@/components/AssetQrCode';
 import { getAssetIcon } from '@/data/asset-icons';
 import { getAssetHealth } from '@/data/fixtures/aiData';
 import type { RequisitionStatus, TicketCategory, PriorityLevel } from '@/data/fixtures/requisitionData';
@@ -94,6 +95,7 @@ export function AssetDetailPage() {
   const [isDetailDrawerOpen, setIsDetailDrawerOpen] = useState(false);
   const [isNewTicketModalOpen, setIsNewTicketModalOpen] = useState(false);
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+  const [isQrModalOpen, setIsQrModalOpen] = useState(false);
   const [assignEmployeeId, setAssignEmployeeId] = useState('');
   const [isAssigning, setIsAssigning] = useState(false);
   const [isCheckingIn, setIsCheckingIn] = useState(false);
@@ -195,7 +197,7 @@ export function AssetDetailPage() {
       },
     },
     { label: 'Dispose', icon: Trash2, onClick: () => push({ variant: 'warning', title: 'Disposal requested', message: asset.name }), danger: true },
-    { label: 'Print QR', icon: QrCode, onClick: () => push({ variant: 'info', title: 'QR code ready', message: asset.code }) },
+    { label: 'Print QR', icon: QrCode, onClick: () => setIsQrModalOpen(true) },
   ];
 
   const handleCreateTicket = async () => {
@@ -715,6 +717,10 @@ export function AssetDetailPage() {
             onChange={(e) => setAssignEmployeeId(e.target.value)}
             options={[{ value: '', label: 'Select an employee...' }, ...employees.map((e) => ({ value: e.id, label: `${e.name} (${e.department})` }))]}
           />
+        </Modal>
+
+        <Modal open={isQrModalOpen} onClose={() => setIsQrModalOpen(false)} title="QR Code" description={`${asset.name} — ${asset.code}`} size="sm">
+          <AssetQrCode assetCode={asset.code} />
         </Modal>
       </div>
     </AppShell>

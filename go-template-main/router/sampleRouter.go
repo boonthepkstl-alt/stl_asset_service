@@ -29,9 +29,13 @@ func SetupRoutes(app *fiber.App, dbManager *repository.DBManager) {
 	sampleService := service.NewSampleService(sampleHandler, dbManager, sampleRepo)
 	sampleCtrl := controller.NewSampleController(sampleService)
 
+	auditRepo := repository.NewAuditRepository(repository.NewAuditPGRepository())
+	auditService := service.NewAuditService(auditRepo)
+	auditCtrl := controller.NewAuditController(auditService)
+
 	assetRepo := repository.NewAssetRepository(repository.NewAssetPGRepository())
 	assetService := service.NewAssetService(assetRepo)
-	assetCtrl := controller.NewAssetController(assetService)
+	assetCtrl := controller.NewAssetController(assetService, auditService)
 
 	employeeRepo := repository.NewEmployeeRepository(repository.NewEmployeePGRepository())
 	employeeService := service.NewEmployeeService(employeeRepo)
@@ -101,4 +105,10 @@ func SetupRoutes(app *fiber.App, dbManager *repository.DBManager) {
 	protected.Post("/tickets/:code/dispatch", ticketCtrl.Dispatch)
 	protected.Post("/tickets/:code/status", ticketCtrl.UpdateExecutionStatus)
 	protected.Get("/technicians", ticketCtrl.ListTechnicians)
+
+	// RAISE-FR-AUDIT-001 (Immutable Audit Log) -- first cut. Read-only route: no
+	// POST/PUT/DELETE exists here or anywhere downstream (AC-AUDIT-001-02). Same RBAC
+	// reasoning as the domains above -- no RequireRole gate, since AC-AUDIT-001-03's
+	// "audit-review access" role model is undefined (PRD Sec16 Q22).
+	protected.Get("/audit-logs", auditCtrl.ListAuditLogs)
 }

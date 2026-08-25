@@ -46,7 +46,7 @@ func SetupRoutes(app *fiber.App, dbManager *repository.DBManager) {
 
 	ticketRepo := repository.NewTicketRepository(repository.NewTicketPGRepository())
 	ticketService := service.NewTicketService(ticketRepo, assetService, employeeService)
-	ticketCtrl := controller.NewTicketController(ticketService)
+	ticketCtrl := controller.NewTicketController(ticketService, auditService)
 
 	authService := service.NewAuthService()
 	authCtrl := controller.NewAuthController(authService)

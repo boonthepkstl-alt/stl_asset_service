@@ -4,7 +4,8 @@ async function freshServices() {
   vi.resetModules();
   const auditMod = await import('@/services/audit-service');
   const assetMod = await import('@/services/asset-service');
-  return { auditService: auditMod.auditService, assetService: assetMod.assetService };
+  const ticketMod = await import('@/services/ticket-service');
+  return { auditService: auditMod.auditService, assetService: assetMod.assetService, ticketService: ticketMod.ticketService };
 }
 
 describe('auditService', () => {
@@ -66,5 +67,47 @@ describe('auditService', () => {
     expect(actions).toContain('Asset created');
     expect(actions).toContain('Asset assigned to Test Employee');
     expect(actions).toContain('Asset checked in');
+  });
+
+  it('recording a ticket mutation (create) is reflected in listAuditLogs for that entity (Ticket-domain audit hook-in)', async () => {
+    const { auditService, ticketService } = await freshServices();
+
+    const created = await ticketService.createTicket({
+      requesterId: 'e1',
+      assetId: 'a1',
+      category: 'Hardware Fault & Repair',
+      priority: 'High',
+      title: 'Test ticket',
+    });
+
+    const result = await auditService.listAuditLogs({ entityType: 'ticket', entityId: created.id });
+    expect(result.total).toBe(1);
+    expect(result.data[0].action).toBe('Ticket created');
+    expect(result.data[0].entityType).toBe('ticket');
+    expect(result.data[0].entityId).toBe(created.id);
+  });
+
+  it('approval, dispatch, and status update each append their own audit entry for the same ticket', async () => {
+    const { auditService, ticketService } = await freshServices();
+
+    const created = await ticketService.createTicket({
+      requesterId: 'e1',
+      assetId: 'a1',
+      category: 'Hardware Fault & Repair',
+      priority: 'High',
+      title: 'Test ticket',
+    });
+    await ticketService.decideApproval(created.id, { decision: 'Approve', comments: 'Looks good' });
+    const technicians = await ticketService.listTechnicians();
+    await ticketService.dispatchTicket(created.id, { technicianId: technicians[0].id, estimatedCost: 200 });
+    await ticketService.updateExecutionStatus(created.id, { status: 'Done', resolutionNotes: 'Fixed it' });
+
+    const result = await auditService.listAuditLogs({ entityType: 'ticket', entityId: created.id });
+    expect(result.total).toBe(4);
+    const actions = result.data.map((e) => e.action);
+    expect(actions).toContain('Ticket created');
+    expect(actions).toContain('Ticket Approved');
+    expect(actions).toContain(`Ticket dispatched to ${technicians[0].name}`);
+    expect(actions).toContain('Ticket status updated to Done');
   });
 });

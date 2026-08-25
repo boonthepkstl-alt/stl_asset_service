@@ -38,7 +38,7 @@ happened. Every phase's **Checkpoint** row should link to a real entry in
 | **Deliverables** | `docs/company-foundation-baseline/`, `docs/go-template-analysis/`, `docs/template-analysis/`, `docs/project-foundation-baseline/ESAPS-UI-FOUNDATION-BASELINE.md`; the full `docs/01-requirements/` … `docs/07-traceability-matrix/` chain; `docs/08-architecture/`, `docs/09-api-db-spec/`, `docs/10-detailed-design/` (as-built technical docs); this `docs/project-management/` tracking layer. |
 | **Dependencies** | None — this is the root phase. |
 | **Risks** | The requirements chain is still Draft, not approved — every downstream phase inherits any future PRD revision. `RAISE-FR-ASSET-003` vs. `RAISE-FR-OPS-002` scope overlap (finding **F-10**) has been raised twice without resolution and could force rework in Phases 3–4 if resolved differently than assumed. |
-| **Checkpoint** | [PR #2](https://github.com/boonthepkstl-alt/stl_asset_service/pull/2), [#3](https://github.com/boonthepkstl-alt/stl_asset_service/pull/3), [#6](https://github.com/boonthepkstl-alt/stl_asset_service/pull/6), [#12](https://github.com/boonthepkstl-alt/stl_asset_service/pull/12), [#15](https://github.com/boonthepkstl-alt/stl_asset_service/pull/15) — see `PROJECT-CHECKPOINTS.md`. |
+| **Checkpoint** | [PR #2](https://github.com/boonthepkstl-alt/stl_asset_service/pull/2), [#3](https://github.com/boonthepkstl-alt/stl_asset_service/pull/3), [#6](https://github.com/boonthepkstl-alt/stl_asset_service/pull/6), [#12](https://github.com/boonthepkstl-alt/stl_asset_service/pull/12), [#15](https://github.com/boonthepkstl-alt/stl_asset_service/pull/15), [#18](https://github.com/boonthepkstl-alt/stl_asset_service/pull/18) (checkpoint template), [#19](https://github.com/boonthepkstl-alt/stl_asset_service/pull/19) (CLAUDE.md refresh), [#20](https://github.com/boonthepkstl-alt/stl_asset_service/pull/20) (close-out protocol rule), [#21](https://github.com/boonthepkstl-alt/stl_asset_service/pull/21) (baseline checkpoint), [#22](https://github.com/boonthepkstl-alt/stl_asset_service/pull/22) (next-step protocol) — see `PROJECT-CHECKPOINTS.md`. |
 
 ## Phase 2 — Authentication / RBAC
 
@@ -53,7 +53,7 @@ happened. Every phase's **Checkpoint** row should link to a real entry in
 | **Deliverables** | `go-template-main/service/authService.go` (demo credential check, JWT issuance), `middleware/jwtAuth.go`, `middleware/requireRole.go` (wired only to the template's demo `/samples` routes); frontend `auth-service.ts` + split-panel Login page. |
 | **Dependencies** | Phase 1 (backend/frontend scaffolding must exist first). |
 | **Risks** | **F-11/F-12** (accepted, not hidden): there is no real user store and no RAISE domain is RBAC-gated — this is fine for MVP per the PRD's own decision, but would be a real security gap if anyone assumed otherwise before Roadmap work happens. Auth mechanism and role/permission matrix content are still open (PRD §16 Q21–Q22), so a future "real" RBAC phase cannot start from this phase's code as-is — it can only reuse the pattern, not the demo data. |
-| **Checkpoint** | [PR #1](https://github.com/boonthepkstl-alt/stl_asset_service/pull/1), [#5](https://github.com/boonthepkstl-alt/stl_asset_service/pull/5), [#10](https://github.com/boonthepkstl-alt/stl_asset_service/pull/10) — see `PROJECT-CHECKPOINTS.md`. |
+| **Checkpoint** | [PR #1](https://github.com/boonthepkstl-alt/stl_asset_service/pull/1), [#5](https://github.com/boonthepkstl-alt/stl_asset_service/pull/5), [#10](https://github.com/boonthepkstl-alt/stl_asset_service/pull/10), [#23](https://github.com/boonthepkstl-alt/stl_asset_service/pull/23) (generic brand proposal applied), [#24](https://github.com/boonthepkstl-alt/stl_asset_service/pull/24) (re-themed to confirmed Singer CI), [#26](https://github.com/boonthepkstl-alt/stl_asset_service/pull/26) (panel reverted blue per feedback) — all restyle the Login page only, no change to the auth mechanism itself; see `PROJECT-CHECKPOINTS.md`. |
 
 ## Phase 3 — Asset Management
 
@@ -174,6 +174,25 @@ happened. Every phase's **Checkpoint** row should link to a real entry in
 | **Dependencies** | Would depend on Phases 8–9 (dashboard + document intelligence data) if promoted to MVP. |
 | **Risks** | Same scope-creep risk as Phase 5 — the AI Decision Center UI already exists and is visually complete, which is exactly the condition that produces pressure to build a backend for it without a PRD scope change. |
 | **Checkpoint** | None yet — not started. |
+
+---
+
+## Cross-Cutting Work (not tied to one phase)
+
+Some checkpoints touch the whole platform rather than one phase's own
+deliverable, so forcing them into a single phase row would misrepresent
+their scope. Tracked here instead:
+
+| Checkpoint | What it touched | Why it's cross-cutting |
+|---|---|---|
+| [PR #25](https://github.com/boonthepkstl-alt/stl_asset_service/pull/25) | Singer CI logo mark extended from Login into the shared `AppShell` sidebar | Affects every authenticated page (Dashboard, Assets, Employees, Tickets, …), not one phase's deliverable |
+| [PR #27](https://github.com/boonthepkstl-alt/stl_asset_service/pull/27) | Singer CI red accent added to the Dashboard "Software Licenses" KPI card | Visual-identity change only, not the backend KPI/formula work Phase 8 actually scopes — doesn't belong in Phase 8's Deliverables |
+
+Business confirmation that enabled all of the branding checkpoints above
+(PR #23, #24, #26, #25, #27): **RAISE is developed for direct use by
+Singer (Thailand)** — `RAISE-PRD.md` §16 Resolved Question 39 (v0.10, see
+[`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md)). This is a
+branding/identity fact, not a functional-scope change to any phase above.
 
 ---
 

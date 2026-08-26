@@ -51,6 +51,20 @@ so the history of what was once open stays visible.
 | F-16 | DB migration tooling | `sql/pg/V*__*.sql` files are applied manually; no migration tool wired up | `RAISE-HIGH-LEVEL-ARCHITECTURE.md` §6 | Open |
 | F-17 | NFR backlog | Performance, availability, scalability, backup/recovery, encryption, monitoring, logging targets all undefined | PRD §10 | Open — acknowledged at every layer of the chain, not silently omitted |
 
+## Confirmed via Test Execution (not blocked on any PRD question)
+
+Found running `TC-OPS-001-*`/`TC-AUDIT-001-*`/`TC-EXEC-001-*` against the
+real app on 2026-08-26 (see `RAISE-TRACEABILITY-MATRIX.md` §3 for the
+full evidence per row). Unlike the "Blocking"/"Unresolved" sections
+above, these are not waiting on a business decision — the AC/prototype
+already says what's required; the implementation simply doesn't do it
+yet.
+
+| ID | Area | Description | Source | Status |
+|---|---|---|---|---|
+| F-21 | QR/Barcode invalid-code state | `AC-OPS-001-03` requires a distinct "invalid code" state for a malformed/unreadable scan, separate from "not found" (`AC-OPS-001-02`). The Scan QR modal shows the identical generic "No asset found for ..." message for both a well-formed-but-unmapped code and a malformed one — no format validation exists. | `frontend/src/pages/Assets/index.tsx` (Scan QR modal `handleScanSubmit`); confirmed by browser test execution 2026-08-26 (TC-OPS-001-03) | Open |
+| F-22 | Executive Dashboard vs. Prototype P-014 | Prototype P-014 specifies KPI tiles named exactly "NBV", "Risk", "Utilization" and sections named "Asset Overview"/"Executive Summary" (`AC-EXEC-001-01`/`-02`). The built Dashboard (`frontend/src/pages/Dashboard/index.tsx`, ported from the legacy ESAPS dashboard predating this PRD/prototype) has neither — its KPI grid is Total Assets/Available/Assigned/In Maintenance/Expired Warranty/Software Licenses/Monthly Depreciation/Monthly Cost, and its sections are AI Insights/AI Portfolio Health/Oracle FA Reconciliation/Asset Lifecycle/Department Distribution/Asset Status/Asset Type/Pending Approvals/Recent Activities/Maintenance Calendar. This is independent of the still-open NBV/Risk formula question (F-03) — even presence-only testing fails. Raises a scope question worth surfacing to the business/design owner: should Prototype P-014 be updated to match the shipped legacy-derived layout, or should the Dashboard eventually grow the P-014 tiles/sections alongside what exists today? Not answered here — flagged, not resolved. | `frontend/src/pages/Dashboard/index.tsx`; `docs/03-prototype/RAISE-PROTOTYPE.md` P-014; confirmed by browser test execution 2026-08-26 (TC-EXEC-001-01/-02) | Open |
+
 ## Minor / Tech Debt
 
 | ID | Area | Description | Source | Status |

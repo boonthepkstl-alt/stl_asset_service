@@ -72,12 +72,17 @@ using the recommended values:
 
 `PASS · PARTIAL · FAIL · BLOCKED · NOT_IMPLEMENTED · NOT_TESTED`
 
-At this stage (no source code exists yet — per `CLAUDE.md`, `frontend/`
-has a package manifest but no `src/` implementation), every requirement is
-**NOT_TESTED** by default; requirements with any BLOCKED test case in
-`RAISE-TEST-CASES.md` are marked **BLOCKED** instead, to distinguish
-"not yet run" from "cannot be fully run until an Open Question is
-resolved."
+*(Note: this section originally described a pre-code state where every
+requirement defaulted to* **NOT_TESTED***. That premise is stale — real
+code exists across many domains as of PR #36, and `RAISE-FR-OPS-001`,
+`RAISE-FR-AUDIT-001`, and `RAISE-FR-EXEC-001` carry real, evidence-based
+`PASS`/`PARTIAL`/`FAIL`/`BLOCKED` status as of 2026-08-26 — see §3's
+Correction note near the end of this document. Rows not yet
+re-executed may still show the original default/BLOCKED status below.)*
+Requirements with any BLOCKED test case in `RAISE-TEST-CASES.md` are
+marked **BLOCKED**, to distinguish "genuinely not testable yet" from a
+requirement that has actually been run and passed, partially passed, or
+failed.
 
 Two distinct flavors of BLOCKED exist upstream and are carried into this
 matrix's Test Status column:
@@ -112,14 +117,14 @@ per v0.4 Gap 6's own closure criteria.
 | `RAISE-FR-ASSET-001` | Asset Registry | P0 / MVP | §4.1 Asset Management | P-003, P-004 | AC-ASSET-001, AC-ASSET-001-DETAIL | TS-ASSET-001, TS-ASSET-001-DETAIL | TC-ASSET-001-01..04, TC-ASSET-001-D-01..02 | BLOCKED (TC-ASSET-001-01 partial — asset master field list TBD, PRD §16 Q1) |
 | `RAISE-FR-ASSET-002` | Category & Hierarchy | P0 / MVP | §4.1 Asset Management | P-005 | AC-ASSET-002 | TS-ASSET-002 | TC-ASSET-002-01..02 | BLOCKED (TC-ASSET-002-01 partial — hierarchy taxonomy TBD) |
 | `RAISE-FR-ASSET-003` | Custody History | P0 / MVP | §4.2 Custody & Asset Operations | P-006 | AC-ASSET-003 | TS-ASSET-003 | TC-ASSET-003-01..03 | BLOCKED (TC-ASSET-003-01 partial — holder model TBD, PRD §16 Q13; TC-ASSET-003-03 partial — scoped only to Check-in/Check-out as the writing event, exclusivity question still open, see Gap 4) |
-| `RAISE-FR-OPS-001` | QR / Barcode | P0 / MVP | §4.2 Custody & Asset Operations | P-007 | AC-OPS-001 | TS-OPS-001 | TC-OPS-001-01..03 | NOT_TESTED (no blockers) |
+| `RAISE-FR-OPS-001` | QR / Barcode | P0 / MVP | §4.2 Custody & Asset Operations | P-007 | AC-OPS-001 | TS-OPS-001 | TC-OPS-001-01..03 | **PARTIAL** — executed 2026-08-26 against the real running app (`frontend/src/pages/Assets/index.tsx`'s Scan QR flow), not just re-asserted: TC-OPS-001-01 **PASS** (valid code `AST-0001` opens Asset Detail); TC-OPS-001-02 **PASS** (unmatched-but-well-formed code `AST-9999` shows an inline "No asset found" message, field stays editable as the retry path); TC-OPS-001-03 **FAIL** — a malformed code (`%%$#!!garbage///`) shows the exact same generic "No asset found" message as TC-OPS-001-02; AC-OPS-001-03's distinct "invalid code" state does not exist in the implementation. See `OPEN-FINDINGS.md` F-21. |
 | `RAISE-FR-OPS-002` | Check-in / Check-out | P0 / MVP | §4.2 Custody & Asset Operations | P-008 | AC-OPS-002 | TS-OPS-002 | TC-OPS-002-01..03 | BLOCKED (TC-OPS-002-01, -02 partial — workflow/roles TBD; RBAC MVP-enforcement-level note verified against `RAISE-PRD.md` §11, §16 Resolved Question 38 — role list/permission matrix content still TBD, PRD §16 Q22) |
 | `RAISE-FR-MAINT-001` | Maintenance (4-stage workflow: User Requisition → Dept Approval (Delegated) → IT Dispatch → Technician Execution) | P0 / MVP | §5.1 Maintenance Domain | P-009 | AC-MAINT-001 (AC-MAINT-001-01..09) | TS-MAINT-001 | TC-MAINT-001-01..09 | BLOCKED — TC-MAINT-001-01 partial (field model beyond date/event/status/cost TBD); -04, -05, -06, -07, -08 partial (delegated-approver configuration rules / Reject-Request-Info resulting state / RBAC role-gate content all TBD); -02, -03, -09 not blocked (record history display, User Requisition submit, stage-progress indicator are fully testable now). **The 4-stage workflow shape and state model are verified present in `RAISE-PRD.md` v0.9 §6 (`RAISE-FR-MAINT-001` Acceptance Criteria) and §16 Resolved Question 33 — this revision confirms the citation, closing the corresponding portion of former Gap 6.** |
 | `RAISE-FR-WARRANTY-001` | Warranty | P0 / MVP | §5.2 Warranty Domain | P-010 | AC-WARRANTY-001 | TS-WARRANTY-001 | TC-WARRANTY-001-01..03 | BLOCKED (TC-WARRANTY-001-01 partial — field list TBD, PRD §16 Q15; TC-WARRANTY-001-03 partial — 90-day rule illustrative only) |
 | `RAISE-FR-ORACLE-001` | Oracle FA Integration + NBV/Depreciation | P0 / MVP | §6 Oracle FA Integration (incl. §6.4 "Phase 6" label note) | P-011 | AC-ORACLE-001 | TS-ORACLE-001 | TC-ORACLE-001-01..04 | BLOCKED (TC-ORACLE-001-01 partial — integration method/mapping/sync/security TBD, PRD §16 Q6–Q10). `ReconciliationPage`↔`RAISE-FR-ORACLE-001` mapping remains an **explicitly open question in the real PRD** (Open Question 10a, verified present in `RAISE-PRD.md` v0.9 §9/§16) — the "Phase 6" label itself is confirmed not a PRD phase (§16 Resolved Question 37, verified present), but the substantive mapping question is not resolved by that and is not treated as resolved anywhere in this chain. |
 | `RAISE-FR-ALERT-001` | Alerts | P0 / MVP | §14 Alert Architecture | P-012 | AC-ALERT-001 | TS-ALERT-001 | TC-ALERT-001-01..02 | BLOCKED (TC-ALERT-001-01 partial — trigger rules TBD; role gate, PRD §16 Q22, TBD) |
-| `RAISE-FR-AUDIT-001` | Immutable Audit Log | P0 / MVP | §15 Audit Architecture | P-013 | AC-AUDIT-001 | TS-AUDIT-001 | TC-AUDIT-001-01..03 | BLOCKED (TC-AUDIT-001-01 partial — field taxonomy TBD, Design §15; TC-AUDIT-001-03 partial — role gate TBD, PRD §16 Q22) |
-| `RAISE-FR-EXEC-001` | Executive Dashboard | P0 / MVP | §13 Executive Intelligence | P-014 | AC-EXEC-001 | TS-EXEC-001 | TC-EXEC-001-01..02 | BLOCKED (TC-EXEC-001-01 partial — NBV/Risk KPI formulas/thresholds still TBD, PRD §16 Q3/Q4; Utilization *definition* is testable now for tile presence + description — PRD §16 Resolved Question 27, verified present in `RAISE-PRD.md` v0.9 §8; Utilization *calculation mechanics* — real-time-snapshot aggregation, Disposed/Retired/Under-Maintenance denominator exclusions, PRD §16 Resolved Question 29, also verified present — remain BLOCKED (partial) pending further design/AC/test detail; TC-EXEC-001-02 partial — Executive Summary AI-generated-vs-static unresolved, PRD Gaps section) |
+| `RAISE-FR-AUDIT-001` | Immutable Audit Log | P0 / MVP | §15 Audit Architecture | P-013 | AC-AUDIT-001 | TS-AUDIT-001 | TC-AUDIT-001-01..03 | **BLOCKED (partial)** — testable subset executed 2026-08-26 against the real running app, all **PASS**: TC-AUDIT-001-01 (checked in a real asset via the UI; confirmed via `auditService.listAuditLogs` that an entry was recorded with actor `"Demo Admin"`, action `"Asset checked in"`, entity `asset/a2`, and a real timestamp); TC-AUDIT-001-02 (no edit/delete control exists anywhere near a rendered audit entry, and neither `AuditRepository`/`MockAuditRepository` nor the backend router expose any update/delete method or route — verified by both UI inspection and code); TC-AUDIT-001-03 (the recorded entry is visible on Asset Detail's "Audit" tab to a logged-in user). Field taxonomy (Design §15) and role-gate correctness (PRD §16 Q22) remain BLOCKED — unchanged by this execution, since those require a PRD/Design answer, not more testing. |
+| `RAISE-FR-EXEC-001` | Executive Dashboard | P0 / MVP | §13 Executive Intelligence | P-014 | AC-EXEC-001 | TS-EXEC-001 | TC-EXEC-001-01..02 | **FAIL (partial)** — executed 2026-08-26 against the real running app (`frontend/src/pages/Dashboard/index.tsx`), and the result is worse than the pre-existing BLOCKED status: TC-EXEC-001-01 **FAILS even on its testable-now scope** — no tile labeled "NBV", "Risk", or "Utilization" exists anywhere on the built page (confirmed by reading the full rendered page text; the KPI grid instead shows Total Assets/Available/Assigned/In Maintenance/Expired Warranty/Software Licenses/Monthly Depreciation/Monthly Cost). TC-EXEC-001-02 **FAILS** the same way — no section is labeled "Asset Overview" or "Executive Summary"; the page instead has AI Insights, AI Portfolio Health, an Oracle FA Reconciliation banner, Asset Lifecycle/Department Distribution/Asset Status/Asset Type charts, Pending Approvals, Recent Activities, and a Maintenance Calendar. This is independent of, and does not wait on, the still-open NBV/Risk formula question (PRD §16 Q3/Q4) — even presence-only testing fails. See `OPEN-FINDINGS.md` F-22 for the scope-reconciliation question this raises (is Prototype P-014 or the shipped page the intended direction?). |
 | `RAISE-AI-SEARCH-001` | Natural Language Search | P0 / MVP (Current AI) | §9 Natural Language Search, §8.2 AI Flow, §20 Error Handling | P-015 | AC-AI-SEARCH-001, AC-AI-STATES | TS-AI-SEARCH-001, TS-AI-STATES | TC-AI-SEARCH-001-01..03, TC-AI-STATES-01..05 | BLOCKED (TC-AI-SEARCH-001-02 partial — citation precision/format TBD, PRD §16 Q18) |
 | `RAISE-FR-LIFE-001` | Asset Lifecycle Connectivity | P0 / MVP (Product Foundation) | §4.2 Conceptual State, §9 Asset Lifecycle | P-004 (Lifecycle section) | AC-LIFE-001 | TS-LIFE-001 | TC-LIFE-001-01..04 | BLOCKED (TC-LIFE-001-01, -02, -04 partial; TC-LIFE-001-03 OUT OF SCOPE FOR MVP — Disposal confirmed Enterprise Roadmap, PRD §14 item 7 / §16 Resolved Question 26, verified present) |
 | `RAISE-AI-DOC-001` | OCR / Extraction | P0 / MVP (Current AI) | §9A Document Intelligence Capabilities | P-004 (incidental, no dedicated screen) | AC-AI-DOC-001 | TS-AI-DOC-001 | TC-AI-DOC-001-01 | **BLOCKED (full)** — sole criterion NOT TESTABLE YET; document scope is defined (Invoice/Receipt, Warranty document, Asset nameplate/label — PRD §16 Resolved Question 30, verified present) but the numeric confidence-threshold value remains TBD |
@@ -447,12 +452,27 @@ decision — all three are now verifiably anchored to the real
 `RAISE-PRD.md` v0.9, removing the readiness caveat v0.4 of this matrix
 raised.
 
+**Correction (2026-08-26):** the caveat immediately below — "no source
+code exists yet in `frontend/`... every Test Status above is `NOT_TESTED`
+or `BLOCKED` by definition" — is stale and has been false since at least
+PR #5. Real backend (`go-template-main`) and frontend (`frontend/src/`)
+code exist for multiple domains as of PR #36. `RAISE-FR-OPS-001`,
+`RAISE-FR-AUDIT-001`, and `RAISE-FR-EXEC-001` were formally executed
+against the real running app on 2026-08-26 (see each row's own Test
+Status cell above for evidence) — this is real `PASS`/`PARTIAL`/`FAIL`
+status, not the placeholder default this caveat describes. The caveat
+text below is left otherwise unedited (not rewritten wholesale) since a
+full re-verification of every remaining row's status is separate,
+larger work — see `CURRENT-STATUS.md`/`NEXT-STEP.md` for what's actually
+built vs. this matrix's row-by-row detail, which may still lag in rows
+not touched by this correction.
+
 **Standing readiness caveats (unaffected by Gap 6, still open):**
 
-- No source code exists yet in `frontend/` (per `CLAUDE.md`: package
+- ~~No source code exists yet in `frontend/` (per `CLAUDE.md`: package
   manifest present, `src/` empty) — every Test Status above is `NOT_TESTED`
   or `BLOCKED` by definition, not `PASS`/`FAIL`, because there is nothing
-  to execute against yet.
+  to execute against yet.~~ — **superseded, see Correction note above.**
 - The PRD Open Questions still blocking full testability (§3/§4 above,
   Q1–Q25 minus the resolved/partially-resolved items) must still be
   reviewed with Product/Business before Development proceeds on the

@@ -84,12 +84,27 @@ export function AssetsPage() {
   // hardware works as a "keyboard wedge" -- it types the decoded code into whichever input has
   // focus, exactly like this one. Submits look up the asset by code (or id) and jump straight
   // to its record, satisfying "the identified asset can be connected to its asset record."
+  //
+  // AC-OPS-001-03 requires a distinct "invalid code" state, separate from "not found"
+  // (AC-OPS-001-02) -- confirmed missing by TC-OPS-001-03 (F-21, OPEN-FINDINGS.md): scanning a
+  // malformed code previously showed the identical "not found" message as an unmapped-but-
+  // well-formed one. Every real code/id in this system (asset codes like "AST-0004", internal
+  // ids like "a1", ticket codes like "REQ-2026-0043") is plain alphanumeric plus `-`/`_` -- this
+  // checks only that shape, not a specific prefix/length/format, so it doesn't invent a
+  // business rule about what a "valid" code looks like beyond what a scanner could plausibly
+  // produce.
+  const isPlausibleCodeFormat = (code: string) => /^[A-Za-z0-9_-]+$/.test(code);
+
   const handleScanSubmit = async () => {
     const code = scanCode.trim();
     if (!code) return;
     setScanning(true);
     setScanError(null);
     try {
+      if (!isPlausibleCodeFormat(code)) {
+        setScanError(`Invalid code — "${code}" doesn't look like a scannable asset code.`);
+        return;
+      }
       const found = await assetService.getAsset(code);
       if (!found) {
         setScanError(`No asset found for "${code}".`);

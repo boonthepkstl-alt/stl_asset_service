@@ -14,6 +14,14 @@ changes user-visible or API-visible behavior. Pure documentation-sync PRs
 
 ---
 
+## 2026-08-26
+
+### Fixed
+- **Scan QR — invalid code message** — scanning or typing a malformed
+  code (garbled/unreadable input) now shows a distinct "Invalid code"
+  message, instead of the same generic "No asset found" message shown
+  for a well-formed code that just doesn't match any asset.
+
 ## 2026-08-25
 
 ### Changed

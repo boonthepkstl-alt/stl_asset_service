@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { renderWithProviders } from '@/test/test-utils';
 import { AssetsPage } from './index';
@@ -16,6 +16,38 @@ describe('AssetsPage', () => {
     renderWithProviders(<AssetsPage />, { route: '/assets', path: '/assets' });
     await waitFor(() => {
       expect(screen.getByText(/^\d+ assets$/)).toBeInTheDocument();
+    });
+  });
+
+  // RAISE-FR-OPS-001 / AC-OPS-001-01..03, formally executed as TC-OPS-001-01..03
+  // (CHECKPOINT-2026-08-26-001). TC-OPS-001-03 originally failed here (F-21,
+  // OPEN-FINDINGS.md) -- these three lock in the fix.
+  describe('Scan QR', () => {
+    it('TC-OPS-001-02: a well-formed but unmapped code shows a distinct "not found" message', async () => {
+      renderWithProviders(<AssetsPage />, { route: '/assets', path: '/assets' });
+      await waitFor(() => screen.getByText('MacBook Pro 16" M3'));
+
+      fireEvent.click(screen.getByRole('button', { name: 'Scan QR' }));
+      fireEvent.change(screen.getByPlaceholderText('Scan or type asset code...'), { target: { value: 'AST-9999' } });
+      fireEvent.click(screen.getByRole('button', { name: 'Go to asset' }));
+
+      await waitFor(() => {
+        expect(screen.getByText('No asset found for "AST-9999".')).toBeInTheDocument();
+      });
+    });
+
+    it('TC-OPS-001-03: a malformed code shows a distinct "invalid code" message, not "not found"', async () => {
+      renderWithProviders(<AssetsPage />, { route: '/assets', path: '/assets' });
+      await waitFor(() => screen.getByText('MacBook Pro 16" M3'));
+
+      fireEvent.click(screen.getByRole('button', { name: 'Scan QR' }));
+      fireEvent.change(screen.getByPlaceholderText('Scan or type asset code...'), { target: { value: '%%$#!!garbage///' } });
+      fireEvent.click(screen.getByRole('button', { name: 'Go to asset' }));
+
+      await waitFor(() => {
+        expect(screen.getByText('Invalid code — "%%$#!!garbage///" doesn\'t look like a scannable asset code.')).toBeInTheDocument();
+      });
+      expect(screen.queryByText(/No asset found/)).not.toBeInTheDocument();
     });
   });
 });

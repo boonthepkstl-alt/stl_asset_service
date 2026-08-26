@@ -1358,11 +1358,53 @@ Test Case: `TC-OPS-001-01..03`, `TC-AUDIT-001-01..03`, `TC-EXEC-001-01..02` — 
 
 **Git:**
 Branch: `docs/tc-execution-ops-audit-exec`
-Commit: pending merge — part of [PR #37](https://github.com/boonthepkstl-alt/stl_asset_service/pull/37) (predicted PR number, next in sequence after #36 at branch-creation time; verify against the actual PR before treating this as final).
+Commit: `2016e7b` (implementation), merged via `ced4b1c` (merge commit, [PR #37](https://github.com/boonthepkstl-alt/stl_asset_service/pull/37)). *(Corrected 2026-08-26, same turn as CHECKPOINT-2026-08-26-002 below — this line originally said "pending merge.")*
 
 **Known Issues:** F-21 and F-22 (above) are real, confirmed defects/gaps — not invented, not PRD-blocked, genuinely actionable whenever prioritized.
 **Remaining Work:** `TC-AUDIT-001-01/-03`'s field-taxonomy/role-gate sub-scope and `TC-EXEC-001-01`'s NBV/Risk-formula sub-scope remain BLOCKED on PRD answers, unchanged by this execution — this task closed the "was this actually run?" gap, not the underlying PRD gaps.
-**Next Step:** Recalculate `NEXT-STEP.md` — F-21 (QR/Barcode invalid-code state) is a small, fully-scoped, non-PRD-blocked fix and is the strongest new "buildable now" candidate this checkpoint surfaced.
+**Next Step:** Recalculate `NEXT-STEP.md` — F-21 (QR/Barcode invalid-code state) is a small, fully-scoped, non-PRD-blocked fix and is the strongest new "buildable now" candidate this checkpoint surfaced. Actioned immediately — see `CHECKPOINT-2026-08-26-002` below.
+
+---
+
+## CHECKPOINT-2026-08-26-002
+
+**Phase:** Phase 3 — Asset Management
+**Feature:** QR / Barcode Identification
+**Task:** Fix F-21 — add a distinct "invalid code" state to the Scan QR flow, separate from "not found," per `AC-OPS-001-03`
+
+**What was implemented:** An `isPlausibleCodeFormat` check (`frontend/src/pages/Assets/index.tsx`) run before attempting an asset lookup in `handleScanSubmit` — rejects any scanned/typed code containing characters outside `[A-Za-z0-9_-]` with a distinct "Invalid code — ... doesn't look like a scannable asset code" message, without calling `assetService.getAsset` at all. A well-formed-but-unmapped code still falls through to the existing "No asset found for ..." message. Deliberately does **not** assert a specific prefix/length (e.g. "must start with AST-") — that would invent a business rule about code format beyond what `AC-OPS-001-03`/Prototype P-007 actually require ("invalid or unreadable"), and would incorrectly reject legitimately-created custom-coded assets (`CreateAssetInput.code` has no format constraint).
+**What was modified:** `frontend/src/pages/Assets/index.tsx` (`handleScanSubmit` + new `isPlausibleCodeFormat` helper).
+**What was fixed:** F-21.
+**What was added:** 2 new tests in `frontend/src/pages/Assets/index.test.tsx` (`TC-OPS-001-02`/`-03` regression coverage).
+**What was removed:** None.
+
+**Files changed:** 2 files (+~50/-3 estimate) — `frontend/src/pages/Assets/index.tsx`, `frontend/src/pages/Assets/index.test.tsx`.
+**Database changes:** None. **API changes:** None. **Frontend changes:** Scan QR modal now shows a distinct message for malformed input.
+
+**Tests:**
+- Unit Test: `frontend/src/pages/Assets/index.test.tsx` — 2 new (`TC-OPS-001-02` not-found regression, `TC-OPS-001-03` invalid-code fix) — 136/136 frontend tests passing overall.
+- Integration Test: None — no integration-test layer exists in this project.
+- E2E Test: None — no E2E framework exists.
+
+**Validation:**
+- Build: `npm run build` ✅
+- Lint: `npm run lint` ✅ (0 warnings)
+- Test: `npx vitest run` ✅ (136/136)
+- Type Check: `npx tsc --noEmit` ✅
+- Manual browser verification (Chrome preview, `raise-frontend` dev server): re-ran the exact TC-OPS-001-01/-02/-03 steps from `CHECKPOINT-2026-08-26-001` — valid code (`AST-0001`) navigates to Asset Detail; unmapped well-formed code (`AST-9999`) shows "No asset found..."; malformed code (`%%$#!!garbage///`) now shows a distinct "Invalid code..." message, confirmed visually distinct from the not-found case.
+
+**Requirement Traceability:**
+PRD: `RAISE-FR-OPS-001`
+Acceptance Criteria: `AC-OPS-001-03` — met.
+Test Case: `TC-OPS-001-01..03` — all three **PASS** on re-execution; `RAISE-TRACEABILITY-MATRIX.md`'s `RAISE-FR-OPS-001` row updated from `PARTIAL` to `PASS`.
+
+**Git:**
+Branch: `frontend/fix-scan-qr-invalid-code-state`
+Commit: pending merge — part of [PR #38](https://github.com/boonthepkstl-alt/stl_asset_service/pull/38) (predicted PR number, next in sequence after #37 at branch-creation time; verify against the actual PR before treating this as final).
+
+**Known Issues:** None.
+**Remaining Work:** None for `RAISE-FR-OPS-001` — all three test cases now pass.
+**Next Step:** Per the recalculated `NEXT-STEP.md`, no fresh "buildable now" item remains after this fix — F-22 (Executive Dashboard vs. Prototype P-014) needs a business/design decision before any code should be written toward it; everything else in the backlog is PRD-blocked.
 
 ---
 

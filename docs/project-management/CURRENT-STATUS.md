@@ -9,19 +9,20 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-08-26, after `CHECKPOINT-2026-08-26-001` (formal test
-case execution for TS-OPS-001/TS-AUDIT-001/TS-EXEC-001, not yet shipped
-via PR — see that checkpoint for status). The `BASELINE-CHECKPOINT-2026-08-24`
-scan is still the last full live re-verification against `git`/source;
-this update applies PR #21-#36 plus the 2026-08-26 test-execution pass
-on top of it without re-running a full baseline scan. The
-checkpoint-coverage gap between PR #18 and PR #29 tracked as F-20 is
-closed (see [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md) R-04). **New as of
-this update:** `RAISE-FR-OPS-001`, `RAISE-FR-AUDIT-001`, and
-`RAISE-FR-EXEC-001` now carry real, evidence-based Test Status in
-`RAISE-TRACEABILITY-MATRIX.md` (§3) instead of the pre-code-era default —
-two genuine, non-PRD-blocked defects were found in the process (F-21,
-F-22). Every development session should close out per
+**As of:** 2026-08-26, after `CHECKPOINT-2026-08-26-002` (F-21 fix, not
+yet shipped via PR — see that checkpoint for status). The
+`BASELINE-CHECKPOINT-2026-08-24` scan is still the last full live
+re-verification against `git`/source; this update applies PR #21-#37
+plus the F-21 fix on top of it without re-running a full baseline scan.
+The checkpoint-coverage gap between PR #18 and PR #29 tracked as F-20 is
+closed (see [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md) R-04). `RAISE-FR-OPS-001`,
+`RAISE-FR-AUDIT-001`, and `RAISE-FR-EXEC-001` now carry real,
+evidence-based Test Status in `RAISE-TRACEABILITY-MATRIX.md` (§3) instead
+of the pre-code-era default. **F-21 (QR/Barcode invalid-code state) is
+now resolved as R-05** — `RAISE-FR-OPS-001` is `PASS` on all three test
+cases. **F-22 (Executive Dashboard vs. Prototype P-014) remains open** —
+it needs a business/design decision, not more code. Every development
+session should close out per
 [`SESSION-CLOSEOUT-PROTOCOL.md`](SESSION-CLOSEOUT-PROTOCOL.md), which is
 what keeps this section current.
 
@@ -63,7 +64,7 @@ intentionally out of MVP scope (Roadmap).
 | Employee | supports `RAISE-FR-ASSET-003` | ✅ Built |
 | Maintenance / Ticket | `RAISE-FR-MAINT-001` | ✅ Built — 4-stage workflow shape only; SLA/vendor/cost model TBD |
 | Auth | supports `RAISE-NFR-SEC-RBAC-001` | ✅ Built, demo-only — hardcoded single user, no real user store |
-| QR / Barcode lookup | `RAISE-FR-OPS-001` | 🟡 Built, PARTIAL per formal test execution — [PR #29](https://github.com/boonthepkstl-alt/stl_asset_service/pull/29). `GET /assets/:id` now resolves by `code` too (dual lookup); real QR generation + Scan QR flow live on both Assets list and Asset Detail. `TC-OPS-001-01/-02` **PASS** (executed 2026-08-26); `TC-OPS-001-03` **FAIL** — no distinct "invalid code" state exists, see `OPEN-FINDINGS.md` F-21 |
+| QR / Barcode lookup | `RAISE-FR-OPS-001` | ✅ Built, PASS on all test cases — [PR #29](https://github.com/boonthepkstl-alt/stl_asset_service/pull/29) + a follow-up F-21 fix (see `DEVELOPMENT-LOG.md` for the PR number once shipped). `GET /assets/:id` resolves by `code` too (dual lookup); real QR generation + Scan QR flow live on both Assets list and Asset Detail. `TC-OPS-001-01..03` all **PASS** — the invalid-code state (F-21) is fixed via a plausible-code-format check before lookup |
 | Audit Log | `RAISE-FR-AUDIT-001` | 🟡 Built — [PR #31](https://github.com/boonthepkstl-alt/stl_asset_service/pull/31) (Asset domain) + [PR #35](https://github.com/boonthepkstl-alt/stl_asset_service/pull/35) (Ticket domain). `GET /audit-logs` + recording on Asset create/assign/check-in and Ticket create/approve/dispatch/status-update. No update/delete path exists (immutability by omission). The testable subset of `TC-AUDIT-001-01..03` **PASSED** formal execution 2026-08-26; field taxonomy and the audit-review role gate remain TBD (unchanged, blocked on PRD) |
 | Executive Dashboard KPIs (first cut) | `RAISE-FR-EXEC-001` | 🟡 Built, narrow scope, FAIL on prototype match per formal test execution — [PR #33](https://github.com/boonthepkstl-alt/stl_asset_service/pull/33). `GET /dashboard/stats` computes status counts, expired-warranty count, and department/type distribution from real Asset data. Software License count still comes from the frontend's mock license service (no backend License table exists — Roadmap-only). NBV/Risk KPI formulas and Utilization's calculation mechanics remain **not started** (PRD §16 Q3/Q4/Q29 TBD). **`TC-EXEC-001-01/-02` FAILED formal execution 2026-08-26** — the built page has no tiles/sections named per Prototype P-014 at all (not even presence-only), a gap independent of the formula question — see `OPEN-FINDINGS.md` F-22 |
 | Oracle FA Integration | `RAISE-FR-ORACLE-001` | Integration method/mapping/sync/security all TBD |
@@ -77,10 +78,8 @@ intentionally out of MVP scope (Roadmap).
 Triaged against [`RAISE-TRACEABILITY-MATRIX.md`](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md)
 §3–§5 — re-check that file before picking an item, it may have changed.
 
-**Buildable now:** **F-21** (QR/Barcode invalid-code state, `OPEN-FINDINGS.md`)
-— a confirmed defect against a fully-specified, non-PRD-blocked AC
-(`AC-OPS-001-03`), found by the 2026-08-26 test-execution pass. This is
-the strongest current candidate: small, scoped, no PRD answer needed.
+**Buildable now:** None identified. F-21 (the prior entry here) is
+resolved as R-05 in `OPEN-FINDINGS.md`.
 
 **Needs a scoped-down first cut:** None remaining — Audit Log (PR #31 +
 #35, now covering both Asset and Ticket domains) and Executive Dashboard

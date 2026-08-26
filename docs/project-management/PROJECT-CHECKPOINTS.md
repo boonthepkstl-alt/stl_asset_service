@@ -1316,11 +1316,53 @@ Commit: `9741bff` (implementation), merged via `5b52672` (merge commit, [PR #35]
 
 **Git:**
 Branch: `docs/ticket-audit-closeout` (added as a second commit onto the still-open PR #36, rather than a new branch, since both are docs-only close-out work and this avoids a `PROJECT-CHECKPOINTS.md` merge conflict between two simultaneously-open PRs)
-Commit: pending — part of PR #36, not yet merged at the time this entry was written.
+Commit: `f05b3c5` (implementation), merged via [PR #36](https://github.com/boonthepkstl-alt/stl_asset_service/pull/36). *(Corrected 2026-08-26 — this line originally read "pending," written before the PR merged; same self-referential timing this backfill's own commentary already explained.)*
 
 **Known Issues:** None.
-**Remaining Work:** None for this task itself — F-20 is fully closed once this merges.
-**Next Step:** Per the recalculated `NEXT-STEP.md` (see `CHECKPOINT-2026-08-25-004`'s own Next Step), the remaining choice is between more documentation debt (none identified) and waiting on a PRD business-decision answer.
+**Remaining Work:** None for this task itself — F-20 is fully closed.
+**Next Step:** Per the recalculated `NEXT-STEP.md` (see `CHECKPOINT-2026-08-25-004`'s own Next Step), the remaining choice was between more documentation debt (none identified) and waiting on a PRD business-decision answer — the user picked a third option not listed there: run the formal test-case executions this protocol had been treating as pure "validation, not a code task." See `CHECKPOINT-2026-08-26-001` below for what that turned up.
+
+---
+
+## CHECKPOINT-2026-08-26-001
+
+**Phase:** Phase 3 — Asset Management, Phase 6 — Audit & Reconciliation, Phase 8 — Executive Dashboard & Reporting (spans all three — one test-execution pass per suite)
+**Feature:** Formal test case execution for TS-OPS-001, TS-AUDIT-001, TS-EXEC-001
+**Task:** Actually run `TC-OPS-001-01..03`, `TC-AUDIT-001-01..03`, and `TC-EXEC-001-01..02` against the real running app and record real PASS/FAIL evidence in `RAISE-TRACEABILITY-MATRIX.md`, instead of leaving these suites at their pre-code-era default/blocked status indefinitely
+
+**What was implemented:** Executed all 8 test cases against the real running frontend (`raise-frontend` dev server, mock repositories) via browser automation, recording actual observed behavior — not re-asserting prior claims. Results:
+- **TC-OPS-001-01 PASS** — scanning `AST-0001` opened `/assets/a1` (Asset Detail).
+- **TC-OPS-001-02 PASS** — scanning the well-formed-but-unmapped `AST-9999` showed an inline "No asset found" message with the field still editable (retry path).
+- **TC-OPS-001-03 FAIL** — scanning a malformed code (`%%$#!!garbage///`) showed the *identical* generic "No asset found" message as TC-OPS-001-02; `AC-OPS-001-03`'s distinct "invalid code" state does not exist. New finding **F-21**.
+- **TC-AUDIT-001-01 PASS** — checked in a real asset (`a2`) via the UI, then confirmed via a dynamic `import()` of `audit-service.ts` executed in the page that an entry was recorded with `actor: "Demo Admin"`, `action: "Asset checked in"`, `entityType: "asset"`, `entityId: "a2"`, and a real ISO timestamp.
+- **TC-AUDIT-001-02 PASS** — no edit/delete control exists near the rendered entry (UI inspection); no update/delete method exists on `AuditRepository`/`MockAuditRepository`, and no such route is registered in the backend router (code inspection).
+- **TC-AUDIT-001-03 PASS** — the recorded entry rendered on Asset Detail's "Audit" tab for the logged-in user.
+- **TC-EXEC-001-01 FAIL** — no tile labeled "NBV", "Risk", or "Utilization" exists anywhere on the built Dashboard page (confirmed by reading the full rendered page text). Worse than the prior "BLOCKED pending formula" status — even presence-only testing fails.
+- **TC-EXEC-001-02 FAIL** — no section labeled "Asset Overview" or "Executive Summary" exists either. New finding **F-22**.
+
+**What was modified:** `docs/07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md` — updated the `RAISE-FR-OPS-001`, `RAISE-FR-AUDIT-001`, `RAISE-FR-EXEC-001` rows with real evidence-based Test Status (`PARTIAL`, `BLOCKED (partial)` with a passed testable subset, and `FAIL (partial)` respectively — using the document's own defined vocabulary, not an invented one); corrected two stale "no source code exists yet, everything defaults to NOT_TESTED" passages (§2 legend, §7 readiness caveats) that had been false since at least PR #5. `docs/project-management/OPEN-FINDINGS.md` — added a new "Confirmed via Test Execution" category with findings F-21 and F-22.
+**What was fixed:** The two stale "no source code exists" passages above (factual-error correction, not narrative rewrite).
+**What was added:** F-21, F-22 in `OPEN-FINDINGS.md`.
+**What was removed:** None.
+
+**Files changed:** 2 files (`RAISE-TRACEABILITY-MATRIX.md`, `OPEN-FINDINGS.md`).
+**Database changes:** None. **API changes:** None. **Frontend changes:** None — this task tests existing code, it doesn't change any.
+
+**Tests:** This *is* the test-execution task — see the 8 results above. No new automated test was written; this was manual/browser-driven execution against `RAISE-TEST-CASES.md`'s existing step definitions, per the user's explicit request to "run test case execution."
+**Validation:** N/A in the usual build/lint/vitest sense — no code changed. The validation *is* the browser evidence captured above (screenshots, DOM inspection, and a live `auditService.listAuditLogs()` call executed in the running page, not simulated).
+
+**Requirement Traceability:**
+PRD: `RAISE-FR-OPS-001`, `RAISE-FR-AUDIT-001`, `RAISE-FR-EXEC-001`.
+Acceptance Criteria: `AC-OPS-001-01..03`, `AC-AUDIT-001-01..03`, `AC-EXEC-001-01..02` — each judged against its own exact Given/When/Then text from `RAISE-ACCEPTANCE-CRITERIA.md`, not an approximation.
+Test Case: `TC-OPS-001-01..03`, `TC-AUDIT-001-01..03`, `TC-EXEC-001-01..02` — all 8 now have real, evidence-based results for the first time since these suites were written.
+
+**Git:**
+Branch: `docs/tc-execution-ops-audit-exec`
+Commit: pending merge — part of [PR #37](https://github.com/boonthepkstl-alt/stl_asset_service/pull/37) (predicted PR number, next in sequence after #36 at branch-creation time; verify against the actual PR before treating this as final).
+
+**Known Issues:** F-21 and F-22 (above) are real, confirmed defects/gaps — not invented, not PRD-blocked, genuinely actionable whenever prioritized.
+**Remaining Work:** `TC-AUDIT-001-01/-03`'s field-taxonomy/role-gate sub-scope and `TC-EXEC-001-01`'s NBV/Risk-formula sub-scope remain BLOCKED on PRD answers, unchanged by this execution — this task closed the "was this actually run?" gap, not the underlying PRD gaps.
+**Next Step:** Recalculate `NEXT-STEP.md` — F-21 (QR/Barcode invalid-code state) is a small, fully-scoped, non-PRD-blocked fix and is the strongest new "buildable now" candidate this checkpoint surfaced.
 
 ---
 

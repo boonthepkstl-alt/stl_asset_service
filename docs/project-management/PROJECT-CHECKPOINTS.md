@@ -1400,11 +1400,56 @@ Test Case: `TC-OPS-001-01..03` — all three **PASS** on re-execution; `RAISE-TR
 
 **Git:**
 Branch: `frontend/fix-scan-qr-invalid-code-state`
-Commit: pending merge — part of [PR #38](https://github.com/boonthepkstl-alt/stl_asset_service/pull/38) (predicted PR number, next in sequence after #37 at branch-creation time; verify against the actual PR before treating this as final).
+Commit: `05febae` (implementation), merged via `277d2ee` (merge commit, [PR #38](https://github.com/boonthepkstl-alt/stl_asset_service/pull/38)). *(Corrected 2026-08-26 — originally said "pending merge.")*
 
 **Known Issues:** None.
 **Remaining Work:** None for `RAISE-FR-OPS-001` — all three test cases now pass.
-**Next Step:** Per the recalculated `NEXT-STEP.md`, no fresh "buildable now" item remains after this fix — F-22 (Executive Dashboard vs. Prototype P-014) needs a business/design decision before any code should be written toward it; everything else in the backlog is PRD-blocked.
+**Next Step:** Per the recalculated `NEXT-STEP.md`, no fresh "buildable now" item remained after this fix. User chose to keep running formal test-case executions (Option 1 of the two offered) — see `CHECKPOINT-2026-08-26-003` below.
+
+---
+
+## CHECKPOINT-2026-08-26-003
+
+**Phase:** Phase 3 — Asset Management
+**Feature:** Formal test case execution for TS-ASSET-001, TS-ASSET-001-DETAIL, TS-ASSET-002, TS-ASSET-003
+**Task:** Continue the test-execution sweep started in `CHECKPOINT-2026-08-26-001` — per explicit user instruction to analyze and choose the next task autonomously, selected the Asset Registry/Detail/Category/Custody suites as the next-highest-value target (the most foundational, most-used domain, not yet formally executed)
+
+**What was implemented:** Executed 11 test cases against the real running app. Results:
+- **TC-ASSET-001-01 PASS** (list displays, 15 seeded assets), **-02 PASS** (search narrows to matching asset), **-04 PASS** (row click opens Asset Detail).
+- **TC-ASSET-001-03 FAIL** — no Category filter exists anywhere in the Assets page's Filters panel (Status/Department/Location only); the Category column header only sorts. New finding **F-23**.
+- **TC-ASSET-001-D-01 FAIL** — Asset Detail is missing 2 of the 9 required sections: no "Financial" section (purchase cost/current value never render there, despite existing on the record) and no "Lifecycle" section. New finding **F-24**.
+- **TC-ASSET-001-D-02 PASS** — Detail correctly shows only the selected asset's data (verified across two distinct assets, `a1`/`a2`).
+- **TC-ASSET-002-01 FAIL** — no P-005 "Category & Hierarchy" screen exists anywhere in routing/navigation at all (confirmed via `grep`, zero matches) — worse than the prior "taxonomy TBD" framing, since even the display mechanism is absent. New finding **F-25**.
+- **TC-ASSET-002-02 PASS** — Category is consistent between Asset Registry and Asset Detail for the same asset.
+- **TC-ASSET-003-01 PASS** — current holder displays correctly.
+- **TC-ASSET-003-02 FAIL** — the "Assignment History" panel shows only a current-state entry plus registration, not a real chronological transfer history; no seeded asset has ≥2 custody events to even test against.
+- **TC-ASSET-003-03 FAIL** — performed a real Check-in on `a1` via the UI: the prior "Assigned to Sarah Chen" entry was replaced, not preserved alongside a new appended entry, contradicting `AC-ASSET-003-02`'s append-only requirement for the one write path (Check-in/Check-out) this AC confirms is in scope. New finding **F-26** (covers both -02 and -03).
+
+Net: 6 PASS, 5 FAIL, 4 new findings (F-23 through F-26) — a lower pass rate than the previous sweep (5/8 pass), reflecting that Asset Registry/Detail/Category/Custody has more surface area and known-incomplete areas (holder model, category taxonomy) than the smaller QR/Audit/Dashboard slice tested first.
+
+**What was modified:** `docs/07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md` — updated `RAISE-FR-ASSET-001`, `RAISE-FR-ASSET-002`, `RAISE-FR-ASSET-003` rows with real evidence-based Test Status (`FAIL (partial)`, `FAIL (partial)`, `FAIL` respectively). `docs/project-management/OPEN-FINDINGS.md` — added F-23 through F-26 to the "Confirmed via Test Execution" category.
+**What was fixed:** None — this is test execution, not a fix. Also corrected a stale "pending merge" note on `CHECKPOINT-2026-08-26-002` (see above).
+**What was added:** F-23, F-24, F-25, F-26.
+**What was removed:** None.
+
+**Files changed:** 2 files (`RAISE-TRACEABILITY-MATRIX.md`, `OPEN-FINDINGS.md`).
+**Database changes:** None. **API changes:** None. **Frontend changes:** None — this task tests existing code, it doesn't change any.
+
+**Tests:** This *is* the test-execution task — 11 manual/browser-driven test cases against `RAISE-TEST-CASES.md`'s existing step definitions, per the user's explicit request to keep running test-case execution.
+**Validation:** N/A in the usual build/lint/vitest sense — no code changed. The validation is the browser evidence captured above, including one real state mutation (Check-in on `a1`) performed and observed live, not simulated.
+
+**Requirement Traceability:**
+PRD: `RAISE-FR-ASSET-001`, `RAISE-FR-ASSET-002`, `RAISE-FR-ASSET-003`.
+Acceptance Criteria: `AC-ASSET-001`, `AC-ASSET-001-DETAIL`, `AC-ASSET-002`, `AC-ASSET-003` — each judged against exact Given/When/Then text.
+Test Case: `TC-ASSET-001-01..04`, `TC-ASSET-001-D-01..02`, `TC-ASSET-002-01..02`, `TC-ASSET-003-01..03` — all 11 now have real, evidence-based results for the first time since these suites were written.
+
+**Git:**
+Branch: `docs/tc-execution-asset-registry-detail-custody`
+Commit: pending merge — part of [PR #39](https://github.com/boonthepkstl-alt/stl_asset_service/pull/39) (predicted PR number, next in sequence after #38 at branch-creation time; verify against the actual PR before treating this as final).
+
+**Known Issues:** F-23 through F-26 are real, confirmed defects — not PRD-blocked, genuinely actionable whenever prioritized. F-24 and F-26 in particular touch core Asset Detail/Custody UX, not edge cases.
+**Remaining Work:** None for this task itself — it's a read-only test-execution pass. The findings it produced are separate follow-up work.
+**Next Step:** Recalculate `NEXT-STEP.md`. F-23 (missing Category filter) is the smallest, most self-contained new finding — a reasonable next "buildable now" candidate, similar in shape to F-21.
 
 ---
 

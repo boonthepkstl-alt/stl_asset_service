@@ -53,16 +53,20 @@ so the history of what was once open stays visible.
 
 ## Confirmed via Test Execution (not blocked on any PRD question)
 
-Found running `TC-OPS-001-*`/`TC-AUDIT-001-*`/`TC-EXEC-001-*` against the
-real app on 2026-08-26 (see `RAISE-TRACEABILITY-MATRIX.md` §3 for the
-full evidence per row). Unlike the "Blocking"/"Unresolved" sections
-above, these are not waiting on a business decision — the AC/prototype
-already says what's required; the implementation simply doesn't do it
-yet.
+Found running `TC-OPS-001-*`/`TC-AUDIT-001-*`/`TC-EXEC-001-*`/`TC-ASSET-001-*`/
+`TC-ASSET-001-D-*`/`TC-ASSET-002-*`/`TC-ASSET-003-*` against the real app
+on 2026-08-26 (see `RAISE-TRACEABILITY-MATRIX.md` §3 for the full
+evidence per row). Unlike the "Blocking"/"Unresolved" sections above,
+these are not waiting on a business decision — the AC/prototype already
+says what's required; the implementation simply doesn't do it yet.
 
 | ID | Area | Description | Source | Status |
 |---|---|---|---|---|
 | F-22 | Executive Dashboard vs. Prototype P-014 | Prototype P-014 specifies KPI tiles named exactly "NBV", "Risk", "Utilization" and sections named "Asset Overview"/"Executive Summary" (`AC-EXEC-001-01`/`-02`). The built Dashboard (`frontend/src/pages/Dashboard/index.tsx`, ported from the legacy ESAPS dashboard predating this PRD/prototype) has neither — its KPI grid is Total Assets/Available/Assigned/In Maintenance/Expired Warranty/Software Licenses/Monthly Depreciation/Monthly Cost, and its sections are AI Insights/AI Portfolio Health/Oracle FA Reconciliation/Asset Lifecycle/Department Distribution/Asset Status/Asset Type/Pending Approvals/Recent Activities/Maintenance Calendar. This is independent of the still-open NBV/Risk formula question (F-03) — even presence-only testing fails. Raises a scope question worth surfacing to the business/design owner: should Prototype P-014 be updated to match the shipped legacy-derived layout, or should the Dashboard eventually grow the P-014 tiles/sections alongside what exists today? Not answered here — flagged, not resolved. | `frontend/src/pages/Dashboard/index.tsx`; `docs/03-prototype/RAISE-PROTOTYPE.md` P-014; confirmed by browser test execution 2026-08-26 (TC-EXEC-001-01/-02) | Open |
+| F-23 | Asset Registry — no Category filter | `TC-ASSET-001-03` (marked fully testable, no blocker) requires a Category filter that narrows the asset list. The Filters panel on the Assets page has Status/Department/Location selects only — no Category filter exists; the Category column header only sorts. | `frontend/src/pages/Assets/index.tsx` (Filters panel); confirmed by browser test execution 2026-08-26 (TC-ASSET-001-03) | Open |
+| F-24 | Asset Detail — missing Financial and Lifecycle sections | `TC-ASSET-001-D-01` (marked fully testable, no blocker) requires 9 named sections on Asset Detail: Basic Info, Category, Custody, Financial, Warranty, Maintenance, QR/Barcode, Lifecycle, Audit/History. Two are entirely absent from the built page: no "Financial" section (purchase cost/current value exist on the Asset record and render on the Assets list, but never appear on Asset Detail itself), and no "Lifecycle" section/label anywhere on the page. | `frontend/src/pages/AssetDetail/index.tsx`; confirmed by browser test execution 2026-08-26 (TC-ASSET-001-D-01) | Open |
+| F-25 | No Category & Hierarchy screen (P-005) | `RAISE-FR-ASSET-002`'s dedicated screen (Prototype P-005, "Category & Hierarchy") doesn't exist anywhere in the app's routing or navigation — confirmed via `grep` across `config/navigation.ts`/`constants.ts`/`App.tsx` (zero matches). The prior BLOCKED note assumed the screen exists and only its taxonomy content was TBD; the display mechanism itself is missing, which is a stronger gap than previously tracked. | `frontend/src/config/navigation.ts`, `constants.ts`, `App.tsx`; confirmed by browser test execution 2026-08-26 (TC-ASSET-002-01) | Open |
+| F-26 | Custody/Assignment History is not append-only | `AC-ASSET-003-02` requires a custody-changing event (confirmed in scope: Check-in/Check-out) to append a new history entry while leaving prior entries unchanged. Asset Detail's "Assignment History" panel instead shows only a single "current custody state" entry (replaced on every change) plus a fixed registration entry — no real historical/chronological list exists. Performed a real Check-in on a seeded asset (`a1`) via the UI and confirmed the prior "Assigned to Sarah Chen" entry was overwritten by "Currently Available", not preserved alongside a new entry. Independent of the still-open Check-in/Check-out-exclusivity question (F-10/Gap 4), which only concerns *other* write paths, not this one. | `frontend/src/pages/AssetDetail/index.tsx` (History tab); confirmed by browser test execution 2026-08-26 (TC-ASSET-003-02/-03) | Open |
 
 ## Minor / Tech Debt
 

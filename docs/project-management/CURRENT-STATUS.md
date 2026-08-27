@@ -9,20 +9,22 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-08-26, after `CHECKPOINT-2026-08-26-002` (F-21 fix, not
-yet shipped via PR — see that checkpoint for status). The
+**As of:** 2026-08-26, after `CHECKPOINT-2026-08-26-003` (second
+test-execution sweep — Asset Registry/Detail/Category/Custody — not yet
+shipped via PR, see that checkpoint for status). The
 `BASELINE-CHECKPOINT-2026-08-24` scan is still the last full live
-re-verification against `git`/source; this update applies PR #21-#37
-plus the F-21 fix on top of it without re-running a full baseline scan.
-The checkpoint-coverage gap between PR #18 and PR #29 tracked as F-20 is
-closed (see [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md) R-04). `RAISE-FR-OPS-001`,
-`RAISE-FR-AUDIT-001`, and `RAISE-FR-EXEC-001` now carry real,
-evidence-based Test Status in `RAISE-TRACEABILITY-MATRIX.md` (§3) instead
-of the pre-code-era default. **F-21 (QR/Barcode invalid-code state) is
-now resolved as R-05** — `RAISE-FR-OPS-001` is `PASS` on all three test
-cases. **F-22 (Executive Dashboard vs. Prototype P-014) remains open** —
-it needs a business/design decision, not more code. Every development
-session should close out per
+re-verification against `git`/source. F-20 (checkpoint-coverage gap) is
+closed (R-04); F-21 (QR/Barcode invalid-code state) is closed (R-05) —
+`RAISE-FR-OPS-001` is `PASS` on all three test cases. Two rounds of
+formal test-case execution have now run (2026-08-26): the first covered
+QR/Barcode, Audit Log, and Executive Dashboard (found F-21, F-22); the
+second covered Asset Registry, Asset Detail, Category & Hierarchy, and
+Custody History (found **F-23 through F-26**, all open). `RAISE-FR-ASSET-001`,
+`RAISE-FR-ASSET-002`, and `RAISE-FR-ASSET-003` now carry real,
+evidence-based `FAIL`/`FAIL (partial)` Test Status in
+`RAISE-TRACEABILITY-MATRIX.md` (§3) — this is a materially different
+picture than the pre-code-era default these rows carried before. Every
+development session should close out per
 [`SESSION-CLOSEOUT-PROTOCOL.md`](SESSION-CLOSEOUT-PROTOCOL.md), which is
 what keeps this section current.
 
@@ -59,8 +61,9 @@ intentionally out of MVP scope (Roadmap).
 
 | Domain | Requirement | Status |
 |---|---|---|
-| Asset Registry | `RAISE-FR-ASSET-001` | ✅ Built |
-| Asset Assign / Check-in | `RAISE-FR-ASSET-003` / `RAISE-FR-OPS-002` (partial) | ✅ Built — no approval step, no history log (holder model TBD) |
+| Asset Registry | `RAISE-FR-ASSET-001` | 🟡 Built, FAIL (partial) per formal test execution 2026-08-26 — list/search/row-click/detail-isolation all **PASS**, but no Category filter exists (**F-23**) and Asset Detail is missing its Financial and Lifecycle sections (**F-24**) |
+| Category & Hierarchy | `RAISE-FR-ASSET-002` | 🟡 Built (partial), FAIL per formal test execution 2026-08-26 — category *display* is consistent across screens (PASS), but the dedicated P-005 Category & Hierarchy screen doesn't exist at all (**F-25**) |
+| Asset Assign / Check-in | `RAISE-FR-ASSET-003` / `RAISE-FR-OPS-002` (partial) | 🟡 Built, FAIL per formal test execution 2026-08-26 — current holder displays correctly, but Custody/Assignment History is not append-only: a Check-in replaces the prior entry instead of appending a new one (**F-26**), and no seeded asset has a real multi-event history to test against |
 | Employee | supports `RAISE-FR-ASSET-003` | ✅ Built |
 | Maintenance / Ticket | `RAISE-FR-MAINT-001` | ✅ Built — 4-stage workflow shape only; SLA/vendor/cost model TBD |
 | Auth | supports `RAISE-NFR-SEC-RBAC-001` | ✅ Built, demo-only — hardcoded single user, no real user store |
@@ -78,8 +81,15 @@ intentionally out of MVP scope (Roadmap).
 Triaged against [`RAISE-TRACEABILITY-MATRIX.md`](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md)
 §3–§5 — re-check that file before picking an item, it may have changed.
 
-**Buildable now:** None identified. F-21 (the prior entry here) is
-resolved as R-05 in `OPEN-FINDINGS.md`.
+**Buildable now:** **F-23** (no Category filter on Asset Registry) —
+the smallest, most self-contained of the four new findings from the
+2026-08-26 Asset-domain test-execution sweep; same shape as F-21 (a
+missing UI affordance the AC already fully specifies, no PRD question
+attached). F-24 (missing Financial/Lifecycle sections on Asset Detail)
+and F-26 (Custody History not append-only) are also non-PRD-blocked but
+larger — worth scoping separately rather than bundling into one PR. F-25
+(no Category & Hierarchy screen) is the largest of the four (a whole new
+screen) and closest to "needs a scoped-down first cut."
 
 **Needs a scoped-down first cut:** None remaining — Audit Log (PR #31 +
 #35, now covering both Asset and Ticket domains) and Executive Dashboard

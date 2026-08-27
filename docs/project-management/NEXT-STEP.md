@@ -4,30 +4,29 @@
 Overwritten in place each time the protocol is re-run — do not treat an
 old copy of this file as still valid; re-run Step 11 (Recalculate) first.
 
-**Run date:** 2026-08-26, immediately after `CHECKPOINT-2026-08-26-004` (F-23 fix).
+**Run date:** 2026-08-27, immediately after `CHECKPOINT-2026-08-27-001` (F-24 fix).
 
 ---
 
 ## Current State
 
-- **Current phase:** Phase 3 — Asset Management. `RAISE-FR-ASSET-001` now only fails on F-24; `-002`/`-003` unchanged (`FAIL (partial)`/`FAIL`).
-- **Current feature:** None actively in progress. Last work: fixed F-23 (Category filter) per explicit user instruction ("งานถัดไป: F-23").
-- **Current task:** None in progress. Last task checkpoint: `CHECKPOINT-2026-08-26-004`.
-- **Last completed checkpoint:** `CHECKPOINT-2026-08-26-004` (not yet shipped via PR at the time this file was written — see that checkpoint's Git section; stacked onto the still-open PR #39 branch rather than a fresh PR, since PR #39 was unmerged when this task started).
-- **Current status:** 🟢 All checks green — `tsc --noEmit`, `npm run lint` (0 warnings), `npx vitest run` (137/137), `npm run build` all pass; browser-verified live (`TC-ASSET-001-03`: 15 → 2 assets on Category = "Infrastructure", Clear filters restores 15).
-- **Open blockers:** None for F-24 specifically (see Primary Next Step). F-25/F-26 are also non-PRD-blocked but larger — see Priority Application.
-- **Open findings:** F-01 through F-26 in `OPEN-FINDINGS.md`. **F-23 is now Resolved (R-06)**; F-24, F-25, F-26 remain open, all in the "Confirmed via Test Execution" category (not PRD-blocked).
-- **Remaining work:** F-24 (Asset Detail missing Financial/Lifecycle sections), F-25 (no Category & Hierarchy screen), F-26 (Custody History not append-only).
-- **Dependencies:** None of the three remaining findings depend on anything not already built.
+- **Current phase:** Phase 3 — Asset Management. `RAISE-FR-ASSET-001` now `PASS` on all 6 test cases (up from `FAIL (partial)`). `-002`/`-003` unchanged (`FAIL (partial)`/`FAIL`), gated by F-25/F-26 respectively.
+- **Current feature:** None actively in progress. Last work: fixed F-24 (Financial/Lifecycle sections on Asset Detail) per explicit user instruction ("Start on F-24").
+- **Current task:** None in progress. Last task checkpoint: `CHECKPOINT-2026-08-27-001`.
+- **Last completed checkpoint:** `CHECKPOINT-2026-08-27-001` (not yet shipped via PR at the time this file was written — see that checkpoint's Git section).
+- **Current status:** 🟢 All checks green — `tsc --noEmit`, `npm run lint` (0 warnings), `npx vitest run` (138/138), `npm run build` all pass; browser-verified live on asset `a1` (Financial: "$3,299"/"$2,800"/"2024-01-15"; Lifecycle: 5 rows with live values, clicking Maintenance row correctly switches to that tab).
+- **Open blockers:** None for F-26 specifically (see Primary Next Step). F-25 is also non-PRD-blocked but larger — see Priority Application.
+- **Open findings:** F-01 through F-26 in `OPEN-FINDINGS.md`. **F-23 and F-24 are now Resolved (R-06, R-07)**; F-25, F-26 remain open, both in the "Confirmed via Test Execution" category (not PRD-blocked). F-22 also remains open (scope question, not a build task).
+- **Remaining work:** F-25 (no Category & Hierarchy screen), F-26 (Custody History not append-only).
+- **Dependencies:** Neither remaining finding depends on anything not already built.
 - **Plan vs. actual variance:** None — this task was explicitly instructed by the user and matched exactly what the prior `NEXT-STEP.md` recommended.
 
 ## Incomplete Work Inventory (classified)
 
 | Item | Classification | Note |
 |---|---|---|
-| F-24: Asset Detail missing Financial/Lifecycle sections | `FINDING` (new, not blocked) | Two new UI sections; Financial needs no new data (purchase cost/current value already exist on the record), Lifecycle likely needs new fields/labels — check what's already on the `Asset` type before inventing new ones |
+| F-26: Custody History not append-only | `FINDING` (not blocked) | Asset Detail's History tab needs to append entries instead of overwriting the current-state one — touches state-mutation logic (Check-in), not just display; slightly higher risk than the F-23/F-24 fixes |
 | F-25: No Category & Hierarchy screen (P-005) | `FINDING` (not blocked but large) | A whole new screen — closest to "needs a scoped-down first cut," but the underlying taxonomy content is still TBD (only the missing *screen* itself is non-blocked) |
-| F-26: Custody History not append-only | `FINDING` (not blocked) | Asset Detail's History tab needs to append entries instead of overwriting the current-state one — touches core custody UX |
 | F-22: Executive Dashboard vs. Prototype P-014 mismatch | `FINDING` (scope question) | Still needs a business/design decision |
 | Warranty field list (`RAISE-FR-WARRANTY-001`) | `FINDING` (F-01) | Still open, not yet answered — user was asked to confirm this once before and has not yet supplied the field list |
 | NBV/Risk/Utilization-mechanics KPIs (`RAISE-FR-EXEC-001` remainder) | Blocked on business decision | PRD §16 Q3/Q4/Q29 |
@@ -41,78 +40,90 @@ old copy of this file as still valid; re-run Step 11 (Recalculate) first.
 
 ## Priority Application
 
-Per `NEXT-STEP-PROTOCOL.md` §Step 3: with F-23 now resolved, F-24 is the
-next-best "buildable now" candidate on the same reasoning that made F-21
-and F-23 tractable (non-PRD-blocked, AC already fully specifies the
-requirement). F-24 is somewhat larger than F-23 was (two new sections
-instead of one filter control) but still confined to one file
-(`frontend/src/pages/AssetDetail/index.tsx`) and one already-available
-data source for the Financial half. F-26 is a reasonable alternative
-(also self-contained) but touches state-mutation logic (Check-in) rather
-than pure display, a slightly higher-risk change. F-25 remains the
-largest (an entire missing screen) and is deliberately not picked first.
+Per `NEXT-STEP-PROTOCOL.md` §Step 3: with F-23 and F-24 both resolved,
+only two non-PRD-blocked findings remain from the 2026-08-26
+Asset-domain sweep. **F-26** is picked next — it's self-contained (one
+file, `frontend/src/pages/AssetDetail/index.tsx`, the History tab
+specifically) and fully specified by `AC-ASSET-003-02`, but note it's a
+different shape than F-21/F-23/F-24: those were pure display gaps, F-26
+requires changing what `handleCheckIn`/an assign action actually persist
+(append vs. replace), so it carries slightly more risk of an unintended
+behavior change and needs closer attention to `MockAssetRepository`'s
+existing `checkIn`/`assign` methods before touching them. **F-25**
+remains the largest (an entire missing screen) and is deliberately not
+picked first.
 
 ---
 
 ## Primary Next Step
 
-**Fix F-24 — add the missing Financial and Lifecycle sections to Asset
-Detail, per the 9-section requirement in `AC-ASSET-001-DETAIL`/`TC-ASSET-001-D-01`.**
+**Fix F-26 — make Custody/Assignment History append-only, per
+`AC-ASSET-003-02`/`TC-ASSET-003-02..03`.**
 
 ## Why This Is Next
 
-Non-PRD-blocked, AC-specified, and the same file family as the F-23 fix
-just shipped (`frontend/src/pages/AssetDetail/index.tsx` sits alongside
-`frontend/src/pages/Assets/index.tsx`). The Financial section's data
-(purchase cost, current value) already exists on the `Asset` record and
-already renders on the Assets list — this is a display gap on Asset
-Detail specifically, not a missing-data problem.
+The last small-to-medium, non-PRD-blocked, AC-specified finding from the
+2026-08-26 Asset-domain sweep before F-25 (a much larger, whole-new-screen
+task). `AC-ASSET-003-02` already fully specifies the requirement (a
+custody-changing event must append a new history entry, not replace the
+current one) — this is confirmed in-scope for the one write path that
+exists (Check-in/Check-out), independent of the still-open
+Custody-vs-Check-in/out overlap question (F-10).
 
 ## Dependencies
 
-None beyond the already-built Asset Detail page and the `Asset` type's
-existing fields. Before writing new fields for "Lifecycle," re-read the
-`Asset` type (`frontend/src/types/asset.ts`) and `AC-ASSET-001-DETAIL`'s
-exact text for what "Lifecycle" is expected to show — do not invent new
-lifecycle-stage data if the AC only requires surfacing existing dates
-(e.g. purchase date, warranty expiry) under a labeled section.
+None beyond the already-built Asset Detail History tab and
+`MockAssetRepository`'s existing `assign`/`checkIn` methods
+(`frontend/src/services/asset-repository.ts`). Inspect those methods
+first — the fix likely needs each custody-changing action to push a new
+history entry onto a list (rather than the History tab deriving a
+single "current state" row from `asset.assignedTo` at render time, as it
+does now) — check whether `Asset`/`AssetListResult`'s existing shape has
+anywhere to store that list, or whether a new field is genuinely needed
+before adding one.
 
 ## Expected Output
 
-- **Inspect existing implementation first** (Step 8.1) — re-read
-  `frontend/src/pages/AssetDetail/index.tsx`'s existing section
-  structure (Basic Info, Category, Custody, Warranty, Maintenance,
-  QR/Barcode, Audit/History already exist per `CHECKPOINT-2026-08-26-003`)
-  to match its established per-section pattern, not invent a new one.
-- Add a "Financial" section rendering `purchaseCost`/`currentValue`
-  (already on the `Asset` type, already used elsewhere).
-- Add a "Lifecycle" section — check `RAISE-ACCEPTANCE-CRITERIA.md`'s
-  exact `AC-ASSET-001-DETAIL` wording for what it must contain before
-  deciding the field list; if the AC is vague, use only fields the
-  `Asset` type already has (e.g. purchase/warranty dates) rather than
-  inventing new lifecycle-stage tracking.
+- **Inspect existing implementation first** (Step 8.1) — re-read the
+  `tab === 'history'` block in `frontend/src/pages/AssetDetail/index.tsx`
+  (currently derives a single "current custody state" row + a fixed
+  "Asset Registered" row from `asset.assignedTo`/`purchaseDate` at render
+  time — no stored history list exists) and `MockAssetRepository.assign`/
+  `checkIn` in `frontend/src/services/asset-repository.ts` before writing
+  anything.
+- Decide, without inventing new scope: does this need a new `custodyHistory`
+  field on `Asset` (or a separate in-memory store keyed by asset id,
+  mirroring how `audit-repository.ts` already tracks audit entries
+  per-entity)? The audit-repository pattern is the closer precedent —
+  reuse its shape rather than inventing a new one if it fits.
+- Wire `assign`/`checkIn` to append a new entry instead of only mutating
+  `asset.assignedTo`, then render the History tab from that list instead
+  of deriving a single row.
+- Stay scoped to the Check-in/Check-out write path only (per F-10's own
+  note) — do not attempt to resolve the Custody-vs-Check-in/out overlap
+  question in passing.
 
 ## Acceptance Criteria
 
-`TC-ASSET-001-D-01` (already-confirmed text, no PRD question attached) —
-all 9 named sections (Basic Info, Category, Custody, Financial,
-Warranty, Maintenance, QR/Barcode, Lifecycle, Audit/History) present on
-Asset Detail.
+`TC-ASSET-003-02`/`-03` (already-confirmed text, no PRD question
+attached) — a Check-in on a previously-assigned asset must leave the
+prior "Assigned to X" entry visible in history, with a new entry appended
+alongside it (not replacing it).
 
 ## Validation Method
 
 - Frontend: `tsc --noEmit`, `npm run lint`, `npx vitest run`, `npm run build`.
-- Browser-verify: re-run `TC-ASSET-001-D-01` exactly as executed in
-  `CHECKPOINT-2026-08-26-003` — confirm all 9 sections render for a
-  seeded asset.
-- Update `RAISE-TRACEABILITY-MATRIX.md`'s `RAISE-FR-ASSET-001` row (should
-  reach full `PASS`) and mark F-24 Resolved in `OPEN-FINDINGS.md` once
-  confirmed.
+- Browser-verify: re-run `TC-ASSET-003-02`/`-03` exactly as executed in
+  `CHECKPOINT-2026-08-26-003` — perform a real Check-in on a seeded
+  assigned asset and confirm both the prior assignment entry and a new
+  check-in entry are visible afterward.
+- Update `RAISE-TRACEABILITY-MATRIX.md`'s `RAISE-FR-ASSET-003` row and
+  mark F-26 Resolved in `OPEN-FINDINGS.md` once confirmed.
 
 ## Related Checkpoint
 
-`CHECKPOINT-2026-08-26-003` (found F-24), `CHECKPOINT-2026-08-26-004`
-(F-23, the same-shaped fix this task follows the pattern of).
+`CHECKPOINT-2026-08-26-003` (found F-26), `CHECKPOINT-2026-08-27-001`
+(F-24, the most recent fix in this same file).
 
 ## Related Git Branch/Commit
 
@@ -122,23 +133,25 @@ None yet — not started.
 
 ## Risks / Blockers
 
-Low-to-medium risk. The main judgment call is scoping "Lifecycle" without
-inventing new fields — resolve by checking the AC's exact text and the
-`Asset` type before writing any new field. If the AC only names the
-section without specifying required fields, mark that ambiguity
-explicitly rather than guessing a full lifecycle-stage model.
+Medium risk relative to F-21/F-23/F-24 — this is a data-shape change
+(adding a stored history list), not a pure display addition, so it
+touches `assign`/`checkIn`'s existing behavior. Verify no other
+component reads `asset.assignedTo` in a way that would break if custody
+state is refactored to be derived from a history list instead of a
+single field.
 
 ## Files to Update (after implementation, per Step 10)
 
 `PROJECT-CHECKPOINTS.md` (new Level 1 checkpoint), `DEVELOPMENT-LOG.md`,
-`CURRENT-STATUS.md`, `CHANGELOG.md`, `OPEN-FINDINGS.md` (resolve F-24),
-`RAISE-TRACEABILITY-MATRIX.md` (`RAISE-FR-ASSET-001` row), this file.
+`CURRENT-STATUS.md`, `CHANGELOG.md`, `OPEN-FINDINGS.md` (resolve F-26),
+`RAISE-TRACEABILITY-MATRIX.md` (`RAISE-FR-ASSET-003` row), this file.
 
 ## After Completion
 
-Recalculate. F-25, F-26 remain open and are reasonable next picks — but
-re-run Steps 1-7 rather than assuming order holds, since new information
-(a PRD answer, a user instruction) could change it. Separately, F-01
-(Warranty field list) is still awaiting the user's actual field-list
-content from an earlier, uncompleted request — worth surfacing again if
-the user returns to it.
+Recalculate. F-25 (no Category & Hierarchy screen) is the only remaining
+non-PRD-blocked finding from the 2026-08-26 Asset-domain sweep, and would
+need to be scoped down (a first-cut screen, not the full taxonomy) since
+the underlying taxonomy content is still TBD. Re-run Steps 1-7 rather
+than assuming this holds. Separately, F-01 (Warranty field list) is still
+awaiting the user's actual field-list content from an earlier,
+uncompleted request — worth surfacing again if the user returns to it.

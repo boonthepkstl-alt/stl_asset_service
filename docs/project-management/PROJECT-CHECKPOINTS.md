@@ -1495,6 +1495,51 @@ Commit: pending merge — will ship as part of the same PR that supersedes/exten
 
 ---
 
+## CHECKPOINT-2026-08-27-001
+
+**Phase:** Phase 3 — Asset Management
+**Feature:** Asset Registry (Asset Detail)
+**Task:** Fix F-24 — add the missing Financial and Lifecycle sections to Asset Detail, per `AC-ASSET-001-DETAIL`/`TC-ASSET-001-D-01`, per explicit user instruction ("Start on F-24")
+
+**What was implemented:** Two new `SectionCard`s on Asset Detail's Overview tab (`frontend/src/pages/AssetDetail/index.tsx`):
+- **Financial** — Purchase Cost, Current Value, Purchase Date, all sourced from fields the `Asset` record already carries (the same `purchaseCost`/`currentValue` the Assets list column already renders) — no new financial modeling (depreciation schedule, book-value formula) was invented.
+- **Lifecycle** — a connectivity summary with 5 clickable rows (Procurement, Custody, Warranty, Maintenance, Audit), each showing a one-line live summary (e.g. "2 tickets", "Assigned to Sarah Chen") and jumping to the tab that owns that data on click. This directly implements Prototype P-004's stated principle ("one asset → connected information across its lifecycle") and `AC-LIFE-001-01` ("cross-domain records shown as connected to that one asset") without inventing a separate lifecycle-stage data model — every value shown is read from data the page already fetches (`asset`, `assetTickets`, `auditEntries`).
+A new `LifecycleRow` helper component was added alongside the existing `InfoRow` helper.
+**What was modified:** `frontend/src/pages/AssetDetail/index.tsx`.
+**What was fixed:** F-24.
+**What was added:** 1 new test in `frontend/src/pages/AssetDetail/index.test.tsx` (`TC-ASSET-001-D-01` regression coverage); `LifecycleRow` component.
+**What was removed:** None.
+
+**Files changed:** 2 files — `frontend/src/pages/AssetDetail/index.tsx`, `frontend/src/pages/AssetDetail/index.test.tsx`.
+**Database changes:** None. **API changes:** None. **Frontend changes:** Asset Detail's Overview tab now has Financial and Lifecycle sections.
+
+**Tests:**
+- Unit Test: `frontend/src/pages/AssetDetail/index.test.tsx` — 1 new (`TC-ASSET-001-D-01`: Financial and Lifecycle sections present with real data) — 138/138 frontend tests passing overall.
+- Integration Test: None — no integration-test layer exists in this project.
+- E2E Test: None — no E2E framework exists.
+
+**Validation:**
+- Build: `npm run build` ✅
+- Lint: `npm run lint` ✅ (0 warnings)
+- Test: `npx vitest run` ✅ (138/138)
+- Type Check: `npx tsc --noEmit` ✅
+- Manual browser verification (Chrome preview, `raise-frontend` dev server): opened asset `a1` (MacBook Pro 16" M3) — Financial section shows "$3,299" / "$2,800" / "2024-01-15"; Lifecycle section shows all 5 rows with live values ("Assigned to Sarah Chen", "Active until 2027-01-15", "2 tickets", "No audit entries yet"); clicking the Maintenance row correctly switched the active tab to "Maintenance & Tickets".
+
+**Requirement Traceability:**
+PRD: `RAISE-FR-ASSET-001`, `RAISE-FR-LIFE-001`
+Acceptance Criteria: `AC-ASSET-001-D-01`, `AC-LIFE-001-01` — both met.
+Test Case: `TC-ASSET-001-D-01` — now **PASS** on re-execution; `RAISE-TRACEABILITY-MATRIX.md`'s `RAISE-FR-ASSET-001` row updated from `FAIL (partial)` to full `PASS` (all 6 test cases now pass).
+
+**Git:**
+Branch: `frontend/fix-asset-detail-financial-lifecycle`
+Commit: pending merge — part of predicted PR #40 (next in sequence after #39 at branch-creation time; verify against the actual PR before treating this as final).
+
+**Known Issues:** None new.
+**Remaining Work:** F-25 (no Category & Hierarchy screen), F-26 (Custody History not append-only) remain open — neither in scope for this task.
+**Next Step:** Recalculate `NEXT-STEP.md`. With F-23 and F-24 both resolved, F-26 (Custody History not append-only) is a reasonable next candidate — same file (`AssetDetail/index.tsx`) but touches state-mutation logic (Check-in), not just display, a slightly higher-risk change than F-23/F-24 were. F-25 (whole new screen) remains the largest. Re-run the Next-Step Protocol rather than assuming this order holds.
+
+---
+
 ## Level 2 — Feature Checkpoints
 
 ### FEATURE-CHECKPOINT-project-tracking-governance

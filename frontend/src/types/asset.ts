@@ -93,6 +93,7 @@ export interface AssetListQuery {
   search?: string;
   status?: AssetStatus | 'all';
   department?: string | 'all';
+  category?: string | 'all';
   page?: number;
   limit?: number;
 }

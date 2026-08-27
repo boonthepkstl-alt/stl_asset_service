@@ -5,7 +5,7 @@ import { AppShell } from '@/components/AppShell';
 import { Button, Badge, Avatar, StatusBadge, Select, Modal, ConfirmDialog, useToast, Alert, Input } from '@/components/ui';
 import { DataTable, type Column } from '@/components/DataTable';
 import { AssetQrCode } from '@/components/AssetQrCode';
-import { departments, locations } from '@/data/fixtures/mockData';
+import { departments, locations, categories } from '@/data/fixtures/mockData';
 import { getAssetIcon } from '@/data/asset-icons';
 import { useAssets } from '@/hooks/useAssets';
 import { assetService } from '@/services/asset-service';
@@ -22,6 +22,7 @@ export function AssetsPage() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | Asset['status']>('all');
   const [deptFilter, setDeptFilter] = useState('all');
+  const [categoryFilter, setCategoryFilter] = useState('all');
   const [showFilters, setShowFilters] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<Asset | null>(null);
   const [qrAsset, setQrAsset] = useState<Asset | null>(null);
@@ -36,6 +37,7 @@ export function AssetsPage() {
     search,
     status: statusFilter,
     department: deptFilter,
+    category: categoryFilter,
   });
 
   const handleAISearch = () => {
@@ -183,8 +185,8 @@ export function AssetsPage() {
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-2">
             <Badge variant="brand">{assets.length} assets</Badge>
-            {(statusFilter !== 'all' || deptFilter !== 'all') && (
-              <Button variant="ghost" size="sm" leftIcon={<X className="h-3.5 w-3.5" />} onClick={() => { setStatusFilter('all'); setDeptFilter('all'); }}>
+            {(statusFilter !== 'all' || deptFilter !== 'all' || categoryFilter !== 'all') && (
+              <Button variant="ghost" size="sm" leftIcon={<X className="h-3.5 w-3.5" />} onClick={() => { setStatusFilter('all'); setDeptFilter('all'); setCategoryFilter('all'); }}>
                 Clear filters
               </Button>
             )}
@@ -198,7 +200,7 @@ export function AssetsPage() {
 
         {showFilters && (
           <div className="card-base p-4">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
               <Select
                 label="Status"
                 value={statusFilter}
@@ -210,6 +212,12 @@ export function AssetsPage() {
                   { value: 'In Maintenance', label: 'In Maintenance' },
                   { value: 'Retired', label: 'Retired' },
                 ]}
+              />
+              <Select
+                label="Category"
+                value={categoryFilter}
+                onChange={(e) => setCategoryFilter(e.target.value)}
+                options={[{ value: 'all', label: 'All Categories' }, ...categories.map((c) => ({ value: c, label: c }))]}
               />
               <Select
                 label="Department"

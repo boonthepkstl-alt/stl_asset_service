@@ -1400,11 +1400,98 @@ Test Case: `TC-OPS-001-01..03` — all three **PASS** on re-execution; `RAISE-TR
 
 **Git:**
 Branch: `frontend/fix-scan-qr-invalid-code-state`
-Commit: pending merge — part of [PR #38](https://github.com/boonthepkstl-alt/stl_asset_service/pull/38) (predicted PR number, next in sequence after #37 at branch-creation time; verify against the actual PR before treating this as final).
+Commit: `05febae` (implementation), merged via `277d2ee` (merge commit, [PR #38](https://github.com/boonthepkstl-alt/stl_asset_service/pull/38)). *(Corrected 2026-08-26 — originally said "pending merge.")*
 
 **Known Issues:** None.
 **Remaining Work:** None for `RAISE-FR-OPS-001` — all three test cases now pass.
-**Next Step:** Per the recalculated `NEXT-STEP.md`, no fresh "buildable now" item remains after this fix — F-22 (Executive Dashboard vs. Prototype P-014) needs a business/design decision before any code should be written toward it; everything else in the backlog is PRD-blocked.
+**Next Step:** Per the recalculated `NEXT-STEP.md`, no fresh "buildable now" item remained after this fix. User chose to keep running formal test-case executions (Option 1 of the two offered) — see `CHECKPOINT-2026-08-26-003` below.
+
+---
+
+## CHECKPOINT-2026-08-26-003
+
+**Phase:** Phase 3 — Asset Management
+**Feature:** Formal test case execution for TS-ASSET-001, TS-ASSET-001-DETAIL, TS-ASSET-002, TS-ASSET-003
+**Task:** Continue the test-execution sweep started in `CHECKPOINT-2026-08-26-001` — per explicit user instruction to analyze and choose the next task autonomously, selected the Asset Registry/Detail/Category/Custody suites as the next-highest-value target (the most foundational, most-used domain, not yet formally executed)
+
+**What was implemented:** Executed 11 test cases against the real running app. Results:
+- **TC-ASSET-001-01 PASS** (list displays, 15 seeded assets), **-02 PASS** (search narrows to matching asset), **-04 PASS** (row click opens Asset Detail).
+- **TC-ASSET-001-03 FAIL** — no Category filter exists anywhere in the Assets page's Filters panel (Status/Department/Location only); the Category column header only sorts. New finding **F-23**.
+- **TC-ASSET-001-D-01 FAIL** — Asset Detail is missing 2 of the 9 required sections: no "Financial" section (purchase cost/current value never render there, despite existing on the record) and no "Lifecycle" section. New finding **F-24**.
+- **TC-ASSET-001-D-02 PASS** — Detail correctly shows only the selected asset's data (verified across two distinct assets, `a1`/`a2`).
+- **TC-ASSET-002-01 FAIL** — no P-005 "Category & Hierarchy" screen exists anywhere in routing/navigation at all (confirmed via `grep`, zero matches) — worse than the prior "taxonomy TBD" framing, since even the display mechanism is absent. New finding **F-25**.
+- **TC-ASSET-002-02 PASS** — Category is consistent between Asset Registry and Asset Detail for the same asset.
+- **TC-ASSET-003-01 PASS** — current holder displays correctly.
+- **TC-ASSET-003-02 FAIL** — the "Assignment History" panel shows only a current-state entry plus registration, not a real chronological transfer history; no seeded asset has ≥2 custody events to even test against.
+- **TC-ASSET-003-03 FAIL** — performed a real Check-in on `a1` via the UI: the prior "Assigned to Sarah Chen" entry was replaced, not preserved alongside a new appended entry, contradicting `AC-ASSET-003-02`'s append-only requirement for the one write path (Check-in/Check-out) this AC confirms is in scope. New finding **F-26** (covers both -02 and -03).
+
+Net: 6 PASS, 5 FAIL, 4 new findings (F-23 through F-26) — a lower pass rate than the previous sweep (5/8 pass), reflecting that Asset Registry/Detail/Category/Custody has more surface area and known-incomplete areas (holder model, category taxonomy) than the smaller QR/Audit/Dashboard slice tested first.
+
+**What was modified:** `docs/07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md` — updated `RAISE-FR-ASSET-001`, `RAISE-FR-ASSET-002`, `RAISE-FR-ASSET-003` rows with real evidence-based Test Status (`FAIL (partial)`, `FAIL (partial)`, `FAIL` respectively). `docs/project-management/OPEN-FINDINGS.md` — added F-23 through F-26 to the "Confirmed via Test Execution" category.
+**What was fixed:** None — this is test execution, not a fix. Also corrected a stale "pending merge" note on `CHECKPOINT-2026-08-26-002` (see above).
+**What was added:** F-23, F-24, F-25, F-26.
+**What was removed:** None.
+
+**Files changed:** 2 files (`RAISE-TRACEABILITY-MATRIX.md`, `OPEN-FINDINGS.md`).
+**Database changes:** None. **API changes:** None. **Frontend changes:** None — this task tests existing code, it doesn't change any.
+
+**Tests:** This *is* the test-execution task — 11 manual/browser-driven test cases against `RAISE-TEST-CASES.md`'s existing step definitions, per the user's explicit request to keep running test-case execution.
+**Validation:** N/A in the usual build/lint/vitest sense — no code changed. The validation is the browser evidence captured above, including one real state mutation (Check-in on `a1`) performed and observed live, not simulated.
+
+**Requirement Traceability:**
+PRD: `RAISE-FR-ASSET-001`, `RAISE-FR-ASSET-002`, `RAISE-FR-ASSET-003`.
+Acceptance Criteria: `AC-ASSET-001`, `AC-ASSET-001-DETAIL`, `AC-ASSET-002`, `AC-ASSET-003` — each judged against exact Given/When/Then text.
+Test Case: `TC-ASSET-001-01..04`, `TC-ASSET-001-D-01..02`, `TC-ASSET-002-01..02`, `TC-ASSET-003-01..03` — all 11 now have real, evidence-based results for the first time since these suites were written.
+
+**Git:**
+Branch: `docs/tc-execution-asset-registry-detail-custody`
+Commit: pending merge — part of [PR #39](https://github.com/boonthepkstl-alt/stl_asset_service/pull/39) (predicted PR number, next in sequence after #38 at branch-creation time; verify against the actual PR before treating this as final).
+
+**Known Issues:** F-23 through F-26 are real, confirmed defects — not PRD-blocked, genuinely actionable whenever prioritized. F-24 and F-26 in particular touch core Asset Detail/Custody UX, not edge cases.
+**Remaining Work:** None for this task itself — it's a read-only test-execution pass. The findings it produced are separate follow-up work.
+**Next Step:** Recalculate `NEXT-STEP.md`. F-23 (missing Category filter) is the smallest, most self-contained new finding — a reasonable next "buildable now" candidate, similar in shape to F-21.
+
+---
+
+## CHECKPOINT-2026-08-26-004
+
+**Phase:** Phase 3 — Asset Management
+**Feature:** Asset Registry
+**Task:** Fix F-23 — add a Category filter to the Asset Registry's Filters panel, per `AC-ASSET-001`/`TC-ASSET-001-03`, per explicit user instruction ("งานถัดไป: F-23")
+
+**What was implemented:** A Category `Select` in the Assets page's Filters panel (`frontend/src/pages/Assets/index.tsx`), positioned between Status and Department, following the exact pattern the existing Department/Location selects already use. Sourced from a new `categories` fixture export (`frontend/src/data/fixtures/mockData.ts`) — a hardcoded distinct-values list (`IT Hardware`, `Mobile`, `Office Equipment`, `Infrastructure`, `Media Equipment`), mirroring how `departments`/`locations` are already defined rather than deriving categories dynamically. Wired through a new `category` field on `AssetListQuery` (`frontend/src/types/asset.ts`) into `MockAssetRepository.list()`'s filter predicate (`frontend/src/services/asset-repository.ts`) and `useAssets`'s effect dependency array. Deliberately **not** forwarded to `HttpAssetRepository`'s query params — `go-template-main`'s `GET /assets` controller only documents `search`/`status`/`department`/`page`/`limit` (confirmed via `assetController.go`'s own doc comment); adding an unsupported query param there would silently no-op against a real backend instead of filtering, which would be worse than the gap it "fixes." This mirrors F-21's precedent of not inventing scope beyond what's confirmed. "Clear filters" and its visibility condition were extended to include the new filter.
+**What was modified:** `frontend/src/pages/Assets/index.tsx`, `frontend/src/hooks/useAssets.ts`, `frontend/src/services/asset-repository.ts`, `frontend/src/types/asset.ts`, `frontend/src/data/fixtures/mockData.ts`.
+**What was fixed:** F-23.
+**What was added:** 1 new test in `frontend/src/pages/Assets/index.test.tsx` (`TC-ASSET-001-03` regression coverage); `categories` fixture export.
+**What was removed:** None.
+
+**Files changed:** 6 files — the 5 modified above plus the test file.
+**Database changes:** None. **API changes:** None (intentionally — see above). **Frontend changes:** Assets page Filters panel now has a working Category filter.
+
+**Tests:**
+- Unit Test: `frontend/src/pages/Assets/index.test.tsx` — 1 new (`TC-ASSET-001-03`: filtering by Category narrows the list, then Clear filters resets it) — 137/137 frontend tests passing overall.
+- Integration Test: None — no integration-test layer exists in this project.
+- E2E Test: None — no E2E framework exists.
+
+**Validation:**
+- Build: `npm run build` ✅
+- Lint: `npm run lint` ✅ (0 warnings)
+- Test: `npx vitest run` ✅ (137/137)
+- Type Check: `npx tsc --noEmit` ✅
+- Manual browser verification (Chrome preview, `raise-frontend` dev server): re-ran `TC-ASSET-001-03` — selected Category = "Infrastructure" in the Filters panel, list narrowed from 15 assets to 2 (`Dell PowerEdge R750`, `Cisco Catalyst 9300`, both correctly `Infrastructure`), "Clear filters" appeared and, on click, restored all 15 assets.
+
+**Requirement Traceability:**
+PRD: `RAISE-FR-ASSET-001`
+Acceptance Criteria: `AC-ASSET-001` — met for the Category-filter clause.
+Test Case: `TC-ASSET-001-03` — now **PASS** on re-execution; `RAISE-TRACEABILITY-MATRIX.md`'s `RAISE-FR-ASSET-001` row updated accordingly (F-24/`TC-ASSET-001-D-01` remains open and unaffected).
+
+**Git:**
+Branch: `docs/tc-execution-asset-registry-detail-custody` (stacked on top of the still-open PR #39 branch, rather than a fresh branch off `main`, since PR #39 was still unmerged when this task started and this fix's close-out documentation builds directly on content PR #39 introduces — F-23's finding text, this checkpoint sequence, and the traceability-matrix row PR #39 last touched. Mirrors the precedent set by PR #36 stacking onto an open branch instead of opening a competing PR.)
+Commit: pending merge — will ship as part of the same PR that supersedes/extends #39 (verify actual PR number before treating this as final; PR #39 was still `OPEN`, not merged, as of this checkpoint).
+
+**Known Issues:** None new.
+**Remaining Work:** F-24 (missing Financial/Lifecycle sections on Asset Detail), F-25 (no Category & Hierarchy screen), F-26 (Custody History not append-only) remain open — none in scope for this task.
+**Next Step:** Recalculate `NEXT-STEP.md`. With F-23 now resolved, F-24 (same file family, `frontend/src/pages/AssetDetail/index.tsx`) is the next reasonable "buildable now" candidate, but re-run the Next-Step Protocol rather than assuming that order holds.
 
 ---
 

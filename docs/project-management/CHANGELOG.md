@@ -16,6 +16,11 @@ changes user-visible or API-visible behavior. Pure documentation-sync PRs
 
 ## 2026-08-26
 
+### Added
+- **Asset Registry — Category filter** — the Filters panel on the Assets
+  page now has a Category filter (alongside Status/Department/Location)
+  that narrows the asset list.
+
 ### Fixed
 - **Scan QR — invalid code message** — scanning or typing a malformed
   code (garbled/unreadable input) now shows a distinct "Invalid code"

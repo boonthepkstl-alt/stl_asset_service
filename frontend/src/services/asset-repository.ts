@@ -42,7 +42,8 @@ export class MockAssetRepository implements AssetRepository {
       const matchesSearch = !search || a.name.toLowerCase().includes(search) || a.code.toLowerCase().includes(search);
       const matchesStatus = !query.status || query.status === 'all' || a.status === query.status;
       const matchesDept = !query.department || query.department === 'all' || a.department === query.department;
-      return matchesSearch && matchesStatus && matchesDept;
+      const matchesCategory = !query.category || query.category === 'all' || a.category === query.category;
+      return matchesSearch && matchesStatus && matchesDept && matchesCategory;
     });
     return simulateNetwork({ data: filtered, total: filtered.length });
   }
@@ -129,6 +130,10 @@ export class HttpAssetRepository implements AssetRepository {
     if (query.search) params.search = query.search;
     if (query.status && query.status !== 'all') params.status = query.status;
     if (query.department && query.department !== 'all') params.department = query.department;
+    // category is intentionally not forwarded here -- go-template-main's GET /assets has no
+    // category query param (assetController.go only documents search/status/department/page/
+    // limit); adding one client-side would silently no-op against the real backend instead of
+    // filtering. MockAssetRepository.list() (above) handles it for the default dev/test path.
     if (query.page) params.page = query.page;
     if (query.limit) params.limit = query.limit;
 

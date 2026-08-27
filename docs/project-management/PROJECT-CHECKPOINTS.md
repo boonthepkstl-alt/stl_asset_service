@@ -1577,11 +1577,53 @@ Test Case: `TC-ASSET-001-D-01` — still **PASS**, unaffected.
 
 **Git:**
 Branch: `frontend/asset-detail-lifecycle-review-fixes`
-Commit: pending merge — part of predicted PR #41 (next in sequence after #40 at branch-creation time; verify against the actual PR before treating this as final).
+Commit: `242d5f4` (implementation), merged via `bbf84fe` (merge commit, [PR #41](https://github.com/boonthepkstl-alt/stl_asset_service/pull/41)).
 
 **Known Issues:** None.
 **Remaining Work:** F-25, F-26 remain open — unaffected by this fix.
 **Next Step:** Unchanged from `CHECKPOINT-2026-08-27-001` — F-26 (Custody History not append-only) remains the recommended next task; see `NEXT-STEP.md`.
+
+---
+
+## CHECKPOINT-2026-08-27-003
+
+**Phase:** Phase 3 — Asset Management
+**Feature:** Asset Registry (Asset Detail — Custody History)
+**Task:** Fix F-26 — make Custody/Assignment History append-only, per `AC-ASSET-003-02`/`TC-ASSET-003-02..03`
+
+**What was implemented:** Rewired Asset Detail's History tab (`frontend/src/pages/AssetDetail/index.tsx`) to render from the same per-asset audit trail `RAISE-FR-AUDIT-001` already builds, instead of deriving a single "current custody state" row from `asset.assignedTo` at render time. `useAuditLogs({ entityType: 'asset', entityId: asset.id })` was already fetched at the top of the component (feeding the existing Audit tab) — the History tab now maps over that same `auditEntries` list. This is append-only by construction: `recordMockAuditEntry` (`audit-repository.ts`) only ever `mockAuditStore.unshift(entry)`, never mutates or removes an existing entry, and `MockAssetRepository.assign`/`checkIn` already call it on every custody change (and already call `refetchAuditEntries()` after each mutation). No new custody-log data model, field, or store was invented — this reuses infrastructure `RAISE-FR-AUDIT-001` (PR #31) already shipped. The invented "Asset Registered" row (sourced from `asset.purchaseDate`/`purchaseCost`, not real audit data) was dropped in favor of an honest empty state matching the Audit tab's existing wording ("No custody-changing events recorded yet... Pre-existing seeded assets have no history to backfill"). The History tab's badge count (previously hardcoded `5`, unrelated to any real data) now also reflects `auditEntries.length`, matching the pattern the Maintenance & Tickets tab's count already used.
+**What was modified:** `frontend/src/pages/AssetDetail/index.tsx` (History tab body, tab count badge).
+**What was fixed:** F-26.
+**What was added:** 1 new test in `frontend/src/pages/AssetDetail/index.test.tsx` (`TC-ASSET-003-02/-03`: performs a real Check-in then Assign via the UI, confirms both entries appear without either being overwritten).
+**What was removed:** The derived single-row "current custody state" + invented "Asset Registered" row.
+
+**Files changed:** 2 files — `frontend/src/pages/AssetDetail/index.tsx`, `frontend/src/pages/AssetDetail/index.test.tsx`.
+**Database changes:** None. **API changes:** None. **Frontend changes:** Asset Detail's History tab now shows a real, growing, append-only log instead of a static 2-row summary.
+
+**Tests:**
+- Unit Test: `frontend/src/pages/AssetDetail/index.test.tsx` — 1 new (`TC-ASSET-003-02/-03`) — 139/139 frontend tests passing overall.
+- Integration Test: None — no integration-test layer exists in this project.
+- E2E Test: None — no E2E framework exists.
+
+**Validation:**
+- Build: `npm run build` ✅
+- Lint: `npm run lint` ✅ (0 warnings)
+- Test: `npx vitest run` ✅ (139/139)
+- Type Check: `npx tsc --noEmit` ✅
+- Manual browser verification (Chrome preview, `raise-frontend` dev server): on asset `a1`, confirmed the History tab starts empty (no backfilled entries for the seeded fixture), then performed a real Check-in via the UI (appended "Asset checked in", timestamped) followed by a real Assign to Sarah Chen (appended "Asset assigned to Sarah Chen" alongside it, not replacing it) — both entries visible afterward, newest-first, with the History tab's count badge updating from 0 → 1 → 2 live.
+
+**Requirement Traceability:**
+PRD: `RAISE-FR-ASSET-003`
+Acceptance Criteria: `AC-ASSET-003-02` — met.
+Test Case: `TC-ASSET-003-01..03` — all three now **PASS** on re-execution (TC-ASSET-003-01 was already passing); `RAISE-TRACEABILITY-MATRIX.md`'s `RAISE-FR-ASSET-003` row updated from `FAIL` to `PASS`.
+
+**Git:**
+Branch: `frontend/fix-custody-history-append-only`
+Commit: pending merge — part of predicted PR #42 (next in sequence after #41 at branch-creation time; verify against the actual PR before treating this as final).
+
+**Known Issues:** None new.
+**Remaining Work:** F-25 (no Category & Hierarchy screen) remains open — the only unresolved finding left from the 2026-08-26 Asset-domain test-execution sweep.
+**Next Step:** Recalculate `NEXT-STEP.md`. With F-23, F-24, and F-26 all resolved, F-25 (no Category & Hierarchy screen) is the only remaining non-PRD-blocked finding — it needs a scoped-down first cut (a whole new screen, with taxonomy content still TBD) rather than a small fix like the prior three. Re-run the Next-Step Protocol rather than assuming this is still the only option (a PRD answer on Warranty/F-01 also remains outstanding).
 
 ---
 

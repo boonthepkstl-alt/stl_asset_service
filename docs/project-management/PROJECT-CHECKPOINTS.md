@@ -1532,11 +1532,56 @@ Test Case: `TC-ASSET-001-D-01` — now **PASS** on re-execution; `RAISE-TRACEABI
 
 **Git:**
 Branch: `frontend/fix-asset-detail-financial-lifecycle`
-Commit: pending merge — part of predicted PR #40 (next in sequence after #39 at branch-creation time; verify against the actual PR before treating this as final).
+Commit: `ec328e3` (implementation), merged via `c87ad3a` (merge commit, [PR #40](https://github.com/boonthepkstl-alt/stl_asset_service/pull/40)). *(Corrected 2026-08-27, same turn as CHECKPOINT-2026-08-27-002 below — this line originally said "pending merge.")*
 
-**Known Issues:** None new.
+**Known Issues:** None new. *(2 code-review findings surfaced against this checkpoint's own diff after merge — see `CHECKPOINT-2026-08-27-002` below.)*
 **Remaining Work:** F-25 (no Category & Hierarchy screen), F-26 (Custody History not append-only) remain open — neither in scope for this task.
 **Next Step:** Recalculate `NEXT-STEP.md`. With F-23 and F-24 both resolved, F-26 (Custody History not append-only) is a reasonable next candidate — same file (`AssetDetail/index.tsx`) but touches state-mutation logic (Check-in), not just display, a slightly higher-risk change than F-23/F-24 were. F-25 (whole new screen) remains the largest. Re-run the Next-Step Protocol rather than assuming this order holds.
+
+---
+
+## CHECKPOINT-2026-08-27-002
+
+**Phase:** Phase 3 — Asset Management
+**Feature:** Asset Registry (Asset Detail)
+**Task:** Fix 2 findings from a `/code-review` pass on `CHECKPOINT-2026-08-27-001`'s diff (PR #40, merged)
+
+**What was implemented:**
+- **Dead-click affordance (correctness):** the new Lifecycle section's "Procurement" and "Warranty" rows were styled identically to "Custody"/"Maintenance"/"Audit" (hover state, chevron, `<button>`) but their `onClick` only called `setTab('overview')` — a no-op, since that section only renders when the Overview tab is already active. `LifecycleRow`'s `onClick` prop is now optional: rows without a handler (Procurement, Warranty — both already fully shown on this same tab, with nowhere else to navigate to) render as a plain non-interactive `<div>` (no hover, no chevron); Custody/Maintenance/Audit keep the `<button>` form since they do navigate.
+- **Duplicate computation (simplification):** `new Date(asset.warrantyExpiry) < new Date()` was being evaluated 3 separate times per render (once new, in the Lifecycle row; twice pre-existing, in the Warranty & Coverage badge's variant and label). Hoisted to a single `isWarrantyExpired` local, computed once alongside `Icon`, reused in both places.
+
+**What was modified:** `frontend/src/pages/AssetDetail/index.tsx` (`LifecycleRow`, the Lifecycle section's Procurement/Warranty rows, `isWarrantyExpired`, the Warranty & Coverage badge).
+**What was fixed:** Both findings from the `/code-review` pass, above.
+**What was added:** None — no new test needed; existing `TC-ASSET-001-D-01` regression test already covers the Lifecycle/Financial sections' presence and continues to pass unchanged.
+**What was removed:** The 2 duplicate inline `new Date(asset.warrantyExpiry) < new Date()` expressions.
+
+**Files changed:** 1 file — `frontend/src/pages/AssetDetail/index.tsx`.
+**Database changes:** None. **API changes:** None. **Frontend changes:** Procurement/Warranty rows in the Lifecycle section are no longer visually clickable.
+
+**Tests:**
+- Unit Test: No new test — `frontend/src/pages/AssetDetail/index.test.tsx`'s existing `TC-ASSET-001-D-01` test re-verified unchanged — 138/138 frontend tests passing overall.
+- Integration Test: None — no integration-test layer exists in this project.
+- E2E Test: None — no E2E framework exists.
+
+**Validation:**
+- Build: `npm run build` ✅
+- Lint: `npm run lint` ✅ (0 warnings)
+- Test: `npx vitest run` ✅ (138/138)
+- Type Check: `npx tsc --noEmit` ✅
+- Manual browser verification (Chrome preview, `raise-frontend` dev server): on asset `a1`, queried the DOM directly — "Procurement" and "Warranty" now render as `DIV`s (no chevron), while "Custody", "Maintenance", "Audit" remain `BUTTON`s.
+
+**Requirement Traceability:**
+PRD: `RAISE-FR-ASSET-001`, `RAISE-FR-LIFE-001` (unchanged from `CHECKPOINT-2026-08-27-001` — this is a quality fix to the same feature, not a new requirement).
+Acceptance Criteria: `AC-ASSET-001-D-01`, `AC-LIFE-001-01` — still met; this fix makes the implementation more honestly match "connected information," not less.
+Test Case: `TC-ASSET-001-D-01` — still **PASS**, unaffected.
+
+**Git:**
+Branch: `frontend/asset-detail-lifecycle-review-fixes`
+Commit: pending merge — part of predicted PR #41 (next in sequence after #40 at branch-creation time; verify against the actual PR before treating this as final).
+
+**Known Issues:** None.
+**Remaining Work:** F-25, F-26 remain open — unaffected by this fix.
+**Next Step:** Unchanged from `CHECKPOINT-2026-08-27-001` — F-26 (Custody History not append-only) remains the recommended next task; see `NEXT-STEP.md`.
 
 ---
 

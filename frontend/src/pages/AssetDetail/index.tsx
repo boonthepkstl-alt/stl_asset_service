@@ -140,6 +140,7 @@ export function AssetDetailPage() {
   }
 
   const Icon = getAssetIcon(asset.type);
+  const isWarrantyExpired = new Date(asset.warrantyExpiry) < new Date();
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: <Settings className="h-4 w-4" /> },
@@ -382,7 +383,6 @@ export function AssetDetailPage() {
                     icon={<Calendar className="h-4 w-4 text-surface-400" />}
                     label="Procurement"
                     value={`Purchased ${asset.purchaseDate}`}
-                    onClick={() => setTab('overview')}
                   />
                   <LifecycleRow
                     icon={<User className="h-4 w-4 text-surface-400" />}
@@ -393,8 +393,7 @@ export function AssetDetailPage() {
                   <LifecycleRow
                     icon={<Shield className="h-4 w-4 text-surface-400" />}
                     label="Warranty"
-                    value={new Date(asset.warrantyExpiry) < new Date() ? `Expired ${asset.warrantyExpiry}` : `Active until ${asset.warrantyExpiry}`}
-                    onClick={() => setTab('overview')}
+                    value={isWarrantyExpired ? `Expired ${asset.warrantyExpiry}` : `Active until ${asset.warrantyExpiry}`}
                   />
                   <LifecycleRow
                     icon={<Wrench className="h-4 w-4 text-surface-400" />}
@@ -419,8 +418,8 @@ export function AssetDetailPage() {
                     <Shield className="h-4 w-4 text-surface-400" />
                     <span className="text-body text-surface-700">Expires {asset.warrantyExpiry}</span>
                   </div>
-                  <Badge variant={new Date(asset.warrantyExpiry) < new Date() ? 'error' : 'success'} dot>
-                    {new Date(asset.warrantyExpiry) < new Date() ? 'Expired' : 'Active Warranty'}
+                  <Badge variant={isWarrantyExpired ? 'error' : 'success'} dot>
+                    {isWarrantyExpired ? 'Expired' : 'Active Warranty'}
                   </Badge>
                 </div>
               </SectionCard>
@@ -795,7 +794,19 @@ function InfoRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-function LifecycleRow({ icon, label, value, onClick }: { icon: React.ReactNode; label: string; value: string; onClick: () => void }) {
+function LifecycleRow({ icon, label, value, onClick }: { icon: React.ReactNode; label: string; value: string; onClick?: () => void }) {
+  // Rows without onClick (Procurement, Warranty) already show their full detail on this same
+  // tab -- rendered as plain, non-interactive rows (no hover state, no chevron) so their
+  // affordance doesn't falsely promise navigation the way the Custody/Maintenance/Audit rows do.
+  if (!onClick) {
+    return (
+      <div className="flex items-center gap-3 py-2.5">
+        {icon}
+        <span className="text-caption text-surface-500 w-24 shrink-0">{label}</span>
+        <span className="text-body text-surface-800 flex-1 min-w-0 truncate">{value}</span>
+      </div>
+    );
+  }
   return (
     <button onClick={onClick} className="flex items-center gap-3 py-2.5 text-left hover:bg-surface-50 -mx-1 px-1 rounded-md transition-colors">
       {icon}

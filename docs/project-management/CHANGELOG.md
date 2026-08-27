@@ -14,6 +14,14 @@ changes user-visible or API-visible behavior. Pure documentation-sync PRs
 
 ---
 
+## 2026-08-27
+
+### Added
+- **Asset Detail — Financial and Lifecycle sections** — the Overview tab
+  now shows a Financial section (purchase cost, current value, purchase
+  date) and a Lifecycle section that links out to the Custody, Warranty,
+  Maintenance, and Audit information for that asset.
+
 ## 2026-08-26
 
 ### Added

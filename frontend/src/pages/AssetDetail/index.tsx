@@ -359,6 +359,57 @@ export function AssetDetailPage() {
                   </div>
                 </SectionCard>
               )}
+
+              {/* AC-ASSET-001-D-01 (F-24): Financial is one of the 9 required Asset Detail
+                  sections. Only surfaces fields the Asset record already carries (purchaseCost/
+                  currentValue, same ones the Assets list column already shows) -- no
+                  depreciation schedule or other financial modeling is invented here. */}
+              <SectionCard title="Financial" description="Purchase cost and current book value">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+                  <InfoRow label="Purchase Cost" value={`$${asset.purchaseCost.toLocaleString()}`} />
+                  <InfoRow label="Current Value" value={`$${asset.currentValue.toLocaleString()}`} />
+                  <InfoRow label="Purchase Date" value={asset.purchaseDate} />
+                </div>
+              </SectionCard>
+
+              {/* AC-ASSET-001-D-01 / AC-LIFE-001-01 (F-24): Lifecycle is a connectivity summary
+                  across the domains Prototype P-004 names (Custody, Maintenance, Warranty,
+                  Audit) -- each row links to the tab that owns that data, rather than
+                  duplicating or inventing a separate lifecycle-stage data model. */}
+              <SectionCard title="Lifecycle" description="Connected records across this asset's lifecycle">
+                <div className="flex flex-col divide-y divide-surface-100">
+                  <LifecycleRow
+                    icon={<Calendar className="h-4 w-4 text-surface-400" />}
+                    label="Procurement"
+                    value={`Purchased ${asset.purchaseDate}`}
+                    onClick={() => setTab('overview')}
+                  />
+                  <LifecycleRow
+                    icon={<User className="h-4 w-4 text-surface-400" />}
+                    label="Custody"
+                    value={asset.assignedTo ? `Assigned to ${asset.assignedTo}` : 'Currently Available'}
+                    onClick={() => setTab('history')}
+                  />
+                  <LifecycleRow
+                    icon={<Shield className="h-4 w-4 text-surface-400" />}
+                    label="Warranty"
+                    value={new Date(asset.warrantyExpiry) < new Date() ? `Expired ${asset.warrantyExpiry}` : `Active until ${asset.warrantyExpiry}`}
+                    onClick={() => setTab('overview')}
+                  />
+                  <LifecycleRow
+                    icon={<Wrench className="h-4 w-4 text-surface-400" />}
+                    label="Maintenance"
+                    value={assetTickets.length === 0 ? 'No tickets recorded' : `${assetTickets.length} ticket${assetTickets.length === 1 ? '' : 's'}`}
+                    onClick={() => setTab('maintenance')}
+                  />
+                  <LifecycleRow
+                    icon={<ClipboardList className="h-4 w-4 text-surface-400" />}
+                    label="Audit"
+                    value={auditEntries.length === 0 ? 'No audit entries yet' : `${auditEntries.length} entr${auditEntries.length === 1 ? 'y' : 'ies'}`}
+                    onClick={() => setTab('audit')}
+                  />
+                </div>
+              </SectionCard>
             </div>
 
             <div className="flex flex-col gap-4">
@@ -741,5 +792,16 @@ function InfoRow({ label, value }: { label: string; value: string }) {
       <p className="text-caption text-surface-500">{label}</p>
       <p className="text-body font-medium text-surface-900 mt-0.5">{value}</p>
     </div>
+  );
+}
+
+function LifecycleRow({ icon, label, value, onClick }: { icon: React.ReactNode; label: string; value: string; onClick: () => void }) {
+  return (
+    <button onClick={onClick} className="flex items-center gap-3 py-2.5 text-left hover:bg-surface-50 -mx-1 px-1 rounded-md transition-colors">
+      {icon}
+      <span className="text-caption text-surface-500 w-24 shrink-0">{label}</span>
+      <span className="text-body text-surface-800 flex-1 min-w-0 truncate">{value}</span>
+      <ChevronRight className="h-4 w-4 text-surface-300 shrink-0" />
+    </button>
   );
 }

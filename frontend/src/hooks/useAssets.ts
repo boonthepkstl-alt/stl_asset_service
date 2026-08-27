@@ -46,7 +46,7 @@ export function useAssets(query: AssetListQuery): UseAssetsResult {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- re-run on any query field change or explicit refetch
-  }, [query.search, query.status, query.department, reloadToken]);
+  }, [query.search, query.status, query.department, query.category, reloadToken]);
 
   return { assets, total, loading, error, refetch };
 }

@@ -742,6 +742,7 @@ export const roles: Role[] = [
 
 export const departments = ['Engineering', 'Sales', 'Design', 'IT Operations', 'Finance', 'Operations', 'Marketing'];
 export const locations = ['HQ - Floor 1', 'HQ - Floor 2', 'HQ - Floor 3', 'HQ - Floor 4', 'Branch - Boston', 'Branch - Austin', 'Data Center East', 'Remote', 'Storage - Warehouse'];
+export const categories = ['IT Hardware', 'Mobile', 'Office Equipment', 'Infrastructure', 'Media Equipment'];
 
 // KPI summary
 export const kpis = {

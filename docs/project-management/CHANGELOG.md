@@ -22,6 +22,12 @@ changes user-visible or API-visible behavior. Pure documentation-sync PRs
   date) and a Lifecycle section that links out to the Custody, Warranty,
   Maintenance, and Audit information for that asset.
 
+### Fixed
+- **Asset Detail — Custody History is now append-only** — the History
+  tab now shows a real, growing log of custody-changing events (Assign,
+  Check-in), each with a timestamp and who performed it. A Check-in no
+  longer erases the prior assignment entry — both stay visible.
+
 ## 2026-08-26
 
 ### Added

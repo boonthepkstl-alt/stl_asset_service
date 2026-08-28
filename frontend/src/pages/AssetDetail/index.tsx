@@ -144,7 +144,7 @@ export function AssetDetailPage() {
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: <Settings className="h-4 w-4" /> },
-    { id: 'history', label: 'History', icon: <History className="h-4 w-4" />, count: 5 },
+    { id: 'history', label: 'History', icon: <History className="h-4 w-4" />, count: auditEntries.length },
     { id: 'files', label: 'Files', icon: <FileText className="h-4 w-4" />, count: 3 },
     { id: 'license', label: 'License', icon: <KeyRound className="h-4 w-4" /> },
     { id: 'maintenance', label: 'Maintenance & Tickets', icon: <Wrench className="h-4 w-4" />, count: assetTickets.length },
@@ -486,28 +486,36 @@ export function AssetDetailPage() {
 
         {tab === 'history' && (
           <Card>
-            <CardHeader title="Assignment History" description="Current custody state for this asset" />
+            <CardHeader title="Assignment History" description="Chronological custody-changing events for this asset" />
             <div className="p-5">
-              {/* Only the asset's current custody state is shown here, not a full timeline --
-                  the holder data model and historical custody log (RAISE-FR-ASSET-003) are
-                  still an open PRD question (Sec16 Q13), so no past-event history is invented. */}
-              <div className="relative pl-6">
-                <div className="absolute left-2 top-2 bottom-2 w-px bg-surface-200" />
-                {[
-                  asset.assignedTo
-                    ? { date: asset.assignedDate || '—', title: `Assigned to ${asset.assignedTo}`, desc: `${asset.department} · ${asset.location}`, user: 'Current custody' }
-                    : { date: '—', title: 'Currently Available', desc: 'Not assigned to anyone', user: 'Current custody' },
-                  { date: asset.purchaseDate, title: 'Asset Registered', desc: `Purchased for ${asset.purchaseCost}`, user: 'Procurement' },
-                ].map((h, i) => (
-                  <div key={i} className="relative pb-6 last:pb-0">
-                    <div className="absolute -left-4 top-1 h-3 w-3 rounded-full bg-brand-500 ring-4 ring-white" />
-                    <p className="text-caption text-surface-400">{h.date}</p>
-                    <p className="text-body font-medium text-surface-900 mt-0.5">{h.title}</p>
-                    <p className="text-caption text-surface-500">{h.desc}</p>
-                    <p className="text-caption text-surface-400 mt-0.5">by {h.user}</p>
-                  </div>
-                ))}
-              </div>
+              {/* AC-ASSET-003-02 (F-26): custody history must append a new entry per
+                  custody-changing event (Check-in/Check-out -- the only in-scope write path,
+                  per F-10) and leave prior entries unchanged, not replace a single "current
+                  state" row. Reuses the same per-asset audit trail (RAISE-FR-AUDIT-001) the
+                  Audit tab below already renders, rather than inventing a separate custody-log
+                  data model: recordMockAuditEntry (audit-repository.ts) only ever appends
+                  (mockAuditStore.unshift), so this list is append-only by construction, and
+                  assign/checkIn already call it on every custody change. Seeded fixture assets
+                  have no backfilled history, same limitation the Audit tab already documents. */}
+              {auditEntries.length === 0 ? (
+                <p className="text-body text-surface-500">
+                  No custody-changing events recorded yet for this asset in this session --
+                  Assign/Check-in append an entry here going forward. Pre-existing seeded assets
+                  have no history to backfill.
+                </p>
+              ) : (
+                <div className="relative pl-6">
+                  <div className="absolute left-2 top-2 bottom-2 w-px bg-surface-200" />
+                  {auditEntries.map((entry) => (
+                    <div key={entry.id} className="relative pb-6 last:pb-0">
+                      <div className="absolute -left-4 top-1 h-3 w-3 rounded-full bg-brand-500 ring-4 ring-white" />
+                      <p className="text-caption text-surface-400">{new Date(entry.createdAt).toLocaleString()}</p>
+                      <p className="text-body font-medium text-surface-900 mt-0.5">{entry.action}</p>
+                      <p className="text-caption text-surface-400 mt-0.5">by {entry.actor}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </Card>
         )}

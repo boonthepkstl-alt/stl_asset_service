@@ -124,6 +124,19 @@ export function TicketDetailPage() {
 
   const Icon = getAssetIcon(ticket.asset.type);
 
+  // AC-MAINT-001-09 (F-29): the 4-stage indicator must show which stage is Done, Current, or
+  // Pending -- GovernanceStep previously only rendered 2 states (done vs. everything else), so
+  // the current stage looked identical to a stage not yet reached. Derived directly from
+  // ticket.status, which already fully determines the current stage; no new field invented.
+  // DONE and REJECTED_BY_DEPT have no "current" stage -- DONE because every stage is Done, and
+  // REJECTED_BY_DEPT because the workflow terminated at Stage 2 (no AC covers highlighting a
+  // stage past a terminated flow).
+  const currentStage: 2 | 3 | 4 | null =
+    ticket.status === 'PENDING_DEPT_APPROVAL' ? 2 :
+    ticket.status === 'PENDING_IT_DISPATCH' ? 3 :
+    (['PLANNING', 'IN_PROGRESS', 'ON_HOLD'] as string[]).includes(ticket.status) ? 4 :
+    null;
+
   const openEditModal = () => {
     setEditTitle(ticket.title);
     setEditCategory(ticket.category);
@@ -273,9 +286,9 @@ export function TicketDetailPage() {
               <SectionCard title="4-Stage Governance & Audit Trail" description="Complete chain of custody, approvals, dispatch, and work logs">
                 <div className="space-y-4 relative before:absolute before:left-3 before:top-2 before:bottom-2 before:w-0.5 before:bg-surface-200">
                   <GovernanceStep n={1} done label="User Requisition Submitted" detail={`By ${ticket.requester.name} (${ticket.requester.jobTitle})`} timestamp={ticket.createdAt} />
-                  <GovernanceStep n={2} done={ticket.departmentApproval.status !== 'Pending'} label="Department Head Sign-off" detail={`Approver: ${ticket.departmentApproval.approverName}`} timestamp={ticket.departmentApproval.approvedAt} extra={ticket.departmentApproval.comments} />
-                  <GovernanceStep n={3} done={!!ticket.itAssignment.technicianName} label="IT Dispatch & Assignment" detail={ticket.itAssignment.technicianName ? `Assigned to ${ticket.itAssignment.technicianName} (${ticket.itAssignment.technicianRole})` : 'Awaiting dispatch'} timestamp={ticket.itAssignment.assignedAt} />
-                  <GovernanceStep n={4} done={ticket.status === 'DONE'} label="IT Servicing & Resolution" detail={ticket.itExecution.currentStatus} timestamp={ticket.itExecution.completedAt} extra={ticket.itExecution.resolutionNotes} />
+                  <GovernanceStep n={2} done={ticket.departmentApproval.status !== 'Pending'} current={currentStage === 2} label="Department Head Sign-off" detail={`Approver: ${ticket.departmentApproval.approverName}`} timestamp={ticket.departmentApproval.approvedAt} extra={ticket.departmentApproval.comments} />
+                  <GovernanceStep n={3} done={!!ticket.itAssignment.technicianName} current={currentStage === 3} label="IT Dispatch & Assignment" detail={ticket.itAssignment.technicianName ? `Assigned to ${ticket.itAssignment.technicianName} (${ticket.itAssignment.technicianRole})` : 'Awaiting dispatch'} timestamp={ticket.itAssignment.assignedAt} />
+                  <GovernanceStep n={4} done={ticket.status === 'DONE'} current={currentStage === 4} label="IT Servicing & Resolution" detail={ticket.itExecution.currentStatus} timestamp={ticket.itExecution.completedAt} extra={ticket.itExecution.resolutionNotes} />
                 </div>
               </SectionCard>
             </div>
@@ -433,13 +446,16 @@ export function TicketDetailPage() {
   );
 }
 
-function GovernanceStep({ n, done, label, detail, timestamp, extra }: { n: number; done: boolean; label: string; detail: string; timestamp?: string; extra?: string }) {
+function GovernanceStep({ n, done, current, label, detail, timestamp, extra }: { n: number; done: boolean; current?: boolean; label: string; detail: string; timestamp?: string; extra?: string }) {
   return (
     <div className="relative flex items-start gap-3 pl-1">
-      <div className={cn('h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold z-10 text-white shrink-0', done ? 'bg-emerald-600' : 'bg-surface-400')}>{done ? '✓' : n}</div>
-      <div className="flex-1 bg-surface-50 p-3 rounded-xl border border-surface-200">
+      <div className={cn('h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold z-10 text-white shrink-0', done ? 'bg-emerald-600' : current ? 'bg-brand-600 ring-4 ring-brand-100' : 'bg-surface-400')}>{done ? '✓' : n}</div>
+      <div className={cn('flex-1 p-3 rounded-xl border', current ? 'bg-brand-50 border-brand-200' : 'bg-surface-50 border-surface-200')}>
         <div className="flex items-center justify-between flex-wrap gap-2">
-          <p className="text-body font-bold text-surface-900">{n}. {label}</p>
+          <p className="text-body font-bold text-surface-900 flex items-center gap-2">
+            {n}. {label}
+            {current && <Badge variant="brand">Current</Badge>}
+          </p>
           {timestamp && <span className="text-caption text-surface-400 font-mono">{timestamp}</span>}
         </div>
         <p className="text-caption text-surface-600 mt-1">{detail}</p>

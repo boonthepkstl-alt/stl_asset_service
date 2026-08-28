@@ -1619,11 +1619,53 @@ Test Case: `TC-ASSET-003-01..03` — all three now **PASS** on re-execution (TC-
 
 **Git:**
 Branch: `frontend/fix-custody-history-append-only`
-Commit: pending merge — part of predicted PR #42 (next in sequence after #41 at branch-creation time; verify against the actual PR before treating this as final).
+Commit: `2cb6443` (implementation), merged via `838aa34` (merge commit, [PR #42](https://github.com/boonthepkstl-alt/stl_asset_service/pull/42)).
 
 **Known Issues:** None new.
 **Remaining Work:** F-25 (no Category & Hierarchy screen) remains open — the only unresolved finding left from the 2026-08-26 Asset-domain test-execution sweep.
 **Next Step:** Recalculate `NEXT-STEP.md`. With F-23, F-24, and F-26 all resolved, F-25 (no Category & Hierarchy screen) is the only remaining non-PRD-blocked finding — it needs a scoped-down first cut (a whole new screen, with taxonomy content still TBD) rather than a small fix like the prior three. Re-run the Next-Step Protocol rather than assuming this is still the only option (a PRD answer on Warranty/F-01 also remains outstanding).
+
+---
+
+## CHECKPOINT-2026-08-28-001
+
+**Phase:** Phase 3 — Asset Management
+**Feature:** Category & Hierarchy (new screen, P-005)
+**Task:** Fix F-25 — build a scoped-down first cut of the Category & Hierarchy screen, per `RAISE-FR-ASSET-002`/`TC-ASSET-002-01`, per explicit user instruction ("Start on F-25")
+
+**What was implemented:** A new page (`frontend/src/pages/Categories/index.tsx`, route `/categories`, nav entry "Category & Hierarchy" under the "Assets" sidebar group) that lists every known category (from the `categories` fixture export added for F-23) as an expandable parent node, showing a live per-category asset count. Expanding a category reveals the real assets registered under it (name, code, status), each clickable through to its Asset Detail page. This deliberately implements only the one parent/child relationship actually confirmed anywhere in the chain — category → its real assets — and explicitly does **not** build Prototype P-005's illustrative sub-category tree (Computer > Notebook/Desktop, Network > Switch/Router), since that hierarchy is marked "not finalized business data" in Prototype §11 and `AC-ASSET-002` itself carries a "NOT TESTABLE YET" note on it. A new finding, **F-27**, was added to `OPEN-FINDINGS.md` to track that still-open taxonomy question separately, so it isn't silently dropped now that the screen itself exists.
+**What was modified:** `frontend/src/App.tsx` (new route), `frontend/src/config/constants.ts` (`ROUTES.CATEGORIES`), `frontend/src/config/navigation.ts` (new nav item + `pageTitles` entry), `frontend/src/App.navigation.test.tsx` (new click-through regression test + id/route guard assertion).
+**What was fixed:** F-25.
+**What was added:** New page `frontend/src/pages/Categories/index.tsx` + its test file (`frontend/src/pages/Categories/index.test.tsx`, 2 tests); new finding F-27 (sub-category taxonomy still TBD).
+**What was removed:** None.
+
+**Files changed:** 6 files — `frontend/src/pages/Categories/index.tsx` (new), `frontend/src/pages/Categories/index.test.tsx` (new), `frontend/src/App.tsx`, `frontend/src/App.navigation.test.tsx`, `frontend/src/config/constants.ts`, `frontend/src/config/navigation.ts`.
+**Database changes:** None. **API changes:** None. **Frontend changes:** New "Category & Hierarchy" screen reachable from the sidebar.
+
+**Tests:**
+- Unit Test: `frontend/src/pages/Categories/index.test.tsx` — 2 new (`TC-ASSET-002-01`: all 5 categories render as parent nodes; expanding a category shows its real assets). `frontend/src/App.navigation.test.tsx` — 1 new click-through test + 1 new id/route assertion. 142/142 frontend tests passing overall.
+- Integration Test: None — no integration-test layer exists in this project.
+- E2E Test: None — no E2E framework exists.
+
+**Validation:**
+- Build: `npm run build` ✅
+- Lint: `npm run lint` ✅ (0 warnings)
+- Test: `npx vitest run` ✅ (142/142)
+- Type Check: `npx tsc --noEmit` ✅
+- Manual browser verification (Chrome preview, `raise-frontend` dev server): navigated to `/categories` directly — all 5 categories render with correct live counts (IT Hardware 6, Mobile 4, Office Equipment 2, Infrastructure 2, Media Equipment 1); expanding "IT Hardware" showed all 6 real seeded assets with status badges; clicking one navigated to its Asset Detail page; from the Assets page, clicking "Category & Hierarchy" in the sidebar correctly reached the new screen.
+
+**Requirement Traceability:**
+PRD: `RAISE-FR-ASSET-002`
+Acceptance Criteria: `AC-ASSET-002-01` — met for the confirmed parent/child data (category → assets); the illustrative sub-category taxonomy remains explicitly out of scope (tracked as F-27). `AC-ASSET-002-02` — unaffected, still passing.
+Test Case: `TC-ASSET-002-01` — now **PASS (scoped)** on re-execution; `RAISE-TRACEABILITY-MATRIX.md`'s `RAISE-FR-ASSET-002` row updated from `FAIL (partial)` to `PASS (scoped)`.
+
+**Git:**
+Branch: `frontend/category-hierarchy-first-cut`
+Commit: pending merge — part of predicted PR #43 (next in sequence after #42 at branch-creation time; verify against the actual PR before treating this as final).
+
+**Known Issues:** F-27 (sub-category taxonomy undefined) is a new, intentionally-tracked open item — not a regression, a deliberate scope boundary.
+**Remaining Work:** None from the 2026-08-26 Asset-domain test-execution sweep — F-21 through F-26 are all now resolved (only F-22, a scope-reconciliation question, remains genuinely open from that sweep, alongside the newly-tracked F-27).
+**Next Step:** Recalculate `NEXT-STEP.md`. With the entire 2026-08-26 Asset-domain sweep's actionable findings closed, likely next candidates are a new formal test-case-execution sweep on a not-yet-tested suite (TS-LOGIN, TS-DASH, TS-OPS-002, TS-MAINT-001, etc.) or resurfacing F-01 (Warranty field list), the longest-standing uncompleted request in this session. Re-run the Next-Step Protocol rather than assuming either by default.
 
 ---
 

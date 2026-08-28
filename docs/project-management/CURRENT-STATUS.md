@@ -9,7 +9,7 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-08-27, after `CHECKPOINT-2026-08-27-003` (F-26 fix — not
+**As of:** 2026-08-28, after `CHECKPOINT-2026-08-28-001` (F-25 fix — not
 yet shipped via PR, see that checkpoint for status). The
 `BASELINE-CHECKPOINT-2026-08-24` scan is still the last full live
 re-verification against `git`/source. F-20 (checkpoint-coverage gap) is
@@ -18,17 +18,22 @@ closed (R-04); F-21 (QR/Barcode invalid-code state) is closed (R-05) —
 — no Category filter) is closed (R-06); F-24 (Asset Detail missing
 Financial/Lifecycle sections) is closed (R-07) — `RAISE-FR-ASSET-001` is
 `PASS` on all six test cases; F-26 (Custody History not append-only) is
-closed (R-08) — **`RAISE-FR-ASSET-003` now `PASS` on all three test
-cases**, up from `FAIL`. A `/code-review` pass on the F-24 diff (PR #40)
-found 2 quality issues (a misleading dead-click affordance on 2 Lifecycle
-rows, a 3x-duplicated date computation) — both fixed and merged same-day
-via PR #41, no behavior regressions.
-Two rounds of formal test-case execution ran 2026-08-26: the first covered
-QR/Barcode, Audit Log, and Executive Dashboard (found F-21, F-22); the
-second covered Asset Registry, Asset Detail, Category & Hierarchy, and
-Custody History (found F-23 through F-26). Of those, **only F-25 remains
-open** — no Category & Hierarchy screen, gating `RAISE-FR-ASSET-002`
-(`FAIL (partial)`). Every development session should close out per
+closed (R-08) — `RAISE-FR-ASSET-003` is `PASS` on all three test cases;
+F-25 (no Category & Hierarchy screen) is closed (R-09) — **`RAISE-FR-ASSET-002`
+now `PASS (scoped)`**, up from `FAIL (partial)`, via a new first-cut
+screen (`/categories`) showing each category's real assets. A
+`/code-review` pass on the F-24 diff (PR #40) found 2 quality issues (a
+misleading dead-click affordance on 2 Lifecycle rows, a 3x-duplicated
+date computation) — both fixed and merged same-day via PR #41, no
+behavior regressions.
+All 4 defects found by the second 2026-08-26 formal test-execution sweep
+(Asset Registry, Asset Detail, Category & Hierarchy, Custody History —
+F-23 through F-26) are now resolved. A new finding, **F-27** (sub-category
+taxonomy for Category & Hierarchy still undefined), was opened alongside
+the F-25 fix to track what the new screen intentionally does not build.
+**F-22** (Executive Dashboard vs. Prototype P-014 mismatch, a scope
+question) remains the only other open item from either sweep. Every
+development session should close out per
 [`SESSION-CLOSEOUT-PROTOCOL.md`](SESSION-CLOSEOUT-PROTOCOL.md), which is
 what keeps this section current.
 
@@ -66,7 +71,7 @@ intentionally out of MVP scope (Roadmap).
 | Domain | Requirement | Status |
 |---|---|---|
 | Asset Registry | `RAISE-FR-ASSET-001` | ✅ Built, **PASS on all 6 test cases** per formal test execution 2026-08-26/-27 — list/search/row-click/detail-isolation, the Category filter (F-23), and Asset Detail's Financial/Lifecycle sections (F-24) all fixed and verified |
-| Category & Hierarchy | `RAISE-FR-ASSET-002` | 🟡 Built (partial), FAIL per formal test execution 2026-08-26 — category *display* is consistent across screens (PASS), but the dedicated P-005 Category & Hierarchy screen doesn't exist at all (**F-25**) |
+| Category & Hierarchy | `RAISE-FR-ASSET-002` | ✅ Built (scoped), **PASS (scoped)** per formal test execution 2026-08-26/-28 — category *display* is consistent across screens (PASS), and a first-cut P-005 Category & Hierarchy screen now exists at `/categories` (F-25 fixed: each category expands to its real assets). Sub-category taxonomy remains intentionally out of scope (**F-27**, TBD per Prototype §11) |
 | Asset Assign / Check-in | `RAISE-FR-ASSET-003` / `RAISE-FR-OPS-002` (partial) | ✅ Built, **PASS on all 3 test cases** per formal test execution 2026-08-26/-27 — current holder displays correctly, and Custody/Assignment History is now append-only (F-26 fixed: History tab renders from the same audit trail `RAISE-FR-AUDIT-001` builds, verified live with a real Check-in + Assign both appending distinct entries) |
 | Employee | supports `RAISE-FR-ASSET-003` | ✅ Built |
 | Maintenance / Ticket | `RAISE-FR-MAINT-001` | ✅ Built — 4-stage workflow shape only; SLA/vendor/cost model TBD |
@@ -85,12 +90,12 @@ intentionally out of MVP scope (Roadmap).
 Triaged against [`RAISE-TRACEABILITY-MATRIX.md`](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md)
 §3–§5 — re-check that file before picking an item, it may have changed.
 
-**Buildable now:** None remaining at this size — F-23, F-24, and F-26 are
-all now fixed (R-06, R-07, R-08). **F-25** (no Category & Hierarchy
-screen) is the only non-PRD-blocked finding left from the 2026-08-26
-Asset-domain sweep, and it's the largest (a whole new screen, with
-taxonomy content still TBD) — it needs a scoped-down first cut, not a
-small fix like the prior three.
+**Buildable now:** None remaining from the 2026-08-26 Asset-domain sweep
+— F-23, F-24, F-25, and F-26 are all now fixed (R-06 through R-09). F-22
+(Executive Dashboard vs. Prototype P-014, a scope question) and F-27
+(Category sub-taxonomy, TBD per Prototype §11) are the only items left
+from either 2026-08-26 sweep, and both are blocked on a business/design
+decision, not directly buildable.
 
 **Needs a scoped-down first cut:** None remaining — Audit Log (PR #31 +
 #35, now covering both Asset and Ticket domains) and Executive Dashboard

@@ -14,6 +14,14 @@ changes user-visible or API-visible behavior. Pure documentation-sync PRs
 
 ---
 
+## 2026-08-28
+
+### Added
+- **Category & Hierarchy screen** — a new "Category & Hierarchy" page
+  (reachable from the sidebar) lists every asset category with a live
+  asset count; expanding a category shows the real assets registered
+  under it, each linking through to its Asset Detail page.
+
 ## 2026-08-27
 
 ### Added

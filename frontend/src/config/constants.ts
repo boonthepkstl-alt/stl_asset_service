@@ -10,6 +10,7 @@ export const ROUTES = {
   ASSETS: '/assets',
   ASSET_DETAIL: '/assets/:assetId',
   ASSET_CREATE: '/assets/create',
+  CATEGORIES: '/categories',
   EMPLOYEES: '/employees',
   EMPLOYEE_DETAIL: '/employees/:employeeId',
   MAINTENANCE: '/maintenance',

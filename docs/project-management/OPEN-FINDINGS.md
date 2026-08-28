@@ -56,14 +56,17 @@ so the history of what was once open stays visible.
 
 Found running `TC-OPS-001-*`/`TC-AUDIT-001-*`/`TC-EXEC-001-*`/`TC-ASSET-001-*`/
 `TC-ASSET-001-D-*`/`TC-ASSET-002-*`/`TC-ASSET-003-*` against the real app
-on 2026-08-26 (see `RAISE-TRACEABILITY-MATRIX.md` §3 for the full
-evidence per row). Unlike the "Blocking"/"Unresolved" sections above,
-these are not waiting on a business decision — the AC/prototype already
-says what's required; the implementation simply doesn't do it yet.
+on 2026-08-26, and `TC-OPS-002-*`/`TC-MAINT-001-*` on 2026-08-28 (see
+`RAISE-TRACEABILITY-MATRIX.md` §3 for the full evidence per row). Unlike
+the "Blocking"/"Unresolved" sections above, these are not waiting on a
+business decision — the AC/prototype already says what's required; the
+implementation simply doesn't do it yet.
 
 | ID | Area | Description | Source | Status |
 |---|---|---|---|---|
 | F-22 | Executive Dashboard vs. Prototype P-014 | Prototype P-014 specifies KPI tiles named exactly "NBV", "Risk", "Utilization" and sections named "Asset Overview"/"Executive Summary" (`AC-EXEC-001-01`/`-02`). The built Dashboard (`frontend/src/pages/Dashboard/index.tsx`, ported from the legacy ESAPS dashboard predating this PRD/prototype) has neither — its KPI grid is Total Assets/Available/Assigned/In Maintenance/Expired Warranty/Software Licenses/Monthly Depreciation/Monthly Cost, and its sections are AI Insights/AI Portfolio Health/Oracle FA Reconciliation/Asset Lifecycle/Department Distribution/Asset Status/Asset Type/Pending Approvals/Recent Activities/Maintenance Calendar. This is independent of the still-open NBV/Risk formula question (F-03) — even presence-only testing fails. Raises a scope question worth surfacing to the business/design owner: should Prototype P-014 be updated to match the shipped legacy-derived layout, or should the Dashboard eventually grow the P-014 tiles/sections alongside what exists today? Not answered here — flagged, not resolved. | `frontend/src/pages/Dashboard/index.tsx`; `docs/03-prototype/RAISE-PROTOTYPE.md` P-014; confirmed by browser test execution 2026-08-26 (TC-EXEC-001-01/-02) | Open |
+| F-28 | Maintenance record list — missing date and cost fields | `AC-MAINT-001-01` requires maintenance records to display "date, event, status, and cost." Asset Detail's "Maintenance & Tickets" tab shows only ticket code, priority, workflow-stage badge, and title per record — no created date and no cost field are rendered anywhere. Independent of the already-tracked TBD note (field model *beyond* date/event/status/cost) — date and cost are exactly the fields the AC names, not the extended ones. | `frontend/src/pages/AssetDetail/index.tsx` (Maintenance & Tickets tab); confirmed by browser test execution 2026-08-28 (TC-MAINT-001-01) | Open |
+| F-29 | Maintenance stage-progress indicator doesn't distinguish Current from Pending | `AC-MAINT-001-09` requires the 4-stage progress indicator to show which stages are Done, Current, or Pending — three distinct states. `GovernanceStep` (`TicketDetail/index.tsx`) only renders two visual states: a done checkmark, or a plain gray circle with the step number for everything else. Verified live at a ticket in `PENDING_IT_DISPATCH`: stage 3 (the current stage) and stage 4 (not yet reached) render identically. | `frontend/src/pages/TicketDetail/index.tsx` (`GovernanceStep`); confirmed by browser test execution 2026-08-28 (TC-MAINT-001-09) | Open |
 
 ## Minor / Tech Debt
 

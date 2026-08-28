@@ -1703,11 +1703,59 @@ Test Case: `TC-ASSET-002-01`/`-02` — still **PASS (scoped)**, re-verified at t
 
 **Git:**
 Branch: `frontend/category-hierarchy-fold-into-assets`
-Commit: pending merge — part of predicted PR #44 (next in sequence after #43 at branch-creation time; verify against the actual PR before treating this as final).
+Commit: `e05648c` (implementation), merged via `87bdc79` (merge commit, [PR #44](https://github.com/boonthepkstl-alt/stl_asset_service/pull/44)). *(Corrected 2026-08-28, same turn as CHECKPOINT-2026-08-28-003 below — this line originally said "pending merge.")*
 
 **Known Issues:** None new.
 **Remaining Work:** Unchanged from `CHECKPOINT-2026-08-28-001` — F-22 and F-27 remain open scope questions; no engineering task is currently blocked.
 **Next Step:** Unchanged from `CHECKPOINT-2026-08-28-001` — a new formal test-case-execution sweep on a not-yet-tested suite, or resurfacing F-01 (Warranty field list). See `NEXT-STEP.md`.
+
+---
+
+## CHECKPOINT-2026-08-28-003
+
+**Phase:** Phase 3 — Asset Management (`RAISE-FR-OPS-002`) / Phase 4 — ITSM (`RAISE-FR-MAINT-001`)
+**Feature:** Formal test case execution for TS-OPS-002, TS-MAINT-001
+**Task:** Run a new formal test-case-execution sweep, per explicit user instruction ("รัน test-case execution sweep รอบใหม่") and `NEXT-STEP.md`'s own recommendation — picked the two most-built, not-yet-formally-tested suites (`RAISE-FR-OPS-002` Check-in/Check-out and `RAISE-FR-MAINT-001` 4-stage Maintenance workflow), both previously carrying only a pre-code-era `BLOCKED` guess in `RAISE-TRACEABILITY-MATRIX.md`, never re-verified against the real running app.
+
+**What was implemented:** Executed 12 test cases against the real running app. Results:
+- **TC-OPS-002-01 PASS** — "Assign" (the app's real affordance for identifying a holder and confirming; no distinct "Check-out" label exists, but the behavior matches AC-OPS-002-01) updated custody on asset `a4` to the new holder.
+- **TC-OPS-002-02 PASS** — Check-in correctly returned the asset to Available/Unassigned.
+- **TC-OPS-002-03 PASS** — both operations created a corresponding Audit Log entry, visible with actor and timestamp.
+- **TC-MAINT-001-03 PASS** — a new requisition ("New IT Requisition") entered `PENDING_DEPT_APPROVAL`.
+- **TC-MAINT-001-04 PASS** — Dept Sign-off → Approve transitioned it to `PENDING_IT_DISPATCH`.
+- **TC-MAINT-001-05 PASS** — Reject on a separate ticket resulted in `REJECTED_BY_DEPT`, confirmed not `PENDING_IT_DISPATCH`.
+- **TC-MAINT-001-06 PASS** — Assign Tech + Dispatch transitioned to `IN_PROGRESS`.
+- **TC-MAINT-001-07 PASS** — Update Status to On-Hold correctly reflected "3. On-Hold" with the hold-reason banner.
+- **TC-MAINT-001-08 PASS** — Mark Complete transitioned to `DONE`/"4. Resolved & Closed" with resolution notes shown.
+- **TC-MAINT-001-02 PASS** — 2 maintenance records for asset `a1` displayed in ascending-chronological order by observed outcome (though the underlying code has no explicit sort — noted as a fragility, not a current failure).
+- **TC-MAINT-001-01 FAIL** — the Maintenance & Tickets tab on Asset Detail shows only ticket code, priority, workflow-stage badge, and title per record; no date or cost field renders anywhere, contradicting `AC-MAINT-001-01`'s explicit requirement. New finding **F-28**.
+- **TC-MAINT-001-09 FAIL** — the 4-stage progress indicator (`GovernanceStep`) only renders 2 visual states (done vs. not-done); the "Current" stage and a "Pending" future stage look identical. Verified at `PENDING_IT_DISPATCH`: stage 3 (current) and stage 4 (pending) rendered indistinguishably. New finding **F-29**.
+
+Net: 10 PASS, 2 FAIL, 2 new findings (F-28, F-29) — a notably higher pass rate than either 2026-08-26 sweep, since both requirements were previously only a pre-code-era `BLOCKED` guess, never actually exercised against real, already-built functionality.
+
+**What was modified:** `docs/07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md` — updated `RAISE-FR-OPS-002` (from `BLOCKED` guess to real `PASS`) and `RAISE-FR-MAINT-001` (from `BLOCKED` guess to real `FAIL (partial)`) rows with evidence-based Test Status. `docs/project-management/OPEN-FINDINGS.md` — added F-28, F-29 to the "Confirmed via Test Execution" category.
+**What was fixed:** None — this is test execution, not a fix.
+**What was added:** F-28, F-29.
+**What was removed:** None.
+
+**Files changed:** 2 files (`RAISE-TRACEABILITY-MATRIX.md`, `OPEN-FINDINGS.md`).
+**Database changes:** None. **API changes:** None. **Frontend changes:** None — this task tests existing code, it doesn't change any.
+
+**Tests:** This *is* the test-execution task — 12 manual/browser-driven test cases against `RAISE-TEST-CASES.md`'s existing step definitions.
+**Validation:** N/A in the usual build/lint/vitest sense — no code changed. The validation is the browser evidence captured above, including real state mutations (Assign/Check-in on `a4`; a new ticket created, approved, dispatched, put on hold, and completed; a separate ticket rejected) performed and observed live, not simulated.
+
+**Requirement Traceability:**
+PRD: `RAISE-FR-OPS-002`, `RAISE-FR-MAINT-001`.
+Acceptance Criteria: `AC-OPS-002`, `AC-MAINT-001` (all 9 sub-criteria) — each judged against exact Given/When/Then text.
+Test Case: `TC-OPS-002-01..03`, `TC-MAINT-001-01..09` — all 12 now have real, evidence-based results for the first time since these suites were written.
+
+**Git:**
+Branch: `docs/tc-execution-ops002-maint001`
+Commit: pending merge — part of predicted PR #45 (next in sequence after #44 at branch-creation time; verify against the actual PR before treating this as final).
+
+**Known Issues:** F-28 and F-29 are real, confirmed defects — not PRD-blocked, genuinely actionable whenever prioritized.
+**Remaining Work:** None for this task itself — it's a read-only test-execution pass. F-28/F-29 are separate follow-up work.
+**Next Step:** Recalculate `NEXT-STEP.md`. F-28 (missing date/cost fields) is likely the smaller, more self-contained fix of the two; F-29 (progress-indicator states) needs a small `GovernanceStep` prop/rendering change. Either is a reasonable next "buildable now" candidate — re-run the Next-Step Protocol rather than assuming which.
 
 ---
 

@@ -617,24 +617,37 @@ export function AssetDetailPage() {
                 />
               ) : (
                 <div className="divide-y divide-surface-100">
-                  {assetTickets.map((t) => (
-                    <div key={t.id} className="p-4 hover:bg-surface-50 transition-all cursor-pointer flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-                      <div className="flex items-start gap-3 min-w-0">
-                        <div className="h-10 w-10 rounded-xl bg-surface-100 flex items-center justify-center shrink-0 mt-0.5">
-                          <Wrench className="h-5 w-5 text-brand-600" />
-                        </div>
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-mono font-bold text-surface-900">{t.ticketCode}</span>
-                            <Badge variant={priorityConfig[t.priority].variant} dot>{t.priority}</Badge>
-                            {getStatusBadge(t.status)}
+                  {assetTickets.map((t) => {
+                    // AC-MAINT-001-01 (F-28): records must show date, event, status, and cost.
+                    // Status (workflow-stage badge) and event (title) already rendered; date was
+                    // always on the Ticket (t.createdAt) but never displayed here. Cost only
+                    // exists once IT Dispatch sets an estimate (t.itAssignment.estimatedCost),
+                    // refined into t.itExecution.actualCost on completion -- prefer the actual
+                    // figure once known, fall back to the estimate, and show an honest "--" for
+                    // a ticket that hasn't reached Dispatch yet rather than inventing a cost.
+                    const cost = t.itExecution.actualCost ?? t.itAssignment.estimatedCost;
+                    return (
+                      <div key={t.id} className="p-4 hover:bg-surface-50 transition-all cursor-pointer flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                        <div className="flex items-start gap-3 min-w-0">
+                          <div className="h-10 w-10 rounded-xl bg-surface-100 flex items-center justify-center shrink-0 mt-0.5">
+                            <Wrench className="h-5 w-5 text-brand-600" />
                           </div>
-                          <h4 className="text-body font-semibold text-surface-900 mt-1 truncate">{t.title}</h4>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-mono font-bold text-surface-900">{t.ticketCode}</span>
+                              <Badge variant={priorityConfig[t.priority].variant} dot>{t.priority}</Badge>
+                              {getStatusBadge(t.status)}
+                            </div>
+                            <h4 className="text-body font-semibold text-surface-900 mt-1 truncate">{t.title}</h4>
+                            <p className="text-caption text-surface-500 mt-0.5">
+                              {t.createdAt} · Cost: {cost !== undefined ? `$${cost.toLocaleString()}` : '—'}
+                            </p>
+                          </div>
                         </div>
+                        <Button variant="ghost" size="icon"><ChevronRight className="h-4 w-4 text-surface-400" /></Button>
                       </div>
-                      <Button variant="ghost" size="icon"><ChevronRight className="h-4 w-4 text-surface-400" /></Button>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </Card>

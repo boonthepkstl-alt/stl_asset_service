@@ -75,4 +75,40 @@ describe('AssetsPage', () => {
       expect(screen.getByText('MacBook Pro 16" M3')).toBeInTheDocument();
     });
   });
+
+  // RAISE-FR-ASSET-002 / AC-ASSET-002-01, formally executed as TC-ASSET-002-01
+  // (CHECKPOINT-2026-08-26-003). Originally failed here (F-25, OPEN-FINDINGS.md) -- no
+  // Category & Hierarchy screen existed anywhere. First shipped as a standalone /categories
+  // page, then folded into Asset Management as a "By Category" view (per user request) since
+  // it's just another lens on the same Asset Registry data. Locks in the fix.
+  describe('By Category view', () => {
+    it('TC-ASSET-002-01: switching to "By Category" shows every known category as an expandable parent node', async () => {
+      renderWithProviders(<AssetsPage />, { route: '/assets', path: '/assets' });
+      await waitFor(() => screen.getByText('MacBook Pro 16" M3'));
+
+      fireEvent.click(screen.getByRole('button', { name: 'By Category' }));
+
+      await waitFor(() => {
+        expect(screen.getByText('IT Hardware')).toBeInTheDocument();
+      });
+      expect(screen.getByText('Mobile')).toBeInTheDocument();
+      expect(screen.getByText('Office Equipment')).toBeInTheDocument();
+      expect(screen.getByText('Infrastructure')).toBeInTheDocument();
+      expect(screen.getByText('Media Equipment')).toBeInTheDocument();
+    });
+
+    it('expanding a category shows the real assets registered under it, matching TC-ASSET-002-02\'s consistency requirement', async () => {
+      renderWithProviders(<AssetsPage />, { route: '/assets', path: '/assets' });
+      await waitFor(() => screen.getByText('MacBook Pro 16" M3'));
+
+      fireEvent.click(screen.getByRole('button', { name: 'By Category' }));
+      await waitFor(() => screen.getByText('IT Hardware'));
+      fireEvent.click(screen.getByText('IT Hardware'));
+
+      await waitFor(() => {
+        expect(screen.getAllByText('MacBook Pro 16" M3').length).toBeGreaterThan(0);
+      });
+      expect(screen.getByText('AST-0001')).toBeInTheDocument();
+    });
+  });
 });

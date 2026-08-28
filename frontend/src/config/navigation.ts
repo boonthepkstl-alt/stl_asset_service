@@ -1,7 +1,6 @@
 import {
   LayoutDashboard,
   Boxes,
-  FolderTree,
   Wrench,
   KeyRound,
   ShoppingCart,
@@ -44,7 +43,6 @@ const allNavGroups: NavGroup[] = [
     label: 'Assets',
     items: [
       { id: 'assets', label: 'Asset Management', icon: Boxes, group: 'Assets' },
-      { id: 'categories', label: 'Category & Hierarchy', icon: FolderTree, group: 'Assets' },
       { id: 'employees', label: 'Employee Management', icon: Users, group: 'Assets' },
       { id: 'maintenance', label: 'IT Requisition & Maintenance', icon: Wrench, group: 'Assets' },
       { id: 'licenses', label: 'Software License', icon: KeyRound, group: 'Assets' },
@@ -96,7 +94,6 @@ export const pageTitles: Record<string, { title: string; subtitle: string }> = {
   ai: { title: 'AI Decision Center', subtitle: 'Predictive Repair vs. Replace evaluation, ROI simulation, and portfolio risk management' },
   reconciliation: { title: 'Oracle FA Reconciliation', subtitle: 'Reconcile Physical Barcode/RFID asset subledgers with Oracle Fixed Assets General Ledger' },
   assets: { title: 'Asset Management', subtitle: 'Track and manage all organizational assets' },
-  categories: { title: 'Category & Hierarchy', subtitle: 'Asset categories and the assets registered under each one' },
   'asset-detail': { title: 'Asset Details', subtitle: 'Comprehensive asset information' },
   'employee-detail': { title: 'Employee Details', subtitle: 'View employee hardware assignments, workstation profile, and IT tickets' },
   'ticket-detail': { title: 'Ticket Details', subtitle: 'Comprehensive IT requisition and service desk work order' },

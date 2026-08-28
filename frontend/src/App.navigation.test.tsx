@@ -5,7 +5,6 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import { ToastProvider } from '@/components/ui';
 import { DashboardPage } from '@/pages/Dashboard';
 import { AssetsPage } from '@/pages/Assets';
-import { CategoriesPage } from '@/pages/Categories';
 import { EmployeesPage } from '@/pages/Employees';
 import { MaintenancePage } from '@/pages/Maintenance';
 import { LicensesPage } from '@/pages/Licenses';
@@ -30,7 +29,6 @@ function AppNavigationRoutes({ initialRoute }: { initialRoute: string }) {
           <Routes>
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/assets" element={<AssetsPage />} />
-            <Route path="/categories" element={<CategoriesPage />} />
             <Route path="/employees" element={<EmployeesPage />} />
             <Route path="/maintenance" element={<MaintenancePage />} />
             <Route path="/licenses" element={<LicensesPage />} />
@@ -48,21 +46,6 @@ function AppNavigationRoutes({ initialRoute }: { initialRoute: string }) {
 describe('Sidebar navigation matches registered routes', () => {
   beforeEach(() => {
     localStorage.clear();
-  });
-
-  it('clicking "Category & Hierarchy" in the sidebar reaches the real Categories page, not a 404', async () => {
-    render(<AppNavigationRoutes initialRoute="/assets" />);
-
-    await waitFor(() => {
-      expect(screen.getByText(/\d+ assets/)).toBeInTheDocument();
-    });
-
-    fireEvent.click(screen.getByRole('button', { name: 'Category & Hierarchy' }));
-
-    await waitFor(() => {
-      expect(screen.getByText('IT Hardware')).toBeInTheDocument();
-    });
-    expect(screen.queryByText('404 — Page not found')).not.toBeInTheDocument();
   });
 
   it('clicking "Employee Management" in the sidebar reaches the Employees page, not a 404', async () => {
@@ -185,7 +168,6 @@ describe('Sidebar navigation matches registered routes', () => {
     expect(idsByLabel.get('Dashboard')).toBe('dashboard');
     expect(idsByLabel.get('AI Decision Center')).toBe('ai');
     expect(idsByLabel.get('Asset Management')).toBe('assets');
-    expect(idsByLabel.get('Category & Hierarchy')).toBe('categories');
     expect(idsByLabel.get('Employee Management')).toBe('employees');
     expect(idsByLabel.get('IT Requisition & Maintenance')).toBe('maintenance');
     expect(idsByLabel.get('Software License')).toBe('licenses');

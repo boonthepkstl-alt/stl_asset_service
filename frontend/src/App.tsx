@@ -9,7 +9,6 @@ import NotFound from '@/pages/NotFound';
 import Forbidden from '@/pages/Forbidden';
 import { AssetsPage } from '@/pages/Assets';
 import { AssetDetailPage } from '@/pages/AssetDetail';
-import { CategoriesPage } from '@/pages/Categories';
 import { CreateAssetPage } from '@/pages/CreateAsset';
 import { EmployeesPage } from '@/pages/Employees';
 import { EmployeeDetailPage } from '@/pages/EmployeeDetail';
@@ -68,7 +67,6 @@ const App: React.FC = () => {
                 <Route path={ROUTES.ASSETS} element={<AssetsPage />} />
                 <Route path={ROUTES.ASSET_CREATE} element={<CreateAssetPage />} />
                 <Route path={ROUTES.ASSET_DETAIL} element={<AssetDetailPage />} />
-                <Route path={ROUTES.CATEGORIES} element={<CategoriesPage />} />
                 <Route path={ROUTES.EMPLOYEES} element={<EmployeesPage />} />
                 <Route path={ROUTES.EMPLOYEE_DETAIL} element={<EmployeeDetailPage />} />
                 <Route path={ROUTES.MAINTENANCE} element={<MaintenancePage />} />

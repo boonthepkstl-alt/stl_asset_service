@@ -9,8 +9,10 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-08-28, after `CHECKPOINT-2026-08-28-001` (F-25 fix — not
-yet shipped via PR, see that checkpoint for status). The
+**As of:** 2026-08-28, after `CHECKPOINT-2026-08-28-002` (Category &
+Hierarchy folded from a standalone page into an Asset Management tab,
+per user request — not yet shipped via PR, see that checkpoint for
+status). The
 `BASELINE-CHECKPOINT-2026-08-24` scan is still the last full live
 re-verification against `git`/source. F-20 (checkpoint-coverage gap) is
 closed (R-04); F-21 (QR/Barcode invalid-code state) is closed (R-05) —
@@ -71,7 +73,7 @@ intentionally out of MVP scope (Roadmap).
 | Domain | Requirement | Status |
 |---|---|---|
 | Asset Registry | `RAISE-FR-ASSET-001` | ✅ Built, **PASS on all 6 test cases** per formal test execution 2026-08-26/-27 — list/search/row-click/detail-isolation, the Category filter (F-23), and Asset Detail's Financial/Lifecycle sections (F-24) all fixed and verified |
-| Category & Hierarchy | `RAISE-FR-ASSET-002` | ✅ Built (scoped), **PASS (scoped)** per formal test execution 2026-08-26/-28 — category *display* is consistent across screens (PASS), and a first-cut P-005 Category & Hierarchy screen now exists at `/categories` (F-25 fixed: each category expands to its real assets). Sub-category taxonomy remains intentionally out of scope (**F-27**, TBD per Prototype §11) |
+| Category & Hierarchy | `RAISE-FR-ASSET-002` | ✅ Built (scoped), **PASS (scoped)** per formal test execution 2026-08-26/-28 — category *display* is consistent across screens (PASS), and a first-cut P-005 Category & Hierarchy view now exists (F-25 fixed: each category expands to its real assets) — a "By Category" tab inside Asset Management (`/assets`), folded in from an initial standalone `/categories` page per user request (same content, no separate route). Sub-category taxonomy remains intentionally out of scope (**F-27**, TBD per Prototype §11) |
 | Asset Assign / Check-in | `RAISE-FR-ASSET-003` / `RAISE-FR-OPS-002` (partial) | ✅ Built, **PASS on all 3 test cases** per formal test execution 2026-08-26/-27 — current holder displays correctly, and Custody/Assignment History is now append-only (F-26 fixed: History tab renders from the same audit trail `RAISE-FR-AUDIT-001` builds, verified live with a real Check-in + Assign both appending distinct entries) |
 | Employee | supports `RAISE-FR-ASSET-003` | ✅ Built |
 | Maintenance / Ticket | `RAISE-FR-MAINT-001` | ✅ Built — 4-stage workflow shape only; SLA/vendor/cost model TBD |

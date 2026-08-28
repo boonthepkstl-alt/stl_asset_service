@@ -9,30 +9,30 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-08-28, after `CHECKPOINT-2026-08-28-003` (a third formal
-test-execution sweep — `TS-OPS-002`/`TS-MAINT-001` — not yet shipped via
-PR, see that checkpoint for status). The `BASELINE-CHECKPOINT-2026-08-24`
-scan is still the last full live re-verification against `git`/source.
-F-20 (checkpoint-coverage gap) is closed (R-04); F-21 (QR/Barcode
-invalid-code state) is closed (R-05); F-23 (Asset Registry — no Category
-filter) is closed (R-06); F-24 (Asset Detail missing Financial/Lifecycle
-sections) is closed (R-07); F-26 (Custody History not append-only) is
-closed (R-08); F-25 (no Category & Hierarchy screen) is closed (R-09) —
-`RAISE-FR-ASSET-001`/`-002`/`-003`/`RAISE-FR-OPS-001` all `PASS` (Category
-& Hierarchy is a "By Category" tab inside Asset Management, not a
-separate page — folded in same-day per user request, see PR #44). A
-`/code-review` pass on the F-24 diff (PR #40) found 2 quality issues,
-both fixed same-day via PR #41, no behavior regressions.
+**As of:** 2026-08-28, after `CHECKPOINT-2026-08-28-004` (F-28 fix — not
+yet shipped via PR, see that checkpoint for status). The
+`BASELINE-CHECKPOINT-2026-08-24` scan is still the last full live
+re-verification against `git`/source. F-20 (checkpoint-coverage gap) is
+closed (R-04); F-21 (QR/Barcode invalid-code state) is closed (R-05);
+F-23 (Asset Registry — no Category filter) is closed (R-06); F-24 (Asset
+Detail missing Financial/Lifecycle sections) is closed (R-07); F-26
+(Custody History not append-only) is closed (R-08); F-25 (no Category &
+Hierarchy screen) is closed (R-09) — `RAISE-FR-ASSET-001`/`-002`/`-003`/
+`RAISE-FR-OPS-001` all `PASS` (Category & Hierarchy is a "By Category"
+tab inside Asset Management, not a separate page — folded in same-day
+per user request, see PR #44). A `/code-review` pass on the F-24 diff
+(PR #40) found 2 quality issues, both fixed same-day via PR #41, no
+behavior regressions.
 A third formal test-execution sweep (2026-08-28) covered `RAISE-FR-OPS-002`
-(Check-in/Check-out) and `RAISE-FR-MAINT-001` (4-stage Maintenance
-workflow) — both previously only a pre-code-era `BLOCKED` guess, never
-re-verified. `RAISE-FR-OPS-002` is now **`PASS`** on all 3 test cases.
-`RAISE-FR-MAINT-001` is **`FAIL (partial)`** (7 of 9 pass) — 2 new
-findings: **F-28** (Maintenance record list missing date/cost fields)
-and **F-29** (stage-progress indicator doesn't distinguish Current from
-Pending). **F-22** (Executive Dashboard scope question) and **F-27**
-(Category sub-taxonomy, TBD) remain open from the earlier sweeps. Every
-development session should close out per
+(Check-in/Check-out, now **`PASS`** 3/3) and `RAISE-FR-MAINT-001`
+(4-stage Maintenance workflow) — both previously only a pre-code-era
+`BLOCKED` guess, never re-verified. F-28 (Maintenance record list
+missing date/cost fields) is closed (R-10) — **`RAISE-FR-MAINT-001` is
+now `FAIL (partial)` at 8/9**, up from 7/9. **F-29** (stage-progress
+indicator doesn't distinguish Current from Pending) remains open, the
+only item left from the third sweep. **F-22** (Executive Dashboard scope
+question) and **F-27** (Category sub-taxonomy, TBD) remain open from the
+earlier sweeps. Every development session should close out per
 [`SESSION-CLOSEOUT-PROTOCOL.md`](SESSION-CLOSEOUT-PROTOCOL.md), which is
 what keeps this section current.
 
@@ -73,7 +73,7 @@ intentionally out of MVP scope (Roadmap).
 | Category & Hierarchy | `RAISE-FR-ASSET-002` | ✅ Built (scoped), **PASS (scoped)** per formal test execution 2026-08-26/-28 — category *display* is consistent across screens (PASS), and a first-cut P-005 Category & Hierarchy view now exists (F-25 fixed: each category expands to its real assets) — a "By Category" tab inside Asset Management (`/assets`), folded in from an initial standalone `/categories` page per user request (same content, no separate route). Sub-category taxonomy remains intentionally out of scope (**F-27**, TBD per Prototype §11) |
 | Asset Assign / Check-in | `RAISE-FR-ASSET-003` / `RAISE-FR-OPS-002` | ✅ Built, **PASS on all test cases for both requirements** — `RAISE-FR-ASSET-003` (3/3, 2026-08-26/-27, F-26 fixed: History tab renders from the same audit trail `RAISE-FR-AUDIT-001` builds, append-only) and `RAISE-FR-OPS-002` (3/3, 2026-08-28: Assign functions as the app's Check-out affordance, Check-in restores Available, both create Audit Log entries) |
 | Employee | supports `RAISE-FR-ASSET-003` | ✅ Built |
-| Maintenance / Ticket | `RAISE-FR-MAINT-001` | 🟡 Built, **FAIL (partial)** per formal test execution 2026-08-28 (7/9 test cases pass) — all 4 stage transitions (submit/approve/reject/dispatch/status-update/complete) work correctly; the record list is missing date/cost fields (**F-28**) and the stage-progress indicator doesn't visually distinguish Current from Pending (**F-29**). SLA/vendor/cost model remain separately TBD |
+| Maintenance / Ticket | `RAISE-FR-MAINT-001` | 🟡 Built, **FAIL (partial)** per formal test execution 2026-08-28 (8/9 test cases pass) — all 4 stage transitions (submit/approve/reject/dispatch/status-update/complete) work correctly, and the record list now shows date/cost per record (**F-28 fixed**); the stage-progress indicator still doesn't visually distinguish Current from Pending (**F-29**, open). SLA/vendor/cost model remain separately TBD |
 | Auth | supports `RAISE-NFR-SEC-RBAC-001` | ✅ Built, demo-only — hardcoded single user, no real user store |
 | QR / Barcode lookup | `RAISE-FR-OPS-001` | ✅ Built, PASS on all test cases — [PR #29](https://github.com/boonthepkstl-alt/stl_asset_service/pull/29) + a follow-up F-21 fix (see `DEVELOPMENT-LOG.md` for the PR number once shipped). `GET /assets/:id` resolves by `code` too (dual lookup); real QR generation + Scan QR flow live on both Assets list and Asset Detail. `TC-OPS-001-01..03` all **PASS** — the invalid-code state (F-21) is fixed via a plausible-code-format check before lookup |
 | Audit Log | `RAISE-FR-AUDIT-001` | 🟡 Built — [PR #31](https://github.com/boonthepkstl-alt/stl_asset_service/pull/31) (Asset domain) + [PR #35](https://github.com/boonthepkstl-alt/stl_asset_service/pull/35) (Ticket domain). `GET /audit-logs` + recording on Asset create/assign/check-in and Ticket create/approve/dispatch/status-update. No update/delete path exists (immutability by omission). The testable subset of `TC-AUDIT-001-01..03` **PASSED** formal execution 2026-08-26; field taxonomy and the audit-review role gate remain TBD (unchanged, blocked on PRD) |
@@ -89,12 +89,12 @@ intentionally out of MVP scope (Roadmap).
 Triaged against [`RAISE-TRACEABILITY-MATRIX.md`](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md)
 §3–§5 — re-check that file before picking an item, it may have changed.
 
-**Buildable now:** **F-28** (Maintenance record list missing date/cost
-fields) and **F-29** (stage-progress indicator doesn't distinguish
-Current from Pending) — both non-PRD-blocked, found by the 2026-08-28
-`TS-MAINT-001` sweep. F-28 is likely the smaller fix (add two fields to
-an existing render); F-29 needs a small prop/rendering change to
-`GovernanceStep`. From the 2026-08-26 Asset-domain sweep, F-23/F-24/F-25/
+**Buildable now:** **F-29** (stage-progress indicator doesn't distinguish
+Current from Pending) — non-PRD-blocked, found by the 2026-08-28
+`TS-MAINT-001` sweep. F-28 (Maintenance record list missing date/cost
+fields) is now fixed (R-10). F-29 needs a small prop/rendering change to
+`GovernanceStep` plus deriving which stage is "current" from the
+ticket's status. From the 2026-08-26 Asset-domain sweep, F-23/F-24/F-25/
 F-26 are all now fixed (R-06 through R-09); F-22 (Executive Dashboard vs.
 Prototype P-014) and F-27 (Category sub-taxonomy) remain blocked on a
 business/design decision, not directly buildable.

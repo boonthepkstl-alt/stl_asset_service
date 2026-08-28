@@ -26,6 +26,11 @@ changes user-visible or API-visible behavior. Pure documentation-sync PRs
   Management the same day since it's a view of the same asset data, not
   a distinct destination.)
 
+### Fixed
+- **Maintenance records now show date and cost** — each ticket listed
+  under an asset's "Maintenance & Tickets" tab now shows when it was
+  created and its cost (or "—" if it hasn't been dispatched yet).
+
 ## 2026-08-27
 
 ### Added

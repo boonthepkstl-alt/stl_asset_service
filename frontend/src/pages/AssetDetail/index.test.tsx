@@ -76,4 +76,22 @@ describe('AssetDetailPage', () => {
     // scoping to the History card avoids matching that instead).
     expect(within(historyCard).getByText('Asset checked in')).toBeInTheDocument();
   });
+
+  // RAISE-FR-MAINT-001 / AC-MAINT-001-01, formally executed as TC-MAINT-001-01
+  // (CHECKPOINT-2026-08-28-003). Originally failed here (F-28, OPEN-FINDINGS.md) -- the
+  // Maintenance & Tickets tab showed ticket code/priority/status/title but no date or cost.
+  // Locks in the fix.
+  it('TC-MAINT-001-01: maintenance records show date and cost alongside status and title', async () => {
+    renderWithProviders(<AssetDetailPage />, { route: '/assets/a1', path: '/assets/:assetId' });
+    await waitFor(() => screen.getByText('AST-0001 · C02XK1ABJGH'));
+
+    fireEvent.click(screen.getByRole('button', { name: /^Maintenance & Tickets/ }));
+
+    await waitFor(() => {
+      expect(screen.getByText('REQ-2026-0042')).toBeInTheDocument();
+    });
+    // REQ-2026-0042: createdAt '2026-08-15 09:30 AM', actualCost 120 (preferred once known, over
+    // the earlier itAssignment.estimatedCost of 350).
+    expect(screen.getByText('2026-08-15 09:30 AM · Cost: $120')).toBeInTheDocument();
+  });
 });

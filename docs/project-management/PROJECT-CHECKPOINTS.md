@@ -1751,11 +1751,53 @@ Test Case: `TC-OPS-002-01..03`, `TC-MAINT-001-01..09` — all 12 now have real, 
 
 **Git:**
 Branch: `docs/tc-execution-ops002-maint001`
-Commit: pending merge — part of predicted PR #45 (next in sequence after #44 at branch-creation time; verify against the actual PR before treating this as final).
+Commit: `deca6d9` (implementation), merged via `db8630d` (merge commit, [PR #45](https://github.com/boonthepkstl-alt/stl_asset_service/pull/45)). *(Corrected 2026-08-28, same turn as CHECKPOINT-2026-08-28-004 below — this line originally said "pending merge.")*
 
 **Known Issues:** F-28 and F-29 are real, confirmed defects — not PRD-blocked, genuinely actionable whenever prioritized.
 **Remaining Work:** None for this task itself — it's a read-only test-execution pass. F-28/F-29 are separate follow-up work.
 **Next Step:** Recalculate `NEXT-STEP.md`. F-28 (missing date/cost fields) is likely the smaller, more self-contained fix of the two; F-29 (progress-indicator states) needs a small `GovernanceStep` prop/rendering change. Either is a reasonable next "buildable now" candidate — re-run the Next-Step Protocol rather than assuming which.
+
+---
+
+## CHECKPOINT-2026-08-28-004
+
+**Phase:** Phase 4 — ITSM (IT Service Management / Maintenance)
+**Feature:** Maintenance (Asset Detail — Maintenance & Tickets tab)
+**Task:** Fix F-28 — add date and cost fields to the Maintenance record list, per `AC-MAINT-001-01`/`TC-MAINT-001-01`, per explicit user instruction ("Start on F-28")
+
+**What was implemented:** Each row in Asset Detail's "Maintenance & Tickets" tab (`frontend/src/pages/AssetDetail/index.tsx`) now shows a caption line with the ticket's created date (`t.createdAt`) and a cost figure, closing the last 2 of the 4 fields (`AC-MAINT-001-01` requires date/event/status/cost — event and status already rendered). Cost prefers `t.itExecution.actualCost` (set once IT Dispatch/Technician work completes) and falls back to `t.itAssignment.estimatedCost` (set at Dispatch); for a ticket that hasn't reached Dispatch yet, neither field exists, so the row renders an honest "—" rather than a fabricated $0 or guessed figure — no new field or data model was invented, both cost fields already existed on the `Ticket` type.
+**What was modified:** `frontend/src/pages/AssetDetail/index.tsx` (Maintenance & Tickets tab row render).
+**What was fixed:** F-28.
+**What was added:** 1 new test in `frontend/src/pages/AssetDetail/index.test.tsx` (`TC-MAINT-001-01` regression coverage).
+**What was removed:** None.
+
+**Files changed:** 2 files — `frontend/src/pages/AssetDetail/index.tsx`, `frontend/src/pages/AssetDetail/index.test.tsx`.
+**Database changes:** None. **API changes:** None. **Frontend changes:** Each maintenance record on Asset Detail now shows its created date and cost (or an honest "—" if not yet known).
+
+**Tests:**
+- Unit Test: `frontend/src/pages/AssetDetail/index.test.tsx` — 1 new (`TC-MAINT-001-01`: date/cost render correctly for a dispatched ticket) — 142/142 frontend tests passing overall.
+- Integration Test: None — no integration-test layer exists in this project.
+- E2E Test: None — no E2E framework exists.
+
+**Validation:**
+- Build: `npm run build` ✅
+- Lint: `npm run lint` ✅ (0 warnings)
+- Test: `npx vitest run` ✅ (142/142)
+- Type Check: `npx tsc --noEmit` ✅
+- Manual browser verification (Chrome preview, `raise-frontend` dev server): on asset `a1`'s Maintenance & Tickets tab, `REQ-2026-0042` (dispatched, in progress) shows "2026-08-15 09:30 AM · Cost: $120" (the actual cost, preferred over the earlier $350 estimate); `REQ-2026-0044` (not yet dispatched) shows "2026-08-16 09:15 AM · Cost: —", confirming the honest-placeholder path.
+
+**Requirement Traceability:**
+PRD: `RAISE-FR-MAINT-001`
+Acceptance Criteria: `AC-MAINT-001-01` — met.
+Test Case: `TC-MAINT-001-01` — now **PASS** on re-execution; `RAISE-TRACEABILITY-MATRIX.md`'s `RAISE-FR-MAINT-001` row updated accordingly (F-29/`TC-MAINT-001-09` remains open and unaffected — row stays `FAIL (partial)`, 8/9).
+
+**Git:**
+Branch: `frontend/fix-maintenance-record-date-cost`
+Commit: pending merge — part of predicted PR #46 (next in sequence after #45 at branch-creation time; verify against the actual PR before treating this as final).
+
+**Known Issues:** None new.
+**Remaining Work:** F-29 (stage-progress indicator doesn't distinguish Current from Pending) remains open — not in scope for this task.
+**Next Step:** Recalculate `NEXT-STEP.md`. With F-28 resolved, F-29 is the last open finding from the 2026-08-28 sweep — a reasonable next candidate, but re-run the Next-Step Protocol rather than assuming.
 
 ---
 

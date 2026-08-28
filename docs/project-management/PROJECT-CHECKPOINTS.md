@@ -1661,11 +1661,53 @@ Test Case: `TC-ASSET-002-01` — now **PASS (scoped)** on re-execution; `RAISE-T
 
 **Git:**
 Branch: `frontend/category-hierarchy-first-cut`
-Commit: pending merge — part of predicted PR #43 (next in sequence after #42 at branch-creation time; verify against the actual PR before treating this as final).
+Commit: `fe5a9ba` (implementation), merged via `7c17b25` (merge commit, [PR #43](https://github.com/boonthepkstl-alt/stl_asset_service/pull/43)). *(Corrected 2026-08-28, same turn as CHECKPOINT-2026-08-28-002 below — this line originally said "pending merge.")*
 
 **Known Issues:** F-27 (sub-category taxonomy undefined) is a new, intentionally-tracked open item — not a regression, a deliberate scope boundary.
 **Remaining Work:** None from the 2026-08-26 Asset-domain test-execution sweep — F-21 through F-26 are all now resolved (only F-22, a scope-reconciliation question, remains genuinely open from that sweep, alongside the newly-tracked F-27).
-**Next Step:** Recalculate `NEXT-STEP.md`. With the entire 2026-08-26 Asset-domain sweep's actionable findings closed, likely next candidates are a new formal test-case-execution sweep on a not-yet-tested suite (TS-LOGIN, TS-DASH, TS-OPS-002, TS-MAINT-001, etc.) or resurfacing F-01 (Warranty field list), the longest-standing uncompleted request in this session. Re-run the Next-Step Protocol rather than assuming either by default.
+**Next Step:** Recalculate `NEXT-STEP.md`. With the entire 2026-08-26 Asset-domain sweep's actionable findings closed, likely next candidates are a new formal test-case-execution sweep on a not-yet-tested suite (TS-LOGIN, TS-DASH, TS-OPS-002, TS-MAINT-001, etc.) or resurfacing F-01 (Warranty field list), the longest-standing uncompleted request in this session. Re-run the Next-Step Protocol rather than assuming either by default. *(Superseded same-day by a user-requested UX change — see `CHECKPOINT-2026-08-28-002` below.)*
+
+---
+
+## CHECKPOINT-2026-08-28-002
+
+**Phase:** Phase 3 — Asset Management
+**Feature:** Category & Hierarchy (UX consolidation)
+**Task:** Fold the standalone Category & Hierarchy screen (`CHECKPOINT-2026-08-28-001`, PR #43) into Asset Management as a "By Category" view, per explicit user feedback that a dedicated sidebar item was disproportionate for a secondary/derived view of the same Asset Registry data
+
+**What was implemented:** The user asked (in Thai) whether Category & Hierarchy should live somewhere other than its own top-level page, since it isn't a primary destination; after discussing options, the user chose "fold it into Asset Management as an alternate view/tab." Removed the standalone `/categories` route, its sidebar nav entry, and `frontend/src/pages/Categories/` entirely; ported the same tree UI (category → its real assets, expand/collapse, click-through to Asset Detail) into `frontend/src/pages/Assets/index.tsx` as a new "By Category" tab (via the shared `Tabs` component) alongside the existing "List" view (the pre-existing DataTable). No behavior or content changed — same categories, same counts, same click-through — only its location and navigation path did. This matches Design/Prototype's own grouping of P-005 under the Asset Management area (Design §4.1), rather than treating it as an independent module.
+**What was modified:** `frontend/src/pages/Assets/index.tsx` (new "By Category" tab + tree view), `frontend/src/App.tsx` (removed `/categories` route), `frontend/src/config/constants.ts` (removed `ROUTES.CATEGORIES`), `frontend/src/config/navigation.ts` (removed the `categories` nav item + its `pageTitles` entry), `frontend/src/App.navigation.test.tsx` (removed the now-obsolete click-through test and id assertion).
+**What was fixed:** N/A — this is a UX relocation, not a defect fix.
+**What was added:** 2 new tests in `frontend/src/pages/Assets/index.test.tsx` (`TC-ASSET-002-01`/consistency, ported from the deleted `Categories/index.test.tsx`).
+**What was removed:** `frontend/src/pages/Categories/index.tsx` + its test file; the standalone `/categories` route and sidebar nav entry.
+
+**Files changed:** 8 files — 2 deleted (`Categories/index.tsx`, `Categories/index.test.tsx`), 6 modified (`Assets/index.tsx`, `Assets/index.test.tsx`, `App.tsx`, `App.navigation.test.tsx`, `config/constants.ts`, `config/navigation.ts`).
+**Database changes:** None. **API changes:** None. **Frontend changes:** Category & Hierarchy is now a tab inside Asset Management instead of its own sidebar destination.
+
+**Tests:**
+- Unit Test: `frontend/src/pages/Assets/index.test.tsx` — 2 new (ported from the deleted Categories test file) — 141/141 frontend tests passing overall (142 before this checkpoint, −2 deleted Categories tests, −1 deleted nav click-through test, +2 new Assets tests = 141).
+- Integration Test: None — no integration-test layer exists in this project.
+- E2E Test: None — no E2E framework exists.
+
+**Validation:**
+- Build: `npm run build` ✅
+- Lint: `npm run lint` ✅ (0 warnings)
+- Test: `npx vitest run` ✅ (141/141)
+- Type Check: `npx tsc --noEmit` ✅
+- Manual browser verification (Chrome preview, `raise-frontend` dev server): on `/assets`, clicked "By Category" — all 5 categories render with correct counts; expanding "IT Hardware" shows its 6 real assets; clicking one navigates to Asset Detail; confirmed via DOM query that no sidebar button labeled "Category & Hierarchy" exists anymore.
+
+**Requirement Traceability:**
+PRD: `RAISE-FR-ASSET-002` (unchanged — this is a presentation-location change, not a requirement or acceptance-criteria change).
+Acceptance Criteria: `AC-ASSET-002-01`/`-02` — still met, same as `CHECKPOINT-2026-08-28-001`.
+Test Case: `TC-ASSET-002-01`/`-02` — still **PASS (scoped)**, re-verified at the new location.
+
+**Git:**
+Branch: `frontend/category-hierarchy-fold-into-assets`
+Commit: pending merge — part of predicted PR #44 (next in sequence after #43 at branch-creation time; verify against the actual PR before treating this as final).
+
+**Known Issues:** None new.
+**Remaining Work:** Unchanged from `CHECKPOINT-2026-08-28-001` — F-22 and F-27 remain open scope questions; no engineering task is currently blocked.
+**Next Step:** Unchanged from `CHECKPOINT-2026-08-28-001` — a new formal test-case-execution sweep on a not-yet-tested suite, or resurfacing F-01 (Warranty field list). See `NEXT-STEP.md`.
 
 ---
 

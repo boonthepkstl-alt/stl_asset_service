@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Upload, QrCode, Eye, Edit, Trash2, ArrowRightLeft, Wrench, Filter, X, Sparkles, Send, ScanLine } from 'lucide-react';
+import { Plus, Upload, QrCode, Eye, Edit, Trash2, ArrowRightLeft, Wrench, Filter, X, Sparkles, Send, ScanLine, ChevronDown, ChevronRight, FolderTree } from 'lucide-react';
 import { AppShell } from '@/components/AppShell';
-import { Button, Badge, Avatar, StatusBadge, Select, Modal, ConfirmDialog, useToast, Alert, Input } from '@/components/ui';
+import { Button, Badge, Avatar, StatusBadge, Select, Modal, ConfirmDialog, useToast, Alert, Input, Card, Tabs } from '@/components/ui';
 import { DataTable, type Column } from '@/components/DataTable';
 import { AssetQrCode } from '@/components/AssetQrCode';
 import { departments, locations, categories } from '@/data/fixtures/mockData';
@@ -24,6 +24,15 @@ export function AssetsPage() {
   const [deptFilter, setDeptFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [showFilters, setShowFilters] = useState(false);
+  // RAISE-FR-ASSET-002 / Prototype P-005 "Category & Hierarchy" (F-25, OPEN-FINDINGS.md): this
+  // started as a standalone /categories screen, then was folded into Asset Management as an
+  // alternate view (per user request) since it's just another lens on the same Asset Registry
+  // data, not a separate domain -- Design/Prototype group P-005 under Asset Management too.
+  // Deliberately shows only the one parent/child relationship actually confirmed anywhere in
+  // the chain (category -> its real assets), not Prototype P-005's illustrative sub-category
+  // tree (Computer > Notebook/Desktop, etc.), which remains TBD (tracked as F-27).
+  const [view, setView] = useState<'list' | 'category'>('list');
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
   const [deleteTarget, setDeleteTarget] = useState<Asset | null>(null);
   const [qrAsset, setQrAsset] = useState<Asset | null>(null);
   const [scanOpen, setScanOpen] = useState(false);
@@ -67,6 +76,15 @@ export function AssetsPage() {
     setAiInterpretation(null);
     setStatusFilter('all');
     setDeptFilter('all');
+  };
+
+  const toggleCategoryExpanded = (category: string) => {
+    setExpandedCategories((prev) => {
+      const next = new Set(prev);
+      if (next.has(category)) next.delete(category);
+      else next.add(category);
+      return next;
+    });
   };
 
   const openScan = () => {
@@ -275,6 +293,15 @@ export function AssetsPage() {
           )}
         </div>
 
+        <Tabs
+          items={[
+            { id: 'list', label: 'List' },
+            { id: 'category', label: 'By Category' },
+          ]}
+          active={view}
+          onChange={(id) => setView(id as 'list' | 'category')}
+        />
+
         {error ? (
           <Alert variant="error" title="Unable to load assets">
             {error}{' '}
@@ -282,7 +309,7 @@ export function AssetsPage() {
               Retry
             </button>
           </Alert>
-        ) : (
+        ) : view === 'list' ? (
           <DataTable
             columns={columns}
             data={assets}
@@ -302,6 +329,51 @@ export function AssetsPage() {
             emptyDescription="Try adjusting your search or filters, or create a new asset."
             emptyAction={<Button size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={() => navigate('/assets/create')}>New Asset</Button>}
           />
+        ) : loading ? (
+          <Card className="p-8 text-center text-body text-surface-400">Loading categories...</Card>
+        ) : (
+          <Card className="p-2">
+            {categories.map((category) => {
+              const categoryAssets = assets.filter((a) => a.category === category);
+              const isOpen = expandedCategories.has(category);
+              return (
+                <div key={category} className="border-b border-surface-100 last:border-0">
+                  <button
+                    onClick={() => toggleCategoryExpanded(category)}
+                    className="w-full flex items-center gap-3 px-3 py-3 text-left hover:bg-surface-50 rounded-md transition-colors"
+                  >
+                    {isOpen ? <ChevronDown className="h-4 w-4 text-surface-400 shrink-0" /> : <ChevronRight className="h-4 w-4 text-surface-400 shrink-0" />}
+                    <FolderTree className="h-4 w-4 text-brand-500 shrink-0" />
+                    <span className="text-body font-medium text-surface-900 flex-1">{category}</span>
+                    <Badge variant="neutral">{categoryAssets.length} asset{categoryAssets.length === 1 ? '' : 's'}</Badge>
+                  </button>
+                  {isOpen && (
+                    <div className="pl-11 pb-2">
+                      {categoryAssets.length === 0 ? (
+                        <p className="text-caption text-surface-400 py-2">No assets currently in this category.</p>
+                      ) : (
+                        categoryAssets.map((asset) => {
+                          const Icon = getAssetIcon(asset.type);
+                          return (
+                            <button
+                              key={asset.id}
+                              onClick={() => navigate(`/assets/${asset.id}`)}
+                              className="w-full flex items-center gap-3 py-2 text-left hover:bg-surface-50 rounded-md transition-colors -ml-1 pl-1"
+                            >
+                              <Icon className="h-4 w-4 text-surface-400 shrink-0" />
+                              <span className="text-body text-surface-800 flex-1 min-w-0 truncate">{asset.name}</span>
+                              <span className="text-caption text-surface-400 font-mono">{asset.code}</span>
+                              <StatusBadge status={asset.status} />
+                            </button>
+                          );
+                        })
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </Card>
         )}
 
         <ConfirmDialog

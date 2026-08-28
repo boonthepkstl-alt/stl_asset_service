@@ -17,10 +17,14 @@ changes user-visible or API-visible behavior. Pure documentation-sync PRs
 ## 2026-08-28
 
 ### Added
-- **Category & Hierarchy screen** — a new "Category & Hierarchy" page
-  (reachable from the sidebar) lists every asset category with a live
-  asset count; expanding a category shows the real assets registered
-  under it, each linking through to its Asset Detail page.
+- **"By Category" view on Asset Management** — the Assets page now has a
+  "By Category" tab alongside the existing list view: it lists every
+  asset category with a live asset count, and expanding a category
+  shows the real assets registered under it, each linking through to
+  its Asset Detail page. (Initially shipped as a separate "Category &
+  Hierarchy" page with its own sidebar entry; folded into Asset
+  Management the same day since it's a view of the same asset data, not
+  a distinct destination.)
 
 ## 2026-08-27
 

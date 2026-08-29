@@ -882,6 +882,17 @@ The "Warranty Timeline" state (Active / Expiring / Expired) is a UI-computed dis
 derived from `warrantyExpiry` (e.g., relative to today's date and the 90-day window in
 the business example below) — it is not a separate stored field.
 
+**Implementation direction confirmed 2026-08-29:** per explicit user decision, the
+Warranty field is **not** built as a dedicated P-010 screen — it is surfaced on the
+relevant existing asset page instead. A "Warranty" column was added to `P-003 Asset
+Registry` (the Assets list) showing `warrantyExpiry` and an Active/Expired badge (2 of
+the 3 Warranty Timeline states — "Expiring" is not implemented, since its threshold
+depends on the still-unconfirmed 90-day-style rule, AC-WARRANTY-001-03). Asset Detail
+(`P-004`) already had a "Warranty & Coverage" section showing the same Active/Expired
+state. This section of the Prototype is retained for historical/traceability purposes
+(it's what the field-list decision resolved against) but should **not** be read as a
+pending build target — no standalone Warranty screen is planned.
+
 ## Example RAISE Use Case
 
 The prototype should demonstrate the ability to identify assets

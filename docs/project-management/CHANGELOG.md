@@ -14,6 +14,13 @@ changes user-visible or API-visible behavior. Pure documentation-sync PRs
 
 ---
 
+## 2026-08-29
+
+### Added
+- **Warranty status on the Asset Registry** — the Assets list now shows
+  a "Warranty" column with each asset's expiry date and an Active/
+  Expired badge, sortable by date.
+
 ## 2026-08-28
 
 ### Added

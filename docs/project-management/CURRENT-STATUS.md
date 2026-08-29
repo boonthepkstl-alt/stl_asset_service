@@ -9,30 +9,31 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-08-28, after `CHECKPOINT-2026-08-28-005` (F-29 fix — not
-yet shipped via PR, see that checkpoint for status). The
-`BASELINE-CHECKPOINT-2026-08-24` scan is still the last full live
-re-verification against `git`/source. F-20 (checkpoint-coverage gap) is
-closed (R-04); F-21 (QR/Barcode invalid-code state) is closed (R-05);
-F-23 (Asset Registry — no Category filter) is closed (R-06); F-24 (Asset
-Detail missing Financial/Lifecycle sections) is closed (R-07); F-26
-(Custody History not append-only) is closed (R-08); F-25 (no Category &
-Hierarchy screen) is closed (R-09) — `RAISE-FR-ASSET-001`/`-002`/`-003`/
-`RAISE-FR-OPS-001` all `PASS` (Category & Hierarchy is a "By Category"
-tab inside Asset Management, not a separate page — folded in same-day
-per user request, see PR #44). A `/code-review` pass on the F-24 diff
-(PR #40) found 2 quality issues, both fixed same-day via PR #41, no
-behavior regressions.
+**As of:** 2026-08-29, after `CHECKPOINT-2026-08-29-001` (a fourth
+formal test-execution sweep — `TS-LOGIN` — not yet shipped via PR, see
+that checkpoint for status). The `BASELINE-CHECKPOINT-2026-08-24` scan
+is still the last full live re-verification against `git`/source. F-20
+(checkpoint-coverage gap) is closed (R-04); F-21 (QR/Barcode
+invalid-code state) is closed (R-05); F-23 (Asset Registry — no Category
+filter) is closed (R-06); F-24 (Asset Detail missing Financial/Lifecycle
+sections) is closed (R-07); F-26 (Custody History not append-only) is
+closed (R-08); F-25 (no Category & Hierarchy screen) is closed (R-09) —
+`RAISE-FR-ASSET-001`/`-002`/`-003`/`RAISE-FR-OPS-001` all `PASS`
+(Category & Hierarchy is a "By Category" tab inside Asset Management,
+not a separate page — folded in same-day per user request, see PR #44).
+A `/code-review` pass on the F-24 diff (PR #40) found 2 quality issues,
+both fixed same-day via PR #41, no behavior regressions.
 A third formal test-execution sweep (2026-08-28) covered `RAISE-FR-OPS-002`
-(Check-in/Check-out, now **`PASS`** 3/3) and `RAISE-FR-MAINT-001`
-(4-stage Maintenance workflow) — both previously only a pre-code-era
-`BLOCKED` guess, never re-verified. F-28 (Maintenance record list
-missing date/cost fields) is closed (R-10); F-29 (stage-progress
-indicator doesn't distinguish Current from Pending) is closed (R-11) —
-**`RAISE-FR-MAINT-001` now `PASS` on all 9 test cases**, up from a
-pre-code-era `BLOCKED` guess. All findings from the third sweep are now
-resolved. **F-22** (Executive Dashboard scope question) and **F-27**
-(Category sub-taxonomy, TBD) remain open from the earlier sweeps. Every
+(now **`PASS`** 3/3) and `RAISE-FR-MAINT-001` — F-28 (R-10) and F-29
+(R-11) are both resolved — **`RAISE-FR-MAINT-001` now `PASS` on all 9
+test cases**. A fourth sweep (2026-08-29) covered `RAISE-NFR-SEC-RBAC-001`
+(`TS-LOGIN`): `TC-LOGIN-03` (access-denied) **PASS**; `TC-LOGIN-01`/`-02`
+(valid/invalid login) **BLOCKED** for a *new* reason — `auth-service.ts`
+has no mock fallback and no backend/database is reachable in this
+environment (new infrastructure finding **F-30**, distinct from the
+pre-existing PRD-content block on auth mechanism/role-matrix). **F-22**
+(Executive Dashboard scope question) and **F-27** (Category
+sub-taxonomy, TBD) remain open from the earlier sweeps. Every
 development session should close out per
 [`SESSION-CLOSEOUT-PROTOCOL.md`](SESSION-CLOSEOUT-PROTOCOL.md), which is
 what keeps this section current.
@@ -75,7 +76,7 @@ intentionally out of MVP scope (Roadmap).
 | Asset Assign / Check-in | `RAISE-FR-ASSET-003` / `RAISE-FR-OPS-002` | ✅ Built, **PASS on all test cases for both requirements** — `RAISE-FR-ASSET-003` (3/3, 2026-08-26/-27, F-26 fixed: History tab renders from the same audit trail `RAISE-FR-AUDIT-001` builds, append-only) and `RAISE-FR-OPS-002` (3/3, 2026-08-28: Assign functions as the app's Check-out affordance, Check-in restores Available, both create Audit Log entries) |
 | Employee | supports `RAISE-FR-ASSET-003` | ✅ Built |
 | Maintenance / Ticket | `RAISE-FR-MAINT-001` | ✅ Built, **PASS on all 9 test cases** per formal test execution 2026-08-28 — all 4 stage transitions (submit/approve/reject/dispatch/status-update/complete) work correctly, the record list shows date/cost per record (F-28 fixed), and the stage-progress indicator now visually distinguishes Current from Pending (F-29 fixed). SLA/vendor/cost model remain separately TBD |
-| Auth | supports `RAISE-NFR-SEC-RBAC-001` | ✅ Built, demo-only — hardcoded single user, no real user store |
+| Auth | supports `RAISE-NFR-SEC-RBAC-001` | 🟡 Built, demo-only — hardcoded single user, no real user store. `TC-LOGIN-03` (access-denied for an unauthorized area) **PASS** per formal test execution 2026-08-29. `TC-LOGIN-01`/`-02` (valid/invalid login) **BLOCKED** — no mock fallback exists (unlike Asset/Employee/Ticket) and no backend/database is reachable in this dev environment (**F-30**) |
 | QR / Barcode lookup | `RAISE-FR-OPS-001` | ✅ Built, PASS on all test cases — [PR #29](https://github.com/boonthepkstl-alt/stl_asset_service/pull/29) + a follow-up F-21 fix (see `DEVELOPMENT-LOG.md` for the PR number once shipped). `GET /assets/:id` resolves by `code` too (dual lookup); real QR generation + Scan QR flow live on both Assets list and Asset Detail. `TC-OPS-001-01..03` all **PASS** — the invalid-code state (F-21) is fixed via a plausible-code-format check before lookup |
 | Audit Log | `RAISE-FR-AUDIT-001` | 🟡 Built — [PR #31](https://github.com/boonthepkstl-alt/stl_asset_service/pull/31) (Asset domain) + [PR #35](https://github.com/boonthepkstl-alt/stl_asset_service/pull/35) (Ticket domain). `GET /audit-logs` + recording on Asset create/assign/check-in and Ticket create/approve/dispatch/status-update. No update/delete path exists (immutability by omission). The testable subset of `TC-AUDIT-001-01..03` **PASSED** formal execution 2026-08-26; field taxonomy and the audit-review role gate remain TBD (unchanged, blocked on PRD) |
 | Executive Dashboard KPIs (first cut) | `RAISE-FR-EXEC-001` | 🟡 Built, narrow scope, FAIL on prototype match per formal test execution — [PR #33](https://github.com/boonthepkstl-alt/stl_asset_service/pull/33). `GET /dashboard/stats` computes status counts, expired-warranty count, and department/type distribution from real Asset data. Software License count still comes from the frontend's mock license service (no backend License table exists — Roadmap-only). NBV/Risk KPI formulas and Utilization's calculation mechanics remain **not started** (PRD §16 Q3/Q4/Q29 TBD). **`TC-EXEC-001-01/-02` FAILED formal execution 2026-08-26** — the built page has no tiles/sections named per Prototype P-014 at all (not even presence-only), a gap independent of the formula question — see `OPEN-FINDINGS.md` F-22 |
@@ -90,13 +91,15 @@ intentionally out of MVP scope (Roadmap).
 Triaged against [`RAISE-TRACEABILITY-MATRIX.md`](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md)
 §3–§5 — re-check that file before picking an item, it may have changed.
 
-**Buildable now:** None remaining from either the 2026-08-26 Asset-domain
-sweep or the 2026-08-28 TS-OPS-002/TS-MAINT-001 sweep — F-23 through
-F-29 are all now fixed (R-06 through R-11). F-22 (Executive Dashboard vs.
-Prototype P-014) and F-27 (Category sub-taxonomy) remain blocked on a
-business/design decision, not directly buildable. The next productive
-non-blocked action is a new test-execution sweep on a not-yet-tested
-suite (see `NEXT-STEP.md`).
+**Buildable now:** None remaining from the 2026-08-26 Asset-domain sweep,
+the 2026-08-28 TS-OPS-002/TS-MAINT-001 sweep, or the 2026-08-29 TS-LOGIN
+sweep — F-23 through F-29 are all now fixed (R-06 through R-11). F-22
+(Executive Dashboard vs. Prototype P-014), F-27 (Category sub-taxonomy),
+and F-30 (no Auth mock fallback) all remain open but aren't directly
+buildable without a decision: F-22/F-27 need a business/design call,
+F-30 needs a decision on whether adding a mock Auth path is worth doing
+(not yet requested). The next productive non-blocked action is a new
+test-execution sweep on a not-yet-tested suite (see `NEXT-STEP.md`).
 
 **Needs a scoped-down first cut:** None remaining — Audit Log (PR #31 +
 #35, now covering both Asset and Ticket domains) and Executive Dashboard

@@ -51,6 +51,7 @@ so the history of what was once open stays visible.
 | F-15 | API versioning | `/api` vs `/api/v1` undecided | `COMPANY-FOUNDATION-BASELINE.md` §5.1 | Open |
 | F-16 | DB migration tooling | `sql/pg/V*__*.sql` files are applied manually; no migration tool wired up | `RAISE-HIGH-LEVEL-ARCHITECTURE.md` §6 | Open |
 | F-17 | NFR backlog | Performance, availability, scalability, backup/recovery, encryption, monitoring, logging targets all undefined | PRD §10 | Open — acknowledged at every layer of the chain, not silently omitted |
+| F-30 | No mock fallback for Auth — TC-LOGIN-01/-02 can't be exercised in a dev sandbox | `auth-service.ts`'s `login()` always calls the real `go-template-main` backend (`POST /auth/login`) — unlike Asset/Employee/Ticket, there's no `Mock*Repository`-style fallback. With no Postgres reachable and no `docker-compose`/backend `.env.example`, valid/invalid login can't be tested without standing up the full backend + DB first. Confirmed via network trace (`ERR_CONNECTION_REFUSED`) during formal test execution 2026-08-29 | `frontend/src/services/auth-service.ts`; confirmed by browser test execution 2026-08-29 (TC-LOGIN-01/-02) | Open — not a PRD-scope item |
 
 ## Confirmed via Test Execution (not blocked on any PRD question)
 

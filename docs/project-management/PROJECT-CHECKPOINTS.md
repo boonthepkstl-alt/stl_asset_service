@@ -1995,11 +1995,50 @@ Test Case: `TC-DASH-01`/`-02`/`-03` — now **FAIL** (up from `BLOCKED`); `RAISE
 
 **Git:**
 Branch: `docs/tc-execution-dash`
-Commit: pending — predicted next PR after #50 (verify via `gh pr list` before treating as final).
+Commit: `e7e6d69` (implementation), merged via [PR #51](https://github.com/boonthepkstl-alt/stl_asset_service/pull/51).
 
 **Known Issues:** None new — this reproduces the already-tracked F-22 gap, confirmed from a second Prototype screen/AC group (P-002/`AC-DASH-*` in addition to P-014/`AC-EXEC-001-*`) against the same single built page.
 **Remaining Work:** F-22 (now broadened), F-27, F-30, and `AC-WARRANTY-001-03`'s 90-day threshold all remain open scope questions blocked on a business/design decision — no engineering task is currently unblocked and buildable from these.
-**Next Step:** Recalculate `NEXT-STEP.md`. Since this sweep found no new actionable item (only re-confirmed an existing finding), the next step is to check in with the user for direction on the now-uniformly-blocked open items rather than pick one unilaterally.
+**Next Step:** Recalculate `NEXT-STEP.md`. Since this sweep found no new actionable item (only re-confirmed an existing finding), the next step is to check in with the user for direction on the now-uniformly-blocked open items rather than pick one unilaterally. User chose to continue formal test execution — see `CHECKPOINT-2026-08-29-005` below.
+
+---
+
+## CHECKPOINT-2026-08-29-005
+
+**Phase:** Phase 6 — Oracle FA Integration & Reconciliation
+**Feature:** Formal test-case execution — `TS-ORACLE-001` (Oracle FA / Financial View, P-011)
+**Task:** Run the `TS-ORACLE-001` sweep (`TC-ORACLE-001-01`/`-02`/`-03`/`-04`) against the real running app, per explicit user instruction ("รัน TS-ORACLE-001 sweep ต่อ")
+
+**What was implemented:** N/A — this is test execution, not a build task.
+**What was modified:** `docs/07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md` (`RAISE-FR-ORACLE-001` row, `BLOCKED` → `FAIL` with full evidence), `docs/project-management/OPEN-FINDINGS.md` (new finding **F-31**).
+**What was fixed:** None.
+**What was added:** Finding **F-31** — the route the app maps to `RAISE-FR-ORACLE-001` (`/reconciliation`) renders `ModulePage`, a generic "foundation placeholder" `EmptyState` with no fields and no state logic, not an actual Financial View screen. Kept distinct from the pre-existing **F-04** (integration-mechanism question, PRD §16 Q6–Q10, still genuinely open) since this is a build gap confirmed by execution, independent of how the real Oracle integration would eventually work — same pattern already established by F-22 for the Dashboard.
+**What was removed:** None.
+
+**Files changed:** 2 files — `RAISE-TRACEABILITY-MATRIX.md`, `OPEN-FINDINGS.md`. No frontend/backend code touched.
+**Database changes:** None. **API changes:** None. **Frontend changes:** None (read-only verification against the already-shipped placeholder route).
+
+**Tests:**
+- Unit Test: None — this is manual/formal test-case execution, not automated test authoring.
+- Integration Test: None.
+- E2E Test: Manual browser execution (Chrome preview, `raise-frontend` dev server) of `TC-ORACLE-001-01`/`-02`/`-03`/`-04`'s exact steps — auth-bypass via `localStorage` (ADMIN role), navigated to `/reconciliation`, captured real page text via `get_page_text` (confirmed: "Oracle FA Reconciliation — foundation placeholder / Migrates from src/pages/Reconciliation.tsx once Oracle FA is connected in Phase 6."), also read `frontend/src/pages/_shared/ModulePage.tsx` source and checked Asset Detail's "Financial" section (added for F-24: only Purchase Cost/Current Value/Purchase Date, no Oracle-specific field) as the closest analog. Result: **all 4 FAIL**. `TC-ORACLE-001-01` — no "Asset Number"/"Acquisition Information"/"NBV"/"Depreciation"/"Oracle Source"/"Synchronization Status" field exists anywhere. `TC-ORACLE-001-02`/`-03`/`-04` — no "data unavailable"/"sync error"/"data conflict" state exists; the placeholder has no state logic at all.
+
+**Validation:**
+- Build: N/A (no code change). Lint: N/A. Test: N/A. Type Check: N/A.
+- Manual browser verification: as above — real page-text and source-code evidence captured before any documentation was updated.
+
+**Requirement Traceability:**
+PRD: `RAISE-FR-ORACLE-001`, PRD §16 Q6–Q10 (F-04, unaffected), Open Question 10a (`ReconciliationPage` mapping, unaffected).
+Acceptance Criteria: `AC-ORACLE-001-01..04` — all **FAIL** against the real built app.
+Test Case: `TC-ORACLE-001-01..04` — now **FAIL** (up from `BLOCKED`); `RAISE-TRACEABILITY-MATRIX.md`'s `RAISE-FR-ORACLE-001` row updated accordingly.
+
+**Git:**
+Branch: `docs/tc-execution-oracle`
+Commit: pending — predicted next PR after #51 (verify via `gh pr list` before treating as final).
+
+**Known Issues:** F-31 (new) — Oracle FA Financial View (P-011) is an unbuilt placeholder, distinct from F-04's integration-mechanism gap.
+**Remaining Work:** F-22, F-27, F-30, F-31, and `AC-WARRANTY-001-03`'s 90-day threshold all remain open items blocked on a business/design decision — no engineering task is currently unblocked and buildable from these.
+**Next Step:** Recalculate `NEXT-STEP.md`. Check in with the user on direction — the remaining low-signal suites (`TS-ALERT-001`, `TS-AI-SEARCH-001`, `TS-AI-STATES`) or a decision on one of the now-5 open scope questions.
 
 ---
 

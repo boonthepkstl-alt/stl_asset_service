@@ -178,6 +178,27 @@ export function AssetsPage() {
     },
     { key: 'location', header: 'Location', sortable: true, sortValue: (r) => r.location, render: (r) => <span className="text-surface-600">{r.location}</span> },
     {
+      key: 'warranty',
+      header: 'Warranty',
+      sortable: true,
+      sortValue: (r) => r.warrantyExpiry,
+      // AC-WARRANTY-001-01/-02 (RAISE-FR-WARRANTY-001, field list resolved 2026-08-29:
+      // warrantyExpiry only for MVP). Per explicit user direction, this isn't a standalone
+      // Warranty screen (P-010) -- it's added to the relevant asset page instead, same
+      // Active/Expired binary already shown on Asset Detail's "Warranty & Coverage" section
+      // (a 3rd "Expiring" state would need the still-unconfirmed 90-day-style threshold from
+      // AC-WARRANTY-001-03, which stays a separate open question -- not invented here).
+      render: (r) => {
+        const expired = new Date(r.warrantyExpiry) < new Date();
+        return (
+          <div className="flex flex-col gap-0.5">
+            <Badge variant={expired ? 'error' : 'success'} dot>{expired ? 'Expired' : 'Active'}</Badge>
+            <span className="text-caption text-surface-400">{r.warrantyExpiry}</span>
+          </div>
+        );
+      },
+    },
+    {
       key: 'value',
       header: 'Current Value',
       sortable: true,

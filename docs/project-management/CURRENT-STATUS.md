@@ -9,9 +9,10 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-08-29, after `CHECKPOINT-2026-08-29-002` (F-01 Warranty
-field-list resolution — not yet shipped via PR, see that checkpoint for
-status). The `BASELINE-CHECKPOINT-2026-08-24` scan is still the last
+**As of:** 2026-08-29, after `CHECKPOINT-2026-08-29-003` (F-01 Warranty
+implemented as an Asset Registry column, per user direction — not yet
+shipped via PR, see that checkpoint for status). The
+`BASELINE-CHECKPOINT-2026-08-24` scan is still the last
 full live re-verification against `git`/source. F-20 (checkpoint-coverage
 gap) is closed (R-04); F-21 (QR/Barcode invalid-code state) is closed
 (R-05); F-23 (Asset Registry — no Category filter) is closed (R-06);
@@ -34,11 +35,14 @@ environment (new infrastructure finding **F-30**, distinct from the
 pre-existing PRD-content block on auth mechanism/role-matrix).
 **F-01 (Warranty field list) is now closed (R-12)** — the user confirmed
 `warrantyExpiry` is the only MVP field, rejecting a draft 8-field
-proposal; this is recorded as PRD §16 Resolved Question 40 and
-propagated through the full deliverable chain via `/update-prd` +
-`/run-full-chain` (Design, Prototype, Acceptance Criteria, Test Plan,
-Test Cases, Traceability Matrix all updated) — no code change.
-`AC-WARRANTY-001-03`'s separate 90-day-window question remains open.
+proposal; recorded as PRD §16 Resolved Question 40, propagated through
+the full deliverable chain via `/update-prd` + `/run-full-chain`, then
+**implemented the same day**: per explicit user direction, no standalone
+P-010 screen was built — a "Warranty" column (expiry date + Active/
+Expired badge, sortable) was added to the Assets Registry list instead.
+`RAISE-FR-WARRANTY-001` is now **`PASS (partial)`** — `TC-WARRANTY-001-01/-02`
+pass; `AC-WARRANTY-001-03`'s separate 90-day-window question (and the
+"Expiring" 3rd state it would gate) remains open.
 **F-22** (Executive Dashboard scope question) and **F-27** (Category
 sub-taxonomy, TBD) remain open from the earlier sweeps. Every
 development session should close out per
@@ -82,6 +86,7 @@ intentionally out of MVP scope (Roadmap).
 | Category & Hierarchy | `RAISE-FR-ASSET-002` | ✅ Built (scoped), **PASS (scoped)** per formal test execution 2026-08-26/-28 — category *display* is consistent across screens (PASS), and a first-cut P-005 Category & Hierarchy view now exists (F-25 fixed: each category expands to its real assets) — a "By Category" tab inside Asset Management (`/assets`), folded in from an initial standalone `/categories` page per user request (same content, no separate route). Sub-category taxonomy remains intentionally out of scope (**F-27**, TBD per Prototype §11) |
 | Asset Assign / Check-in | `RAISE-FR-ASSET-003` / `RAISE-FR-OPS-002` | ✅ Built, **PASS on all test cases for both requirements** — `RAISE-FR-ASSET-003` (3/3, 2026-08-26/-27, F-26 fixed: History tab renders from the same audit trail `RAISE-FR-AUDIT-001` builds, append-only) and `RAISE-FR-OPS-002` (3/3, 2026-08-28: Assign functions as the app's Check-out affordance, Check-in restores Available, both create Audit Log entries) |
 | Employee | supports `RAISE-FR-ASSET-003` | ✅ Built |
+| Warranty | `RAISE-FR-WARRANTY-001` | ✅ Built (partial), **PASS (partial)** per formal test execution 2026-08-29 — field list resolved (F-01, `warrantyExpiry` only), implemented as a "Warranty" column on the Assets Registry list (`TC-WARRANTY-001-01/-02` pass), not a standalone P-010 screen (per user direction). The "Expiring" timeline state (3rd of 3) is not implemented — depends on `AC-WARRANTY-001-03`'s still-unconfirmed 90-day-style threshold |
 | Maintenance / Ticket | `RAISE-FR-MAINT-001` | ✅ Built, **PASS on all 9 test cases** per formal test execution 2026-08-28 — all 4 stage transitions (submit/approve/reject/dispatch/status-update/complete) work correctly, the record list shows date/cost per record (F-28 fixed), and the stage-progress indicator now visually distinguishes Current from Pending (F-29 fixed). SLA/vendor/cost model remain separately TBD |
 | Auth | supports `RAISE-NFR-SEC-RBAC-001` | 🟡 Built, demo-only — hardcoded single user, no real user store. `TC-LOGIN-03` (access-denied for an unauthorized area) **PASS** per formal test execution 2026-08-29. `TC-LOGIN-01`/`-02` (valid/invalid login) **BLOCKED** — no mock fallback exists (unlike Asset/Employee/Ticket) and no backend/database is reachable in this dev environment (**F-30**) |
 | QR / Barcode lookup | `RAISE-FR-OPS-001` | ✅ Built, PASS on all test cases — [PR #29](https://github.com/boonthepkstl-alt/stl_asset_service/pull/29) + a follow-up F-21 fix (see `DEVELOPMENT-LOG.md` for the PR number once shipped). `GET /assets/:id` resolves by `code` too (dual lookup); real QR generation + Scan QR flow live on both Assets list and Asset Detail. `TC-OPS-001-01..03` all **PASS** — the invalid-code state (F-21) is fixed via a plausible-code-format check before lookup |
@@ -98,16 +103,14 @@ intentionally out of MVP scope (Roadmap).
 Triaged against [`RAISE-TRACEABILITY-MATRIX.md`](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md)
 §3–§5 — re-check that file before picking an item, it may have changed.
 
-**Buildable now:** **A first-cut Warranty screen (P-010)** — F-01's field
-list is now resolved (`warrantyExpiry` only), unblocking real
-implementation for the first time; mirrors the F-25 Category & Hierarchy
-precedent (scoped-down first cut, not the full illustrative model).
-Otherwise, none remaining from the 2026-08-26 Asset-domain sweep, the
-2026-08-28 TS-OPS-002/TS-MAINT-001 sweep, or the 2026-08-29 TS-LOGIN
-sweep — F-23 through F-29 are all now fixed (R-06 through R-11). F-22
-(Executive Dashboard vs. Prototype P-014), F-27 (Category sub-taxonomy),
-and F-30 (no Auth mock fallback) all remain open but aren't directly
-buildable without a decision.
+**Buildable now:** None remaining — Warranty (F-01) is now implemented
+(Assets Registry column, R-12) as of the 2026-08-26 Asset-domain sweep,
+the 2026-08-28 TS-OPS-002/TS-MAINT-001 sweep, and the 2026-08-29
+TS-LOGIN sweep — F-23 through F-29 are all now fixed (R-06 through
+R-11). F-22 (Executive Dashboard vs. Prototype P-014), F-27 (Category
+sub-taxonomy), F-30 (no Auth mock fallback), and `AC-WARRANTY-001-03`'s
+90-day-window question all remain open but aren't directly buildable
+without a decision.
 
 **Needs a scoped-down first cut:** None remaining — Audit Log (PR #31 +
 #35, now covering both Asset and Ticket domains) and Executive Dashboard

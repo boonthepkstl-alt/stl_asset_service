@@ -19,6 +19,25 @@ describe('AssetsPage', () => {
     });
   });
 
+  // RAISE-FR-WARRANTY-001 / AC-WARRANTY-001-01/-02 (field list resolved 2026-08-29: F-01,
+  // OPEN-FINDINGS.md). Per explicit user direction, warranty status is added to the Asset
+  // Registry list rather than a standalone Warranty screen (P-010).
+  it('TC-WARRANTY-001-01/-02: the Warranty column shows the expiry date and Active/Expired state', async () => {
+    renderWithProviders(<AssetsPage />, { route: '/assets', path: '/assets' });
+    await waitFor(() => screen.getByText('MacBook Pro 16" M3'));
+
+    // a1 (and a2, same warranty batch): warrantyExpiry 2027-01-15 (Active).
+    expect(screen.getAllByText('2027-01-15').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Active').length).toBeGreaterThan(0);
+
+    // a13 (Dell OptiPlex 7090): warrantyExpiry 2024-03-15 (Expired) — search to bring it into view.
+    fireEvent.change(screen.getByPlaceholderText('Search by name or code...'), { target: { value: 'AST-0013' } });
+    await waitFor(() => {
+      expect(screen.getByText('2024-03-15')).toBeInTheDocument();
+    });
+    expect(screen.getByText('Expired')).toBeInTheDocument();
+  });
+
   // RAISE-FR-OPS-001 / AC-OPS-001-01..03, formally executed as TC-OPS-001-01..03
   // (CHECKPOINT-2026-08-26-001). TC-OPS-001-03 originally failed here (F-21,
   // OPEN-FINDINGS.md) -- these three lock in the fix.

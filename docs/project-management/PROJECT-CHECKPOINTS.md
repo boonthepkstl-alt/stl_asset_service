@@ -1914,11 +1914,53 @@ Test Case: `TC-WARRANTY-001-01`/`-02` — no longer `BLOCKED (partial)`; `TC-WAR
 
 **Git:**
 Branch: `docs/resolve-warranty-field-list`
-Commit: pending merge — part of predicted PR #49 (next in sequence after #48 at branch-creation time; verify against the actual PR before treating this as final).
+Commit: `89f1045` (implementation), merged via `2fa8449` (merge commit, [PR #49](https://github.com/boonthepkstl-alt/stl_asset_service/pull/49)). *(Corrected 2026-08-29, same turn as CHECKPOINT-2026-08-29-003 below — this line originally said "pending merge.")*
 
 **Known Issues:** None new. This closes the longest-standing uncompleted request in the session (first raised, then re-raised, across multiple earlier turns before the user actually supplied an answer).
-**Remaining Work:** `AC-WARRANTY-001-03`'s 90-day-window threshold remains open (separate question). No frontend work is implied by this checkpoint alone — the Warranty screen (P-010) itself is not yet built as a real page (still Prototype-only); building it, if desired, would be a separate, not-yet-requested task.
+**Remaining Work:** `AC-WARRANTY-001-03`'s 90-day-window threshold remains open (separate question). *(Superseded same-day — see `CHECKPOINT-2026-08-29-003` below: the user declined a standalone P-010 screen, choosing an Asset Registry column instead.)*
 **Next Step:** Recalculate `NEXT-STEP.md`. With F-01 now resolved and no other direct-fix findings open, candidates are: build a first-cut Warranty screen (P-010) now that its field list is confirmed (mirrors the F-25 Category & Hierarchy precedent), or continue formal test-execution sweeps on `TS-DASH`/the remaining TBD suites. Re-run the Next-Step Protocol rather than assuming either.
+
+---
+
+## CHECKPOINT-2026-08-29-003
+
+**Phase:** Phase 3 — Asset Management (Warranty as an Asset field)
+**Feature:** Warranty (`RAISE-FR-WARRANTY-001`) — Asset Registry implementation
+**Task:** Implement F-01's resolved Warranty field on the Asset Registry list, per explicit user direction ("ไม่ควรสร้างหน้า แต่เพิ่มในหน้าอุปกรณ์ที่เกี่ยวข้องพอ" — don't build a page, add it to the relevant asset page instead), declining the standalone P-010 screen `CHECKPOINT-2026-08-29-002` had offered as the default next step
+
+**What was implemented:** A new "Warranty" column on the Assets page's `DataTable` (`frontend/src/pages/Assets/index.tsx`), positioned after Location and before Current Value. Shows each asset's `warrantyExpiry` date and an Active/Expired `Badge`, computed the same way Asset Detail's pre-existing "Warranty & Coverage" section already does (`new Date(warrantyExpiry) < new Date()`); the column is sortable by expiry date. Deliberately implements only 2 of the 3 Warranty Timeline states named in `AC-WARRANTY-001-02` (Prototype P-010) — "Expiring" is not built, since its threshold depends on `AC-WARRANTY-001-03`'s still-unconfirmed 90-day-style rule (PRD §6.7's illustrative example, not a confirmed generalizable window). Also corrected `RAISE-PROTOTYPE.md` P-010 and `RAISE-TRACEABILITY-MATRIX.md`'s `RAISE-FR-WARRANTY-001` row to record this implementation-location decision — P-010 is retained for historical/traceability purposes only, explicitly marked not a pending build target.
+**What was modified:** `frontend/src/pages/Assets/index.tsx` (new Warranty column), `frontend/src/pages/Assets/index.test.tsx` (new test), `docs/03-prototype/RAISE-PROTOTYPE.md` (P-010 implementation-direction note), `docs/07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md` (`RAISE-FR-WARRANTY-001` row).
+**What was fixed:** N/A — this implements a newly-resolved requirement, not a defect.
+**What was added:** 1 new test (`TC-WARRANTY-001-01/-02` regression coverage); the Warranty column itself.
+**What was removed:** None.
+
+**Files changed:** 4 files — `Assets/index.tsx`, `Assets/index.test.tsx`, `RAISE-PROTOTYPE.md`, `RAISE-TRACEABILITY-MATRIX.md`.
+**Database changes:** None. **API changes:** None. **Frontend changes:** Assets Registry list now shows a Warranty column (expiry date + Active/Expired badge, sortable).
+
+**Tests:**
+- Unit Test: `frontend/src/pages/Assets/index.test.tsx` — 1 new (`TC-WARRANTY-001-01/-02`: Warranty column shows expiry date and Active/Expired state for both a not-yet-expired and an expired seeded asset) — 144/144 frontend tests passing overall.
+- Integration Test: None — no integration-test layer exists in this project.
+- E2E Test: None — no E2E framework exists.
+
+**Validation:**
+- Build: `npm run build` ✅
+- Lint: `npm run lint` ✅ (0 warnings)
+- Test: `npx vitest run` ✅ (144/144)
+- Type Check: `npx tsc --noEmit` ✅
+- Manual browser verification (Chrome preview, `raise-frontend` dev server): on `/assets`, confirmed the Warranty column renders for all visible rows with correct Active/Expired states matching each asset's real `warrantyExpiry`; clicked the column header and confirmed it sorts correctly (earliest expiry first).
+
+**Requirement Traceability:**
+PRD: `RAISE-FR-WARRANTY-001`
+Acceptance Criteria: `AC-WARRANTY-001-01`/`-02` — met, implemented and verified live (not just resolved on paper as of the prior checkpoint). `AC-WARRANTY-001-03` — unaffected, still blocked on the separate 90-day-window question.
+Test Case: `TC-WARRANTY-001-01`/`-02` — now **PASS** (up from resolved-but-unimplemented); `RAISE-TRACEABILITY-MATRIX.md`'s `RAISE-FR-WARRANTY-001` row updated from `BLOCKED (partial)` to `PASS (partial)`.
+
+**Git:**
+Branch: `docs/tc-execution-warranty-and-asset-registry-column`
+Commit: pending merge — part of predicted PR #50 (next in sequence after #49 at branch-creation time; verify against the actual PR before treating this as final).
+
+**Known Issues:** None new.
+**Remaining Work:** `AC-WARRANTY-001-03`'s 90-day-window threshold (and the "Expiring" state it would gate) remains a separate, still-open business question.
+**Next Step:** Recalculate `NEXT-STEP.md`. With F-01 fully resolved and implemented, remaining candidates are the same as before this checkpoint: a test-execution sweep on `TS-DASH`/the remaining TBD suites, or the other open scope questions (F-22, F-27, F-30). Re-run the Next-Step Protocol rather than assuming.
 
 ---
 

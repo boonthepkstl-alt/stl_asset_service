@@ -1874,11 +1874,51 @@ Test Case: `TC-LOGIN-01..03` — all 3 now have real, evidence-based results for
 
 **Git:**
 Branch: `docs/tc-execution-login`
-Commit: pending merge — part of predicted PR #48 (next in sequence after #47 at branch-creation time; verify against the actual PR before treating this as final).
+Commit: `434e481` (implementation), merged via `fde68b6` (merge commit, [PR #48](https://github.com/boonthepkstl-alt/stl_asset_service/pull/48)).
 
 **Known Issues:** F-30 is an infrastructure/testing-environment gap, not a product defect — no fix is implied by this checkpoint (unlike F-21/F-23/F-24/F-26/F-28/F-29, which were real product defects). It's tracked so a future session doesn't waste time assuming Login is testable in this sandbox the way Asset/Employee/Ticket are.
 **Remaining Work:** None for this task itself — it's a read-only test-execution pass. Whether to add a mock Auth path (mirroring `MockAssetRepository`'s pattern) is a separate, not-yet-requested engineering decision, not undertaken here without being asked.
 **Next Step:** Recalculate `NEXT-STEP.md`. With `TS-LOGIN` now also swept, remaining not-yet-tested suites are `TS-DASH` (likely re-confirms F-22's already-known gap) and several fully-TBD suites (`TS-WARRANTY-001`, `TS-ORACLE-001`, `TS-ALERT-001`, `TS-AI-SEARCH-001`, `TS-AI-STATES`) that would mostly return `NOT_IMPLEMENTED`. F-01 (Warranty field list) — the standing uncompleted request — is now a comparably strong candidate to resurface to the user.
+
+---
+
+## CHECKPOINT-2026-08-29-002
+
+**Phase:** Phase 3 — Asset Management (Warranty as an Asset field)
+**Feature:** Warranty (`RAISE-FR-WARRANTY-001`) — PRD field-list resolution
+**Task:** Resolve F-01 (Warranty field list beyond `warrantyExpiry` undefined, PRD §16 Q15) — the standing uncompleted business-decision request — and propagate the answer through the full deliverable chain, per explicit user instruction ("ตอบคำถาม F-01 ให้ด้วย" → proposed a draft field list for confirmation → user confirmed "ใช้แค่ warrantyExpiry พอสำหรับ MVP")
+
+**What was implemented:** This is a documentation/requirements-chain task, not a code change. Sequence:
+1. Presented the user a draft 8-field proposal (`warrantyExpiry`, `warrantyStartDate`, `warrantyProvider`/vendor, `warrantyType`, `coverageDetails`, `warrantyCost`, `claimContact`, `warrantyDocumentRef`), explicitly labeled as a proposal requiring confirmation, not a decision — per this project's "don't invent/guess business requirements" discipline.
+2. User confirmed: for MVP, `warrantyExpiry` is the only field; the other 7 are explicitly rejected, not deferred.
+3. Called `/update-prd` (`prd-writer` subagent) — recorded the answer as `RAISE-PRD.md` §16 Resolved Question 40 (resolving Open Question 15), updated `RAISE-FR-WARRANTY-001`'s Open Question field and §17 Requirement Traceability Matrix row (`TBD (field list)` → `APPROVED`).
+4. Called `/run-full-chain` — sequentially synced `RAISE-DESIGN.md` §5.2 (was: "exact warranty fields are TBD"), `RAISE-PROTOTYPE.md` P-010 (was: stale `Asset/Start Date/End Date/Status` mock field list matching the *rejected* draft — corrected to `warrantyExpiry` only), `RAISE-ACCEPTANCE-CRITERIA.md` AC-WARRANTY-001 (was: "Partially testable" asserting a 3-field shape — now "Testable," AC-WARRANTY-001-01/-02 rewritten to assert only `warrantyExpiry` and a UI-computed Active/Expiring/Expired timeline derived from it), `RAISE-TEST-PLAN.md` TS-WARRANTY-001 (field-list blocker resolved), `RAISE-TEST-CASES.md` TC-WARRANTY-001-01/-02 (rewritten off the stale Start/End/Status test data, `BLOCKED (partial)` → fully testable), and `RAISE-TRACEABILITY-MATRIX.md` (new Gap 7, resolved same-day).
+5. Deliberately preserved as a **separate, still-open** item: `AC-WARRANTY-001-03`'s 90-day expiry-window threshold — PRD §6.7's "90 days" is an illustrative business example, not a confirmed generalizable rule; this was *not* part of what the user confirmed, so it stays `NOT TESTABLE YET`/`BLOCKED (partial)`.
+No `## NEEDS_PRD_CONFIRMATION` signal was raised at any layer — this was a closing-out of an already-resolved decision, not a new gap requiring further business input.
+
+**What was modified:** `docs/01-requirements/RAISE-PRD.md` (v0.10 → 0.11), `docs/02-design/RAISE-DESIGN.md` (unchanged version — already had the resolution per subagent's check, v0.8), `docs/03-prototype/RAISE-PROTOTYPE.md` (v0.6 → 0.7), `docs/04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md` (v0.5 → 0.6), `docs/05-test-plan/RAISE-TEST-PLAN.md` (v0.5 → 0.6), `docs/06-test-cases/RAISE-TEST-CASES.md` (v0.5 → 0.6), `docs/07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md` (v0.5 → 0.6).
+**What was fixed:** F-01 (documentation/requirements resolution, not a code defect).
+**What was added:** PRD §16 Resolved Question 40; Traceability Matrix Gap 7 (resolved same-day it was opened).
+**What was removed:** The stale "Start Date/End Date/Status" Warranty field shape from `RAISE-PROTOTYPE.md` P-010 and `RAISE-TEST-CASES.md` TC-WARRANTY-001-01/-02 (which mirrored the rejected 8-field draft, not the confirmed answer).
+
+**Files changed:** 7 files — all in the `docs/01-requirements/` through `docs/07-traceability-matrix/` chain. No frontend/backend code touched.
+**Database changes:** None. **API changes:** None. **Frontend changes:** None — this is a requirements-documentation resolution; the `Asset.warrantyExpiry` field was already implemented before this task.
+
+**Tests:** N/A — no code changed. Each chain-layer sync was verified by directly reading the actual file after each subagent call (not trusting the subagent's self-report), per this project's standing verification discipline.
+**Validation:** Read-verified `RAISE-PRD.md` §16/§17, `RAISE-DESIGN.md` §5.2, `RAISE-PROTOTYPE.md` P-010/§27, `RAISE-ACCEPTANCE-CRITERIA.md` §13/AC index, `RAISE-TEST-PLAN.md` §7/§8, `RAISE-TEST-CASES.md` §12, and `RAISE-TRACEABILITY-MATRIX.md`'s `RAISE-FR-WARRANTY-001` row — each shows the resolved state, not just the subagent's claim of it.
+
+**Requirement Traceability:**
+PRD: `RAISE-FR-WARRANTY-001`, now `APPROVED` (was `TBD (field list)`).
+Acceptance Criteria: `AC-WARRANTY-001-01`/`-02` — now fully testable/met at the display level. `AC-WARRANTY-001-03` — unaffected, still blocked on the separate 90-day-window question.
+Test Case: `TC-WARRANTY-001-01`/`-02` — no longer `BLOCKED (partial)`; `TC-WARRANTY-001-03` — still `BLOCKED (partial)`, correctly unaffected.
+
+**Git:**
+Branch: `docs/resolve-warranty-field-list`
+Commit: pending merge — part of predicted PR #49 (next in sequence after #48 at branch-creation time; verify against the actual PR before treating this as final).
+
+**Known Issues:** None new. This closes the longest-standing uncompleted request in the session (first raised, then re-raised, across multiple earlier turns before the user actually supplied an answer).
+**Remaining Work:** `AC-WARRANTY-001-03`'s 90-day-window threshold remains open (separate question). No frontend work is implied by this checkpoint alone — the Warranty screen (P-010) itself is not yet built as a real page (still Prototype-only); building it, if desired, would be a separate, not-yet-requested task.
+**Next Step:** Recalculate `NEXT-STEP.md`. With F-01 now resolved and no other direct-fix findings open, candidates are: build a first-cut Warranty screen (P-010) now that its field list is confirmed (mirrors the F-25 Category & Hierarchy precedent), or continue formal test-execution sweeps on `TS-DASH`/the remaining TBD suites. Re-run the Next-Step Protocol rather than assuming either.
 
 ---
 

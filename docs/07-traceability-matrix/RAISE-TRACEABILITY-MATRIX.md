@@ -2,10 +2,10 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Requirement Traceability Matrix (RTM)
-**Version:** 0.5 Draft (full-chain re-sync pass — PRD §10 NFR backlog acknowledgment
-propagated to every layer; **Gap 6 from v0.4 re-verified and closed — see §6**)
+**Version:** 0.6 Draft (Warranty field-list gap closed — see Gap 7, §6; PRD Resolved
+Question 40 propagated end-to-end through Design/Prototype/AC/Test Plan/Test Cases)
 **Status:** Draft for Traceability Review
-**Source:** [`RAISE-TEST-CASES.md`](../06-test-cases/RAISE-TEST-CASES.md) v0.5, consolidated against [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.5, [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.5, [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.6, [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.8, and [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.9 — **the actual PRD file on disk was re-read in full for this revision, not assumed from downstream citations**, per this document's own standing practice since v0.4
+**Source:** [`RAISE-TEST-CASES.md`](../06-test-cases/RAISE-TEST-CASES.md) v0.6, consolidated against [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.6, [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.6, [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.7, [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.8, and [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.11 — **the actual PRD file on disk was re-read in full for this revision, not assumed from downstream citations**, per this document's own standing practice since v0.4
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
 
@@ -120,7 +120,7 @@ per v0.4 Gap 6's own closure criteria.
 | `RAISE-FR-OPS-001` | QR / Barcode | P0 / MVP | §4.2 Custody & Asset Operations | P-007 | AC-OPS-001 | TS-OPS-001 | TC-OPS-001-01..03 | **PASS** — re-executed 2026-08-26 (after the F-21 fix) against the real running app (`frontend/src/pages/Assets/index.tsx`'s Scan QR flow): TC-OPS-001-01 **PASS** (valid code `AST-0001` opens Asset Detail); TC-OPS-001-02 **PASS** (unmatched-but-well-formed code `AST-9999` shows "No asset found for..."); TC-OPS-001-03 **PASS** (malformed code `%%$#!!garbage///` now shows a distinct "Invalid code — ... doesn't look like a scannable asset code" message, without attempting a lookup — no longer the same message as TC-OPS-001-02). F-21 resolved (`OPEN-FINDINGS.md`). |
 | `RAISE-FR-OPS-002` | Check-in / Check-out | P0 / MVP | §4.2 Custody & Asset Operations | P-008 | AC-OPS-002 | TS-OPS-002 | TC-OPS-002-01..03 | **PASS** — executed 2026-08-28 against the real running app: TC-OPS-002-01 **PASS** (Assign — the app's actual affordance for identifying a holder and confirming, no distinct "Check-out" label exists but the behavior matches: custody state updated to the new holder on asset `a4`); TC-OPS-002-02 **PASS** (Check-in confirmed the asset's return to Available/Unassigned); TC-OPS-002-03 **PASS** (both operations created a corresponding Audit Log entry, verified visible with actor and timestamp). "Appropriate permission"/role-correctness remains untestable (PRD §16 Q22, unchanged) but does not block re-verifying the state-transition and audit-entry behavior itself. |
 | `RAISE-FR-MAINT-001` | Maintenance (4-stage workflow: User Requisition → Dept Approval (Delegated) → IT Dispatch → Technician Execution) | P0 / MVP | §5.1 Maintenance Domain | P-009 | AC-MAINT-001 (AC-MAINT-001-01..09) | TS-MAINT-001 | TC-MAINT-001-01..09 | **PASS** — executed 2026-08-28 against the real running app, all 9 cases: TC-MAINT-001-03 **PASS** (a new requisition submitted via "New IT Requisition" enters `PENDING_DEPT_APPROVAL`). TC-MAINT-001-04 **PASS** (Dept Sign-off → Approve transitions to `PENDING_IT_DISPATCH`). TC-MAINT-001-05 **PASS** (Reject on a separate `PENDING_DEPT_APPROVAL` ticket resulted in `REJECTED_BY_DEPT`, confirmed **not** `PENDING_IT_DISPATCH` — per this case's own scope, no claim is made about whether that specific resulting state is itself correct). TC-MAINT-001-06 **PASS** (Assign Tech + Dispatch transitions to `IN_PROGRESS`, one of the three allowed states). TC-MAINT-001-07 **PASS** (Update Status to On-Hold with a hold reason correctly reflects "3. On-Hold" and shows the reason banner). TC-MAINT-001-08 **PASS** (Mark Complete transitions to `DONE`/"4. Resolved & Closed" with resolution notes shown). TC-MAINT-001-01 originally **FAIL** — the Maintenance record list showed no date/cost fields (F-28) — **now PASS**, re-executed after the fix: each record now shows created date and cost, verified live on asset `a1`. TC-MAINT-001-09 originally **FAIL** — the 4-stage progress indicator (`GovernanceStep` in `TicketDetail/index.tsx`) only rendered two visual states (done ✓ vs. a plain gray circle with the step number), so the "Current" stage and any not-yet-reached "Pending" stage were visually identical (F-29) — **now PASS**, re-executed after the fix: the current stage is derived from `ticket.status` and rendered with a distinct brand-colored circle, ring, and a "Current" badge; verified live across `PENDING_DEPT_APPROVAL` (stage 2 current), `PENDING_IT_DISPATCH` (stage 3 current), and `DONE` (no stage marked current, all done). TC-MAINT-001-02 **PASS** (2 records for asset `a1` displayed in ascending-chronological order by observed outcome, though the underlying code has no explicit sort — `assetTickets` in `AssetDetail/index.tsx` is unsorted array-filter order — a fragility worth watching, not a current failure since the observed order was correct). **The 4-stage workflow shape and state model remain verified present in `RAISE-PRD.md` v0.9 §6 and §16 Resolved Question 33.** |
-| `RAISE-FR-WARRANTY-001` | Warranty | P0 / MVP | §5.2 Warranty Domain | P-010 | AC-WARRANTY-001 | TS-WARRANTY-001 | TC-WARRANTY-001-01..03 | BLOCKED (TC-WARRANTY-001-01 partial — field list TBD, PRD §16 Q15; TC-WARRANTY-001-03 partial — 90-day rule illustrative only) |
+| `RAISE-FR-WARRANTY-001` | Warranty | P0 / MVP | §5.2 Warranty Domain | P-010 | AC-WARRANTY-001 | TS-WARRANTY-001 | TC-WARRANTY-001-01..03 | **BLOCKED (partial) — field-list blocker resolved 2026-08-29.** `RAISE-PRD.md` §16 Resolved Question 40 (resolving Open Question 15) confirmed the Warranty domain has exactly one field on the Asset record for MVP, `warrantyExpiry`; a draft 8-field proposal was explicitly rejected, not deferred — verified propagated through `RAISE-DESIGN.md` §5.2, `RAISE-PROTOTYPE.md` §14 (P-010), `RAISE-ACCEPTANCE-CRITERIA.md` §13 (AC-WARRANTY-001-01/-02, now Testable), `RAISE-TEST-PLAN.md` §7/§8 (TS-WARRANTY-001), and `RAISE-TEST-CASES.md` §12 (TC-WARRANTY-001-01/-02, rewritten to `warrantyExpiry`-only, no longer BLOCKED). TC-WARRANTY-001-03 remains **BLOCKED (partial)** for a separate, still-open reason unaffected by this resolution — the 90-day expiry window used in the expiring-assets view is the PRD's illustrative business example (PRD §6.7), not a confirmed, generalizable threshold. |
 | `RAISE-FR-ORACLE-001` | Oracle FA Integration + NBV/Depreciation | P0 / MVP | §6 Oracle FA Integration (incl. §6.4 "Phase 6" label note) | P-011 | AC-ORACLE-001 | TS-ORACLE-001 | TC-ORACLE-001-01..04 | BLOCKED (TC-ORACLE-001-01 partial — integration method/mapping/sync/security TBD, PRD §16 Q6–Q10). `ReconciliationPage`↔`RAISE-FR-ORACLE-001` mapping remains an **explicitly open question in the real PRD** (Open Question 10a, verified present in `RAISE-PRD.md` v0.9 §9/§16) — the "Phase 6" label itself is confirmed not a PRD phase (§16 Resolved Question 37, verified present), but the substantive mapping question is not resolved by that and is not treated as resolved anywhere in this chain. |
 | `RAISE-FR-ALERT-001` | Alerts | P0 / MVP | §14 Alert Architecture | P-012 | AC-ALERT-001 | TS-ALERT-001 | TC-ALERT-001-01..02 | BLOCKED (TC-ALERT-001-01 partial — trigger rules TBD; role gate, PRD §16 Q22, TBD) |
 | `RAISE-FR-AUDIT-001` | Immutable Audit Log | P0 / MVP | §15 Audit Architecture | P-013 | AC-AUDIT-001 | TS-AUDIT-001 | TC-AUDIT-001-01..03 | **BLOCKED (partial)** — testable subset executed 2026-08-26 against the real running app, all **PASS**: TC-AUDIT-001-01 (checked in a real asset via the UI; confirmed via `auditService.listAuditLogs` that an entry was recorded with actor `"Demo Admin"`, action `"Asset checked in"`, entity `asset/a2`, and a real timestamp); TC-AUDIT-001-02 (no edit/delete control exists anywhere near a rendered audit entry, and neither `AuditRepository`/`MockAuditRepository` nor the backend router expose any update/delete method or route — verified by both UI inspection and code); TC-AUDIT-001-03 (the recorded entry is visible on Asset Detail's "Audit" tab to a logged-in user). Field taxonomy (Design §15) and role-gate correctness (PRD §16 Q22) remain BLOCKED — unchanged by this execution, since those require a PRD/Design answer, not more testing. |
@@ -342,6 +342,41 @@ the cost model, and delegated-approver configuration rules remain **TBD** —
 this is unchanged from every downstream document's own framing and is not a
 new finding, just confirmed as accurately carried through the whole chain.
 
+**Gap 7 (resolved 2026-08-29):** `RAISE-FR-WARRANTY-001`'s field list was
+previously PRD §16 Open Question 15 (TBD), which left `AC-WARRANTY-001-01`
+and `TC-WARRANTY-001-01`/`-02` BLOCKED (partial) and, upstream of that,
+`RAISE-PROTOTYPE.md` P-010 asserting a stale illustrative "Start Date, End
+Date, Status" three-field shape not confirmed anywhere. Resolved: Product/
+Business confirmed, for MVP, the Warranty domain has exactly one field on
+the Asset record — `warrantyExpiry` (already implemented on the Asset
+record) — and explicitly **rejected**, not deferred, a draft 8-field
+proposal (start date, provider/vendor, type, coverage details, cost, claim
+contact, document reference). Verified re-read directly at every layer this
+revision:
+
+- `RAISE-PRD.md` §16 Resolved Question 40 (resolving Open Question 15).
+- `RAISE-DESIGN.md` §5.2 (Warranty Domain) — resolved, `warrantyExpiry` only.
+- `RAISE-PROTOTYPE.md` §14 (P-010) — field list corrected to `warrantyExpiry`
+  only, stale three-field shape removed.
+- `RAISE-ACCEPTANCE-CRITERIA.md` §13 (AC-WARRANTY-001) — AC-WARRANTY-001-01/
+  -02 rewritten against `warrantyExpiry` and the UI-computed Warranty
+  Timeline state derived from it; both now Testable (no longer BLOCKED).
+- `RAISE-TEST-PLAN.md` §7/§8 (TS-WARRANTY-001) — field-list blocked-item
+  wording corrected from "field list TBD" to "field list resolved."
+- `RAISE-TEST-CASES.md` §12 (`TC-WARRANTY-001-01`/`-02`) — rewritten to test
+  only `warrantyExpiry` and its derived timeline state; no longer BLOCKED.
+
+**Still open, not part of Gap 7's closure:** `AC-WARRANTY-001-03` /
+`TC-WARRANTY-001-03`'s 90-day expiry-window threshold remains **BLOCKED
+(partial)** as a separate, unrelated question — the PRD §6.7 figure is an
+illustrative business example, not a confirmed, generalizable rule for the
+expiring-assets view. This distinction is called out explicitly at every
+layer above (AC §13, Test Plan §8, Test Cases §12) precisely so the two
+blockers are not conflated; this matrix preserves that distinction rather
+than treating the whole requirement as resolved. No new Open Question is
+proposed here — the existing 90-day-threshold question is already the
+correct vehicle for this residual item.
+
 ---
 
 ## 7. Chain Consistency Check
@@ -412,13 +447,28 @@ downstream document's citation of an upstream document's content:
   value, ten of the eleven have no dedicated Traceability ID" framing at
   every layer. ✅ No layer silently omits the backlog; no layer invents a
   value, mechanism, or Traceability ID that the PRD does not define.
+- **`RAISE-FR-WARRANTY-001` field list — thread walked end-to-end this
+  revision (2026-08-29):** PRD §16 Resolved Question 40 (resolving Open
+  Question 15) → Design §5.2 → Prototype §14 (P-010) → AC §13
+  (AC-WARRANTY-001-01/-02, now Testable) → Test Plan §7/§8 (TS-WARRANTY-001,
+  field-list blocker resolved) → Test Cases §12 (`TC-WARRANTY-001-01`/`-02`,
+  rewritten to `warrantyExpiry`-only, no longer BLOCKED). Every layer agrees
+  the Warranty domain has exactly one MVP field, `warrantyExpiry`, and that
+  the draft 8-field proposal was rejected, not deferred — no stale reference
+  to the old three-field ("Start Date, End Date, Status") shape remains
+  anywhere in the chain. `AC-WARRANTY-001-03`/`TC-WARRANTY-001-03`'s
+  separate 90-day-window blocker is consistently still BLOCKED (partial) at
+  every layer, correctly not conflated with the resolved field-list
+  question. Thread confirmed complete. See Gap 7 (§6) for the full closure
+  record.
 - Full re-walk confirmed no other Test Status cell in §3/§4 has drifted from
   the current text of `RAISE-TEST-CASES.md` v0.5 (cross-checked TC-by-TC):
-  `RAISE-FR-ASSET-001..003`, `RAISE-FR-OPS-001/002`, `RAISE-FR-WARRANTY-001`,
+  `RAISE-FR-ASSET-001..003`, `RAISE-FR-OPS-001/002`,
   `RAISE-FR-ORACLE-001`, `RAISE-FR-ALERT-001`, `RAISE-FR-AUDIT-001`,
   `RAISE-FR-EXEC-001`, `RAISE-AI-SEARCH-001`, `RAISE-FR-LIFE-001`,
   `RAISE-AI-DOC-001..004`, and the Dashboard/Navigation row all match their
-  respective TC Blocked-column text exactly.
+  respective TC Blocked-column text exactly (`RAISE-FR-WARRANTY-001` checked
+  separately above, given this revision's substantive change to that row).
 
 ---
 
@@ -540,11 +590,14 @@ Gaps 1–6 are all resolved and re-confirmed with no drift this revision.
 1. Resolve the remaining PRD Open Questions that block full testability of
    P0/MVP requirements (§3/§4 above) — in particular Q1 (asset master
    fields), Q3/Q4 residual KPI formulas, Q6–Q10 (Oracle integration design),
-   Q11–Q13 (Check-in/Check-out and custody model), Q15 (warranty fields),
-   Q18–Q20 (AI citation/confidence/conflict), Q21–Q23 (authentication
-   mechanism, role list, permission matrix content), Q24–Q25 (audit
-   taxonomy/retention), Open Question 10a (`ReconciliationPage` mapping),
-   and Open Question 20a (`RAISE-AI-DOC-004` matching/merge behavior).
+   Q11–Q13 (Check-in/Check-out and custody model), the still-open 90-day
+   expiry-window threshold underlying `AC-WARRANTY-001-03`/
+   `TC-WARRANTY-001-03` (Q15's field-list portion is now resolved — see
+   Gap 7, §6), Q18–Q20 (AI citation/confidence/conflict), Q21–Q23
+   (authentication mechanism, role list, permission matrix content), Q24–Q25
+   (audit taxonomy/retention), Open Question 10a (`ReconciliationPage`
+   mapping), and Open Question 20a (`RAISE-AI-DOC-004` matching/merge
+   behavior).
 2. Resolve the `RAISE-FR-ASSET-003` vs. `RAISE-FR-OPS-002` custody-writing-
    events exclusivity question (Gap 4) before any custody-writing code path
    beyond Check-in/Check-out is built.
@@ -561,20 +614,57 @@ Gaps 1–6 are all resolved and re-confirmed with no drift this revision.
 
 ## Document Status
 
-**Version:** 0.5 (full-chain re-sync pass — PRD §10 NFR backlog
-acknowledgment propagated to every layer; **Gap 6 from v0.4 re-verified and
-closed**)
+**Version:** 0.6 (Warranty field-list gap closed — Gap 7, §6; no other
+substantive gap opened or closed this revision)
 **Status:** Draft for Traceability Review
-**Source:** [`RAISE-TEST-CASES.md`](../06-test-cases/RAISE-TEST-CASES.md) v0.5 and full upstream chain — `RAISE-TEST-PLAN.md` v0.5, `RAISE-ACCEPTANCE-CRITERIA.md` v0.5, `RAISE-PROTOTYPE.md` v0.6, `RAISE-DESIGN.md` v0.8, and `RAISE-PRD.md` v0.9 (re-read directly this revision, in full, before consolidating anything else)
+**Source:** [`RAISE-TEST-CASES.md`](../06-test-cases/RAISE-TEST-CASES.md) v0.6 and full upstream chain — `RAISE-TEST-PLAN.md` v0.6, `RAISE-ACCEPTANCE-CRITERIA.md` v0.6, `RAISE-PROTOTYPE.md` v0.7, `RAISE-DESIGN.md` v0.8 (unchanged), and `RAISE-PRD.md` v0.11 (re-read directly this revision, in full, before consolidating anything else)
 **Reference:** VERSCAN only
-**Last Re-Verified:** 2026-08-23 (full-chain re-sync pass) — re-read
-`RAISE-TEST-CASES.md` v0.5, `RAISE-TEST-PLAN.md` v0.5,
-`RAISE-ACCEPTANCE-CRITERIA.md` v0.5, `RAISE-PROTOTYPE.md` v0.6,
-`RAISE-DESIGN.md` v0.8, and — critically, as has been this document's
-practice since v0.4 — `RAISE-PRD.md` v0.9 itself, end to end. All ID
-cross-checks in §7 re-run.
+**Last Re-Verified:** 2026-08-29 (Warranty field-list re-sync pass) — re-read
+`RAISE-TEST-CASES.md` v0.6, `RAISE-TEST-PLAN.md` v0.6,
+`RAISE-ACCEPTANCE-CRITERIA.md` v0.6, `RAISE-PROTOTYPE.md` v0.7,
+`RAISE-DESIGN.md` v0.8 (unchanged), and — critically, as has been this
+document's practice since v0.4 — `RAISE-PRD.md` v0.11 itself, end to end,
+specifically re-verifying the reverse chain (Test Cases → Test Plan → AC →
+Prototype → Design → PRD) for `RAISE-FR-WARRANTY-001`. The Warranty ID
+cross-check in §7 was re-run; no other row required re-verification this
+pass.
 
-**Change Log — v0.4 → v0.5 (this revision, 2026-08-23):**
+**Change Log — v0.5 → v0.6 (this revision, 2026-08-29):**
+
+1. **Gap 7 opened and closed in the same revision:** `RAISE-FR-WARRANTY-001`'s
+   field-list question (previously PRD §16 Open Question 15, TBD) is now
+   resolved via `RAISE-PRD.md` §16 Resolved Question 40 — for MVP, the
+   Warranty domain has exactly one field on the Asset record,
+   `warrantyExpiry` (already implemented on the Asset record); a draft
+   8-field proposal was explicitly rejected, not deferred. Verified
+   propagated through `RAISE-DESIGN.md` §5.2, `RAISE-PROTOTYPE.md` §14
+   (P-010), `RAISE-ACCEPTANCE-CRITERIA.md` §13 (AC-WARRANTY-001-01/-02, now
+   Testable), `RAISE-TEST-PLAN.md` §7/§8 (TS-WARRANTY-001), and
+   `RAISE-TEST-CASES.md` §12 (`TC-WARRANTY-001-01`/`-02`, no longer
+   BLOCKED). See Gap 7, §6, for the full record.
+2. **§3 `RAISE-FR-WARRANTY-001` row rewritten** to reflect the field-list
+   resolution while explicitly preserving `AC-WARRANTY-001-03`/
+   `TC-WARRANTY-001-03`'s separate, still-open 90-day-expiry-window blocker
+   as **BLOCKED (partial)**, unaffected by this resolution — the two
+   questions are not conflated.
+3. **§7 Chain Consistency Check** gained a dedicated `RAISE-FR-WARRANTY-001`
+   thread-walk bullet (PRD → Design → Prototype → AC → Test Plan → Test
+   Cases) confirming no stale reference to the previously-rejected 8-field
+   (or the older illustrative 3-field) shape remains anywhere in the chain.
+4. **§10 Next Step** recommendation list updated: Q15's field-list portion
+   is removed from the list of PRD Open Questions still blocking testability
+   (replaced with a reference to the narrower, still-open 90-day-window
+   threshold that remains under `AC-WARRANTY-001-03`).
+5. Version citations updated throughout: PRD v0.9 → v0.11, Prototype v0.6 →
+   v0.7, AC v0.5 → v0.6, Test Plan v0.5 → v0.6, Test Cases v0.5 → v0.6
+   (Design unchanged at v0.8). **No other gap in §6 was found open, closed,
+   or newly discovered during this pass** — Gaps 1–6 are unchanged from
+   v0.5 and are not re-litigated here; this revision's reverse-chain
+   re-verification was scoped to `RAISE-FR-WARRANTY-001` specifically, per
+   the instruction that prompted it, not a full re-walk of every
+   requirement (that full re-walk was last performed for v0.5, 2026-08-23).
+
+**Change Log — v0.4 → v0.5 (prior revision, 2026-08-23):**
 
 1. **Gap 6 closed.** v0.4 opened a critical finding that the actual
    `RAISE-PRD.md` file was v0.4 (not the v0.9 every downstream document

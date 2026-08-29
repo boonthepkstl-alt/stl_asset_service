@@ -9,15 +9,15 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-08-29, after `CHECKPOINT-2026-08-29-001` (a fourth
-formal test-execution sweep — `TS-LOGIN` — not yet shipped via PR, see
-that checkpoint for status). The `BASELINE-CHECKPOINT-2026-08-24` scan
-is still the last full live re-verification against `git`/source. F-20
-(checkpoint-coverage gap) is closed (R-04); F-21 (QR/Barcode
-invalid-code state) is closed (R-05); F-23 (Asset Registry — no Category
-filter) is closed (R-06); F-24 (Asset Detail missing Financial/Lifecycle
-sections) is closed (R-07); F-26 (Custody History not append-only) is
-closed (R-08); F-25 (no Category & Hierarchy screen) is closed (R-09) —
+**As of:** 2026-08-29, after `CHECKPOINT-2026-08-29-002` (F-01 Warranty
+field-list resolution — not yet shipped via PR, see that checkpoint for
+status). The `BASELINE-CHECKPOINT-2026-08-24` scan is still the last
+full live re-verification against `git`/source. F-20 (checkpoint-coverage
+gap) is closed (R-04); F-21 (QR/Barcode invalid-code state) is closed
+(R-05); F-23 (Asset Registry — no Category filter) is closed (R-06);
+F-24 (Asset Detail missing Financial/Lifecycle sections) is closed
+(R-07); F-26 (Custody History not append-only) is closed (R-08); F-25
+(no Category & Hierarchy screen) is closed (R-09) —
 `RAISE-FR-ASSET-001`/`-002`/`-003`/`RAISE-FR-OPS-001` all `PASS`
 (Category & Hierarchy is a "By Category" tab inside Asset Management,
 not a separate page — folded in same-day per user request, see PR #44).
@@ -31,8 +31,15 @@ test cases**. A fourth sweep (2026-08-29) covered `RAISE-NFR-SEC-RBAC-001`
 (valid/invalid login) **BLOCKED** for a *new* reason — `auth-service.ts`
 has no mock fallback and no backend/database is reachable in this
 environment (new infrastructure finding **F-30**, distinct from the
-pre-existing PRD-content block on auth mechanism/role-matrix). **F-22**
-(Executive Dashboard scope question) and **F-27** (Category
+pre-existing PRD-content block on auth mechanism/role-matrix).
+**F-01 (Warranty field list) is now closed (R-12)** — the user confirmed
+`warrantyExpiry` is the only MVP field, rejecting a draft 8-field
+proposal; this is recorded as PRD §16 Resolved Question 40 and
+propagated through the full deliverable chain via `/update-prd` +
+`/run-full-chain` (Design, Prototype, Acceptance Criteria, Test Plan,
+Test Cases, Traceability Matrix all updated) — no code change.
+`AC-WARRANTY-001-03`'s separate 90-day-window question remains open.
+**F-22** (Executive Dashboard scope question) and **F-27** (Category
 sub-taxonomy, TBD) remain open from the earlier sweeps. Every
 development session should close out per
 [`SESSION-CLOSEOUT-PROTOCOL.md`](SESSION-CLOSEOUT-PROTOCOL.md), which is
@@ -54,13 +61,13 @@ intentionally out of MVP scope (Roadmap).
 
 | Document | Version | Notes |
 |---|---|---|
-| [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) | 0.9 | Draft for Requirement Review |
-| [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) | 0.8 | Gap-closure pass against PRD v0.9 |
-| [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) | 0.6 | 17-screen inventory |
-| [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) | 0.5 | Re-synced against Prototype v0.6 |
-| [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) | 0.5 | Re-synced against AC v0.5 |
-| [`RAISE-TEST-CASES.md`](../06-test-cases/RAISE-TEST-CASES.md) | 0.5 | 62 test cases |
-| [`RAISE-TRACEABILITY-MATRIX.md`](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md) | 0.5 | All 6 gaps resolved |
+| [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) | 0.11 | Draft for Requirement Review — Warranty field list resolved (Resolved Question 40) |
+| [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) | 0.8 | Gap-closure pass against PRD v0.9; Warranty §5.2 resolved same-day as PRD v0.11 |
+| [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) | 0.7 | 17-screen inventory; P-010 Warranty field list corrected |
+| [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) | 0.6 | Re-synced against Prototype v0.7 — AC-WARRANTY-001 now Testable |
+| [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) | 0.6 | Re-synced against AC v0.6 |
+| [`RAISE-TEST-CASES.md`](../06-test-cases/RAISE-TEST-CASES.md) | 0.6 | 62 test cases; TC-WARRANTY-001-01/-02 unblocked |
+| [`RAISE-TRACEABILITY-MATRIX.md`](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md) | 0.6 | All 6 original gaps resolved; Gap 7 (Warranty field list) opened and resolved same-day |
 | [`RAISE-HIGH-LEVEL-ARCHITECTURE.md`](../08-architecture/RAISE-HIGH-LEVEL-ARCHITECTURE.md) | — | As-built, not versioned against PRD chain |
 | [`RAISE-API-DB-SPEC.md`](../09-api-db-spec/RAISE-API-DB-SPEC.md) | — | As-built |
 | [`RAISE-DETAILED-DESIGN.md`](../10-detailed-design/RAISE-DETAILED-DESIGN.md) | — | As-built |
@@ -91,15 +98,16 @@ intentionally out of MVP scope (Roadmap).
 Triaged against [`RAISE-TRACEABILITY-MATRIX.md`](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md)
 §3–§5 — re-check that file before picking an item, it may have changed.
 
-**Buildable now:** None remaining from the 2026-08-26 Asset-domain sweep,
-the 2026-08-28 TS-OPS-002/TS-MAINT-001 sweep, or the 2026-08-29 TS-LOGIN
+**Buildable now:** **A first-cut Warranty screen (P-010)** — F-01's field
+list is now resolved (`warrantyExpiry` only), unblocking real
+implementation for the first time; mirrors the F-25 Category & Hierarchy
+precedent (scoped-down first cut, not the full illustrative model).
+Otherwise, none remaining from the 2026-08-26 Asset-domain sweep, the
+2026-08-28 TS-OPS-002/TS-MAINT-001 sweep, or the 2026-08-29 TS-LOGIN
 sweep — F-23 through F-29 are all now fixed (R-06 through R-11). F-22
 (Executive Dashboard vs. Prototype P-014), F-27 (Category sub-taxonomy),
 and F-30 (no Auth mock fallback) all remain open but aren't directly
-buildable without a decision: F-22/F-27 need a business/design call,
-F-30 needs a decision on whether adding a mock Auth path is worth doing
-(not yet requested). The next productive non-blocked action is a new
-test-execution sweep on a not-yet-tested suite (see `NEXT-STEP.md`).
+buildable without a decision.
 
 **Needs a scoped-down first cut:** None remaining — Audit Log (PR #31 +
 #35, now covering both Asset and Ticket domains) and Executive Dashboard
@@ -112,9 +120,12 @@ Dashboard vs. Prototype P-014 tile/section-name mismatch) is *not* a
 business/design owner (should the prototype or the shipped page change?)
 before any code should be written toward it.
 
-**Blocked on a business decision:** Warranty, Alerts, Oracle FA Integration,
-Natural Language Search, Document Intelligence, User/Role Management
-backend (RBAC enforcement itself is Roadmap-confirmed, not just TBD).
+**Blocked on a business decision:** Alerts, Oracle FA Integration, Natural
+Language Search, Document Intelligence, User/Role Management backend
+(RBAC enforcement itself is Roadmap-confirmed, not just TBD). Warranty's
+field list is resolved (F-01, 2026-08-29, `warrantyExpiry` only) — a
+first-cut P-010 Warranty screen is now buildable, not blocked; only
+`AC-WARRANTY-001-03`'s separate 90-day-window rule remains open.
 
 **Explicitly out of scope (Roadmap/Pilot):** License Management, AI
 Decision Center, Risk Scoring, Lifecycle Prediction, Asset Disposal,

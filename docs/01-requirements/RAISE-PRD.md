@@ -226,7 +226,7 @@ determinable from the source are marked **TBD** rather than invented.
 | Source Reference | v0.1 draft §6.7 |
 | Traceability ID | RAISE-FR-WARRANTY-001 |
 | Business Example | Identifying assets whose warranty will expire within 90 days (source-cited use case). |
-| Open Question | Required warranty fields not defined — see [§16 Q15](#16-open-questions). |
+| Open Question | **Resolved 2026-08-29** — Required warranty fields are now confirmed: **`warrantyExpiry` only for MVP** (already implemented on the Asset record). No additional Warranty fields are in scope for MVP. See [§16 Resolved Question 40](#16-open-questions). |
 
 ### RAISE-FR-LICENSE-001 — Software / SaaS License Management
 
@@ -752,7 +752,10 @@ this PRD.
     Requisition → Dept Approval (Delegated) → IT Dispatch → Technician Execution) is now
     confirmed. SLA per stage, vendor model, cost model, and delegated-approver
     configuration rules remain open.
-15. What warranty fields are required?
+15. What warranty fields are required? — **Resolved 2026-08-29, see
+    [Resolved Question 40](#16-open-questions)**: for MVP, `warrantyExpiry` is the only
+    Warranty field. No additional fields (start date, provider/vendor, type, coverage
+    details, cost, claim contact, document reference, etc.) are in scope.
 15a. What is the license field model, renewal/expiry alert rule, seat/utilization
     tracking, and vendor/cost tracking for `RAISE-FR-LICENSE-001`? — new open question
     raised alongside the requirement's addition, 2026-08-21; see
@@ -958,6 +961,21 @@ recorded here explicitly so it is not mistaken for a resolved item alongside 29�
     priority, or scope item elsewhere in this PRD — it is a branding/identity fact,
     not a new `RAISE-FR-*`/`RAISE-AI-*`/`RAISE-NFR-*` requirement.
 
+40. **What warranty fields are required for `RAISE-FR-WARRANTY-001`?** — Raised as
+    [Open Question 15](#16-open-questions). A draft 8-field proposal (`warrantyExpiry`,
+    `warrantyStartDate`, `warrantyProvider`/vendor, `warrantyType`, `coverageDetails`,
+    `warrantyCost`, `claimContact`, `warrantyDocumentRef`) was presented to the business
+    as a candidate, not a decision. Business confirmed, **2026-08-29: only
+    `warrantyExpiry` is required for MVP** (already implemented on the Asset record) —
+    **the remaining seven draft fields (start date, provider/vendor, type, coverage
+    details, cost, claim contact, document reference) are explicitly rejected for MVP
+    scope**, not silently deferred. Any of those fields would require a future,
+    separately-confirmed product decision before being added to `RAISE-FR-WARRANTY-001`
+    or any downstream design/prototype/AC/test document. See
+    `RAISE-FR-WARRANTY-001` in [§6 Functional Requirements](#6-functional-requirements)
+    and the [§17 Requirement Traceability Matrix](#17-requirement-traceability-matrix) row
+    for the corresponding status update.
+
 ---
 
 ## 17. Requirement Traceability Matrix
@@ -970,7 +988,7 @@ recorded here explicitly so it is not mistaken for a resolved item alongside 29�
 | RAISE-FR-OPS-001 | QR / Barcode | MVP | P0 | APPROVED | v0.1 §6.4 |
 | RAISE-FR-OPS-002 | Check-in / Check-out | MVP | P0 | TBD (workflow detail) | v0.1 §6.5 |
 | RAISE-FR-MAINT-001 | Maintenance | MVP | P0 | Workflow shape confirmed; SLA/vendor/cost model still TBD | v0.1 §6.6; workflow shape confirmed 2026-08-21 |
-| RAISE-FR-WARRANTY-001 | Warranty | MVP | P0 | TBD (field list) | v0.1 §6.7 |
+| RAISE-FR-WARRANTY-001 | Warranty | MVP | P0 | APPROVED — field list confirmed 2026-08-29: `warrantyExpiry` only | v0.1 §6.7; field list confirmed 2026-08-29 (§16 Resolved Question 40) |
 | RAISE-FR-LICENSE-001 | Software / SaaS License Management | Roadmap | Not MVP-confirmed | ROADMAP — identity/scope confirmed 2026-08-21; field model/alert rules/vendor-cost tracking TBD | New requirement, not in v0.1 draft; added 2026-08-21, confirmed Roadmap-only |
 | RAISE-FR-ORACLE-001 | Oracle FA Integration | MVP | P0 | TBD (integration design) | v0.1 §6.8 |
 | RAISE-FR-ALERT-001 | Alerts | MVP | P0 | TBD (rules/channels) | v0.1 §6.9 |
@@ -1192,9 +1210,36 @@ implements the requirement; Test Case passes; Requirement Compliance Review pass
 
 ## Document Status
 
-**Version:** 0.10 (Draft for Requirement Review)
+**Version:** 0.11 (Draft for Requirement Review)
 **Status:** Draft for Requirement Review
 **Primary Source:** RAISE — Enterprise Asset Intelligence Platform — Final(1).pdf, ADT-RAISE Hackathon Pitch Day, 26 July 2026
+
+**Change Log — v0.10 → v0.11 (2026-08-29, business confirmation via direct chat
+conversation):**
+
+1. **`RAISE-FR-WARRANTY-001` warranty field list confirmed** (new
+   [§16 Resolved Question 40](#16-open-questions), resolving [Open Question 15]
+   (#16-open-questions)): a draft 8-field proposal (`warrantyExpiry`,
+   `warrantyStartDate`, `warrantyProvider`/vendor, `warrantyType`, `coverageDetails`,
+   `warrantyCost`, `claimContact`, `warrantyDocumentRef`) was presented to the business
+   as a candidate list, not a decision. Business confirmed: **only `warrantyExpiry` is
+   required for MVP** (already implemented on the Asset record) — **the remaining seven
+   draft fields are explicitly rejected for MVP scope**, not silently deferred. Any
+   future addition of those fields requires a separate, explicit business confirmation.
+   Updated in §6 (`RAISE-FR-WARRANTY-001` Open Question field, now resolved) and §17
+   (Traceability Matrix row, now `APPROVED`).
+2. **Impact on downstream documents:** `RAISE-DESIGN.md` §5.2 (Warranty Domain,
+   "The exact warranty fields are TBD") and its Open Questions list ("What fields are
+   required for warranty?") were marked TBD specifically because of this now-resolved
+   PRD gap — these should be updated to reflect the single-field (`warrantyExpiry`-only)
+   MVP scope. Downstream `RAISE-PROTOTYPE.md`, `RAISE-ACCEPTANCE-CRITERIA.md`,
+   `RAISE-TEST-PLAN.md`, `RAISE-TEST-CASES.md`, and `RAISE-TRACEABILITY-MATRIX.md` should
+   also be checked for any warranty-field assumptions beyond `warrantyExpiry` and
+   corrected to match. **This PRD update was scoped to `RAISE-PRD.md` only** per this
+   task's explicit boundary — the downstream documents above were not edited by this
+   change. Downstream synchronization (`/sync-design`, `/sync-prototype`,
+   `/sync-acceptance-criteria`, `/sync-test-plan`, `/sync-test-cases`,
+   `/sync-traceability-matrix`) should be run in a subsequent pass.
 
 **Change Log — v0.9 → v0.10 (2026-08-24, business confirmation via direct stakeholder
 conversation):**

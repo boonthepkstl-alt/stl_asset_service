@@ -1793,11 +1793,53 @@ Test Case: `TC-MAINT-001-01` — now **PASS** on re-execution; `RAISE-TRACEABILI
 
 **Git:**
 Branch: `frontend/fix-maintenance-record-date-cost`
-Commit: pending merge — part of predicted PR #46 (next in sequence after #45 at branch-creation time; verify against the actual PR before treating this as final).
+Commit: `2d27cb5` (implementation), merged via `049736d` (merge commit, [PR #46](https://github.com/boonthepkstl-alt/stl_asset_service/pull/46)). *(Corrected 2026-08-28, same turn as CHECKPOINT-2026-08-28-005 below — this line originally said "pending merge.")*
 
 **Known Issues:** None new.
 **Remaining Work:** F-29 (stage-progress indicator doesn't distinguish Current from Pending) remains open — not in scope for this task.
 **Next Step:** Recalculate `NEXT-STEP.md`. With F-28 resolved, F-29 is the last open finding from the 2026-08-28 sweep — a reasonable next candidate, but re-run the Next-Step Protocol rather than assuming.
+
+---
+
+## CHECKPOINT-2026-08-28-005
+
+**Phase:** Phase 4 — ITSM (IT Service Management / Maintenance)
+**Feature:** Maintenance (Ticket Detail — 4-Stage Governance & Audit Trail)
+**Task:** Fix F-29 — make the 4-stage progress indicator distinguish Current from Pending, per `AC-MAINT-001-09`/`TC-MAINT-001-09`, per explicit user instruction ("Start on F-29")
+
+**What was implemented:** `TicketDetailPage` (`frontend/src/pages/TicketDetail/index.tsx`) now derives a `currentStage` (2, 3, 4, or `null`) directly from `ticket.status` — `PENDING_DEPT_APPROVAL` → 2, `PENDING_IT_DISPATCH` → 3, `PLANNING`/`IN_PROGRESS`/`ON_HOLD` → 4, `DONE`/`REJECTED_BY_DEPT` → `null` (no current stage: all done, or the flow terminated at Stage 2) — no new field invented, `ticket.status` already fully determines this. `GovernanceStep` gained a `current?: boolean` prop and a 3rd visual state: a brand-colored circle with a ring (instead of the plain gray "not done" circle), a highlighted brand-tinted card background, and a "Current" `Badge`, applied only when `current` is true. Stage 1 (User Requisition) is always `done` once a ticket exists, so it never needs a `current` state.
+**What was modified:** `frontend/src/pages/TicketDetail/index.tsx` (`currentStage` derivation, `GovernanceStep`'s 4 call sites, `GovernanceStep` component).
+**What was fixed:** F-29.
+**What was added:** 1 new test in `frontend/src/pages/TicketDetail/index.test.tsx` (`TC-MAINT-001-09` regression coverage).
+**What was removed:** None.
+
+**Files changed:** 2 files — `frontend/src/pages/TicketDetail/index.tsx`, `frontend/src/pages/TicketDetail/index.test.tsx`.
+**Database changes:** None. **API changes:** None. **Frontend changes:** The 4-stage governance indicator on Ticket Detail now visually distinguishes the current stage from both done and pending stages.
+
+**Tests:**
+- Unit Test: `frontend/src/pages/TicketDetail/index.test.tsx` — 1 new (`TC-MAINT-001-09`: the current stage renders distinctly from a done stage) — 143/143 frontend tests passing overall.
+- Integration Test: None — no integration-test layer exists in this project.
+- E2E Test: None — no E2E framework exists.
+
+**Validation:**
+- Build: `npm run build` ✅
+- Lint: `npm run lint` ✅ (0 warnings)
+- Test: `npx vitest run` ✅ (143/143)
+- Type Check: `npx tsc --noEmit` ✅
+- Manual browser verification (Chrome preview, `raise-frontend` dev server): checked 3 tickets at different stages — `REQ-2026-0043` (`PENDING_DEPT_APPROVAL`) shows stage 2 with a "Current" badge, stages 3/4 plain; `REQ-2026-0042` (`IN_PROGRESS`) shows stage 4 current, stages 2/3 done; `REQ-2026-0040` (`DONE`) shows all 4 stages done, no "Current" badge anywhere.
+
+**Requirement Traceability:**
+PRD: `RAISE-FR-MAINT-001`
+Acceptance Criteria: `AC-MAINT-001-09` — met.
+Test Case: `TC-MAINT-001-09` — now **PASS** on re-execution; `RAISE-TRACEABILITY-MATRIX.md`'s `RAISE-FR-MAINT-001` row updated from `FAIL (partial)` (8/9) to full `PASS` (9/9) — all findings from the 2026-08-28 sweep are now resolved.
+
+**Git:**
+Branch: `frontend/fix-governance-current-stage-indicator`
+Commit: pending merge — part of predicted PR #47 (next in sequence after #46 at branch-creation time; verify against the actual PR before treating this as final).
+
+**Known Issues:** None new.
+**Remaining Work:** None from the 2026-08-28 sweep — F-28 and F-29 are both resolved. F-22 (Executive Dashboard scope question) and F-27 (Category sub-taxonomy) remain open from earlier sweeps.
+**Next Step:** Recalculate `NEXT-STEP.md`. With `RAISE-FR-OPS-002` and `RAISE-FR-MAINT-001` both now fully passing, likely next candidates are a new test-execution sweep on a not-yet-tested suite (e.g. `TS-LOGIN`, `TS-DASH`) or resurfacing F-01 (Warranty field list) — re-run the Next-Step Protocol rather than assuming either.
 
 ---
 

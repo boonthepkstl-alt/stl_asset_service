@@ -30,6 +30,10 @@ changes user-visible or API-visible behavior. Pure documentation-sync PRs
 - **Maintenance records now show date and cost** — each ticket listed
   under an asset's "Maintenance & Tickets" tab now shows when it was
   created and its cost (or "—" if it hasn't been dispatched yet).
+- **Ticket Detail's stage indicator now shows which stage is current** —
+  the 4-stage governance timeline previously showed a ticket's current
+  stage the same way as a stage that hasn't started yet; it's now
+  visually distinct (highlighted, with a "Current" label).
 
 ## 2026-08-27
 

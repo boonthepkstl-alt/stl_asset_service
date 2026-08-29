@@ -1964,6 +1964,45 @@ Commit: pending merge — part of predicted PR #50 (next in sequence after #49 a
 
 ---
 
+## CHECKPOINT-2026-08-29-004
+
+**Phase:** Phase 8 — Executive Dashboard & Reporting (Main Dashboard, P-002)
+**Feature:** Formal test-case execution — `TS-DASH` (Main Dashboard)
+**Task:** Run the `TS-DASH` sweep (`TC-DASH-01`/`-02`/`-03`) against the real running app, per explicit user instruction ("รัน TS-DASH sweep ต่อ")
+
+**What was implemented:** N/A — this is test execution, not a build task.
+**What was modified:** `docs/07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md` ("Dashboard / Navigation | Main Dashboard" row, `BLOCKED` → `FAIL` with full evidence), `docs/project-management/OPEN-FINDINGS.md` (F-22 broadened from "Executive Dashboard vs. P-014" only to also cover "Main Dashboard vs. P-002" — same underlying gap, same built page, confirmed from a second angle).
+**What was fixed:** None.
+**What was added:** None — no new finding number was minted, since Prototype P-002's tile/section spec (Total Assets/NBV/Risk/Warranty Expiry tiles; Asset by Category; Lifecycle/Maintenance Overview; Recent Alerts) was found to be word-for-word identical to P-014's, already tracked as F-22, and both map to the exact same single built page (`frontend/src/pages/Dashboard/index.tsx`).
+**What was removed:** None.
+
+**Files changed:** 2 files — `RAISE-TRACEABILITY-MATRIX.md`, `OPEN-FINDINGS.md`. No frontend/backend code touched.
+**Database changes:** None. **API changes:** None. **Frontend changes:** None (read-only verification against the already-shipped Dashboard page).
+
+**Tests:**
+- Unit Test: None — this is manual/formal test-case execution, not automated test authoring.
+- Integration Test: None.
+- E2E Test: Manual browser execution (Chrome preview, `raise-frontend` dev server) of `TC-DASH-01`/`-02`/`-03`'s exact steps — auth-bypass via `localStorage` (ADMIN role), navigated to `/dashboard`, captured real page text via `get_page_text`. Result: **all 3 FAIL**. `TC-DASH-01` — "Total Assets" tile present; NBV and Risk tiles entirely absent (not even presence-only); "Warranty Expiry" shown as differently-worded "Expired Warranty". `TC-DASH-02` — no section literally named "Asset by Category" or "Lifecycle / Maintenance Overview"; built page has "Asset Type"/"Department Distribution" and "Asset Lifecycle"/"Maintenance Calendar" instead. `TC-DASH-03` — no "Recent Alerts" section; built page has "Recent Activities" and "Pending Approvals" instead.
+
+**Validation:**
+- Build: N/A (no code change). Lint: N/A. Test: N/A. Type Check: N/A.
+- Manual browser verification: as above — real page-text evidence captured before any documentation was updated.
+
+**Requirement Traceability:**
+PRD: PRD §8 (KPI concepts only), §13 Executive Intelligence (KPI reuse).
+Acceptance Criteria: `AC-DASH-01`/`-02`/`-03` — all **FAIL** against the real built page.
+Test Case: `TC-DASH-01`/`-02`/`-03` — now **FAIL** (up from `BLOCKED`); `RAISE-TRACEABILITY-MATRIX.md`'s "Main Dashboard" row updated accordingly.
+
+**Git:**
+Branch: `docs/tc-execution-dash`
+Commit: pending — predicted next PR after #50 (verify via `gh pr list` before treating as final).
+
+**Known Issues:** None new — this reproduces the already-tracked F-22 gap, confirmed from a second Prototype screen/AC group (P-002/`AC-DASH-*` in addition to P-014/`AC-EXEC-001-*`) against the same single built page.
+**Remaining Work:** F-22 (now broadened), F-27, F-30, and `AC-WARRANTY-001-03`'s 90-day threshold all remain open scope questions blocked on a business/design decision — no engineering task is currently unblocked and buildable from these.
+**Next Step:** Recalculate `NEXT-STEP.md`. Since this sweep found no new actionable item (only re-confirmed an existing finding), the next step is to check in with the user for direction on the now-uniformly-blocked open items rather than pick one unilaterally.
+
+---
+
 ## Level 2 — Feature Checkpoints
 
 ### FEATURE-CHECKPOINT-project-tracking-governance

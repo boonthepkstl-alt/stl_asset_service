@@ -9,8 +9,8 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-08-29, after `CHECKPOINT-2026-08-29-006` (`TS-ALERT-001`
-sweep — both test cases FAIL, new finding F-32; not yet shipped via PR,
+**As of:** 2026-08-29, after `CHECKPOINT-2026-08-29-007` (`TS-AI-SEARCH-001`
+sweep — all 3 test cases FAIL, new finding F-33; not yet shipped via PR,
 see that checkpoint for status). The
 `BASELINE-CHECKPOINT-2026-08-24` scan is still the last
 full live re-verification against `git`/source. F-20 (checkpoint-coverage
@@ -65,10 +65,20 @@ header bell-icon dropdown is hardcoded empty with a static "later phase"
 message. New finding **F-32** — distinct from the pre-existing **F-05**
 (trigger-rule question, PRD §6.9, still genuinely open), and worse than
 F-31's Oracle FA placeholder since this route is entirely unbuilt.
+An eighth sweep (2026-08-29) covered `TS-AI-SEARCH-001` (Natural Language
+Search, P-015): all 3 test cases **FAIL** — the header "AI Assistant"
+drawer accepts no input at all (static placeholder only); the Assets
+page's "Ask AI" box is a hardcoded keyword-to-filter matcher (legacy
+ESAPS content), not a natural-language answer engine — no "Sources /
+Data Used" section, no affected-asset count, no Asset/Warranty/Age/
+Maintenance/Status table for the PRD's illustrative 90-day question.
+New finding **F-33** — distinct from the pre-existing **F-06** (citation-
+precision/format question, PRD §16 Q18, still genuinely open).
 **F-22** (Executive/Main Dashboard scope question, now confirmed from two
 Prototype screens), **F-27** (Category sub-taxonomy, TBD), **F-31**
-(Oracle FA Financial View not built), and **F-32** (Alerts not built)
-remain open from the recent sweeps.
+(Oracle FA Financial View not built), **F-32** (Alerts not built), and
+**F-33** (AI Assistant doesn't answer questions) remain open from the
+recent sweeps.
 Every
 development session should close out per
 [`SESSION-CLOSEOUT-PROTOCOL.md`](SESSION-CLOSEOUT-PROTOCOL.md), which is
@@ -119,7 +129,7 @@ intentionally out of MVP scope (Roadmap).
 | Executive Dashboard KPIs (first cut) | `RAISE-FR-EXEC-001` | 🟡 Built, narrow scope, FAIL on prototype match per formal test execution — [PR #33](https://github.com/boonthepkstl-alt/stl_asset_service/pull/33). `GET /dashboard/stats` computes status counts, expired-warranty count, and department/type distribution from real Asset data. Software License count still comes from the frontend's mock license service (no backend License table exists — Roadmap-only). NBV/Risk KPI formulas and Utilization's calculation mechanics remain **not started** (PRD §16 Q3/Q4/Q29 TBD). **`TC-EXEC-001-01/-02` FAILED formal execution 2026-08-26, and `TC-DASH-01..03` FAILED formal execution 2026-08-29** (P-002 Main Dashboard — word-for-word identical tile/section spec to P-014, same built page) — the built page has no tiles/sections named per Prototype P-002/P-014 at all (not even presence-only), a gap independent of the formula question — see `OPEN-FINDINGS.md` F-22 |
 | Oracle FA Integration | `RAISE-FR-ORACLE-001` | 🔴 Integration method/mapping/sync/security all TBD (F-04), **and `TC-ORACLE-001-01..04` FAILED formal execution 2026-08-29** — the `/reconciliation` route renders a generic "foundation placeholder" `EmptyState` (`frontend/src/pages/_shared/ModulePage.tsx`), not an actual Financial View screen; no field or state from `AC-ORACLE-001-01..04` exists at all. A distinct build gap from F-04 — see `OPEN-FINDINGS.md` F-31 |
 | Alerts | `RAISE-FR-ALERT-001` | 🔴 Trigger rules/channels all TBD (F-05), **and `TC-ALERT-001-01..02` FAILED formal execution 2026-08-29** — the "Notification Center" route (`/notifications`) renders the app's generic 404 page, not even a placeholder stub; the header bell-icon dropdown is hardcoded empty. No alert is ever listed with severity/description/asset per `AC-ALERT-001-01..02`. A distinct build gap from F-05, worse than F-31's Oracle FA placeholder — see `OPEN-FINDINGS.md` F-32 |
-| Natural Language Search | `RAISE-AI-SEARCH-001` | Citation precision/format TBD |
+| Natural Language Search | `RAISE-AI-SEARCH-001` | 🔴 Citation precision/format TBD (F-06), **and `TC-AI-SEARCH-001-01..03` FAILED formal execution 2026-08-29** — the header "AI Assistant" drawer accepts no input (static placeholder only); the Assets page's "Ask AI" box is a hardcoded keyword-to-filter matcher (legacy ESAPS content), not a natural-language answer engine. No field or state from `AC-AI-SEARCH-001-01..03` exists at all. A distinct build gap from F-06 — see `OPEN-FINDINGS.md` F-33 |
 | Document Intelligence | `RAISE-AI-DOC-001..004` | Confidence thresholds / field lists / matching rules undefined |
 | Asset Lifecycle Connectivity | `RAISE-FR-LIFE-001` | Partially blocked; Disposal stage confirmed Roadmap |
 | User/Role Management | supports `RAISE-NFR-SEC-RBAC-001` | Backend RBAC enforcement confirmed Roadmap, not MVP |
@@ -136,11 +146,12 @@ TS-LOGIN sweep — F-23 through F-29 are all now fixed (R-06 through
 R-11). F-22 (Executive/Main Dashboard vs. Prototype P-002/P-014,
 reconfirmed 2026-08-29 via TS-DASH), F-27 (Category sub-taxonomy), F-30
 (no Auth mock fallback), F-31 (Oracle FA Financial View not built,
-2026-08-29), F-32 (Alerts not built, 2026-08-29), and
-`AC-WARRANTY-001-03`'s 90-day-window question all remain open but aren't
-directly buildable without a decision — as of this sweep, every
-remaining open item is uniformly blocked on a business/design decision,
-none is a "buildable now" engineering task.
+2026-08-29), F-32 (Alerts not built, 2026-08-29), F-33 (AI Assistant
+doesn't answer questions, 2026-08-29), and `AC-WARRANTY-001-03`'s
+90-day-window question all remain open but aren't directly buildable
+without a decision — as of this sweep, every remaining open item is
+uniformly blocked on a business/design decision, none is a "buildable
+now" engineering task.
 
 **Needs a scoped-down first cut:** None remaining — Audit Log (PR #31 +
 #35, now covering both Asset and Ticket domains) and Executive Dashboard

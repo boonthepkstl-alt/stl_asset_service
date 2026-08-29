@@ -2073,11 +2073,50 @@ Test Case: `TC-ALERT-001-01..02` — now **FAIL** (up from `BLOCKED`); `RAISE-TR
 
 **Git:**
 Branch: `docs/tc-execution-alert`
-Commit: pending — predicted next PR after #52 (verify via `gh pr list` before treating as final).
+Commit: `e7aa354` (implementation), merged via [PR #53](https://github.com/boonthepkstl-alt/stl_asset_service/pull/53).
 
 **Known Issues:** F-32 (new) — Alerts (P-012) is entirely unbuilt (404, no placeholder), distinct from F-05's trigger-rule gap.
 **Remaining Work:** F-22, F-27, F-30, F-31, F-32, and `AC-WARRANTY-001-03`'s 90-day threshold all remain open items blocked on a business/design decision — no engineering task is currently unblocked and buildable from these.
-**Next Step:** Recalculate `NEXT-STEP.md`. Check in with the user on direction — the remaining low-signal suites (`TS-AI-SEARCH-001`, `TS-AI-STATES`) or a decision on one of the now-6 open scope questions.
+**Next Step:** Recalculate `NEXT-STEP.md`. Check in with the user on direction — the remaining low-signal suites (`TS-AI-SEARCH-001`, `TS-AI-STATES`) or a decision on one of the now-6 open scope questions. User chose to continue formal test execution — see `CHECKPOINT-2026-08-29-007` below.
+
+---
+
+## CHECKPOINT-2026-08-29-007
+
+**Phase:** Phase 9 — AI Document Intelligence & Search
+**Feature:** Formal test-case execution — `TS-AI-SEARCH-001` (Natural Language Search, P-015)
+**Task:** Run the `TS-AI-SEARCH-001` sweep (`TC-AI-SEARCH-001-01`/`-02`/`-03`) against the real running app, per explicit user instruction ("รัน TS-AI-SEARCH-001 sweep ต่อ")
+
+**What was implemented:** N/A — this is test execution, not a build task.
+**What was modified:** `docs/07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md` (`RAISE-AI-SEARCH-001` row — `TS-AI-SEARCH-001` portion updated `BLOCKED` → `FAIL` with full evidence; `TS-AI-STATES` portion left `BLOCKED`, not yet executed), `docs/project-management/OPEN-FINDINGS.md` (new finding **F-33**).
+**What was fixed:** None.
+**What was added:** Finding **F-33** — two distinct "AI" surfaces exist (header "AI Assistant" drawer, and Assets page's "Ask AI" keyword filter), neither implementing P-015's natural-language Q&A spec. Kept distinct from the pre-existing **F-06** (citation-precision/format question, PRD §16 Q18, still genuinely open) since this is a build gap confirmed by execution.
+**What was removed:** None.
+
+**Files changed:** 2 files — `RAISE-TRACEABILITY-MATRIX.md`, `OPEN-FINDINGS.md`. No frontend/backend code touched.
+**Database changes:** None. **API changes:** None. **Frontend changes:** None (read-only verification against the already-shipped AI Assistant drawer and Assets page "Ask AI" box).
+
+**Tests:**
+- Unit Test: None — this is manual/formal test-case execution, not automated test authoring.
+- Integration Test: None.
+- E2E Test: Manual browser execution (Chrome preview, `raise-frontend` dev server) of `TC-AI-SEARCH-001-01`/`-02`/`-03`'s exact steps — auth-bypass via `localStorage` (ADMIN role). Opened the header "AI Assistant" drawer on the Dashboard: confirmed via screenshot it has no input field at all, only a static placeholder message. Navigated to Assets, typed the PRD's exact illustrative question ("Which notebooks expire within 90 days?") into the page's "Ask AI" box and submitted it: confirmed (via screenshot and reading `handleAISearch` in `frontend/src/pages/Assets/index.tsx`) it only performs hardcoded keyword-to-filter matching ("notebook" → `Type = Laptop`), narrowing the existing Asset list — no answer, no "Sources / Data Used" section, no affected-asset count, no Asset/Warranty/Age/Maintenance/Status table. Result: **all 3 FAIL**.
+
+**Validation:**
+- Build: N/A (no code change). Lint: N/A. Test: N/A. Type Check: N/A.
+- Manual browser verification: as above — real screenshot and source-code evidence captured before any documentation was updated.
+
+**Requirement Traceability:**
+PRD: `RAISE-AI-SEARCH-001`, PRD §16 Q18 (F-06, unaffected).
+Acceptance Criteria: `AC-AI-SEARCH-001-01..03` — all **FAIL** against the real built app.
+Test Case: `TC-AI-SEARCH-001-01..03` — now **FAIL** (up from `BLOCKED`); `RAISE-TRACEABILITY-MATRIX.md`'s `RAISE-AI-SEARCH-001` row updated accordingly (`TS-AI-STATES` portion unaffected, still `BLOCKED`).
+
+**Git:**
+Branch: `docs/tc-execution-ai-search`
+Commit: pending — predicted next PR after #53 (verify via `gh pr list` before treating as final).
+
+**Known Issues:** F-33 (new) — AI Assistant (P-015) doesn't answer natural-language questions; two non-matching surfaces exist instead, distinct from F-06's citation-format gap.
+**Remaining Work:** F-22, F-27, F-30, F-31, F-32, F-33, and `AC-WARRANTY-001-03`'s 90-day threshold all remain open items blocked on a business/design decision — no engineering task is currently unblocked and buildable from these. `TS-AI-STATES` (the last unexecuted suite) remains.
+**Next Step:** Recalculate `NEXT-STEP.md`. Check in with the user on direction — the last remaining suite (`TS-AI-STATES`) or a decision on one of the now-7 open scope questions.
 
 ---
 

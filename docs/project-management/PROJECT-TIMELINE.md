@@ -123,12 +123,12 @@ happened. Every phase's **Checkpoint** row should link to a real entry in
 | **Target Date** | Not scheduled |
 | **Actual Start** | — |
 | **Actual Completion** | — |
-| **Status** | ⚪ Not started — blocked on open PRD questions |
+| **Status** | ⚪ Not started — blocked on open PRD questions. Formal test execution confirms the gap is worse than "not started": no placeholder exists at all |
 | **Scope** | `RAISE-FR-ALERT-001` — surfacing conditions like approaching warranty expiry or maintenance SLA breach to an "authorized user." Trigger rules and delivery channels are undefined; multi-channel delivery (Email/Teams/LINE) is confirmed Roadmap, not MVP. |
 | **Deliverables** | None yet. |
 | **Dependencies** | Phase 3 (Warranty data) and Phase 4 (Maintenance SLA data) — Alerts has no data of its own to watch until those exist. |
-| **Risks** | Trigger-rule thresholds are unconfirmed — building this before Phase 3/4's own TBDs (warranty field list, SLA model) resolve risks building alerts against data shapes that later change. Role gate for who receives alerts shares the same open question as Phases 2/4. |
-| **Checkpoint** | None yet — not started. |
+| **Risks** | Trigger-rule thresholds are unconfirmed — building this before Phase 3/4's own TBDs (warranty field list, SLA model) resolve risks building alerts against data shapes that later change. Role gate for who receives alerts shares the same open question as Phases 2/4. Formal test execution (`TC-ALERT-001-01/-02`, 2026-08-29) confirms a second, independent gap: the sidebar "Notification Center" route (`/notifications`) renders the app's generic 404 page — not even a `ModulePage`-style placeholder like Oracle FA (Phase 6) has — and the header bell-icon dropdown is hardcoded empty. Tracked as **F-32**, distinct from F-05's trigger-rule question. |
+| **Checkpoint** | `CHECKPOINT-2026-08-29-006` (`TS-ALERT-001` sweep, docs-only, new finding F-32) — see `PROJECT-CHECKPOINTS.md`. Otherwise none yet — not started. |
 
 ## Phase 8 — Executive Dashboard & Reporting
 

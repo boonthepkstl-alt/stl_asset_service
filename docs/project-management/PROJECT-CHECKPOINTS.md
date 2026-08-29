@@ -2034,11 +2034,50 @@ Test Case: `TC-ORACLE-001-01..04` — now **FAIL** (up from `BLOCKED`); `RAISE-T
 
 **Git:**
 Branch: `docs/tc-execution-oracle`
-Commit: pending — predicted next PR after #51 (verify via `gh pr list` before treating as final).
+Commit: `d59363c` (implementation), merged via [PR #52](https://github.com/boonthepkstl-alt/stl_asset_service/pull/52).
 
 **Known Issues:** F-31 (new) — Oracle FA Financial View (P-011) is an unbuilt placeholder, distinct from F-04's integration-mechanism gap.
 **Remaining Work:** F-22, F-27, F-30, F-31, and `AC-WARRANTY-001-03`'s 90-day threshold all remain open items blocked on a business/design decision — no engineering task is currently unblocked and buildable from these.
-**Next Step:** Recalculate `NEXT-STEP.md`. Check in with the user on direction — the remaining low-signal suites (`TS-ALERT-001`, `TS-AI-SEARCH-001`, `TS-AI-STATES`) or a decision on one of the now-5 open scope questions.
+**Next Step:** Recalculate `NEXT-STEP.md`. Check in with the user on direction — the remaining low-signal suites (`TS-ALERT-001`, `TS-AI-SEARCH-001`, `TS-AI-STATES`) or a decision on one of the now-5 open scope questions. User chose to continue formal test execution — see `CHECKPOINT-2026-08-29-006` below.
+
+---
+
+## CHECKPOINT-2026-08-29-006
+
+**Phase:** Phase 7 — Alerts & Notifications
+**Feature:** Formal test-case execution — `TS-ALERT-001` (Alerts, P-012)
+**Task:** Run the `TS-ALERT-001` sweep (`TC-ALERT-001-01`/`-02`) against the real running app, per explicit user instruction ("รัน TS-ALERT-001 sweep ต่อ")
+
+**What was implemented:** N/A — this is test execution, not a build task.
+**What was modified:** `docs/07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md` (`RAISE-FR-ALERT-001` row, `BLOCKED` → `FAIL` with full evidence), `docs/project-management/OPEN-FINDINGS.md` (new finding **F-32**).
+**What was fixed:** None.
+**What was added:** Finding **F-32** — the sidebar "Notification Center" route (`/notifications`) renders the app's generic 404 page, not even a `ModulePage`-style placeholder; the header bell-icon dropdown is hardcoded to an empty notifications array with a static "later phase" message. Worse than F-31's Oracle FA placeholder stub. Kept distinct from the pre-existing **F-05** (trigger-rule question, PRD §6.9, still genuinely open) since this is a build gap confirmed by execution.
+**What was removed:** None.
+
+**Files changed:** 2 files — `RAISE-TRACEABILITY-MATRIX.md`, `OPEN-FINDINGS.md`. No frontend/backend code touched.
+**Database changes:** None. **API changes:** None. **Frontend changes:** None (read-only verification against the already-shipped routing/AppShell).
+
+**Tests:**
+- Unit Test: None — this is manual/formal test-case execution, not automated test authoring.
+- Integration Test: None.
+- E2E Test: Manual browser execution (Chrome preview, `raise-frontend` dev server) of `TC-ALERT-001-01`/`-02`'s exact steps — auth-bypass via `localStorage` (ADMIN role), navigated to `/notifications` (confirmed generic 404: "Page not found — hasn't been migrated yet"), then opened the header bell-icon dropdown on the Dashboard (confirmed hardcoded-empty "Notifications" panel with a static "will be wired to the real API in a later phase" message, and a "View all notifications" link pointing to the same 404 route), and cross-checked Dashboard's "AI Insights" → "Warranty Expiry Approaching" card as the closest analog (confirmed it's an aggregate AI Decision Center metric, not a per-alert severity/description/asset list). Result: **both FAIL**. `TC-ALERT-001-01` — no alert is ever listed with severity/description/asset, structurally or otherwise. `TC-ALERT-001-02` — not exercisable at all, since no in-app alert presentation exists to verify.
+
+**Validation:**
+- Build: N/A (no code change). Lint: N/A. Test: N/A. Type Check: N/A.
+- Manual browser verification: as above — real page-text and source-code evidence captured before any documentation was updated.
+
+**Requirement Traceability:**
+PRD: `RAISE-FR-ALERT-001`, PRD §6.9 Open Question (F-05, unaffected), PRD §16 Q22 (role gate, unaffected).
+Acceptance Criteria: `AC-ALERT-001-01..02` — both **FAIL** against the real built app.
+Test Case: `TC-ALERT-001-01..02` — now **FAIL** (up from `BLOCKED`); `RAISE-TRACEABILITY-MATRIX.md`'s `RAISE-FR-ALERT-001` row updated accordingly.
+
+**Git:**
+Branch: `docs/tc-execution-alert`
+Commit: pending — predicted next PR after #52 (verify via `gh pr list` before treating as final).
+
+**Known Issues:** F-32 (new) — Alerts (P-012) is entirely unbuilt (404, no placeholder), distinct from F-05's trigger-rule gap.
+**Remaining Work:** F-22, F-27, F-30, F-31, F-32, and `AC-WARRANTY-001-03`'s 90-day threshold all remain open items blocked on a business/design decision — no engineering task is currently unblocked and buildable from these.
+**Next Step:** Recalculate `NEXT-STEP.md`. Check in with the user on direction — the remaining low-signal suites (`TS-AI-SEARCH-001`, `TS-AI-STATES`) or a decision on one of the now-6 open scope questions.
 
 ---
 

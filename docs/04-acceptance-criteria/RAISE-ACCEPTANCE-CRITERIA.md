@@ -2,9 +2,9 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Acceptance Criteria
-**Version:** 0.5 Draft
+**Version:** 0.6 Draft
 **Status:** Draft for Acceptance Review
-**Source:** [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.6 §27 (Prototype Traceability Matrix) + §5, §7–§23, §25A (per-screen specs / AI Scope Boundary / NFR Backlog Prototype Note), cross-checked against [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.9 and [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.8
+**Source:** [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.7 §27 (Prototype Traceability Matrix) + §5, §7–§23, §25A (per-screen specs / AI Scope Boundary / NFR Backlog Prototype Note), cross-checked against [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.11 and [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.8
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
 
@@ -58,7 +58,7 @@ detail is "TBD" or "conceptual," the corresponding criterion is marked
 | [AC-OPS-001](#10-ac-ops-001--p-007-qr--barcode-scan) | P-007 | RAISE-FR-OPS-001 | Testable |
 | [AC-OPS-002](#11-ac-ops-002--p-008-check-in--check-out) | P-008 | RAISE-FR-OPS-002 | Partially testable |
 | [AC-MAINT-001](#12-ac-maint-001--p-009-maintenance) | P-009 | RAISE-FR-MAINT-001 | Partially testable (workflow shape testable; SLA/vendor/cost NOT TESTABLE YET) |
-| [AC-WARRANTY-001](#13-ac-warranty-001--p-010-warranty) | P-010 | RAISE-FR-WARRANTY-001 | Partially testable |
+| [AC-WARRANTY-001](#13-ac-warranty-001--p-010-warranty) | P-010 | RAISE-FR-WARRANTY-001 | Testable (field list resolved 2026-08-29; 90-day rule still illustrative) |
 | [AC-ORACLE-001](#14-ac-oracle-001--p-011-oracle-fa--financial-view) | P-011 | RAISE-FR-ORACLE-001 | Partially testable |
 | [AC-ALERT-001](#15-ac-alert-001--p-012-alerts) | P-012 | RAISE-FR-ALERT-001 | Partially testable |
 | [AC-AUDIT-001](#16-ac-audit-001--p-013-audit-log) | P-013 | RAISE-FR-AUDIT-001 | Partially testable |
@@ -437,20 +437,39 @@ Prototype §15's own "Confirmed" vs. "Still TBD" split (its Open Question note).
 
 **Requirement:** `RAISE-FR-WARRANTY-001` · **Screen:** P-010
 
-- **AC-WARRANTY-001-01** — Given an asset has warranty information, when
-  a user opens the Warranty screen, then Start Date, End Date, and Status
-  are displayed.
-- **AC-WARRANTY-001-02** — Given warranty status is Active, Expiring, or
-  Expired, when the Warranty screen is opened, then the corresponding
-  timeline state is shown.
-- **AC-WARRANTY-001-03** — Given an asset's warranty falls within the
-  90-day expiry window (the PRD's illustrative business example), when a
-  user views the Warranty list, then that asset appears in an
-  expiring-assets view that links to its Asset Detail.
+**Field list resolved 2026-08-29** (`RAISE-PRD.md` §16 Resolved Question 40, resolving
+Open Question 15; `RAISE-DESIGN.md` §5.2 Warranty Domain; `RAISE-PROTOTYPE.md` §14 P-010
+Warranty): for MVP, the Warranty domain has exactly one field on the Asset record —
+`warrantyExpiry` (already implemented). A draft 8-field proposal (start date,
+provider/vendor, type, coverage details, cost, claim contact, document reference) was
+presented to the business as a candidate and was **explicitly rejected for MVP**, not
+deferred — none of those seven fields is asserted below or in any criterion in this
+document. The criteria below are updated accordingly (previously referenced a stale
+"Start Date, End Date, Status" three-field shape that no longer matches the Prototype).
 
-**NOT TESTABLE YET:** the required warranty fields beyond Start/End/
-Status are undefined (PRD §16 Q15); the exact 90-day rule is an
-illustrative example, not a confirmed business rule (PRD §6.7).
+- **AC-WARRANTY-001-01** — Given an asset has a `warrantyExpiry` value set, when a
+  user opens the Warranty screen, then that asset's `warrantyExpiry` date is displayed.
+- **AC-WARRANTY-001-02** — Given `warrantyExpiry` places an asset's warranty in the
+  Active, Expiring, or Expired state, when the Warranty screen is opened, then the
+  corresponding Warranty Timeline state is shown — this is a UI-computed display
+  derived from `warrantyExpiry` (relative to today's date), not a separately stored
+  field (Prototype §14).
+- **AC-WARRANTY-001-03** — Given an asset's `warrantyExpiry` falls within the 90-day
+  expiry window (the PRD's illustrative business example), when a user views the
+  Warranty list, then that asset appears in an expiring-assets view that links to its
+  Asset Detail.
+
+**RESOLVED (was: NOT TESTABLE YET — field list):** the field-list blocker on
+AC-WARRANTY-001-01/-02 is closed. No criterion here asserts, or should ever assert, any
+of the seven rejected fields (warranty start date, provider/vendor, type, coverage
+details, cost, claim contact, document reference) — those remain out of scope for MVP
+unless a future, separately-confirmed business decision adds them.
+
+**NOT TESTABLE YET (unchanged — separate from the field-list question):** the exact
+90-day threshold used in AC-WARRANTY-001-03 is the PRD's illustrative business example
+(PRD §6.7 Business Example), not a confirmed, generalizable business rule for what
+window(s) MVP must actually use for the expiring-assets view. This is independent of the
+now-resolved field-list question and remains open.
 
 ---
 
@@ -801,7 +820,6 @@ them as final:
 | Q13 Holder data model | AC-ASSET-003-01..03 |
 | Custody-writing-events ambiguity (RAISE-FR-ASSET-003 vs. RAISE-FR-OPS-002 — PRD Pre-Finalization Quality Pass, "Duplicated / Overlapping Requirements," needs business confirmation) | AC-ASSET-003-03 (scope note only) |
 | Q14 Maintenance fields / SLA / vendor model / cost model (workflow shape and state model now confirmed — Resolved Question 33; only SLA, vendor model, cost model, and delegated-approver configuration remain open) | AC-MAINT-001-01, -02 (fields); AC-MAINT-001-05 (Reject/Request Info resulting state); delegated-approver rule note under AC-MAINT-001 |
-| Q15 Warranty fields | AC-WARRANTY-001-01..03 |
 | Q18–Q20 AI citation / confidence / conflict handling | AC-AI-SEARCH-001-02..03 |
 | Q21 Authentication mechanism | AC-LOGIN-01..02 |
 | Q24–Q25 Audit taxonomy / retention | AC-AUDIT-001-01..02 |
@@ -812,6 +830,20 @@ them as final:
 
 No criterion in this document silently resolves these — each affected
 criterion above carries its own **NOT TESTABLE YET** note.
+
+**Resolved since last revision:** Q15 (Warranty field list) — `RAISE-PRD.md` §16
+Resolved Question 40 (2026-08-29) confirmed `warrantyExpiry` as the only Warranty field
+for MVP; a draft 8-field proposal was explicitly rejected, not deferred
+(`RAISE-DESIGN.md` §5.2; `RAISE-PROTOTYPE.md` §14 P-010). AC-WARRANTY-001-01 and -02
+(§13 above) are now fully testable against this single-field model; no seven-field
+content is asserted anywhere in this document. AC-WARRANTY-001-03's 90-day threshold
+remains **NOT TESTABLE YET** as a separate, unresolved item (PRD §6.7 Business Example
+is illustrative, not a confirmed generalizable rule) — this row is removed from the
+table above because Q15 itself (the field list) is closed; AC-WARRANTY-001-03's
+narrower 90-day-rule blocker is tracked in its own NOT TESTABLE YET note under §13, not
+in this table, consistent with how AC-DASH-01/AC-EXEC-001-01's narrower
+calculation-mechanics blocker is handled after Q27's resolution (see the Q27 note
+below).
 
 **Resolved since last revision:** Q14 (partial) — the `RAISE-FR-MAINT-001` 4-stage
 workflow shape (User Requisition → Dept Approval (Delegated) → IT Dispatch →
@@ -928,8 +960,43 @@ as blocked pending business confirmation.
 
 ## Document Status
 
-**Version:** 0.5 (re-synced against `RAISE-PROTOTYPE.md` v0.6, `RAISE-PRD.md` v0.9
-[unchanged], and `RAISE-DESIGN.md` v0.8, 2026-08-23)
+**Version:** 0.6 (re-synced against `RAISE-PROTOTYPE.md` v0.7, `RAISE-PRD.md` v0.11, and
+`RAISE-DESIGN.md` v0.8, 2026-08-29)
+
+**Change Log — v0.5 → v0.6 (2026-08-29):**
+
+1. **`RAISE-FR-WARRANTY-001` Warranty field-list question resolved — AC-WARRANTY-001
+   (§13) rewritten.** `RAISE-PRD.md` §16 Resolved Question 40 (resolving Open Question
+   15), `RAISE-DESIGN.md` §5.2 (Warranty Domain), and `RAISE-PROTOTYPE.md` §14 (P-010
+   Warranty) all confirm: for MVP, the Warranty domain has exactly one field —
+   `warrantyExpiry` (already implemented on the Asset record). A draft 8-field proposal
+   (start date, provider/vendor, type, coverage details, cost, claim contact, document
+   reference) was presented to the business and **explicitly rejected for MVP**, not
+   deferred. AC-WARRANTY-001-01 and -02 previously referenced a stale "Start Date, End
+   Date, Status" three-field shape that no longer matches the resolved single-field
+   model — both criteria are rewritten to reference `warrantyExpiry` and the
+   UI-computed (not stored) Warranty Timeline derived from it. **No criterion in this
+   document asserts any of the seven rejected fields** — they remain out of scope for
+   MVP, not "now testable."
+2. **AC-WARRANTY-001-03's 90-day-window blocker is unaffected and stays NOT TESTABLE
+   YET**, since it concerns a separate, still-unconfirmed business rule (PRD §6.7
+   Business Example is illustrative only), not the field-list question that was
+   resolved. This distinction is now called out explicitly in §13 so the two blockers
+   are not conflated.
+3. **AC Index (§3)** AC-WARRANTY-001 row status updated from "Partially testable" to
+   "Testable (field list resolved 2026-08-29; 90-day rule still illustrative)."
+4. **Not-Yet-Testable Summary (§20)** — the "Q15 Warranty fields" row is removed from
+   the blocking-questions table (the field-list question itself is closed), and a
+   "Resolved since last revision: Q15" note is added explaining the resolution and
+   clarifying that AC-WARRANTY-001-03's narrower 90-day-rule blocker remains open under
+   its own §13 note, not as a table row.
+5. Version citations in the document header were updated from Prototype v0.6 / PRD v0.9
+   / Design v0.8 to Prototype v0.7 / PRD v0.11 / Design v0.8 (Design unchanged since the
+   Warranty resolution landed in PRD §16 and Design §5.2, both already reflected at
+   Design v0.8). No other AC group required correction — this pass is scoped only to
+   the Warranty field-list resolution and its downstream index/summary references; the
+   Asset/Ops/Maintenance/Oracle/Alert/Audit/Executive/AI-Search/AI-Doc groups were
+   checked and found unchanged in substance.
 
 **Change Log — v0.4 → v0.5 (2026-08-23):**
 

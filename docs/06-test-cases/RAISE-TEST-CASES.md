@@ -2,9 +2,9 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Test Cases
-**Version:** 0.5 Draft
+**Version:** 0.6 Draft
 **Status:** Draft for Test Case Review
-**Source:** [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.5 §7 (Test Suites) + §8 (Blocked Items) + §8.1 (Fully-Blocked Suites — AI Document Intelligence Capabilities) + §3.3 (PRD §10 NFR Backlog — No Suite), expanding [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.5
+**Source:** [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.6 §7 (Test Suites) + §8 (Blocked Items) + §8.1 (Fully-Blocked Suites — AI Document Intelligence Capabilities) + §3.3 (PRD §10 NFR Backlog — No Suite), expanding [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.6
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
 
@@ -238,11 +238,19 @@ that time — not before.
 
 **Suite:** TS-WARRANTY-001 · **AC Group:** AC-WARRANTY-001 · **Requirement:** `RAISE-FR-WARRANTY-001` · **Screen:** P-010
 
+**Field list resolved 2026-08-29:** for MVP, the Warranty domain has exactly
+one field on the Asset record — `warrantyExpiry`. A draft 8-field proposal (start date,
+provider/vendor, type, coverage details, cost, claim contact, document reference) was
+explicitly **rejected for MVP** by the business, not deferred. None of those seven fields
+appears in any test case below (`TC-WARRANTY-001-01`/`-02` previously referenced a stale
+"Start Date, End Date, Status" three-field shape — corrected below to match
+`RAISE-ACCEPTANCE-CRITERIA.md` §13 AC-WARRANTY-001).
+
 | TC ID | Title | Steps | Test Data | Expected Result | Blocked |
 |---|---|---|---|---|---|
-| TC-WARRANTY-001-01 | Warranty fields display | 1. Open Warranty screen for an asset. | 1 asset with Start/End/Status | Start Date, End Date, Status displayed | **BLOCKED (partial)** — display testable; whether additional fields are required is TBD (PRD §16 Q15) |
-| TC-WARRANTY-001-02 | Warranty timeline state displays | 1. Open Warranty screen for assets in each state. | 3 assets: Active, Expiring, Expired | Corresponding timeline state shown for each | No |
-| TC-WARRANTY-001-03 | 90-day expiring asset appears in expiring view | 1. Set an asset's warranty end date within 90 days. 2. Open Warranty expiring-assets view. | 1 asset, warranty end date = today+45 | Asset appears in expiring list; link opens its Asset Detail | **BLOCKED (partial)** — the 90-day threshold is an illustrative example, not a confirmed business rule (PRD §6.7) |
+| TC-WARRANTY-001-01 | Warranty expiry field displays | 1. Open Warranty screen for an asset with `warrantyExpiry` set. | 1 asset with a `warrantyExpiry` date set | That asset's `warrantyExpiry` date is displayed | No |
+| TC-WARRANTY-001-02 | Warranty timeline state displays | 1. Open Warranty screen for assets whose `warrantyExpiry` places them in each state. | 3 assets, each with a `warrantyExpiry` value placing it in the Active, Expiring, or Expired state respectively | Corresponding UI-computed Warranty Timeline state (Active/Expiring/Expired) shown for each asset, derived from `warrantyExpiry` relative to today's date — not a separately stored field | No |
+| TC-WARRANTY-001-03 | 90-day expiring asset appears in expiring view | 1. Set an asset's `warrantyExpiry` within 90 days. 2. Open Warranty expiring-assets view. | 1 asset, `warrantyExpiry` = today+45 | Asset appears in expiring list; link opens its Asset Detail | **BLOCKED (partial)** — the 90-day threshold is the PRD's illustrative business example, not a confirmed, generalizable business rule (PRD §6.7; unaffected by the 2026-08-29 field-list resolution) |
 
 ---
 
@@ -442,7 +450,7 @@ below.
 | TS-OPS-001 | 3 | 3 | 0 | 0 | 0 |
 | TS-OPS-002 | 3 | 1 | 2 | 0 | 0 |
 | TS-MAINT-001 | 9 | 3 | 6 | 0 | 0 |
-| TS-WARRANTY-001 | 3 | 1 | 2 | 0 | 0 |
+| TS-WARRANTY-001 | 3 | 2 | 1 | 0 | 0 |
 | TS-ORACLE-001 | 4 | 3 | 1 | 0 | 0 |
 | TS-ALERT-001 | 2 | 1 | 1 | 0 | 0 |
 | TS-AUDIT-001 | 3 | 1 | 2 | 0 | 0 |
@@ -453,9 +461,9 @@ below.
 | TS-AI-DOC-002 | 1 | 0 | 0 | 1 | 0 |
 | TS-AI-DOC-003 | 1 | 0 | 0 | 1 | 0 |
 | TS-AI-DOC-004 | 1 | 0 | 0 | 1 | 0 |
-| **Total** | **62** | **29** | **28** | **4** | **1** |
+| **Total** | **62** | **30** | **27** | **4** | **1** |
 
-28 of 62 test cases are partially blocked — executable against their
+27 of 62 test cases are partially blocked — executable against their
 structural/interaction behavior, with full correctness pending a PRD Open
 Question. This count includes `TC-ASSET-003-03`, updated 2026-08-21 to
 **BLOCKED (partial)**: the Check-in/Check-out-triggered append-and-
@@ -563,7 +571,43 @@ Suite ID → TC ID) into one master table for compliance review.
 
 ## Document Status
 
-**Version:** 0.5 (re-synced against `RAISE-TEST-PLAN.md` v0.5, 2026-08-23)
+**Version:** 0.6 (re-synced against `RAISE-TEST-PLAN.md` v0.6, 2026-08-29)
+
+**Change Log — v0.5 → v0.6 (2026-08-29):**
+
+1. **TS-WARRANTY-001 field-list blocker resolved.** Test Plan v0.6 §7/§8 (carrying AC v0.6
+   §13's resolution of PRD Open Question 15, `RAISE-PRD.md` §16 Resolved Question 40): for
+   MVP, the Warranty domain has exactly one field on the Asset record, `warrantyExpiry`; a
+   draft 8-field proposal (start date, provider/vendor, type, coverage details, cost, claim
+   contact, document reference) was explicitly **rejected** for MVP by the business, not
+   deferred. `TC-WARRANTY-001-01` ("Warranty fields display") and `TC-WARRANTY-001-02`
+   ("Warranty timeline state displays") previously asserted a stale "Start Date, End Date,
+   Status" three-field shape that no longer matches `RAISE-PROTOTYPE.md` §14 (P-010) or
+   `RAISE-ACCEPTANCE-CRITERIA.md` §13. Both cases were rewritten to test only the
+   `warrantyExpiry` field's display and the UI-computed Active/Expiring/Expired timeline
+   state derived from it (not a separately stored field), and both are now **fully
+   testable (no longer BLOCKED)**. None of the seven rejected fields appears in either
+   case's Steps, Test Data, or Expected Result.
+2. **`TC-WARRANTY-001-03`'s 90-day-window blocker is unaffected and stays BLOCKED
+   (partial).** This is a separate, still-open question from the field-list resolution —
+   the 90-day figure in PRD §6.7 remains an illustrative business example, not a confirmed,
+   generalizable rule for the expiring-assets view's window(s). Its wording was updated
+   only to note it is unaffected by the 2026-08-29 field-list resolution; its classification
+   is unchanged.
+3. **§19 Test Case Summary** TS-WARRANTY-001 row updated from `3 | 1 | 2 | 0 | 0` to
+   `3 | 2 | 1 | 0 | 0` (Total/Fully Testable/Partially Blocked/Blocked Full/Out of Scope).
+   Grand **Total** row updated from `62 | 29 | 28 | 4 | 1` to `62 | 30 | 27 | 4 | 1`; the
+   narrative "28 of 62 test cases are partially blocked" sentence updated to "27 of 62."
+4. Version citations in the document header updated from Test Plan v0.5 / AC v0.5 to Test
+   Plan v0.6 / AC v0.6. No other suite required changes — Test Plan v0.6's only
+   substantive change from v0.5 is the TS-WARRANTY-001 field-list resolution; every other
+   AC group this document maps 1:1 to is unchanged in substance.
+
+No other suite required changes; `TC-LOGIN-*`, `TC-DASH-*`, `TC-ASSET-001-*`,
+`TC-ASSET-001-D-*`, `TC-LIFE-001-*`, `TC-ASSET-002-*`, `TC-ASSET-003-*`, `TC-OPS-001-*`,
+`TC-OPS-002-*`, `TC-MAINT-001-*`, `TC-ORACLE-001-*`, `TC-ALERT-001-*`, `TC-AUDIT-001-*`,
+`TC-EXEC-001-*`, `TC-AI-SEARCH-001-*`, `TC-AI-STATES-*`, and `TC-AI-DOC-001-01`–
+`TC-AI-DOC-004-01` are unaffected by Test Plan v0.6's changes.
 
 **Change Log — v0.4 → v0.5 (2026-08-23):**
 

@@ -2,11 +2,24 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Prototype Specification
-**Version:** 0.6 Draft
+**Version:** 0.7 Draft
 **Status:** Draft for Prototype Review
-**Source:** [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.9 + [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.8 (§23 Prototype Preparation, §9A Document Intelligence Capabilities, §5.1 Maintenance Domain, §5.3 License Domain, §6.4 ReconciliationPage / "Phase 6" Label, §16 Security Architecture — MVP Enforcement Level, §16A Other Non-Functional Requirements — Design Backlog, §15/§22 Out of Scope)
+**Source:** [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.10 + [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) §5.2 (§23 Prototype Preparation, §9A Document Intelligence Capabilities, §5.1 Maintenance Domain, §5.2 Warranty Domain — field list resolved, §5.3 License Domain, §6.4 ReconciliationPage / "Phase 6" Label, §16 Security Architecture — MVP Enforcement Level, §16A Other Non-Functional Requirements — Design Backlog, §15/§22 Out of Scope)
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
+
+**Version note (2026-08-29 re-sync, v0.6 → v0.7):** `RAISE-PRD.md` §16 Resolved
+Question 40 and `RAISE-DESIGN.md` §5.2 (Warranty Domain) both resolved the previously
+open Warranty field-list question (PRD Open Question 15): **for MVP,
+`RAISE-FR-WARRANTY-001` has exactly one field — `warrantyExpiry`** (already implemented
+on the Asset record). A draft 8-field proposal (start date, provider/vendor, type,
+coverage details, cost, claim contact, document reference) was presented to the
+business as a candidate list and was **explicitly rejected for MVP**, not deferred —
+none of those seven fields is added here. **P-010 Warranty** below is updated to
+replace its stale "Asset / Start Date / End Date / Status" field list with the
+resolved single-field model; the Warranty Timeline (Active / Expiring / Expired) is
+kept as a UI-computed display derived from `warrantyExpiry`, not a stored field. §27
+Prototype Traceability Matrix's P-010 row is updated to reflect the resolved status.
 
 **Version note (2026-08-23 re-sync, v0.5 → v0.6):** this pass re-verifies against
 `RAISE-PRD.md` v0.9 (unchanged since the v0.5 sync) and `RAISE-DESIGN.md` v0.8 (advanced
@@ -493,6 +506,11 @@ area specifically. No separate P-NNN screen is created for it — it is realized
 across Custody (P-006), Maintenance (P-009), Warranty (P-010), and Audit (P-013), which
 together represent the lifecycle stages per Design §4.2's conceptual state diagram.)
 
+**Warranty section field list:** the "Warranty" section above surfaces the single
+`warrantyExpiry` field resolved for `RAISE-FR-WARRANTY-001` (PRD §16 Resolved Question 40;
+Design §5.2) — see P-010 Warranty for the full field-list detail and the rejected
+8-field draft. No additional warranty fields are assumed on this screen.
+
 **Disposal explicitly excluded:** Design §4.2's conceptual state diagram keeps Disposal as
 the terminal lifecycle stage, but PRD §14 (Enterprise Roadmap, item 7) and PRD §16
 Resolved Questions #26 confirm Disposal is **Enterprise Roadmap, not MVP** (resolved
@@ -841,18 +859,28 @@ Track warranty information.
 
 ## Prototype
 
+**Field list resolved 2026-08-29** (PRD §16 Resolved Question 40, resolving PRD Open
+Question 15; Design §5.2 Warranty Domain): for MVP, the Asset record carries exactly
+one Warranty field — `warrantyExpiry` (already implemented). A draft 8-field proposal
+(start date, provider/vendor, type, coverage details, cost, claim contact, document
+reference) was presented to the business as a candidate list and was **explicitly
+rejected for MVP**, not deferred — none of those fields is shown below or assumed
+elsewhere in this prototype.
+
 ```text
 Warranty
 ────────────────────────────
 Asset
-Start Date
-End Date
-Status
+warrantyExpiry
 
-Warranty Timeline
+Warranty Timeline (derived, not a stored field)
 ────────────────────────────
 Active / Expiring / Expired
 ```
+
+The "Warranty Timeline" state (Active / Expiring / Expired) is a UI-computed display
+derived from `warrantyExpiry` (e.g., relative to today's date and the 90-day window in
+the business example below) — it is not a separate stored field.
 
 ## Example RAISE Use Case
 
@@ -874,7 +902,8 @@ Recommendation.
 
 ## Traceability
 
-`RAISE-FR-WARRANTY-001`
+`RAISE-FR-WARRANTY-001` — field list resolved 2026-08-29 (`warrantyExpiry` only for
+MVP; see PRD §16 Resolved Question 40 and Design §5.2).
 
 ---
 
@@ -1570,7 +1599,7 @@ not be treated as approved MVP functionality.
 | P-007 QR / Barcode | RAISE-FR-OPS-001 | Planned |
 | P-008 Check-in / Check-out | RAISE-FR-OPS-002 | Planned |
 | P-009 Maintenance | RAISE-FR-MAINT-001 | Planned — 4-stage workflow shape reflected (confirmed 2026-08-21); SLA/vendor/cost model TBD |
-| P-010 Warranty | RAISE-FR-WARRANTY-001 | Planned |
+| P-010 Warranty | RAISE-FR-WARRANTY-001 | Planned — field list resolved 2026-08-29 (PRD §16 Resolved Question 40; Design §5.2): `warrantyExpiry` only for MVP; 7-field draft explicitly rejected |
 | P-011 Oracle FA | RAISE-FR-ORACLE-001 | Planned |
 | P-012 Alerts | RAISE-FR-ALERT-001 | Planned |
 | P-013 Audit | RAISE-FR-AUDIT-001 | Planned |
@@ -1640,6 +1669,14 @@ none is a candidate row in this requirement-ID-keyed matrix; the completeness
 acknowledgment for them is instead recorded narratively in new [§25A NFR Backlog —
 Prototype Note](#25a-nfr-backlog--prototype-note), consistent with how Design §24 excludes
 the same areas from its own traceability table and points to §16A instead.
+
+**v0.7 re-sync (2026-08-29, against PRD v0.10 / Design §5.2):** `RAISE-FR-WARRANTY-001`'s
+row is updated (not added) — PRD §16 Resolved Question 40 and Design §5.2 resolved the
+previously open Warranty field-list question (PRD Open Question 15): `warrantyExpiry` is
+the only Warranty field for MVP; a draft 8-field proposal was explicitly rejected, not
+deferred. P-010 Warranty's field list and P-004 Asset Detail's Warranty section note are
+both updated accordingly (see their respective sections). No screen, requirement ID, or
+row was added or removed — this is a field-list correction only.
 
 ---
 

@@ -434,16 +434,24 @@ roles, and the delegated-approver setting, depend on `RAISE-NFR-SEC-RBAC-001`
 
 ## 5.2 Warranty Domain
 
+**Status:** field list **resolved 2026-08-29** (PRD §16 Resolved Question 40,
+resolving PRD Open Question 15). For MVP, the Warranty field is a single field
+on the Asset record:
+
 ```text
 Asset
   │
-  └── Warranty
-       ├── Start
-       ├── End
-       └── Status
+  └── warrantyExpiry
 ```
 
-The exact warranty fields are TBD.
+`warrantyExpiry` is already implemented on the Asset record. A draft 8-field
+proposal (start date, provider/vendor, type, coverage details, cost, claim
+contact, document reference — in addition to expiry) was presented to the
+business as a candidate, not a decision; the business explicitly **rejected**
+those seven additional fields for MVP scope (not silently deferred). Any of
+them would require a separate, future business confirmation before being
+added to `RAISE-FR-WARRANTY-001` or this design. This design intentionally
+does not model those rejected fields.
 
 Requirement:
 
@@ -1413,7 +1421,9 @@ The following require detailed design:
 - Category hierarchy
 - Holder model
 - Maintenance fields
-- Warranty fields
+- Warranty fields — **resolved for MVP** (`warrantyExpiry` only; PRD §16
+  Resolved Question 40; see [§5.2 Warranty Domain](#52-warranty-domain)),
+  retained here only because the other data model TBD items are still open
 - Financial fields
 - Oracle mapping
 - Lifecycle state model
@@ -1638,7 +1648,7 @@ treated as mandatory.
 | RAISE-FR-OPS-001 | QR / Barcode |
 | RAISE-FR-OPS-002 | Check-in / Check-out |
 | RAISE-FR-MAINT-001 | Maintenance (§5.1 — 4-stage workflow shape confirmed) |
-| RAISE-FR-WARRANTY-001 | Warranty |
+| RAISE-FR-WARRANTY-001 | Warranty (§5.2 — field list resolved 2026-08-29: `warrantyExpiry` only) |
 | RAISE-FR-LICENSE-001 | License Management — **Roadmap, not MVP** (§4.1A, §5.3; corrected 2026-08-21) |
 | RAISE-FR-ORACLE-001 | Oracle Integration |
 | RAISE-FR-ALERT-001 | Alert Architecture |
@@ -1716,7 +1726,12 @@ design-relevant grouping — not a new set of questions.)
    [§5.1 Maintenance Domain](#51-maintenance-domain)); SLA per stage, vendor
    model, cost model, and delegated-approver configuration rules remain
    open.
-10. What fields are required for warranty?
+10. What fields are required for warranty? — **Resolved 2026-08-29** (PRD §16
+   Resolved Question 40, resolving PRD Open Question 15): for MVP,
+   `warrantyExpiry` is the only Warranty field. The remaining seven draft
+   fields (start date, provider/vendor, type, coverage details, cost, claim
+   contact, document reference) are explicitly rejected for MVP, not
+   deferred — see [§5.2 Warranty Domain](#52-warranty-domain).
 10a. What is the license field model, renewal/expiry alert rule,
    seat/utilization tracking, and vendor/cost tracking for
    `RAISE-FR-LICENSE-001`? — new open question, added 2026-08-21 against PRD

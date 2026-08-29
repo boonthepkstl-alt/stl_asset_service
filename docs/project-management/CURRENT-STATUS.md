@@ -9,8 +9,8 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-08-29, after `CHECKPOINT-2026-08-29-003` (F-01 Warranty
-implemented as an Asset Registry column, per user direction — not yet
+**As of:** 2026-08-29, after `CHECKPOINT-2026-08-29-004` (`TS-DASH` sweep —
+all 3 test cases FAIL, broadening F-22 rather than a new finding; not yet
 shipped via PR, see that checkpoint for status). The
 `BASELINE-CHECKPOINT-2026-08-24` scan is still the last
 full live re-verification against `git`/source. F-20 (checkpoint-coverage
@@ -43,8 +43,16 @@ Expired badge, sortable) was added to the Assets Registry list instead.
 `RAISE-FR-WARRANTY-001` is now **`PASS (partial)`** — `TC-WARRANTY-001-01/-02`
 pass; `AC-WARRANTY-001-03`'s separate 90-day-window question (and the
 "Expiring" 3rd state it would gate) remains open.
-**F-22** (Executive Dashboard scope question) and **F-27** (Category
-sub-taxonomy, TBD) remain open from the earlier sweeps. Every
+A fifth sweep (2026-08-29) covered `TS-DASH` (Main Dashboard, P-002):
+all 3 test cases **FAIL** — NBV/Risk tiles absent, "Warranty Expiry"
+mislabeled "Expired Warranty", no "Asset by Category"/"Lifecycle /
+Maintenance Overview"/"Recent Alerts" sections. Since P-002's spec is
+word-for-word identical to P-014's and both trace to the same single
+built page (`frontend/src/pages/Dashboard/index.tsx`), this **broadens
+F-22** rather than opening a new finding.
+**F-22** (Executive/Main Dashboard scope question, now confirmed from two
+Prototype screens) and **F-27** (Category sub-taxonomy, TBD) remain open
+from the earlier sweeps. Every
 development session should close out per
 [`SESSION-CLOSEOUT-PROTOCOL.md`](SESSION-CLOSEOUT-PROTOCOL.md), which is
 what keeps this section current.
@@ -91,7 +99,7 @@ intentionally out of MVP scope (Roadmap).
 | Auth | supports `RAISE-NFR-SEC-RBAC-001` | 🟡 Built, demo-only — hardcoded single user, no real user store. `TC-LOGIN-03` (access-denied for an unauthorized area) **PASS** per formal test execution 2026-08-29. `TC-LOGIN-01`/`-02` (valid/invalid login) **BLOCKED** — no mock fallback exists (unlike Asset/Employee/Ticket) and no backend/database is reachable in this dev environment (**F-30**) |
 | QR / Barcode lookup | `RAISE-FR-OPS-001` | ✅ Built, PASS on all test cases — [PR #29](https://github.com/boonthepkstl-alt/stl_asset_service/pull/29) + a follow-up F-21 fix (see `DEVELOPMENT-LOG.md` for the PR number once shipped). `GET /assets/:id` resolves by `code` too (dual lookup); real QR generation + Scan QR flow live on both Assets list and Asset Detail. `TC-OPS-001-01..03` all **PASS** — the invalid-code state (F-21) is fixed via a plausible-code-format check before lookup |
 | Audit Log | `RAISE-FR-AUDIT-001` | 🟡 Built — [PR #31](https://github.com/boonthepkstl-alt/stl_asset_service/pull/31) (Asset domain) + [PR #35](https://github.com/boonthepkstl-alt/stl_asset_service/pull/35) (Ticket domain). `GET /audit-logs` + recording on Asset create/assign/check-in and Ticket create/approve/dispatch/status-update. No update/delete path exists (immutability by omission). The testable subset of `TC-AUDIT-001-01..03` **PASSED** formal execution 2026-08-26; field taxonomy and the audit-review role gate remain TBD (unchanged, blocked on PRD) |
-| Executive Dashboard KPIs (first cut) | `RAISE-FR-EXEC-001` | 🟡 Built, narrow scope, FAIL on prototype match per formal test execution — [PR #33](https://github.com/boonthepkstl-alt/stl_asset_service/pull/33). `GET /dashboard/stats` computes status counts, expired-warranty count, and department/type distribution from real Asset data. Software License count still comes from the frontend's mock license service (no backend License table exists — Roadmap-only). NBV/Risk KPI formulas and Utilization's calculation mechanics remain **not started** (PRD §16 Q3/Q4/Q29 TBD). **`TC-EXEC-001-01/-02` FAILED formal execution 2026-08-26** — the built page has no tiles/sections named per Prototype P-014 at all (not even presence-only), a gap independent of the formula question — see `OPEN-FINDINGS.md` F-22 |
+| Executive Dashboard KPIs (first cut) | `RAISE-FR-EXEC-001` | 🟡 Built, narrow scope, FAIL on prototype match per formal test execution — [PR #33](https://github.com/boonthepkstl-alt/stl_asset_service/pull/33). `GET /dashboard/stats` computes status counts, expired-warranty count, and department/type distribution from real Asset data. Software License count still comes from the frontend's mock license service (no backend License table exists — Roadmap-only). NBV/Risk KPI formulas and Utilization's calculation mechanics remain **not started** (PRD §16 Q3/Q4/Q29 TBD). **`TC-EXEC-001-01/-02` FAILED formal execution 2026-08-26, and `TC-DASH-01..03` FAILED formal execution 2026-08-29** (P-002 Main Dashboard — word-for-word identical tile/section spec to P-014, same built page) — the built page has no tiles/sections named per Prototype P-002/P-014 at all (not even presence-only), a gap independent of the formula question — see `OPEN-FINDINGS.md` F-22 |
 | Oracle FA Integration | `RAISE-FR-ORACLE-001` | Integration method/mapping/sync/security all TBD |
 | Natural Language Search | `RAISE-AI-SEARCH-001` | Citation precision/format TBD |
 | Document Intelligence | `RAISE-AI-DOC-001..004` | Confidence thresholds / field lists / matching rules undefined |
@@ -107,10 +115,13 @@ Triaged against [`RAISE-TRACEABILITY-MATRIX.md`](../07-traceability-matrix/RAISE
 (Assets Registry column, R-12) as of the 2026-08-26 Asset-domain sweep,
 the 2026-08-28 TS-OPS-002/TS-MAINT-001 sweep, and the 2026-08-29
 TS-LOGIN sweep — F-23 through F-29 are all now fixed (R-06 through
-R-11). F-22 (Executive Dashboard vs. Prototype P-014), F-27 (Category
-sub-taxonomy), F-30 (no Auth mock fallback), and `AC-WARRANTY-001-03`'s
-90-day-window question all remain open but aren't directly buildable
-without a decision.
+R-11). F-22 (Executive/Main Dashboard vs. Prototype P-002/P-014,
+reconfirmed 2026-08-29 via TS-DASH), F-27 (Category sub-taxonomy), F-30
+(no Auth mock fallback), and `AC-WARRANTY-001-03`'s 90-day-window
+question all remain open but aren't directly buildable without a
+decision — as of this sweep, every remaining open item is uniformly
+blocked on a business/design decision, none is a "buildable now"
+engineering task.
 
 **Needs a scoped-down first cut:** None remaining — Audit Log (PR #31 +
 #35, now covering both Asset and Ticket domains) and Executive Dashboard

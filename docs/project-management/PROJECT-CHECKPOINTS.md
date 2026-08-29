@@ -1835,11 +1835,50 @@ Test Case: `TC-MAINT-001-09` — now **PASS** on re-execution; `RAISE-TRACEABILI
 
 **Git:**
 Branch: `frontend/fix-governance-current-stage-indicator`
-Commit: pending merge — part of predicted PR #47 (next in sequence after #46 at branch-creation time; verify against the actual PR before treating this as final).
+Commit: `9a4077d` (implementation), merged via `1e31888` (merge commit, [PR #47](https://github.com/boonthepkstl-alt/stl_asset_service/pull/47)).
 
 **Known Issues:** None new.
 **Remaining Work:** None from the 2026-08-28 sweep — F-28 and F-29 are both resolved. F-22 (Executive Dashboard scope question) and F-27 (Category sub-taxonomy) remain open from earlier sweeps.
 **Next Step:** Recalculate `NEXT-STEP.md`. With `RAISE-FR-OPS-002` and `RAISE-FR-MAINT-001` both now fully passing, likely next candidates are a new test-execution sweep on a not-yet-tested suite (e.g. `TS-LOGIN`, `TS-DASH`) or resurfacing F-01 (Warranty field list) — re-run the Next-Step Protocol rather than assuming either.
+
+---
+
+## CHECKPOINT-2026-08-29-001
+
+**Phase:** Phase 2 — Authentication / RBAC
+**Feature:** Formal test case execution for TS-LOGIN
+**Task:** Run a new formal test-case-execution sweep, per explicit user instruction and `NEXT-STEP.md`'s own recommendation — `RAISE-NFR-SEC-RBAC-001`/`TS-LOGIN` was the most-built, not-yet-formally-tested candidate (Login page + `AuthContext` both exist), previously carrying only a pre-code-era `BLOCKED` guess.
+
+**What was implemented:** Executed 3 test cases against the real running app. Before executing, confirmed a real constraint: unlike Asset/Employee/Ticket, `auth-service.ts` has no mock fallback — `login()` always calls the real `go-template-main` backend. Checked for a locally reachable Postgres (port 5432) and a backend `docker-compose`/`.env.example` — neither exists in this environment. Results:
+- **TC-LOGIN-01 BLOCKED** — submitted the documented demo credential (`admin`/`password`) via the real Login form; the request failed with `net::ERR_CONNECTION_REFUSED` (confirmed via network trace, `POST http://localhost:8080/api/auth/login`) before reaching any real auth logic. Cannot be tested without a live backend + database.
+- **TC-LOGIN-02 BLOCKED** — same connectivity failure. Login's `catch` block shows the identical "Invalid username or password" message for *any* failure (network-down or genuinely-wrong credentials alike), so even the visible symptom on screen can't be used to infer this case passed — the observed trigger was connectivity, not credential validation.
+- **TC-LOGIN-03 PASS** — simulated an authenticated non-admin user (`role: 'VIEWER'`, via the same `localStorage` bypass used throughout this session) and confirmed navigating to `/administration` (an `allowedRoles={['ADMIN']}`-gated route) shows "403 — Access denied"; confirmed by contrast that swapping to `role: 'ADMIN'` reaches the real page.
+
+New infrastructure finding **F-30** — no mock fallback exists for Auth, so TC-LOGIN-01/-02 can't be exercised in this dev sandbox at all (distinct from, and in addition to, the pre-existing PRD-content block on auth mechanism/role-matrix, PRD §16 Q21–Q22, which remains separately open).
+
+**What was modified:** `docs/07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md` — updated `RAISE-NFR-SEC-RBAC-001` row from `BLOCKED` (pre-code-era guess) to `FAIL (partial)` with real evidence. `docs/project-management/OPEN-FINDINGS.md` — added F-30 to the "Infrastructure / Process" category.
+**What was fixed:** None — this is test execution, not a fix.
+**What was added:** F-30.
+**What was removed:** None.
+
+**Files changed:** 2 files (`RAISE-TRACEABILITY-MATRIX.md`, `OPEN-FINDINGS.md`).
+**Database changes:** None. **API changes:** None. **Frontend changes:** None — this task tests existing code, it doesn't change any.
+
+**Tests:** This *is* the test-execution task — 3 manual/browser-driven test cases against `RAISE-TEST-CASES.md`'s existing step definitions, plus a real attempted login against the actual backend endpoint (which failed for infrastructure reasons, itself real evidence).
+**Validation:** N/A in the usual build/lint/vitest sense — no code changed. The validation is the browser/network evidence captured above (a real `ERR_CONNECTION_REFUSED` trace, and a real role-based access-denied render, not simulated in either case).
+
+**Requirement Traceability:**
+PRD: `RAISE-NFR-SEC-RBAC-001`.
+Acceptance Criteria: `AC-LOGIN-01..03` — judged against exact Given/When/Then text; `AC-LOGIN-01`/`-02` remain not-testable in this environment specifically (infra), `AC-LOGIN-03` met.
+Test Case: `TC-LOGIN-01..03` — all 3 now have real, evidence-based results for the first time since this suite was written.
+
+**Git:**
+Branch: `docs/tc-execution-login`
+Commit: pending merge — part of predicted PR #48 (next in sequence after #47 at branch-creation time; verify against the actual PR before treating this as final).
+
+**Known Issues:** F-30 is an infrastructure/testing-environment gap, not a product defect — no fix is implied by this checkpoint (unlike F-21/F-23/F-24/F-26/F-28/F-29, which were real product defects). It's tracked so a future session doesn't waste time assuming Login is testable in this sandbox the way Asset/Employee/Ticket are.
+**Remaining Work:** None for this task itself — it's a read-only test-execution pass. Whether to add a mock Auth path (mirroring `MockAssetRepository`'s pattern) is a separate, not-yet-requested engineering decision, not undertaken here without being asked.
+**Next Step:** Recalculate `NEXT-STEP.md`. With `TS-LOGIN` now also swept, remaining not-yet-tested suites are `TS-DASH` (likely re-confirms F-22's already-known gap) and several fully-TBD suites (`TS-WARRANTY-001`, `TS-ORACLE-001`, `TS-ALERT-001`, `TS-AI-SEARCH-001`, `TS-AI-STATES`) that would mostly return `NOT_IMPLEMENTED`. F-01 (Warranty field list) — the standing uncompleted request — is now a comparably strong candidate to resurface to the user.
 
 ---
 

@@ -9,10 +9,10 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-08-29, after `CHECKPOINT-2026-08-29-008` (`TS-AI-STATES`
-sweep — all 5 test cases FAIL, broadening F-33; not yet shipped via PR,
-see that checkpoint for status). **This completes formal execution of
-every suite in `RAISE-TEST-CASES.md` at least once.** The
+**As of:** 2026-08-31, after `CHECKPOINT-2026-08-31-002` (F-22's Dashboard
+spec correction propagated through the full deliverable chain — Design
+through Traceability Matrix; not yet shipped via PR, see that checkpoint
+for status). The
 `BASELINE-CHECKPOINT-2026-08-24` scan is still the last
 full live re-verification against `git`/source. F-20 (checkpoint-coverage
 gap) is closed (R-04); F-21 (QR/Barcode invalid-code state) is closed
@@ -83,11 +83,30 @@ the unfiltered asset list. Since this traces to the same two surfaces
 and root cause as `TS-AI-SEARCH-001`, this **broadens F-33** rather than
 opening a new finding — completing formal execution of every suite in
 `RAISE-TEST-CASES.md` at least once this session.
-**F-22** (Executive/Main Dashboard scope question, now confirmed from two
-Prototype screens), **F-27** (Category sub-taxonomy, TBD), **F-31**
-(Oracle FA Financial View not built), **F-32** (Alerts not built), and
-**F-33** (AI Assistant doesn't answer questions) remain open from the
-recent sweeps.
+A `/code-review` pass on PR #50's diff (2026-08-31) found 1 `reuse`
+finding — the "is warranty expired" check duplicated across 3 files —
+fixed same-day via [PR #55](https://github.com/boonthepkstl-alt/stl_asset_service/pull/55)
+(extracted `frontend/src/lib/warranty.ts`), no behavior regressions
+(144/144 tests still pass).
+**F-22 (Executive/Main Dashboard scope question) has a confirmed
+business decision (2026-08-31): "แก้ Prototype ให้ตรงกับของจริง"** — fix
+the docs to match the shipped app. The full chain (`RAISE-DESIGN.md` §13
+v0.9, `RAISE-PROTOTYPE.md` P-002/P-014 v0.8, `RAISE-ACCEPTANCE-CRITERIA.md`
+AC-DASH/AC-EXEC-001 v0.7, `RAISE-TEST-PLAN.md` TS-DASH/TS-EXEC-001 v0.7,
+`RAISE-TEST-CASES.md` TC-DASH-01..03/TC-EXEC-001-01..02 v0.7,
+`RAISE-TRACEABILITY-MATRIX.md` v0.7) was corrected the same day to
+document the actually shipped 8-tile KPI grid / 10-section dashboard,
+with NBV/Risk/Utilization explicitly retained as a documented,
+not-yet-scheduled enhancement (F-03) — not deleted. **F-22 is NOT yet
+Resolved** — this was a documentation correction, not a fresh test
+execution; `RAISE-FR-EXEC-001`'s Test Status is re-derived to
+`NOT_TESTED (re-execution pending)`, and a formal execution sweep
+against the corrected spec is the recommended next step to actually
+close it.
+**F-27** (Category sub-taxonomy, TBD), **F-30** (no Auth mock fallback),
+**F-31** (Oracle FA Financial View not built), **F-32** (Alerts not
+built), and **F-33** (AI Assistant doesn't answer questions) remain open
+from the recent sweeps, awaiting their own business/design decisions.
 Every
 development session should close out per
 [`SESSION-CLOSEOUT-PROTOCOL.md`](SESSION-CLOSEOUT-PROTOCOL.md), which is
@@ -110,12 +129,12 @@ intentionally out of MVP scope (Roadmap).
 | Document | Version | Notes |
 |---|---|---|
 | [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) | 0.11 | Draft for Requirement Review — Warranty field list resolved (Resolved Question 40) |
-| [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) | 0.8 | Gap-closure pass against PRD v0.9; Warranty §5.2 resolved same-day as PRD v0.11 |
-| [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) | 0.7 | 17-screen inventory; P-010 Warranty field list corrected |
-| [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) | 0.6 | Re-synced against Prototype v0.7 — AC-WARRANTY-001 now Testable |
-| [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) | 0.6 | Re-synced against AC v0.6 |
-| [`RAISE-TEST-CASES.md`](../06-test-cases/RAISE-TEST-CASES.md) | 0.6 | 62 test cases; TC-WARRANTY-001-01/-02 unblocked |
-| [`RAISE-TRACEABILITY-MATRIX.md`](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md) | 0.6 | All 6 original gaps resolved; Gap 7 (Warranty field list) opened and resolved same-day |
+| [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) | 0.9 | §13 Executive Intelligence corrected to as-built dashboard (F-22, 2026-08-31) |
+| [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) | 0.8 | P-002/P-014 corrected to as-built dashboard, now cross-referencing each other (F-22, 2026-08-31) |
+| [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) | 0.7 | AC-DASH/AC-EXEC-001 rewritten against the as-built dashboard (F-22, 2026-08-31) |
+| [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) | 0.7 | TS-DASH/TS-EXEC-001 corrected to match AC v0.7 |
+| [`RAISE-TEST-CASES.md`](../06-test-cases/RAISE-TEST-CASES.md) | 0.7 | 63 test cases (new TC-DASH-03); TC-DASH-01..03/TC-EXEC-001-01..02 rewritten |
+| [`RAISE-TRACEABILITY-MATRIX.md`](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md) | 0.7 | Gap 8 opened (F-22 spec corrected, re-execution pending) |
 | [`RAISE-HIGH-LEVEL-ARCHITECTURE.md`](../08-architecture/RAISE-HIGH-LEVEL-ARCHITECTURE.md) | — | As-built, not versioned against PRD chain |
 | [`RAISE-API-DB-SPEC.md`](../09-api-db-spec/RAISE-API-DB-SPEC.md) | — | As-built |
 | [`RAISE-DETAILED-DESIGN.md`](../10-detailed-design/RAISE-DETAILED-DESIGN.md) | — | As-built |
@@ -135,7 +154,7 @@ intentionally out of MVP scope (Roadmap).
 | Auth | supports `RAISE-NFR-SEC-RBAC-001` | 🟡 Built, demo-only — hardcoded single user, no real user store. `TC-LOGIN-03` (access-denied for an unauthorized area) **PASS** per formal test execution 2026-08-29. `TC-LOGIN-01`/`-02` (valid/invalid login) **BLOCKED** — no mock fallback exists (unlike Asset/Employee/Ticket) and no backend/database is reachable in this dev environment (**F-30**) |
 | QR / Barcode lookup | `RAISE-FR-OPS-001` | ✅ Built, PASS on all test cases — [PR #29](https://github.com/boonthepkstl-alt/stl_asset_service/pull/29) + a follow-up F-21 fix (see `DEVELOPMENT-LOG.md` for the PR number once shipped). `GET /assets/:id` resolves by `code` too (dual lookup); real QR generation + Scan QR flow live on both Assets list and Asset Detail. `TC-OPS-001-01..03` all **PASS** — the invalid-code state (F-21) is fixed via a plausible-code-format check before lookup |
 | Audit Log | `RAISE-FR-AUDIT-001` | 🟡 Built — [PR #31](https://github.com/boonthepkstl-alt/stl_asset_service/pull/31) (Asset domain) + [PR #35](https://github.com/boonthepkstl-alt/stl_asset_service/pull/35) (Ticket domain). `GET /audit-logs` + recording on Asset create/assign/check-in and Ticket create/approve/dispatch/status-update. No update/delete path exists (immutability by omission). The testable subset of `TC-AUDIT-001-01..03` **PASSED** formal execution 2026-08-26; field taxonomy and the audit-review role gate remain TBD (unchanged, blocked on PRD) |
-| Executive Dashboard KPIs (first cut) | `RAISE-FR-EXEC-001` | 🟡 Built, narrow scope, FAIL on prototype match per formal test execution — [PR #33](https://github.com/boonthepkstl-alt/stl_asset_service/pull/33). `GET /dashboard/stats` computes status counts, expired-warranty count, and department/type distribution from real Asset data. Software License count still comes from the frontend's mock license service (no backend License table exists — Roadmap-only). NBV/Risk KPI formulas and Utilization's calculation mechanics remain **not started** (PRD §16 Q3/Q4/Q29 TBD). **`TC-EXEC-001-01/-02` FAILED formal execution 2026-08-26, and `TC-DASH-01..03` FAILED formal execution 2026-08-29** (P-002 Main Dashboard — word-for-word identical tile/section spec to P-014, same built page) — the built page has no tiles/sections named per Prototype P-002/P-014 at all (not even presence-only), a gap independent of the formula question — see `OPEN-FINDINGS.md` F-22 |
+| Executive Dashboard KPIs (first cut) | `RAISE-FR-EXEC-001` | 🟡 Built, narrow scope — [PR #33](https://github.com/boonthepkstl-alt/stl_asset_service/pull/33). `GET /dashboard/stats` computes status counts, expired-warranty count, and department/type distribution from real Asset data. Software License count still comes from the frontend's mock license service (no backend License table exists — Roadmap-only). **F-22 resolved via business decision 2026-08-31**: the full chain (Design/Prototype/AC/Test Plan/Test Cases/Traceability Matrix) was corrected to document the actually shipped 8-tile KPI grid / 10-section dashboard, instead of the never-built NBV/Risk/Utilization wireframe the prior `TC-EXEC-001-01/-02`/`TC-DASH-01..03` FAILs (2026-08-26/-29) were testing against. NBV/Risk/Utilization is retained as a documented, not-yet-scheduled enhancement (PRD §16 Q3/Q4/Q29 TBD). **Test Status re-derived to `NOT_TESTED (re-execution pending)`** — not yet re-confirmed by a fresh formal sweep against the corrected spec; see `OPEN-FINDINGS.md` F-22 |
 | Oracle FA Integration | `RAISE-FR-ORACLE-001` | 🔴 Integration method/mapping/sync/security all TBD (F-04), **and `TC-ORACLE-001-01..04` FAILED formal execution 2026-08-29** — the `/reconciliation` route renders a generic "foundation placeholder" `EmptyState` (`frontend/src/pages/_shared/ModulePage.tsx`), not an actual Financial View screen; no field or state from `AC-ORACLE-001-01..04` exists at all. A distinct build gap from F-04 — see `OPEN-FINDINGS.md` F-31 |
 | Alerts | `RAISE-FR-ALERT-001` | 🔴 Trigger rules/channels all TBD (F-05), **and `TC-ALERT-001-01..02` FAILED formal execution 2026-08-29** — the "Notification Center" route (`/notifications`) renders the app's generic 404 page, not even a placeholder stub; the header bell-icon dropdown is hardcoded empty. No alert is ever listed with severity/description/asset per `AC-ALERT-001-01..02`. A distinct build gap from F-05, worse than F-31's Oracle FA placeholder — see `OPEN-FINDINGS.md` F-32 |
 | Natural Language Search | `RAISE-AI-SEARCH-001` | 🔴 Citation precision/format TBD (F-06), **and `TC-AI-SEARCH-001-01..03`/`TC-AI-STATES-01..05` (all 8) FAILED formal execution 2026-08-29** — the header "AI Assistant" drawer accepts no input (static placeholder only); the Assets page's "Ask AI" box is a hardcoded keyword-to-filter matcher (legacy ESAPS content), not a natural-language answer engine, and exhibits none of the 5 required response states. No field or state from `AC-AI-SEARCH-001-01..03`/`AC-AI-STATES-01..05` exists at all. A distinct build gap from F-06 — see `OPEN-FINDINGS.md` F-33 |
@@ -148,19 +167,18 @@ intentionally out of MVP scope (Roadmap).
 Triaged against [`RAISE-TRACEABILITY-MATRIX.md`](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md)
 §3–§5 — re-check that file before picking an item, it may have changed.
 
-**Buildable now:** None remaining — Warranty (F-01) is now implemented
-(Assets Registry column, R-12) as of the 2026-08-26 Asset-domain sweep,
-the 2026-08-28 TS-OPS-002/TS-MAINT-001 sweep, and the 2026-08-29
-TS-LOGIN sweep — F-23 through F-29 are all now fixed (R-06 through
-R-11). F-22 (Executive/Main Dashboard vs. Prototype P-002/P-014,
-reconfirmed 2026-08-29 via TS-DASH), F-27 (Category sub-taxonomy), F-30
-(no Auth mock fallback), F-31 (Oracle FA Financial View not built,
-2026-08-29), F-32 (Alerts not built, 2026-08-29), F-33 (AI Assistant
-doesn't answer questions, 2026-08-29), and `AC-WARRANTY-001-03`'s
-90-day-window question all remain open but aren't directly buildable
-without a decision — as of this sweep, every remaining open item is
-uniformly blocked on a business/design decision, none is a "buildable
-now" engineering task.
+**Buildable now:** A formal test-execution sweep against the corrected
+`TC-DASH-01..03`/`TC-EXEC-001-01..02` (F-22) — the spec correction is
+done (2026-08-31); only re-verification against the real app remains, to
+actually close F-22. Otherwise, no direct-fix engineering item remains
+— Warranty (F-01) is implemented (Assets Registry column, R-12) as of
+the 2026-08-26 Asset-domain sweep, the 2026-08-28 TS-OPS-002/TS-MAINT-001
+sweep, and the 2026-08-29 TS-LOGIN sweep — F-23 through F-29 are all
+now fixed (R-06 through R-11). F-27 (Category sub-taxonomy), F-30 (no
+Auth mock fallback), F-31 (Oracle FA Financial View not built), F-33 (AI
+Assistant doesn't answer questions), F-32 (Alerts not built), and
+`AC-WARRANTY-001-03`'s 90-day-window question all remain open but aren't
+directly buildable without a decision.
 
 **Needs a scoped-down first cut:** None remaining — Audit Log (PR #31 +
 #35, now covering both Asset and Ticket domains) and Executive Dashboard

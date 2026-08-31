@@ -2,9 +2,9 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Acceptance Criteria
-**Version:** 0.6 Draft
+**Version:** 0.7 Draft
 **Status:** Draft for Acceptance Review
-**Source:** [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.7 §27 (Prototype Traceability Matrix) + §5, §7–§23, §25A (per-screen specs / AI Scope Boundary / NFR Backlog Prototype Note), cross-checked against [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.11 and [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.8
+**Source:** [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.8 §27 (Prototype Traceability Matrix) + §5, §7–§23, §25A (per-screen specs / AI Scope Boundary / NFR Backlog Prototype Note), cross-checked against [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.11 and [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.9
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
 
@@ -49,7 +49,7 @@ detail is "TBD" or "conceptual," the corresponding criterion is marked
 | AC Group | Screen(s) | Requirement | Status |
 |---|---|---|---|
 | [AC-LOGIN](#4-ac-login--p-001-login--access) | P-001 | Security Design (TBD) | Partially testable |
-| [AC-DASH](#5-ac-dash--p-002-main-dashboard) | P-002 | Product / Dashboard | Partially testable |
+| [AC-DASH](#5-ac-dash--p-002-main-dashboard) | P-002 | Product / Dashboard | Testable (rewritten 2026-08-31 to match as-built dashboard, Open Finding F-22; NBV/Risk NOT TESTABLE YET) |
 | [AC-ASSET-001](#6-ac-asset-001--p-003-asset-registry) | P-003 | RAISE-FR-ASSET-001 | Testable |
 | [AC-ASSET-001-DETAIL](#7-ac-asset-001-detail--p-004-asset-detail) | P-004 | RAISE-FR-ASSET-001 | Testable |
 | [AC-LIFE-001](#75-ac-life-001--asset-lifecycle-connectivity-cross-cutting) | P-004 (Lifecycle section) | RAISE-FR-LIFE-001 | Partially testable |
@@ -62,7 +62,7 @@ detail is "TBD" or "conceptual," the corresponding criterion is marked
 | [AC-ORACLE-001](#14-ac-oracle-001--p-011-oracle-fa--financial-view) | P-011 | RAISE-FR-ORACLE-001 | Partially testable |
 | [AC-ALERT-001](#15-ac-alert-001--p-012-alerts) | P-012 | RAISE-FR-ALERT-001 | Partially testable |
 | [AC-AUDIT-001](#16-ac-audit-001--p-013-audit-log) | P-013 | RAISE-FR-AUDIT-001 | Partially testable |
-| [AC-EXEC-001](#17-ac-exec-001--p-014-executive-dashboard) | P-014 | RAISE-FR-EXEC-001 | Partially testable |
+| [AC-EXEC-001](#17-ac-exec-001--p-014-executive-dashboard) | P-014 | RAISE-FR-EXEC-001 | Testable (rewritten 2026-08-31 to match as-built dashboard, Open Finding F-22; NBV/Risk NOT TESTABLE YET) |
 | [AC-AI-SEARCH-001](#18-ac-ai-search-001--p-015-ai-assistant) | P-015 | RAISE-AI-SEARCH-001 | Partially testable |
 | [AC-AI-STATES](#19-ac-ai-states--ai-response-states) | P-015 | RAISE-AI-SEARCH-001 | Testable |
 | [AC-AI-DOC-001](#195-ac-ai-doc-001--p-004-asset-detail-incidental--ocr--extraction) | P-004 (incidental) | RAISE-AI-DOC-001 | Not testable yet |
@@ -133,37 +133,71 @@ gated.
 
 **Requirement:** Product / Dashboard (general navigation) · **Screen:** P-002
 
-- **AC-DASH-01** — Given an authenticated user lands on the dashboard,
-  when the page loads, then Total Assets, NBV, Risk, and Warranty Expiry
-  summary tiles are displayed.
-- **AC-DASH-02** — Given asset data exists, when the dashboard loads,
-  then an "Asset by Category" view and a "Lifecycle / Maintenance
-  Overview" view are displayed.
-- **AC-DASH-03** — Given alert data exists, when the dashboard loads,
-  then a "Recent Alerts" section is displayed.
+**Status Note — Corrected 2026-08-31 to match as-built dashboard (Open Finding
+F-22):** the criteria below previously tested an "Asset Overview" wireframe
+(Total Assets/NBV/Risk/Warranty Expiry tiles; "Asset by Category"/"Lifecycle /
+Maintenance Overview"/"Recent Alerts" sections) that formal test execution
+confirmed was never built (`TC-DASH-01..03`, 2026-08-29, recorded as [Open
+Finding
+F-22](../project-management/OPEN-FINDINGS.md#confirmed-via-test-execution-not-blocked-on-any-prd-question)
+in `OPEN-FINDINGS.md`). Per explicit business decision on F-22, and matching
+[`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md#8-p-002-main-dashboard)
+§8's corrected "Sections (As Built)," the criteria below are rewritten against
+the actually shipped `frontend/src/pages/Dashboard/index.tsx` page. This is a
+scope/spec correction to match reality, not a new requirement.
 
-**NOT TESTABLE YET:** of the four summary tiles, only NBV, Risk, and
-Utilization are PRD-approved KPI concepts (PRD §8.1); "Total Assets" and
-"Warranty Expiry" tile behavior, and the exact KPI formulas, are
-Prototype-exploration and remain unconfirmed (Prototype §8).
+- **AC-DASH-01** — Given an authenticated user lands on the dashboard, when
+  the page loads, then the KPI grid displays all eight tiles: Total Assets,
+  Available, Assigned, In Maintenance, Expired Warranty, Software Licenses,
+  Monthly Depreciation, and Monthly Cost.
+- **AC-DASH-02** — Given asset/maintenance/warranty/license data exists,
+  when the dashboard loads, then all ten sections are displayed: AI
+  Insights, AI Portfolio Health, Oracle FA Reconciliation, Asset Lifecycle,
+  Department Distribution, Asset Status, Asset Type, Pending Approvals,
+  Recent Activities, and Maintenance Calendar.
+- **AC-DASH-03** — Given the dashboard's KPI grid as specified in
+  AC-DASH-01, when a user inspects it for NBV, Risk, or Utilization tiles,
+  then none of the three PRD-proposal KPIs (`RAISE-FR-EXEC-001`) is present
+  in the shipped grid — this criterion documents today's gap accurately; it
+  is not a passing criterion that any of the three tiles is displayed.
 
-**Utilization — Testable (presence + assignment-time-based definition available),
-resolved 2026-08-21:** PRD v0.3 §16 Resolved Question 27 and Design v0.4 §13 confirmed
-Utilization's *definition* as **assignment-time-based** (% of time an asset is assigned
-to a user/department, relative to total available time) — this is no longer an
-undefined concept, per Prototype §8's updated "Resolved 2026-08-21" callout. Accordingly:
+**Testable now:** AC-DASH-01 and AC-DASH-02 test presence of the actual
+shipped tile/section list and are expected to pass against the current app.
+Two caveats apply to both, neither of which blocks passing:
+- Monthly Depreciation and Monthly Cost are explicitly **illustrative** — no
+  depreciation model has been built (Prototype §8). AC-DASH-01 tests that the
+  tiles are *displayed*, not that their figures are correct or backed by a
+  defined calculation.
+- None of the eight tiles or ten sections has a PRD-defined field list,
+  formula, or threshold beyond what the page already computes from existing
+  Asset/Maintenance/Warranty/License data (Prototype §8); AC-DASH-01/-02 test
+  presence only, not calculation correctness.
 
-- **Testable now:** AC-DASH-01 can be verified for the presence of a tile labeled
-  "Utilization," *and* that label can now be checked against the confirmed definition
-  above (i.e., a reviewer can confirm the tile is documented/described as an
-  assignment-time-based measure, not an arbitrary unlabeled figure).
-- **NOT TESTABLE YET (calculation mechanics):** how "assigned" state/time is measured
-  against Custody (P-006), what "total available time" excludes, and the aggregation
-  window/granularity remain **design-phase TBD** (Prototype §8). No criterion in this
-  document asserts a specific numeric value, formula, or threshold the Utilization tile
-  must display — that remains blocked pending further design input. See
-  [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md#16-open-questions) §16 Q3 (partially
-  resolved) and [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md#13-executive-intelligence).
+**NOT TESTABLE YET — AC-DASH-03 (NBV/Risk):** NBV and Risk formulas,
+thresholds, and dashboard placement remain fully undefined — see
+[`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md#16-open-questions) §16
+Q3–Q4, tracked as [Open Finding
+F-03](../project-management/OPEN-FINDINGS.md#blocking-gates-an-mvp-requirement).
+This is a separate, not-yet-scheduled enhancement layered on top of the
+current MVP dashboard (Prototype §8 "NBV/Risk/Utilization — Proposal KPIs,
+Not Yet Implemented") — AC-DASH-03 must not be read as confirming NBV/Risk
+display is required to pass; it only confirms today's absence is accurately
+documented, not silently dropped.
+
+**Utilization — unaffected, unchanged (Resolved 2026-08-21, PRD §16 Resolved
+Question 27):** Utilization's *definition* (assignment-time-based — % of time
+an asset is assigned to a user/department, relative to total available time,
+computed as a real-time snapshot with Disposed/Retired/Under-Maintenance
+assets excluded from the denominator) remains resolved and is unaffected by
+this correction. Only its *implementation* on the dashboard is outstanding —
+no Utilization tile exists in the shipped KPI grid today, so its absence is
+covered by AC-DASH-03 alongside NBV/Risk. No criterion in this document
+asserts a specific numeric value, formula, or threshold a (not-yet-built)
+Utilization tile must display; how "assigned" state/time would be measured
+against Custody (P-006), what "total available time" would exclude, and the
+aggregation window/granularity remain **design-phase TBD**. See
+[`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md#13-executive-intelligence)
+§13.
 
 ---
 
@@ -571,36 +605,71 @@ role is actually enforced.
 
 **Requirement:** `RAISE-FR-EXEC-001` · **Screen:** P-014
 
-- **AC-EXEC-001-01** — Given organization-level asset data exists, when
-  an Executive user opens the Executive Dashboard, then NBV, Risk, and
-  Utilization KPI tiles are displayed.
+**Status Note — Corrected 2026-08-31 to match as-built dashboard (Open
+Finding F-22):** the criteria below previously tested an "Executive Asset
+Intelligence" wireframe (NBV/Risk/Utilization tiles; "Asset Overview"/
+"Executive Summary" sections) that formal test execution confirmed was
+never built — twice, `TC-EXEC-001-01`/`-02` (2026-08-26) and
+`TC-DASH-01..03` (2026-08-29), recorded as [Open Finding
+F-22](../project-management/OPEN-FINDINGS.md#confirmed-via-test-execution-not-blocked-on-any-prd-question)
+in `OPEN-FINDINGS.md`. Per explicit business decision on F-22, and matching
+[`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md#20-p-014-executive-dashboard)
+§20's corrected "Sections (As Built)," the criteria below are rewritten
+against the actually shipped `frontend/src/pages/Dashboard/index.tsx`
+page — the same built page as P-002 (see AC-DASH §5). This is a scope/spec
+correction to match reality — it does not add, remove, or reinterpret
+`RAISE-FR-EXEC-001`.
+
+- **AC-EXEC-001-01** — Given organization-level asset data exists, when an
+  Executive user opens the Executive Dashboard, then the KPI grid displays
+  all eight tiles: Total Assets, Available, Assigned, In Maintenance,
+  Expired Warranty, Software Licenses, Monthly Depreciation, and Monthly
+  Cost.
 - **AC-EXEC-001-02** — Given the dashboard is displayed, when the
-  Executive views it, then an Asset Overview section and an Executive
-  Summary section are present.
+  Executive views it, then all ten sections are present: AI Insights, AI
+  Portfolio Health, Oracle FA Reconciliation, Asset Lifecycle, Department
+  Distribution, Asset Status, Asset Type, Pending Approvals, Recent
+  Activities, and Maintenance Calendar.
 
-**NOT TESTABLE YET:** exact KPI formulas, thresholds, and dashboard
-layout are undefined (PRD §16 Q3; Prototype §20); whether the Executive
-Summary content is AI-generated (as PRD §8.1 describes) or static is
-unresolved per this PRD's own gap analysis.
+**Testable now:** AC-EXEC-001-01 and -02 test presence of the actual
+shipped tile/section list — identical to AC-DASH-01/-02 (§5) since P-014
+and P-002 document the same built page — and are expected to pass against
+the current app. The Monthly Depreciation/Monthly Cost "illustrative, no
+depreciation model exists" caveat and the "presence only, not calculation
+correctness" caveat noted under AC-DASH (§5) apply equally here.
 
-**Utilization — Testable (presence + assignment-time-based definition available),
-resolved 2026-08-21:** PRD v0.3 §16 Resolved Question 27 and Design v0.4 §13 confirmed
-Utilization's *definition* as **assignment-time-based** (% of time an asset is assigned
-to a user/department, relative to total available time), per Prototype §20's updated
-"Resolved 2026-08-21" callout (supersedes the prior "Open ambiguity — Utilization"
-wording). Accordingly:
+**NOT TESTABLE YET (NBV/Risk — not yet built):** the PRD identifies NBV,
+Risk, and Utilization as proposal-defined KPIs under `RAISE-FR-EXEC-001`.
+None of the three appears in the shipped dashboard's KPI grid tested by
+AC-EXEC-001-01. NBV and Risk formulas, thresholds, and dashboard placement
+remain fully undefined — see
+[`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md#16-open-questions) §16
+Q3–Q4, tracked as [Open Finding
+F-03](../project-management/OPEN-FINDINGS.md#blocking-gates-an-mvp-requirement).
+This is a separate, not-yet-scheduled enhancement, not a silently dropped
+requirement — no criterion in this document asserts NBV or Risk tiles must
+be displayed on the Executive Dashboard, and none should be treated as
+passing until F-03 is resolved and the enhancement is built.
 
-- **Testable now:** AC-EXEC-001-01 can be verified for the presence of a tile labeled
-  "Utilization," *and* that the tile is documented/described against the confirmed
-  assignment-time-based definition (not an arbitrary unlabeled figure).
-- **NOT TESTABLE YET (calculation mechanics):** how "assigned" state/time is measured
-  against the Custody domain (P-006), what "total available time" excludes, and the
-  aggregation window/granularity remain **design-phase TBD** (Prototype §20). No
-  criterion here asserts a specific numeric value, formula, or threshold the
-  Utilization tile must show — this remains blocked pending further design input. See
-  [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md#16-open-questions) §16 Q3 (partially
-  resolved) and [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md#13-executive-intelligence).
-  NBV and Risk KPI formulas remain fully unresolved/open (unaffected by this change).
+**Utilization — unaffected, unchanged (Resolved 2026-08-21, PRD §16
+Resolved Question 27; mechanics resolved Resolved Question 29):**
+Utilization's *definition* (assignment-time-based — % of time an asset is
+assigned to a user/department, relative to total available time, computed
+as a real-time snapshot with Disposed/Retired/Under-Maintenance assets
+excluded from the denominator) remains resolved, unaffected by this
+correction. Only its *implementation* is outstanding — no Utilization tile
+exists in the shipped KPI grid today. No criterion here asserts a specific
+numeric value, formula, or threshold a (not-yet-built) Utilization tile
+must show; how "assigned" state/time would be measured against the Custody
+domain (P-006), what "total available time" would exclude, and the
+aggregation window/granularity remain **design-phase TBD**. See
+[`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md#13-executive-intelligence)
+§13.
+
+Whether the "AI Insights"/"AI Portfolio Health" sections satisfy PRD
+§8.1's "AI-Generated Executive Summary" concept remains unresolved per
+`RAISE-DESIGN.md` §13's still-open MVP-vs-Roadmap ambiguity note — no
+criterion in this document asserts that they do.
 
 ---
 
@@ -811,8 +880,8 @@ them as final:
 | Open Question | Blocks |
 |---|---|
 | Q1 Asset master field list | AC-ASSET-001-01..04 |
-| Q3 Definition of Utilization | AC-DASH-01, AC-EXEC-001-01 |
-| Q4 Definition of Risk | AC-DASH-01, AC-EXEC-001-01 |
+| Q3 NBV/Risk KPI formulas (Utilization definition itself resolved — Resolved Question 27) | AC-DASH-03, AC-EXEC-001 NBV/Risk note (§17) — tracked further as Open Finding F-03 |
+| Q4 Definition of Risk | AC-DASH-03, AC-EXEC-001 NBV/Risk note (§17) — tracked further as Open Finding F-03 |
 | Q6–Q10 Oracle integration design | AC-ORACLE-001-01..04 |
 | Q11 Check-in/Check-out workflow | AC-OPS-002-01..02 |
 | Q12 Who can assign/transfer an asset | AC-OPS-002-01 |
@@ -830,6 +899,29 @@ them as final:
 
 No criterion in this document silently resolves these — each affected
 criterion above carries its own **NOT TESTABLE YET** note.
+
+**Resolved since last revision (2026-08-31, Open Finding F-22 as-built
+correction):** AC-DASH-01/-02 (§5) and AC-EXEC-001-01/-02 (§17) previously
+tested a wireframe (Total Assets/NBV/Risk/Warranty Expiry or NBV/Risk/
+Utilization tiles; "Asset by Category"/"Lifecycle-Maintenance Overview"/
+"Recent Alerts" or "Asset Overview"/"Executive Summary" sections) that
+formal test execution confirmed was never built — `TC-DASH-01..03`
+(2026-08-29) and `TC-EXEC-001-01`/`-02` (2026-08-26), recorded as [Open
+Finding
+F-22](../project-management/OPEN-FINDINGS.md#confirmed-via-test-execution-not-blocked-on-any-prd-question).
+Per explicit business decision on F-22, both AC groups are rewritten
+against the actually shipped `frontend/src/pages/Dashboard/index.tsx` page
+(matching `RAISE-PROTOTYPE.md` v0.8 §8/§20's own as-built correction) and
+are now **Testable** for tile/section presence — this is a scope/spec
+correction to match reality, not a resolution of any PRD Open Question.
+NBV and Risk remain unresolved (Q3–Q4 above, Open Finding F-03) and are now
+tracked under the new AC-DASH-03 / AC-EXEC-001's NBV/Risk note rather than
+under AC-DASH-01/AC-EXEC-001-01, since the rewritten AC-DASH-01/
+AC-EXEC-001-01 no longer claim NBV/Risk tiles exist. Utilization's
+definition remains resolved and unaffected (Resolved Question 27); only its
+dashboard implementation is outstanding, and its absence is now covered by
+the same AC-DASH-03 / AC-EXEC-001 NBV/Risk note rather than a separate
+row.
 
 **Resolved since last revision:** Q15 (Warranty field list) — `RAISE-PRD.md` §16
 Resolved Question 40 (2026-08-29) confirmed `warrantyExpiry` as the only Warranty field
@@ -872,11 +964,15 @@ from the open-blockers list.
 
 **Resolved since last revision:** Q27 (Utilization KPI definition) — confirmed
 assignment-time-based on 2026-08-21 (`RAISE-PRD.md` §16 Resolved Question 27; Design
-v0.4 §13). AC-DASH-01 and AC-EXEC-001-01 are now testable for tile presence + the
-confirmed definition; only calculation mechanics (formula, exclusions, aggregation
-window) remain a separate, narrower NOT TESTABLE YET item under each criterion (see
-§5 and §17 above) — this table intentionally does not list AC-DASH-01/AC-EXEC-001-01
-as fully blocked any longer, only as partially blocked, per those criteria's own notes.
+v0.4 §13). **Superseded 2026-08-31 by the Open Finding F-22 as-built correction above:**
+at the time this note was written, AC-DASH-01/AC-EXEC-001-01 asserted a "Utilization"
+tile was present and testable against the confirmed definition; formal test execution
+(`TC-DASH-01..03`, `TC-EXEC-001-01`/`-02`) subsequently confirmed no such tile — nor the
+wireframe those criteria were based on — was ever built. AC-DASH-01/-02 and
+AC-EXEC-001-01/-02 have since been rewritten against the actual shipped tile/section
+list (§5, §17); Utilization's absence (definition still resolved, only implementation
+outstanding) is now tracked under AC-DASH-03 / AC-EXEC-001's NBV/Risk note, not as a
+partially-blocked note under AC-DASH-01/AC-EXEC-001-01.
 
 **Resolved since last revision:** the traceability gap previously noted here — "no
 dedicated `RAISE-AI-*` Traceability ID exists for OCR/Extraction, Metadata,
@@ -927,6 +1023,12 @@ Before moving to Test Plan:
       Security, Audit Retention, Monitoring, Logging) is explicitly acknowledged (§19.9)
       rather than silently absent from this document — no AC group is invented for any
       of these areas
+- [x] AC-DASH (§5) and AC-EXEC-001 (§17) test the actual shipped
+      `frontend/src/pages/Dashboard/index.tsx` tile/section list, matching
+      `RAISE-PROTOTYPE.md` v0.8 §8/§20's as-built correction (Open Finding F-22) — no
+      criterion asserts the old, never-built "NBV"/"Risk"/"Warranty Expiry"/"Asset by
+      Category"/"Recent Alerts" wireframe; NBV/Risk remain explicitly NOT TESTABLE YET
+      (Open Finding F-03), not silently marked passing
 
 ---
 
@@ -960,8 +1062,73 @@ as blocked pending business confirmation.
 
 ## Document Status
 
-**Version:** 0.6 (re-synced against `RAISE-PROTOTYPE.md` v0.7, `RAISE-PRD.md` v0.11, and
-`RAISE-DESIGN.md` v0.8, 2026-08-29)
+**Version:** 0.7 (re-synced against `RAISE-PROTOTYPE.md` v0.8, `RAISE-PRD.md` v0.11, and
+`RAISE-DESIGN.md` v0.9, 2026-08-31 — Open Finding F-22 as-built correction)
+
+**Change Log — v0.6 → v0.7 (2026-08-31, Open Finding F-22 as-built
+correction, per explicit business decision):**
+
+1. **Root cause.** `RAISE-PROTOTYPE.md` v0.7 §8 (P-002 Main Dashboard) and §20 (P-014
+   Executive Dashboard) — the direct source for this document's AC-DASH (§5) and
+   AC-EXEC-001 (§17) — specified an "Asset Overview"/"Executive Asset Intelligence"
+   wireframe (Total Assets/NBV/Risk/Warranty Expiry or NBV/Risk/Utilization tiles;
+   "Asset by Category"/"Lifecycle-Maintenance Overview"/"Recent Alerts" or "Asset
+   Overview"/"Executive Summary" sections) that was never built. Formal test execution
+   confirmed this gap twice against the same shipped page,
+   `frontend/src/pages/Dashboard/index.tsx` — `TC-EXEC-001-01`/`-02` (2026-08-26) and
+   `TC-DASH-01..03` (2026-08-29) — recorded as Open Finding F-22 in `OPEN-FINDINGS.md`.
+   Business explicitly decided to correct the Prototype (and this Acceptance Criteria
+   document downstream of it) to match the shipped app, rather than change the app to
+   match the old wireframe. `RAISE-PROTOTYPE.md` v0.7 → v0.8 and `RAISE-DESIGN.md` v0.8
+   → v0.9 were corrected first; this document is corrected to match.
+2. **AC-DASH (§5) rewritten.** AC-DASH-01 now tests the actual eight-tile KPI grid
+   (Total Assets, Available, Assigned, In Maintenance, Expired Warranty, Software
+   Licenses, Monthly Depreciation, Monthly Cost); AC-DASH-02 now tests the actual
+   ten-section list (AI Insights, AI Portfolio Health, Oracle FA Reconciliation, Asset
+   Lifecycle, Department Distribution, Asset Status, Asset Type, Pending Approvals,
+   Recent Activities, Maintenance Calendar). Both are marked **Testable** and are
+   expected to pass against the current app. A new **AC-DASH-03** documents that NBV,
+   Risk, and Utilization tiles are absent from the shipped grid — this criterion
+   confirms the gap is accurately documented, not that the tiles must be displayed.
+3. **AC-EXEC-001 (§17) rewritten** identically in substance to AC-DASH, since
+   `RAISE-PROTOTYPE.md` confirms P-002 and P-014 document the same built page:
+   AC-EXEC-001-01 tests the same eight-tile KPI grid; AC-EXEC-001-02 tests the same
+   ten-section list. Both are marked **Testable**.
+4. **NBV/Risk kept NOT TESTABLE YET, not marked passing.** Per explicit instruction,
+   NBV and Risk KPI formulas remain a separate, not-yet-implemented enhancement (PRD
+   §16 Q3–Q4, Open Finding F-03) — AC-DASH-03 and a corresponding NOT TESTABLE YET note
+   under AC-EXEC-001 (§17) make this explicit; no criterion in this document asserts
+   NBV/Risk tiles must be displayed or treats their absence as a defect to be tested
+   against.
+5. **Utilization unaffected, unchanged.** PRD §16 Resolved Question 27's
+   assignment-time-based definition remains resolved and is not reopened by this
+   correction. Only Utilization's dashboard *implementation* is outstanding — no
+   Utilization tile exists in the shipped grid — and this is now covered by AC-DASH-03
+   / AC-EXEC-001's NBV/Risk note rather than a standalone "testable for presence" claim
+   under AC-DASH-01/AC-EXEC-001-01, since those criteria no longer reference a
+   Utilization tile at all.
+6. **AC Index (§3)** — AC-DASH and AC-EXEC-001 rows updated from "Partially testable"
+   to "Testable (rewritten 2026-08-31 to match as-built dashboard, Open Finding F-22;
+   NBV/Risk NOT TESTABLE YET)."
+7. **Not-Yet-Testable Summary (§20)** — the Q3/Q4 table rows' "Blocks" column updated
+   from AC-DASH-01/AC-EXEC-001-01 (no longer accurate, since those criteria no longer
+   test NBV/Risk/Utilization) to AC-DASH-03/AC-EXEC-001's NBV/Risk note. A new
+   "Resolved since last revision (2026-08-31, Open Finding F-22...)" note added
+   explaining the correction, and the prior Q27 resolution note (v0.2→v0.3) is marked
+   **Superseded 2026-08-31** rather than left to imply AC-DASH-01/AC-EXEC-001-01 still
+   assert a Utilization tile exists.
+8. **Acceptance Criteria Review Checklist (§21)** gained a new checklist item
+   confirming AC-DASH/AC-EXEC-001 now test the actual shipped page and that NBV/Risk
+   remain explicitly NOT TESTABLE YET.
+9. Version citations in the document header were updated from Prototype v0.7 / Design
+   v0.8 to Prototype v0.8 / Design v0.9 (PRD unchanged at v0.11). This is a
+   scope/spec correction to match Prototype's already-corrected content per an
+   explicit business decision on Open Finding F-22 — not a new requirement, and no
+   `## NEEDS_PRD_CONFIRMATION` signal is raised. No other AC group required
+   correction — the Login/Asset/Ops/Maintenance/Warranty/Oracle/Alert/Audit/
+   AI-Search/AI-Doc groups were checked against the corresponding Prototype v0.8
+   sections and found unchanged in substance (Prototype v0.7 → v0.8's only content
+   change was the P-002/P-014 as-built correction itself).
 
 **Change Log — v0.5 → v0.6 (2026-08-29):**
 

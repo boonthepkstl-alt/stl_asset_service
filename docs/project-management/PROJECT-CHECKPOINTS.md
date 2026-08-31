@@ -2151,11 +2151,94 @@ Test Case: `TC-AI-STATES-01..05` — now **FAIL** (up from `BLOCKED`); `RAISE-TR
 
 **Git:**
 Branch: `docs/tc-execution-ai-search`
-Commit: pending — a second commit on the still-open [PR #54](https://github.com/boonthepkstl-alt/stl_asset_service/pull/54) (verify via `gh pr view 54` before treating as final).
+Commit: `932a6eb` (implementation), merged via [PR #54](https://github.com/boonthepkstl-alt/stl_asset_service/pull/54).
 
 **Known Issues:** None new — this broadens F-33, confirmed from a second AC group/suite against the exact same two built surfaces.
 **Remaining Work:** F-22, F-27, F-30, F-31, F-32, F-33, and `AC-WARRANTY-001-03`'s 90-day threshold all remain open items blocked on a business/design decision — no engineering task is currently unblocked and buildable from these. **Every suite in `RAISE-TEST-CASES.md` has now been formally executed at least once.**
-**Next Step:** Recalculate `NEXT-STEP.md`. With formal execution coverage complete, the only remaining work is a business/design decision on one of the seven open findings — check in with the user for direction.
+**Next Step:** Recalculate `NEXT-STEP.md`. With formal execution coverage complete, the only remaining work is a business/design decision on one of the seven open findings — check in with the user for direction. User asked for a `/code-review` pass instead — see `CHECKPOINT-2026-08-31-001` below.
+
+---
+
+## CHECKPOINT-2026-08-31-001
+
+**Phase:** Cross-cutting (code quality, not tied to one phase)
+**Feature:** `/code-review` pass on PR #50 (Warranty column), medium effort
+**Task:** Review PR #50's diff for correctness/cleanup issues per explicit user instruction ("/code-review [max]" — target clarified to PR #50 after the working tree/PRs were confirmed clean), then fix the 1 confirmed finding per user instruction ("fix it")
+
+**What was implemented:** N/A — a review and a targeted refactor, not new functionality.
+**What was modified:** `frontend/src/pages/Assets/index.tsx`, `frontend/src/pages/AssetDetail/index.tsx`, `frontend/src/services/dashboard-repository.ts` (all 3 call sites of the "is warranty expired" check switched to import a shared helper).
+**What was fixed:** 1 `reuse`-category finding — `new Date(warrantyExpiry) < new Date()` was independently duplicated in 3 files (introduced by PR #50's new Warranty column, on top of 2 pre-existing sites); PR #41 earlier in this project had already established a "compute once" precedent for this exact check within `AssetDetail`, but it was never extracted into a shared utility.
+**What was added:** `frontend/src/lib/warranty.ts` — `isWarrantyExpired(warrantyExpiry: string, asOf: Date = new Date()): boolean`.
+**What was removed:** The 3 inline duplicate computations (replaced with calls to the shared helper); `dashboard-repository.ts` keeps its existing "compute `today` once outside the filter loop" optimization by passing it as `asOf`.
+
+**Files changed:** 4 files — 1 new (`lib/warranty.ts`), 3 modified. No docs touched (pure code fix).
+**Database changes:** None. **API changes:** None. **Frontend changes:** None visible — same rendered output, same badges/dates, just single-sourced logic.
+
+**Tests:**
+- Unit Test: No new test added (behavior unchanged) — existing `TC-WARRANTY-001-01/-02` coverage in `Assets/index.test.tsx` continues to pass unmodified, confirming no behavior regression.
+- Integration Test: None. E2E Test: None.
+
+**Validation:**
+- Build: N/A (not run standalone; covered by Type Check below). Lint: `npm run lint` ✅ (0 warnings).
+- Test: `npx vitest run` ✅ (144/144, unchanged from PR #50's baseline).
+- Type Check: `npx tsc --noEmit` ✅.
+
+**Requirement Traceability:**
+PRD: `RAISE-FR-WARRANTY-001` (unaffected — no behavior change, pure refactor).
+Acceptance Criteria / Test Case: `AC-WARRANTY-001-01/-02` / `TC-WARRANTY-001-01/-02` — still **PASS**, re-verified via the existing automated test, not a manual browser re-check (no user-facing change to verify).
+
+**Git:**
+Branch: `frontend/dedupe-warranty-expired-check`
+Commit: `89e0067` (implementation), merged via [PR #55](https://github.com/boonthepkstl-alt/stl_asset_service/pull/55).
+
+**Known Issues:** None new.
+**Remaining Work:** F-22, F-27, F-30, F-31, F-32, F-33, and `AC-WARRANTY-001-03`'s 90-day threshold remain open items blocked on a business/design decision.
+**Next Step:** User chose to resolve F-22 next — see `CHECKPOINT-2026-08-31-002` below.
+
+---
+
+## CHECKPOINT-2026-08-31-002
+
+**Phase:** Phase 8 — Executive Dashboard & Reporting (Design/Prototype/AC/Test Plan/Test Cases/Traceability Matrix correction)
+**Feature:** Resolve Open Finding F-22's business decision via the full deliverable chain
+**Task:** Per explicit user decision ("แก้ Prototype ให้ตรงกับของจริง" — fix the docs to match the shipped app, not the other way around), propagate this correction through `RAISE-DESIGN.md` → `RAISE-PROTOTYPE.md` → `RAISE-ACCEPTANCE-CRITERIA.md` → `RAISE-TEST-PLAN.md` → `RAISE-TEST-CASES.md` → `RAISE-TRACEABILITY-MATRIX.md`, using `/run-full-chain`'s sequential subagent workflow (design-writer → prototype-writer → acceptance-criteria-writer → test-plan-writer → test-cases-writer → traceability-matrix-writer), verifying each stage's actual file content before proceeding to the next
+
+**What was implemented:** N/A — a documentation correction to match already-shipped behavior, not new code.
+**What was modified:**
+- `RAISE-DESIGN.md` §13 (v0.8→0.9): replaced the never-built "NBV/Risk/Utilization" wireframe with "Logical Dashboard — Current MVP (As Built)" documenting the real 8-tile KPI grid / 10-section list; added a "NBV/Risk/Utilization — Proposal KPIs, Not Yet Implemented" subsection (kept, not deleted).
+- `RAISE-PROTOTYPE.md` P-002/P-014 (v0.7→0.8): both rewritten to the as-built tile/section list, now explicitly cross-referencing each other as documenting the same single built page (`frontend/src/pages/Dashboard/index.tsx`) instead of duplicating divergent specs.
+- `RAISE-ACCEPTANCE-CRITERIA.md` AC-DASH/AC-EXEC-001 (v0.6→0.7): `AC-DASH-01/-02`/`AC-EXEC-001-01/-02` rewritten as Testable against the as-built list; new `AC-DASH-03` (and an equivalent AC-EXEC-001 note) documents NBV/Risk/Utilization absence as NOT TESTABLE YET (tied to F-03), not a passing criterion.
+- `RAISE-TEST-PLAN.md` TS-DASH/TS-EXEC-001 (v0.6→0.7): blocked-item notes corrected to match — tile/section presence has no remaining gap; only the NBV/Risk sub-item remains blocked.
+- `RAISE-TEST-CASES.md` TC-DASH-01..03/TC-EXEC-001-01..02 (v0.6→0.7): rewritten to assert the as-built tile/section list; new `TC-DASH-03` (absence-check) added; explicitly does NOT mark any case as already PASSED.
+- `RAISE-TRACEABILITY-MATRIX.md` (v0.6→0.7): `RAISE-FR-EXEC-001` and "Main Dashboard" rows re-derived to `NOT_TESTED (re-derived after spec correction; formal re-execution pending)` — explicitly does not claim PASS from a documentation fix alone; new Gap 8 recorded (spec correction closed, re-execution open).
+- `docs/project-management/OPEN-FINDINGS.md` F-22: updated to record the business decision and chain correction; kept **Open** (not Resolved) pending a fresh execution sweep.
+
+**What was fixed:** None — this is a spec/scope correction, not a defect fix (the app was already correct; the documentation was wrong).
+**What was added:** `AC-DASH-03`, `TC-DASH-03` (both testing NBV/Risk/Utilization's confirmed absence from the shipped grid); Gap 8 in the Traceability Matrix.
+**What was removed:** The stale "Asset Overview"/"Executive Asset Intelligence" wireframe and its NBV/Risk/Utilization/"Asset by Category"/"Recent Alerts" tile-and-section names from Design §13 and Prototype P-002/P-014 (the underlying KPI *concept* is retained, only the fictional wireframe is removed).
+
+**Files changed:** 7 files — `RAISE-DESIGN.md`, `RAISE-PROTOTYPE.md`, `RAISE-ACCEPTANCE-CRITERIA.md`, `RAISE-TEST-PLAN.md`, `RAISE-TEST-CASES.md`, `RAISE-TRACEABILITY-MATRIX.md`, `OPEN-FINDINGS.md`. No frontend/backend code touched.
+**Database changes:** None. **API changes:** None. **Frontend changes:** None (the app was already correct; only its documentation was wrong).
+
+**Tests:**
+- Unit/Integration/E2E: None — this step corrects what future test execution will assert; it does not itself execute any test. Each subagent was explicitly instructed not to claim PASS.
+
+**Validation:**
+- Build/Lint/Test/Type Check: N/A (no code change).
+- Chain verification: after each subagent's output, the actual file content was Read (not just the subagent's self-report) to confirm the correction landed correctly and no earlier-layer document was touched out of scope — per this project's standing `/run-full-chain` discipline.
+
+**Requirement Traceability:**
+PRD: `RAISE-FR-EXEC-001` (unchanged — no new requirement, no requirement deleted).
+Acceptance Criteria: `AC-DASH-01/-02`, `AC-EXEC-001-01/-02` — now Testable (not yet executed). `AC-DASH-03`/AC-EXEC-001's NBV/Risk note — NOT TESTABLE YET (F-03, unaffected).
+Test Case: `TC-DASH-01..03`, `TC-EXEC-001-01..02` — rewritten; `RAISE-TRACEABILITY-MATRIX.md`'s `RAISE-FR-EXEC-001`/"Main Dashboard" rows explicitly marked `NOT_TESTED (re-derived; re-execution pending)`, not PASS.
+
+**Git:**
+Branch: `docs/resolve-f22-dashboard-spec-correction`
+Commit: pending — predicted next PR after #55 (verify via `gh pr list` before treating as final).
+
+**Known Issues:** None new.
+**Remaining Work:** A fresh formal test-execution sweep against the corrected `TC-DASH-01..03`/`TC-EXEC-001-01..02` has not yet been run — this is the recommended next action to actually close F-22 (mark it Resolved with an R-number) rather than leave it "corrected but unverified." F-27, F-30, F-31, F-32, F-33, and `AC-WARRANTY-001-03`'s 90-day threshold remain open, unaffected by this work.
+**Next Step:** Recalculate `NEXT-STEP.md`. Recommend running a formal test-execution sweep against the corrected `TC-DASH-01..03`/`TC-EXEC-001-01..02` next, to confirm the app actually passes the corrected spec and close F-22 for real — or continue with another open finding, per user direction.
 
 ---
 

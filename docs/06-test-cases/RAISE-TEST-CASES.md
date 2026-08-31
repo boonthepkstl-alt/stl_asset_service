@@ -2,9 +2,9 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Test Cases
-**Version:** 0.6 Draft
+**Version:** 0.7 Draft
 **Status:** Draft for Test Case Review
-**Source:** [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.6 §7 (Test Suites) + §8 (Blocked Items) + §8.1 (Fully-Blocked Suites — AI Document Intelligence Capabilities) + §3.3 (PRD §10 NFR Backlog — No Suite), expanding [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.6
+**Source:** [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.7 §7 (Test Suites) + §8 (Blocked Items) + §8.1 (Fully-Blocked Suites — AI Document Intelligence Capabilities) + §3.3 (PRD §10 NFR Backlog — No Suite), expanding [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.7
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
 
@@ -69,11 +69,24 @@ and no AC criterion is left without a test case.
 
 **Suite:** TS-DASH · **AC Group:** AC-DASH · **Requirement:** Product / Dashboard · **Screen:** P-002
 
+**Status Note — Corrected 2026-08-31 to match `RAISE-TEST-PLAN.md` v0.7 / `RAISE-ACCEPTANCE-CRITERIA.md` v0.7
+([Open Finding
+F-22](../project-management/OPEN-FINDINGS.md#confirmed-via-test-execution-not-blocked-on-any-prd-question)):**
+`TC-DASH-01`–`-03` previously asserted the stale "Asset Overview" wireframe (Total
+Assets/NBV/Risk/Warranty Expiry tiles; "Asset by Category"/"Lifecycle / Maintenance
+Overview"/"Recent Alerts" sections). Formal test execution on 2026-08-29 confirmed none of
+that wireframe was ever built. Per explicit business decision on F-22, all three cases
+below are rewritten against the actually shipped `frontend/src/pages/Dashboard/index.tsx`
+page (`RAISE-PROTOTYPE.md` §8; `RAISE-ACCEPTANCE-CRITERIA.md` §5). This is a scope/spec
+correction to match reality, not a new requirement, and **does not itself report a new
+PASS/FAIL execution result** — re-running formal execution against the rewritten steps
+below is deferred to a future execution sweep.
+
 | TC ID | Title | Steps | Test Data | Expected Result | Blocked |
 |---|---|---|---|---|---|
-| TC-DASH-01 | Summary tiles render | 1. Log in. 2. Land on Dashboard. | Any asset dataset | Total Assets, NBV, Risk, Warranty Expiry tiles are displayed | **BLOCKED (partial)** — tile presence is testable for all listed tiles; NBV/Risk value correctness is not confirmed (PRD §16 Q3/Q4); "Total Assets"/"Warranty Expiry" tile behavior is also unconfirmed. **Utilization specifically (resolved 2026-08-21, partial):** PRD v0.3 §16 Resolved Question 27 and Design v0.4 §13 confirmed Utilization's definition as assignment-time-based (% of time an asset is assigned to a user/department, relative to total available time). **Testable now:** this case may verify that a tile labeled "Utilization" is *present*, and that the tile is documented/described against this confirmed definition. **NOT TESTABLE YET (calculation mechanics only):** how "assigned" state/time is measured against Custody (P-006), what "total available time" excludes, and the aggregation window/granularity — no numeric value, formula, or threshold may be asserted for Utilization until this is resolved (see `RAISE-ACCEPTANCE-CRITERIA.md` §5; `RAISE-TEST-PLAN.md` §8 TS-DASH row). |
-| TC-DASH-02 | Category and lifecycle views render | 1. Land on Dashboard with asset data present. | Assets across ≥2 categories | "Asset by Category" and "Lifecycle / Maintenance Overview" sections are displayed | No |
-| TC-DASH-03 | Recent alerts section renders | 1. Ensure ≥1 alert exists. 2. Land on Dashboard. | ≥1 triggered alert | "Recent Alerts" section is displayed | No |
+| TC-DASH-01 | KPI grid displays all eight tiles | 1. Log in. 2. Land on Dashboard (P-002). | Any asset/maintenance/warranty/license dataset | The KPI grid displays all eight tiles: Total Assets, Available, Assigned, In Maintenance, Expired Warranty, Software Licenses, Monthly Depreciation, and Monthly Cost | No — fully testable against the as-built page (Open Finding F-22). Presence only: Monthly Depreciation and Monthly Cost are explicitly **illustrative** (Prototype §8 — no depreciation model has been built), and none of the eight tiles has a PRD-defined field list, formula, or threshold beyond what the page computes from existing data; this case asserts the tiles are *displayed*, not that their figures are correct. |
+| TC-DASH-02 | Ten dashboard sections display | 1. Ensure asset/maintenance/warranty/license data exists. 2. Land on Dashboard (P-002). | Asset/maintenance/warranty/license dataset covering at least one record relevant to each section | All ten sections are displayed: AI Insights, AI Portfolio Health, Oracle FA Reconciliation, Asset Lifecycle, Department Distribution, Asset Status, Asset Type, Pending Approvals, Recent Activities, and Maintenance Calendar | No — fully testable against the as-built page (Open Finding F-22). Presence only, not calculation/content correctness (`RAISE-ACCEPTANCE-CRITERIA.md` §5 caveat). |
+| TC-DASH-03 | NBV/Risk/Utilization tiles confirmed absent from the shipped KPI grid | 1. Land on Dashboard (P-002) with the KPI grid from `TC-DASH-01` displayed. 2. Inspect the grid for tiles labeled NBV, Risk, or Utilization. | Same dataset as `TC-DASH-01` | None of the three PRD-proposal KPIs (`RAISE-FR-EXEC-001`) is present in the shipped grid — this documents today's gap accurately; the expected result is absence, not a target for any of the three to be displayed | **BLOCKED (partial)** — the absence-check itself is testable now and expected to pass structurally against the current build. **NOT TESTABLE YET:** whether/when NBV, Risk, or Utilization tiles should be added to the dashboard, and their formulas, thresholds, and placement, since these remain fully undefined (PRD §16 Q3–Q4, tracked as [Open Finding F-03](../project-management/OPEN-FINDINGS.md#blocking-gates-an-mvp-requirement)) — a separate, not-yet-scheduled enhancement (Prototype §8 "NBV/Risk/Utilization — Proposal KPIs, Not Yet Implemented"). Utilization's *definition* remains separately resolved (2026-08-21, PRD §16 Resolved Question 27 — assignment-time-based, Disposed/Retired/Under-Maintenance excluded from the denominator) and unaffected by this correction; only its dashboard *implementation* is outstanding, so this case must not be read as confirming a Utilization tile is required to pass. |
 
 ---
 
@@ -294,10 +307,39 @@ appears in any test case below (`TC-WARRANTY-001-01`/`-02` previously referenced
 
 **Suite:** TS-EXEC-001 · **AC Group:** AC-EXEC-001 · **Requirement:** `RAISE-FR-EXEC-001` · **Screen:** P-014
 
+**Status Note — Corrected 2026-08-31 to match `RAISE-TEST-PLAN.md` v0.7 / `RAISE-ACCEPTANCE-CRITERIA.md` v0.7
+([Open Finding
+F-22](../project-management/OPEN-FINDINGS.md#confirmed-via-test-execution-not-blocked-on-any-prd-question)):**
+`TC-EXEC-001-01`/`-02` previously asserted the stale "Executive Asset Intelligence" wireframe
+(NBV/Risk/Utilization tiles; "Asset Overview"/"Executive Summary" sections). Formal test
+execution on 2026-08-26 confirmed none of that wireframe was ever built. Per explicit
+business decision on F-22, both cases below are rewritten against the actually shipped
+`frontend/src/pages/Dashboard/index.tsx` page — the same built page as P-002 (see §4
+`TC-DASH-*` above) — per `RAISE-PROTOTYPE.md` §20 and `RAISE-ACCEPTANCE-CRITERIA.md` §17.
+This is a scope/spec correction to match reality — it does not add, remove, or reinterpret
+`RAISE-FR-EXEC-001` — and **does not itself report a new PASS/FAIL execution result**;
+re-running formal execution against the rewritten steps below is deferred to a future
+execution sweep.
+
 | TC ID | Title | Steps | Test Data | Expected Result | Blocked |
 |---|---|---|---|---|---|
-| TC-EXEC-001-01 | KPI tiles display | 1. Log in as Executive. 2. Open Executive Dashboard. | Org-level asset dataset | NBV, Risk, Utilization tiles displayed | **BLOCKED (partial)** — tile presence testable for all three tiles; NBV/Risk formulas/thresholds TBD (PRD §16 Q3/Q4). **Utilization specifically (resolved 2026-08-21, partial):** same partial resolution as `TC-DASH-01` — PRD v0.3 §16 Resolved Question 27 / Design v0.4 §13 confirmed the assignment-time-based definition. **Testable now:** this case may verify that a tile labeled "Utilization" is *present*, and that the tile is documented against the confirmed definition. **NOT TESTABLE YET (calculation mechanics only):** how "assigned" time is measured against Custody, what "total available time" excludes, and the aggregation window/granularity — no value, formula, or threshold may be asserted until this is resolved (see `RAISE-ACCEPTANCE-CRITERIA.md` §17; `RAISE-TEST-PLAN.md` §8 TS-EXEC-001 row). NBV and Risk KPI formulas remain fully unresolved/open, unaffected by this change. |
-| TC-EXEC-001-02 | Overview and summary sections display | 1. Open Executive Dashboard. | Org-level asset dataset | Asset Overview and Executive Summary sections present | **BLOCKED (partial)** — whether Executive Summary is AI-generated or static is unresolved (PRD §8.1 gap) |
+| TC-EXEC-001-01 | KPI grid displays all eight tiles (Executive Dashboard) | 1. Log in as Executive. 2. Open Executive Dashboard (P-014). | Org-level asset dataset | The KPI grid displays all eight tiles: Total Assets, Available, Assigned, In Maintenance, Expired Warranty, Software Licenses, Monthly Depreciation, and Monthly Cost | No — fully testable; identical shipped grid to `TC-DASH-01` since P-014 and P-002 document the same built page (Open Finding F-22). Same Monthly Depreciation/Monthly Cost illustrative-figures caveat and presence-only scope from `TC-DASH-01` apply. |
+| TC-EXEC-001-02 | Ten dashboard sections display (Executive Dashboard) | 1. Open Executive Dashboard (P-014) with the dashboard displayed. | Org-level asset/maintenance/warranty/license dataset | All ten sections are present: AI Insights, AI Portfolio Health, Oracle FA Reconciliation, Asset Lifecycle, Department Distribution, Asset Status, Asset Type, Pending Approvals, Recent Activities, and Maintenance Calendar | No — fully testable; identical shipped section list to `TC-DASH-02`. |
+
+**Note — NBV/Risk absence, not a numbered AC criterion (unlike AC-DASH-03):** unlike AC-DASH
+(§5 of the AC document), `AC-EXEC-001` (§17) does not carry a separate numbered "-03"
+criterion for NBV/Risk absence — it is documented only as a narrative "NOT TESTABLE YET
+(NBV/Risk — not yet built)" note below AC-EXEC-001-01/-02. Per this document's own TC ID
+convention (§2 — no test case without a matching AC ID), no `TC-EXEC-001-03` is created.
+The substance is identical to `TC-DASH-03` (§4 above): NBV, Risk, and Utilization are
+proposal-defined KPIs under `RAISE-FR-EXEC-001` that do not appear in the shipped grid
+tested by `TC-EXEC-001-01`; NBV and Risk formulas, thresholds, and dashboard placement
+remain fully undefined (PRD §16 Q3–Q4, tracked as [Open Finding
+F-03](../project-management/OPEN-FINDINGS.md#blocking-gates-an-mvp-requirement)) — a
+separate, not-yet-scheduled enhancement, not a silently dropped requirement. Utilization's
+*definition* remains separately resolved (2026-08-21, PRD §16 Resolved Question 27) and
+unaffected; only its dashboard implementation is outstanding. This note carries no PASS/FAIL
+weight of its own and is not counted in the §19 Test Case Summary totals for TS-EXEC-001.
 
 ---
 
@@ -454,16 +496,16 @@ below.
 | TS-ORACLE-001 | 4 | 3 | 1 | 0 | 0 |
 | TS-ALERT-001 | 2 | 1 | 1 | 0 | 0 |
 | TS-AUDIT-001 | 3 | 1 | 2 | 0 | 0 |
-| TS-EXEC-001 | 2 | 0 | 2 | 0 | 0 |
+| TS-EXEC-001 | 2 | 2 | 0 | 0 | 0 |
 | TS-AI-SEARCH-001 | 3 | 2 | 1 | 0 | 0 |
 | TS-AI-STATES | 5 | 5 | 0 | 0 | 0 |
 | TS-AI-DOC-001 | 1 | 0 | 0 | 1 | 0 |
 | TS-AI-DOC-002 | 1 | 0 | 0 | 1 | 0 |
 | TS-AI-DOC-003 | 1 | 0 | 0 | 1 | 0 |
 | TS-AI-DOC-004 | 1 | 0 | 0 | 1 | 0 |
-| **Total** | **62** | **30** | **27** | **4** | **1** |
+| **Total** | **62** | **32** | **25** | **4** | **1** |
 
-27 of 62 test cases are partially blocked — executable against their
+25 of 62 test cases are partially blocked — executable against their
 structural/interaction behavior, with full correctness pending a PRD Open
 Question. This count includes `TC-ASSET-003-03`, updated 2026-08-21 to
 **BLOCKED (partial)**: the Check-in/Check-out-triggered append-and-
@@ -474,12 +516,18 @@ Check-in/Check-out, per the newly recorded `RAISE-FR-ASSET-003` vs.
 `RAISE-TEST-PLAN.md` §7–§8 (carried from `RAISE-ACCEPTANCE-CRITERIA.md`
 §9 NOT TESTABLE YET). `AC-ASSET-003-01`/`TC-ASSET-003-01` (holder model
 TBD) and `AC-ASSET-003-02`/`TC-ASSET-003-02` (unaffected, fully testable)
-retain their prior status. `TC-DASH-01` and `TC-EXEC-001-01` remain
-**BLOCKED (partial)** as of this version, but their wording was sharpened
-(2026-08-21) to separate what is now testable (Utilization tile presence
-+ confirmed assignment-time-based definition) from what remains NOT
-TESTABLE YET (calculation mechanics only), per `RAISE-TEST-PLAN.md` v0.3
-§7/§8 and `RAISE-ACCEPTANCE-CRITERIA.md` v0.3 §5/§17.
+retain their prior status. **`TC-DASH-01`/`-02` and `TC-EXEC-001-01`/`-02`
+were rewritten (2026-08-31, Open Finding F-22) and are no longer blocked**
+— they now test the actual shipped 8-tile KPI grid / 10-section list and
+are expected to pass structurally against the current app (see §4, §16
+above). `TC-DASH-03` is new (mapping the also-new `AC-DASH-03`) and carries
+forward the sole remaining blocker — NBV/Risk/Utilization absence from the
+shipped grid, tracked under Open Finding F-03 — that previously sat on
+`TC-DASH-01`/`TC-EXEC-001-01`; `TC-EXEC-001` has no equivalent numbered
+`-03` case (AC-EXEC-001 documents the same gap as an unnumbered note, not a
+separate criterion — see §16's note). This is a scope/spec correction to
+match `RAISE-TEST-PLAN.md` v0.7 / `RAISE-ACCEPTANCE-CRITERIA.md` v0.7, not
+a report of new PASS/FAIL execution results.
 
 **TS-MAINT-001 expanded from 2 to 9 test cases (2026-08-21, Test Plan v0.4 §7/§8; AC v0.4
 §12):** seven new cases (`TC-MAINT-001-03` through `-09`) were added for the newly
@@ -571,7 +619,61 @@ Suite ID → TC ID) into one master table for compliance review.
 
 ## Document Status
 
-**Version:** 0.6 (re-synced against `RAISE-TEST-PLAN.md` v0.6, 2026-08-29)
+**Version:** 0.7 (re-synced against `RAISE-TEST-PLAN.md` v0.7, 2026-08-31)
+
+**Change Log — v0.6 → v0.7 (2026-08-31):**
+
+1. **TC-DASH-01/-02 and TC-EXEC-001-01/-02 rewritten to match `RAISE-TEST-PLAN.md` v0.7 /
+   `RAISE-ACCEPTANCE-CRITERIA.md` v0.7's corrected AC-DASH (§5) and AC-EXEC-001 (§17), per
+   explicit business decision on [Open Finding
+   F-22](../project-management/OPEN-FINDINGS.md#confirmed-via-test-execution-not-blocked-on-any-prd-question).**
+   All four cases previously asserted a stale "Asset Overview"/"Executive Asset
+   Intelligence" wireframe (Total Assets/NBV/Risk/Warranty Expiry tiles; "Asset by
+   Category"/"Lifecycle / Maintenance Overview"/"Recent Alerts"/"Asset Overview"/"Executive
+   Summary" sections) that formal test execution already confirmed FAIL against the real
+   app (`TC-EXEC-001-01`/`-02`, 2026-08-26; `TC-DASH-01..03`, 2026-08-29). This is a
+   scope/spec correction to match Test Plan v0.7's already-corrected content, not a new
+   requirement, and it reports no new PASS/FAIL execution result — actual formal execution
+   against the rewritten steps is deferred to a future execution sweep.
+2. **`TC-DASH-01` and `TC-EXEC-001-01`** now assert the actual shipped 8-tile KPI grid
+   (Total Assets, Available, Assigned, In Maintenance, Expired Warranty, Software Licenses,
+   Monthly Depreciation, Monthly Cost) and are **no longer BLOCKED** — fully testable for
+   presence, with the Monthly Depreciation/Monthly Cost illustrative-figures caveat and a
+   presence-only (not calculation-correctness) scope carried over from the AC document.
+3. **`TC-DASH-02` and `TC-EXEC-001-02`** now assert the actual shipped 10-section list (AI
+   Insights, AI Portfolio Health, Oracle FA Reconciliation, Asset Lifecycle, Department
+   Distribution, Asset Status, Asset Type, Pending Approvals, Recent Activities, Maintenance
+   Calendar) and are **no longer BLOCKED** — fully testable for presence.
+4. **New `TC-DASH-03` added**, mapping the also-new `AC-DASH-03`: it tests that NBV, Risk,
+   and Utilization tiles are confirmed absent from the shipped grid tested by `TC-DASH-01`.
+   Marked **BLOCKED (partial)** — the absence-check itself is testable now (expected to pass
+   structurally), while whether/when these three proposal KPIs should be built, and their
+   formulas/thresholds/placement, remains NOT TESTABLE YET pending [Open Finding
+   F-03](../project-management/OPEN-FINDINGS.md#blocking-gates-an-mvp-requirement) (PRD §16
+   Q3–Q4). No equivalent `TC-EXEC-001-03` is created — `AC-EXEC-001` (§17) documents the
+   same gap as an unnumbered narrative note, not a separate numbered criterion, so per this
+   document's own TC ID convention (§2) no new TC ID is invented for it; the substance is
+   instead carried as an explanatory note under §16 (`TC-EXEC-001-01`/`-02`'s section)
+   pointing back to `TC-DASH-03`.
+5. **§19 Test Case Summary** updated: TS-DASH row unchanged at `3 | 2 | 1 | 0 | 0` (the
+   count of blocked cases stays 1, but the blocked case moved from `TC-DASH-01` to the new
+   `TC-DASH-03`); TS-EXEC-001 row updated from `2 | 0 | 2 | 0 | 0` to `2 | 2 | 0 | 0 | 0`.
+   Grand **Total** row updated from `62 | 30 | 27 | 4 | 1` to `62 | 32 | 25 | 4 | 1`; the
+   narrative "27 of 62 test cases are partially blocked" sentence updated to "25 of 62,"
+   and its `TC-DASH-01`/`TC-EXEC-001-01` reference rewritten to describe the current state.
+6. Version citations in the document header updated from Test Plan v0.6 / AC v0.6 to Test
+   Plan v0.7 / AC v0.7. **No other suite required changes** — Test Plan v0.7's only
+   substantive change from v0.6 is the TS-DASH/TS-EXEC-001 correction; every other AC group
+   this document maps 1:1 to is unchanged in substance. `TC-LOGIN-*`, `TC-ASSET-001-*`,
+   `TC-ASSET-001-D-*`, `TC-LIFE-001-*`, `TC-ASSET-002-*`, `TC-ASSET-003-*`, `TC-OPS-001-*`,
+   `TC-OPS-002-*`, `TC-MAINT-001-*`, `TC-WARRANTY-001-*`, `TC-ORACLE-001-*`,
+   `TC-ALERT-001-*`, `TC-AUDIT-001-*`, `TC-AI-SEARCH-001-*`, `TC-AI-STATES-*`, and
+   `TC-AI-DOC-001-01`–`TC-AI-DOC-004-01` retain their prior status and wording verbatim,
+   including `TC-LIFE-001-04`'s existing "inherits blockers from AC-EXEC-001 and
+   AC-AI-SEARCH-001" note — that note is out of scope for this correction (Test Plan v0.7
+   touched only TS-DASH/TS-EXEC-001) and is left as-is pending a future pass; it is now
+   stale with respect to `AC-EXEC-001-01` specifically (no longer blocked) but still
+   accurate with respect to `AC-AI-SEARCH-001`.
 
 **Change Log — v0.5 → v0.6 (2026-08-29):**
 

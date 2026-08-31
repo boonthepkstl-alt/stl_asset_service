@@ -2,11 +2,35 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Prototype Specification
-**Version:** 0.7 Draft
+**Version:** 0.8 Draft
 **Status:** Draft for Prototype Review
-**Source:** [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.10 + [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) §5.2 (§23 Prototype Preparation, §9A Document Intelligence Capabilities, §5.1 Maintenance Domain, §5.2 Warranty Domain — field list resolved, §5.3 License Domain, §6.4 ReconciliationPage / "Phase 6" Label, §16 Security Architecture — MVP Enforcement Level, §16A Other Non-Functional Requirements — Design Backlog, §15/§22 Out of Scope)
+**Source:** [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.10 + [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.9 (§23 Prototype Preparation, §9A Document Intelligence Capabilities, §5.1 Maintenance Domain, §5.2 Warranty Domain — field list resolved, §5.3 License Domain, §6.4 ReconciliationPage / "Phase 6" Label, §13 Executive Intelligence — corrected to as-built, §16 Security Architecture — MVP Enforcement Level, §16A Other Non-Functional Requirements — Design Backlog, §15/§22 Out of Scope)
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
+
+**Version note (2026-08-31 re-sync, v0.7 → v0.8, Open Finding F-22):**
+[§8 P-002 Main Dashboard](#8-p-002-main-dashboard) and [§20 P-014 Executive
+Dashboard](#20-p-014-executive-dashboard) previously specified an old,
+never-built wireframe (Total Assets/NBV/Risk/Warranty Expiry tiles; "Asset
+by Category"/"Lifecycle-Maintenance Overview"/"Recent Alerts" or "Asset
+Overview"/"Executive Summary" sections) — word-for-word identical between
+the two screens, and confirmed divergent from the shipped app by formal
+test execution (`TC-EXEC-001-01`/`-02`, 2026-08-26; `TC-DASH-01..03`,
+2026-08-29). Per explicit business decision on [Open Finding
+F-22](../project-management/OPEN-FINDINGS.md#confirmed-via-test-execution-not-blocked-on-any-prd-question),
+both entries are now rewritten to document the actually shipped dashboard
+(`frontend/src/pages/Dashboard/index.tsx`), matching `RAISE-DESIGN.md` v0.9
+§13's own as-built correction. Both entries now explicitly cross-reference
+each other and state that they document the same single built page, rather
+than duplicating two divergent specs. The NBV/Risk/Utilization KPI concept
+is preserved (not deleted) as a distinct, not-yet-scheduled future
+enhancement in both entries, matching Design's framing. This is a
+scope/spec correction to match Design's already-corrected content, not a
+new requirement — `RAISE-FR-EXEC-001` is unchanged, `RAISE-PRD.md` and
+`RAISE-DESIGN.md` were not modified by this pass, and no
+`## NEEDS_PRD_CONFIRMATION` signal is raised (the business decision on F-22
+is already confirmed). See the "Document Status" section's Change Log for
+full detail.
 
 **Version note (2026-08-29 re-sync, v0.6 → v0.7):** `RAISE-PRD.md` §16 Resolved
 Question 40 and `RAISE-DESIGN.md` §5.2 (Warranty Domain) both resolved the previously
@@ -378,50 +402,106 @@ Therefore this screen validates the user journey only.
 
 # 8. P-002 Main Dashboard
 
+## Status Note — Corrected 2026-08-31 to Match As-Built (Open Finding F-22)
+
+**This entry previously documented an "Asset Overview" wireframe (Total
+Assets/NBV/Risk/Warranty Expiry tiles; "Asset by Category" / "Lifecycle /
+Maintenance Overview" / "Recent Alerts" sections) that was never built —
+word-for-word identical to the P-014 entry it duplicated.** Formal test
+execution confirmed this gap against the actually shipped page —
+`TC-DASH-01..03` (2026-08-29), recorded as [Open Finding
+F-22](../project-management/OPEN-FINDINGS.md#confirmed-via-test-execution-not-blocked-on-any-prd-question)
+in `OPEN-FINDINGS.md`. Per explicit business decision on F-22, this entry is
+corrected to document the **actually shipped dashboard**, matching
+[`RAISE-DESIGN.md` §13 "Logical Dashboard — Current MVP (As
+Built)"](../02-design/RAISE-DESIGN.md#logical-dashboard--current-mvp-as-built).
+This is a scope/spec correction to match reality, not a new requirement.
+
+**P-002 and P-014 document the same built page.** `frontend/src/pages/
+Dashboard/index.tsx` is the single dashboard shipped for both the general
+"Main Dashboard" navigation entry point (P-002) and the "Executive
+Dashboard" concept named in the PRD (P-014, `RAISE-FR-EXEC-001`) — there is
+no separate executive-only page. This entry and [§20 P-014 Executive
+Dashboard](#20-p-014-executive-dashboard) intentionally describe the same
+tile/section list rather than two divergent specs, to avoid re-introducing
+the drift that caused F-22. See P-014 for the requirement-facing framing of
+this same page.
+
 ## Purpose
 
-Provide an overview of asset information.
+Provide an overview of asset information (general navigation entry point).
 
-## Proposed Sections
+## Sections (As Built)
 
 ```text
-┌─────────────────────────────────────────────────────────────┐
-│ Asset Overview                                              │
-├────────────┬────────────┬────────────┬──────────────────────┤
-│ Total      │ NBV        │ Risk       │ Warranty Expiry      │
-│ Assets     │            │            │                      │
-├────────────┴────────────┴────────────┴──────────────────────┤
-│ Asset by Category                                           │
-├─────────────────────────────────────────────────────────────┤
-│ Lifecycle / Maintenance Overview                            │
-├─────────────────────────────────────────────────────────────┤
-│ Recent Alerts                                               │
-└─────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────┐
+│                         Dashboard (As Built)                        │
+├────────────┬────────────┬────────────┬──────────────┬───────────────┤
+│Total Assets│ Available  │  Assigned  │In Maintenance│Expired Warranty│
+├────────────┼────────────┼────────────┴──────────────┴───────────────┤
+│  Software  │  Monthly   │  Monthly Cost                             │
+│  Licenses  │Depreciation│  (both illustrative — no depreciation      │
+│            │(illustrative)│ model exists yet)                        │
+├────────────┴────────────┴────────────────────────────────────────────┤
+│ AI Insights                                                          │
+│ AI Portfolio Health                                                  │
+│ Oracle FA Reconciliation ("Oracle FA Synced")                        │
+│ Asset Lifecycle (acquisitions / retirements chart)                   │
+│ Department Distribution                                              │
+│ Asset Status                                                         │
+│ Asset Type                                                           │
+│ Pending Approvals                                                    │
+│ Recent Activities                                                    │
+│ Maintenance Calendar                                                 │
+└──────────────────────────────────────────────────────────────────────┘
 ```
 
-Only KPI concepts explicitly identified by the PRD should be treated as
-approved:
+**KPI grid (8 tiles):** Total Assets, Available, Assigned, In Maintenance,
+Expired Warranty, Software Licenses, Monthly Depreciation (illustrative — no
+depreciation model has been built), Monthly Cost (illustrative, same
+caveat).
 
-- NBV
-- Risk
-- Utilization
+**Sections (10):** AI Insights, AI Portfolio Health, Oracle FA
+Reconciliation (a.k.a. "Oracle FA Synced"), Asset Lifecycle
+(acquisitions/retirements chart), Department Distribution, Asset Status,
+Asset Type, Pending Approvals, Recent Activities, Maintenance Calendar.
 
-Other dashboard elements are prototype exploration and require review.
+None of these tiles/sections has a PRD-defined field list, formula, or
+threshold beyond what the page already computes from existing Asset/
+Maintenance/Warranty/License data — this entry does not invent one; it
+documents what exists.
 
-**Utilization — Resolved 2026-08-21 (PRD v0.3 §16 Resolved Question 27;
-Design v0.4 §13):** ~~"Utilization" is listed as a KPI with no definition in
-the PRD~~. Business confirmed the definition as **assignment-time-based**:
+## NBV/Risk/Utilization — Proposal KPIs, Not Yet Implemented
 
-> Utilization = % of time an asset is assigned to a user/department,
-> relative to total available time.
+The PRD identifies NBV, Risk, and Utilization as proposal-defined KPIs under
+`RAISE-FR-EXEC-001`. **None of the three appears in the shipped dashboard's
+KPI grid above.** This remains an explicit open item — a separate,
+not-yet-scheduled enhancement layered on top of the current MVP dashboard,
+not a silently dropped requirement.
 
-This tile should be read against that definition. Calculation mechanics (how
-"assigned" state/time is measured against Custody, what "total available
-time" excludes, and aggregation window/granularity) remain **TBD** — this
-prototype shows the tile as a labeled placeholder only, with no formula
-implemented. NBV and Risk KPI formulas remain unresolved. See
-[`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md#8-executive-intelligence) §8
-and [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md#13-executive-intelligence).
+- **Utilization's definition is already resolved** (PRD §16 Resolved
+  Questions 27 and 29): Utilization = % of time an asset is assigned to a
+  user/department, relative to total available time, computed as a
+  real-time snapshot with Disposed/Retired/Under-Maintenance assets excluded
+  from the denominator. Only its *implementation* on the dashboard is
+  outstanding.
+- **NBV and Risk formulas, thresholds, and dashboard placement remain TBD**
+  — see [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md#16-open-questions)
+  §16 Q3–Q4, tracked as [Open Finding
+  F-03](../project-management/OPEN-FINDINGS.md#blocking-gates-an-mvp-requirement).
+
+See [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md#13-executive-intelligence)
+§13 for the full as-built correction narrative and change log.
+
+## Traceability
+
+General product navigation / `RAISE-FR-EXEC-001` (the shipped page also
+realizes P-014's Executive Dashboard concept — see [§20 P-014 Executive
+Dashboard](#20-p-014-executive-dashboard)). Consistent with the Prototype
+Traceability Matrix's existing treatment (§27), P-002 is not given its own
+formal matrix row because it traces to general product navigation rather
+than a single numbered PRD requirement in isolation; the requirement-facing
+row for this same built page is recorded against P-014.
 
 ---
 
@@ -1019,58 +1099,106 @@ These are design candidates and must be confirmed.
 
 # 20. P-014 Executive Dashboard
 
+## Status Note — Corrected 2026-08-31 to Match As-Built (Open Finding F-22)
+
+**This entry previously documented an "Executive Asset Intelligence"
+wireframe (NBV/Risk/Utilization tiles; "Asset Overview" / "Executive
+Summary" sections) that was never built — word-for-word identical to the old
+P-002 entry it duplicated.** Formal test execution confirmed this gap twice
+against the actually shipped page — `TC-EXEC-001-01`/`-02` (2026-08-26) and
+`TC-DASH-01..03` (2026-08-29) — recorded as [Open Finding
+F-22](../project-management/OPEN-FINDINGS.md#confirmed-via-test-execution-not-blocked-on-any-prd-question)
+in `OPEN-FINDINGS.md`. Per explicit business decision on F-22, this entry is
+corrected to document the **actually shipped dashboard**, matching
+[`RAISE-DESIGN.md` §13 "Logical Dashboard — Current MVP (As
+Built)"](../02-design/RAISE-DESIGN.md#logical-dashboard--current-mvp-as-built).
+This is a scope/spec correction to match reality — it does not add, remove,
+or reinterpret `RAISE-FR-EXEC-001`.
+
+**P-014 and P-002 document the same built page.** There is no separate
+executive-only page: `frontend/src/pages/Dashboard/index.tsx` is the single
+dashboard shipped for both the "Executive Dashboard" concept named in the
+PRD (P-014, this entry) and the general "Main Dashboard" navigation entry
+point ([§8 P-002 Main Dashboard](#8-p-002-main-dashboard)). This entry and
+P-002 intentionally describe the same tile/section list rather than two
+divergent specs, to avoid re-introducing the drift that caused F-22.
+
 ## Purpose
 
-Provide an organization-level executive view.
+Provide an organization-level executive view (`RAISE-FR-EXEC-001`),
+realized by the same dashboard page documented in P-002.
 
-## Prototype
+## Sections (As Built)
 
 ```text
-┌─────────────────────────────────────────────┐
-│ EXECUTIVE ASSET INTELLIGENCE                │
-├────────────┬────────────┬───────────────────┤
-│ NBV        │ Risk       │ Utilization       │
-├────────────┴────────────┴───────────────────┤
-│                                             │
-│ Asset Overview                              │
-│                                             │
-├─────────────────────────────────────────────┤
-│ Executive Summary                           │
-│                                             │
-└─────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────┐
+│                         Dashboard (As Built)                        │
+├────────────┬────────────┬────────────┬──────────────┬───────────────┤
+│Total Assets│ Available  │  Assigned  │In Maintenance│Expired Warranty│
+├────────────┼────────────┼────────────┴──────────────┴───────────────┤
+│  Software  │  Monthly   │  Monthly Cost                             │
+│  Licenses  │Depreciation│  (both illustrative — no depreciation      │
+│            │(illustrative)│ model exists yet)                        │
+├────────────┴────────────┴────────────────────────────────────────────┤
+│ AI Insights                                                          │
+│ AI Portfolio Health                                                  │
+│ Oracle FA Reconciliation ("Oracle FA Synced")                        │
+│ Asset Lifecycle (acquisitions / retirements chart)                   │
+│ Department Distribution                                              │
+│ Asset Status                                                         │
+│ Asset Type                                                           │
+│ Pending Approvals                                                    │
+│ Recent Activities                                                    │
+│ Maintenance Calendar                                                 │
+└──────────────────────────────────────────────────────────────────────┘
 ```
 
-## Approved KPI Concepts
+**KPI grid (8 tiles):** Total Assets, Available, Assigned, In Maintenance,
+Expired Warranty, Software Licenses, Monthly Depreciation (illustrative — no
+depreciation model has been built), Monthly Cost (illustrative, same
+caveat).
 
-- NBV
-- Risk
-- Utilization
+**Sections (10):** AI Insights, AI Portfolio Health, Oracle FA
+Reconciliation (a.k.a. "Oracle FA Synced"), Asset Lifecycle
+(acquisitions/retirements chart), Department Distribution, Asset Status,
+Asset Type, Pending Approvals, Recent Activities, Maintenance Calendar.
 
-Final KPI formulas and thresholds remain TBD.
+None of these tiles/sections has a PRD-defined field list, formula, or
+threshold beyond what the page already computes from existing Asset/
+Maintenance/Warranty/License data — this entry does not invent one; it
+documents what exists.
 
-**Utilization — Resolved 2026-08-21 (PRD v0.3 §16 Resolved Question 27;
-Design v0.4 §13):** ~~the PRD lists "Utilization" as a KPI with no
-definition~~. Business confirmed the definition as **assignment-time-based**:
+## NBV/Risk/Utilization — Proposal KPIs, Not Yet Implemented
 
-> Utilization = % of time an asset is assigned to a user/department,
-> relative to total available time.
+The PRD identifies NBV, Risk, and Utilization as proposal-defined KPIs under
+`RAISE-FR-EXEC-001`. **None of the three appears in the shipped dashboard's
+KPI grid above.** This remains an explicit open item — a separate,
+not-yet-scheduled enhancement layered on top of the current MVP dashboard,
+not a silently dropped requirement.
 
-This dashboard's "Utilization" tile should be read against that definition.
-Calculation mechanics (how "assigned" state/time is measured against the
-Custody domain, what "total available time" excludes, and the aggregation
-window/granularity) remain **design-phase TBD** — this prototype still shows
-"Utilization" as a **placeholder KPI tile** with no formula, threshold, or
-calculation logic implemented. Acceptance Criteria can now define a testable
-*conceptual* value (assignment-time percentage) for this tile, but the exact
-threshold/formula still requires further design input before test values can
-be finalized. NBV and Risk KPI formulas remain unresolved and open — see
-[`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md#16-open-questions) §16 Q3,
-[`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md#8-executive-intelligence) §8,
-and [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md#13-executive-intelligence).
+- **Utilization — Resolved 2026-08-21 (PRD v0.3 §16 Resolved Question 27;
+  mechanics resolved PRD v0.4 §16 Resolved Question 29):** Utilization = %
+  of time an asset is assigned to a user/department, relative to total
+  available time, computed as a real-time snapshot with Disposed/Retired/
+  Under-Maintenance assets excluded from the denominator. Only its
+  *implementation* on the dashboard is outstanding — no formula, threshold,
+  or calculation logic is implemented today.
+- **NBV and Risk formulas, thresholds, and dashboard placement remain TBD**
+  — see [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md#16-open-questions)
+  §16 Q3–Q4, tracked as [Open Finding
+  F-03](../project-management/OPEN-FINDINGS.md#blocking-gates-an-mvp-requirement).
+
+See [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md#13-executive-intelligence)
+§13 for the full as-built correction narrative and change log, including
+the still-unresolved "AI-Generated Executive Summary" MVP-vs-Roadmap
+ambiguity (not asserted to be satisfied by the "AI Insights" / "AI Portfolio
+Health" sections above).
 
 ## Traceability
 
-`RAISE-FR-EXEC-001`
+`RAISE-FR-EXEC-001` — realized by the same built page as [§8 P-002 Main
+Dashboard](#8-p-002-main-dashboard); see that entry's Traceability note for
+how the Prototype Traceability Matrix (§27) records this pairing.
 
 ---
 
@@ -1614,7 +1742,7 @@ not be treated as approved MVP functionality.
 | P-011 Oracle FA | RAISE-FR-ORACLE-001 | Planned |
 | P-012 Alerts | RAISE-FR-ALERT-001 | Planned |
 | P-013 Audit | RAISE-FR-AUDIT-001 | Planned |
-| P-014 Executive | RAISE-FR-EXEC-001 | Planned |
+| P-014 Executive | RAISE-FR-EXEC-001 | Planned — corrected 2026-08-31 to match as-built dashboard (Open Finding F-22); same built page as P-002 Main Dashboard; NBV/Risk/Utilization KPIs remain a separate, not-yet-scheduled enhancement |
 | P-015 AI Assistant | RAISE-AI-SEARCH-001 | Planned |
 | P-004 Asset Detail (incidental) | RAISE-AI-DOC-001 (OCR / Extraction) | Planned — no dedicated screen; TBD acceptance behavior |
 | P-004 Asset Detail (incidental) | RAISE-AI-DOC-002 (Metadata) | Planned — no dedicated screen; TBD acceptance behavior |
@@ -1794,10 +1922,64 @@ The next artifact should be **Acceptance Criteria**, not source code.
 
 ## Document Status
 
-**Version:** 0.6 (re-synced against RAISE-PRD.md v0.9 [unchanged] and RAISE-DESIGN.md
-v0.8, 2026-08-23 — no screens added or removed; one new completeness section added
-(§25A) mirroring Design's own §16A gap-closure pass; no `## NEEDS_PRD_CONFIRMATION`
-signal raised)
+**Version:** 0.8 (as-built correction pass against Open Finding F-22,
+2026-08-31, re-synced against RAISE-PRD.md v0.10 [unchanged] and
+RAISE-DESIGN.md v0.9's own §13 as-built correction — no screens added or
+removed; P-002 and P-014 rewritten to match reality; no
+`## NEEDS_PRD_CONFIRMATION` signal raised)
+
+**Change Log — v0.7 → v0.8 (2026-08-31, Open Finding F-22 as-built
+correction, per explicit business decision):**
+
+1. **Root cause.** [§8 P-002 Main Dashboard](#8-p-002-main-dashboard) and
+   [§20 P-014 Executive Dashboard](#20-p-014-executive-dashboard) specified
+   an old "Asset Overview" / "Executive Asset Intelligence" wireframe
+   (Total Assets/NBV/Risk/Warranty Expiry or NBV/Risk/Utilization tiles;
+   "Asset by Category"/"Lifecycle-Maintenance Overview"/"Recent Alerts" or
+   "Asset Overview"/"Executive Summary" sections) that was never built —
+   the two entries were word-for-word identical to each other despite
+   nominally describing different screens. Formal test execution confirmed
+   this gap twice against the same shipped page,
+   `frontend/src/pages/Dashboard/index.tsx` — `TC-EXEC-001-01`/`-02`
+   (2026-08-26, testing P-014) and `TC-DASH-01..03` (2026-08-29, testing
+   P-002) — recorded as Open Finding F-22 in `OPEN-FINDINGS.md`. Business
+   explicitly decided to fix this prototype spec to match the shipped app
+   (and `RAISE-DESIGN.md` v0.9 §13, corrected the same way immediately
+   prior), rather than change the app to match the old wireframe.
+2. **P-002 and P-014 rewritten** to document the real shipped tile/section
+   list: KPI grid (Total Assets, Available, Assigned, In Maintenance,
+   Expired Warranty, Software Licenses, Monthly Depreciation (illustrative),
+   Monthly Cost (illustrative)) and sections (AI Insights, AI Portfolio
+   Health, Oracle FA Reconciliation, Asset Lifecycle, Department
+   Distribution, Asset Status, Asset Type, Pending Approvals, Recent
+   Activities, Maintenance Calendar) — copied from `RAISE-DESIGN.md` v0.9
+   §13's as-built list, with no field, formula, or threshold invented
+   beyond what Design already states.
+3. **P-002 and P-014 now explicitly state they document the same single
+   built page** and cross-reference each other, rather than presenting two
+   divergent specs as before. This is the corrective measure against the
+   root cause in item 1.
+4. **NBV/Risk/Utilization preserved, not deleted.** Both entries retain a
+   dedicated "NBV/Risk/Utilization — Proposal KPIs, Not Yet Implemented"
+   subsection recording these three as a separate, not-yet-scheduled
+   enhancement layered on top of the current MVP dashboard — matching
+   `RAISE-DESIGN.md` §13's framing exactly. Utilization's already-resolved
+   definition and calculation mechanics (PRD §16 Resolved Questions 27/29)
+   are restated unchanged; NBV and Risk formulas remain TBD per PRD §16
+   Q3–Q4 / Open Finding F-03 — no new formula or threshold is added.
+5. **`RAISE-FR-EXEC-001` unchanged; `RAISE-PRD.md` and `RAISE-DESIGN.md` not
+   modified by this pass.** This is a scope/spec correction to match
+   Design's already-corrected content, not a new requirement. No
+   `## NEEDS_PRD_CONFIRMATION` signal is raised — the business decision on
+   F-22 is already confirmed.
+6. **§27 Prototype Traceability Matrix** row for P-014 updated to note the
+   as-built correction and the shared-page relationship with P-002; the
+   existing exclusion of P-002 from that requirement-ID-keyed table
+   (general product navigation, not a single numbered PRD requirement) is
+   unchanged and still documented in that section's cross-check note.
+7. Header metadata updated: Version bumped to 0.8; Design Source updated to
+   reference Design v0.9 (PRD unchanged at v0.10, re-verified during this
+   pass).
 
 **Change Log — v0.5 → v0.6 (2026-08-23, design-completeness gap-closure sync):**
 

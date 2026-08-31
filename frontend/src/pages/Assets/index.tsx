@@ -7,6 +7,7 @@ import { DataTable, type Column } from '@/components/DataTable';
 import { AssetQrCode } from '@/components/AssetQrCode';
 import { departments, locations, categories } from '@/data/fixtures/mockData';
 import { getAssetIcon } from '@/data/asset-icons';
+import { isWarrantyExpired } from '@/lib/warranty';
 import { useAssets } from '@/hooks/useAssets';
 import { assetService } from '@/services/asset-service';
 import type { Asset } from '@/types/asset';
@@ -189,7 +190,7 @@ export function AssetsPage() {
       // (a 3rd "Expiring" state would need the still-unconfirmed 90-day-style threshold from
       // AC-WARRANTY-001-03, which stays a separate open question -- not invented here).
       render: (r) => {
-        const expired = new Date(r.warrantyExpiry) < new Date();
+        const expired = isWarrantyExpired(r.warrantyExpiry);
         return (
           <div className="flex flex-col gap-0.5">
             <Badge variant={expired ? 'error' : 'success'} dot>{expired ? 'Expired' : 'Active'}</Badge>

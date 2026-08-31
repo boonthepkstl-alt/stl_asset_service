@@ -2234,11 +2234,50 @@ Test Case: `TC-DASH-01..03`, `TC-EXEC-001-01..02` — rewritten; `RAISE-TRACEABI
 
 **Git:**
 Branch: `docs/resolve-f22-dashboard-spec-correction`
-Commit: pending — predicted next PR after #55 (verify via `gh pr list` before treating as final).
+Commit: `71144f0` (implementation), merged via [PR #56](https://github.com/boonthepkstl-alt/stl_asset_service/pull/56).
 
 **Known Issues:** None new.
 **Remaining Work:** A fresh formal test-execution sweep against the corrected `TC-DASH-01..03`/`TC-EXEC-001-01..02` has not yet been run — this is the recommended next action to actually close F-22 (mark it Resolved with an R-number) rather than leave it "corrected but unverified." F-27, F-30, F-31, F-32, F-33, and `AC-WARRANTY-001-03`'s 90-day threshold remain open, unaffected by this work.
-**Next Step:** Recalculate `NEXT-STEP.md`. Recommend running a formal test-execution sweep against the corrected `TC-DASH-01..03`/`TC-EXEC-001-01..02` next, to confirm the app actually passes the corrected spec and close F-22 for real — or continue with another open finding, per user direction.
+**Next Step:** Recalculate `NEXT-STEP.md`. Recommend running a formal test-execution sweep against the corrected `TC-DASH-01..03`/`TC-EXEC-001-01..02` next, to confirm the app actually passes the corrected spec and close F-22 for real — or continue with another open finding, per user direction. User chose to run the sweep immediately — see `CHECKPOINT-2026-08-31-003` below.
+
+---
+
+## CHECKPOINT-2026-08-31-003
+
+**Phase:** Phase 8 — Executive Dashboard & Reporting
+**Feature:** Formal test-case execution — `TS-DASH`/`TS-EXEC-001` re-verification after F-22's spec correction
+**Task:** Run the corrected `TC-DASH-01..03`/`TC-EXEC-001-01..02` against the real running app, per explicit user instruction ("รัน TS-DASH/TS-EXEC-001 sweep ต่อ พร้อมสรุปสั้นๆ"), to confirm the F-22 spec correction (`CHECKPOINT-2026-08-31-002`, PR #56) actually holds and close the finding for real
+
+**What was implemented:** N/A — this is test execution, not a build task.
+**What was modified:** `docs/07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md` (`RAISE-FR-EXEC-001` and "Main Dashboard" rows updated `NOT_TESTED` → `PASS`/`PASS (partial)`; Gap 8 closed fully; version bumped 0.7→0.8), `docs/project-management/OPEN-FINDINGS.md` (F-22 moved from "Confirmed via Test Execution" to **Resolved**, recorded as R-13).
+**What was fixed:** None — the app was already correct; this confirms it.
+**What was added:** None.
+**What was removed:** F-22's row from the "Confirmed via Test Execution" open-findings table (moved to Resolved, not deleted — full history preserved as R-13).
+
+**Files changed:** 2 files — `RAISE-TRACEABILITY-MATRIX.md`, `OPEN-FINDINGS.md`. No frontend/backend code touched.
+**Database changes:** None. **API changes:** None. **Frontend changes:** None (read-only verification against the already-shipped, unmodified Dashboard page).
+
+**Tests:**
+- Unit Test: None — manual/formal test-case execution, not automated test authoring.
+- Integration Test: None.
+- E2E Test: Manual browser execution (Chrome preview, `raise-frontend` dev server) — auth-bypass via `localStorage` (ADMIN role), navigated to `/dashboard` (confirmed page title is literally "Executive Dashboard," the single route serving both P-002 and P-014), captured real page text. Result: **all cases PASS**. `TC-DASH-01`/`TC-EXEC-001-01` — all 8 KPI tiles present: Total Assets (15), Available (4), Assigned (8), In Maintenance (2), Expired Warranty (11), Software Licenses (10), Monthly Depreciation ($42.8K, illustrative), Monthly Cost ($156.2K, illustrative). `TC-DASH-02`/`TC-EXEC-001-02` — all 10 sections present: AI Insights, AI Portfolio Health, Oracle FA Synced, Asset Lifecycle, Department Distribution, Asset Status, Asset Type, Pending Approvals, Recent Activities, Maintenance Calendar. `TC-DASH-03` — NBV/Risk/Utilization tiles confirmed absent (PASS on the absence-check itself; the deeper "should they be added" question remains BLOCKED (partial), tied to F-03).
+
+**Validation:**
+- Build: N/A (no code change). Lint: N/A. Test: N/A. Type Check: N/A.
+- Manual browser verification: as above — real page-text evidence captured before any documentation was updated.
+
+**Requirement Traceability:**
+PRD: `RAISE-FR-EXEC-001` (unchanged).
+Acceptance Criteria: `AC-DASH-01/-02`, `AC-EXEC-001-01/-02` — **PASS**. `AC-DASH-03`/AC-EXEC-001's NBV/Risk note — still **BLOCKED (partial)**, tied to F-03, unaffected.
+Test Case: `TC-DASH-01..03`, `TC-EXEC-001-01..02` — now **PASS**/**PASS (partial)**; `RAISE-TRACEABILITY-MATRIX.md` updated accordingly, Gap 8 closed, F-22 marked Resolved (R-13) in `OPEN-FINDINGS.md`.
+
+**Git:**
+Branch: `docs/tc-execution-dash-reverify`
+Commit: pending — predicted next PR after #56 (verify via `gh pr list` before treating as final).
+
+**Known Issues:** None new.
+**Remaining Work:** F-27, F-30, F-31, F-32, F-33, and `AC-WARRANTY-001-03`'s 90-day threshold remain open items blocked on a business/design decision — no engineering task is currently unblocked and buildable from these. F-22 is fully closed.
+**Next Step:** Recalculate `NEXT-STEP.md`. With F-22 closed, check in with the user on direction for one of the five remaining open findings.
 
 ---
 

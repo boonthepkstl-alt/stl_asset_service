@@ -1,5 +1,6 @@
 import apiClient from '@/services/api-client';
 import { assetService } from '@/services/asset-service';
+import { isWarrantyExpired } from '@/lib/warranty';
 import type { DistributionCount } from '@/types/dashboard';
 
 // The Asset-derived subset of DashboardStats -- deliberately excludes softwareLicenseCount
@@ -51,7 +52,7 @@ export class MockDashboardRepository implements DashboardRepository {
       assigned: assets.filter((a) => a.status === 'Assigned').length,
       inMaintenance: assets.filter((a) => a.status === 'In Maintenance').length,
       retired: assets.filter((a) => a.status === 'Retired').length,
-      expiredWarranty: assets.filter((a) => new Date(a.warrantyExpiry).getTime() < today.getTime()).length,
+      expiredWarranty: assets.filter((a) => isWarrantyExpired(a.warrantyExpiry, today)).length,
       departmentDistribution: groupCounts(assets, (a) => a.department),
       assetTypeDistribution: groupCounts(assets, (a) => a.type),
     };

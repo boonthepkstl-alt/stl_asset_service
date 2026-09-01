@@ -2554,6 +2554,39 @@ Commit: pending — predicted next PR after #63 (verify via `gh pr list` before 
 
 ---
 
+## CHECKPOINT-2026-09-01-008
+
+**Phase:** Cross-cutting (deliverable-chain tooling, not one product phase)
+**Feature:** Draft `RAISE-COMPLIANCE-REVIEW.md` — the first artifact in the deliverable chain that consumes source code rather than producing spec for it
+**Task:** Assess readiness, then draft the document
+
+**What was implemented:** N/A — a documentation consolidation, not code.
+**What was modified:** None.
+**What was fixed:** None.
+**What was added:** `docs/11-compliance-review/RAISE-COMPLIANCE-REVIEW.md` (new file, new folder, v1.0).
+**What was removed:** None.
+
+**Decision:** User asked to check readiness first ("ตรวจสอบ RAISE-COMPLIANCE-REVIEW.md ว่าเริ่มได้หรือยัง"). Assessed via `RAISE-TRACEABILITY-MATRIX.md` v1.4 §6/§8/§9 — confirmed all 13 chain-consistency gaps resolved, no drift. Reported ready, with the caveat that "ready" means the chain is internally consistent, not that every requirement passes. User then confirmed: "เริ่มร่าง RAISE-COMPLIANCE-REVIEW.md เลยครับ".
+
+**Files changed:** 1 new file (`docs/11-compliance-review/RAISE-COMPLIANCE-REVIEW.md`) + `CURRENT-STATUS.md`/`PROJECT-CHECKPOINTS.md`/`DEVELOPMENT-LOG.md` (this checkpoint's own tracking).
+**Database changes:** None. **API changes:** None. **Frontend changes:** None.
+
+**Tests:** N/A — no code changed.
+**Validation:** Every verdict in the new document was drawn directly from `RAISE-TRACEABILITY-MATRIX.md` §3/§4 cells and `OPEN-FINDINGS.md`, not re-derived — no new test execution was performed for this document itself.
+
+**Requirement Traceability:**
+Consolidates all 17 MVP-traceable requirements (`RAISE-FR-*`/`RAISE-AI-*`) into a verdict table: 8 `PASS`, 1 `PASS (partial)`, 2 `FAIL` (both explicitly deferred, F-31/F-33), 1 `BLOCKED (partial)`, 1 `BLOCKED`, 4 `BLOCKED (full)`. Plus 2 cross-cutting items (`RAISE-NFR-SEC-RBAC-001` PASS, Dashboard/Navigation PASS (partial)).
+
+**Git:**
+Branch: pending (not yet created as of this checkpoint).
+Commit: pending — predicted next PR after #64 (verify via `gh pr list` before treating as final; must not be merged until the user explicitly instructs "merge PR #N").
+
+**Known Issues:** None new — this document surfaces, not creates, the 6 already-tracked `BLOCKED`/`FAIL` requirement verdicts.
+**Remaining Work:** Git branch/commit/push/PR for this checkpoint's changes.
+**Next Step:** Recalculate `NEXT-STEP.md`. Create git branch, commit, push, open PR, and wait for the user's explicit "merge PR #N" instruction before merging.
+
+---
+
 ## Level 2 — Feature Checkpoints
 
 ### FEATURE-CHECKPOINT-project-tracking-governance

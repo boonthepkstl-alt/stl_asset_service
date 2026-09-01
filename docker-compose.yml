@@ -1,0 +1,59 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${DB_PG_USER:-raise}
+      POSTGRES_PASSWORD: ${DB_PG_PASS:-raise_dev_password}
+      POSTGRES_DB: ${DB_PG_INST:-raise}
+    ports:
+      - "${DB_PG_PORT:-5432}:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      # Official postgres image runs every *.sql file here, in alphabetical order, but
+      # ONLY on first container init against an empty data volume -- matches this
+      # project's V0..V4 filenames exactly. No migration tool is wired up (Open Finding
+      # F-16); re-running against an existing volume does nothing, which is fine for
+      # local dev but is not a substitute for a real migration tool in any other
+      # environment. See go-template-main/sql/pg/.
+      - ./go-template-main/sql/pg:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_PG_USER:-raise} -d ${DB_PG_INST:-raise}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./go-template-main
+    environment:
+      SERVER_PORT: "8080"
+      DB_PG_SERVER: db
+      DB_PG_PORT: "5432"
+      DB_PG_USER: ${DB_PG_USER:-raise}
+      DB_PG_PASS: ${DB_PG_PASS:-raise_dev_password}
+      DB_PG_INST: ${DB_PG_INST:-raise}
+      DB_PG_SCHEMA: public
+      DB_PG_SSLMODE: disable
+      CORS_ALLOW_ORIGINS: ${CORS_ALLOW_ORIGINS:-http://localhost:3000}
+    ports:
+      - "${BACKEND_PORT:-8080}:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        # Vite bakes this into the built bundle -- it must be the URL the *browser*
+        # (not another container) can reach, so it points at the host-mapped backend
+        # port above, not the internal Docker network hostname.
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8080/api}
+        VITE_APP_ENV: production
+    ports:
+      - "${FRONTEND_PORT:-3000}:80"
+    depends_on:
+      - backend
+
+volumes:
+  db_data:

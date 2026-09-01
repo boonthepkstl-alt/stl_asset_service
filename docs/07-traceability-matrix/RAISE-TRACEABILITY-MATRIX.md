@@ -2,14 +2,20 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Requirement Traceability Matrix (RTM)
-**Version:** 0.8 Draft (Dashboard/Executive Dashboard scope correction fully closed —
-see Gap 8, §6, now RESOLVED; Open Finding F-22 propagated end-to-end through Design §13
-(v0.9) / Prototype P-002 & P-014 (v0.8) / AC AC-DASH & AC-EXEC-001 (v0.7) / Test Plan
-TS-DASH & TS-EXEC-001 (v0.7) / Test Cases TC-DASH-01..03 & TC-EXEC-001-01..02 (v0.7),
-and a fresh formal execution sweep against the corrected test cases was run 2026-08-31
-against the real running app, confirming PASS)
+**Version:** 1.0 Draft (`RAISE-FR-ASSET-002` Category/Type sub-taxonomy —
+Gap 9, §6, **fully RESOLVED this revision**; Open Finding F-27 propagated
+end-to-end through Prototype P-005 (v0.9) / AC AC-ASSET-002 (v0.8) / Test
+Plan TS-ASSET-002 (v0.8) / Test Cases TC-ASSET-002-01..03 (v0.9), confirming
+"sub-category" = the existing Asset `type` field, a 2-level Category → Type
+→ individual assets hierarchy, and real seeded Category → Type values.
+**All three halves of this gap are now closed** — the spec correction, the
+UI implementation (Type-level nesting shipped in the "By Category" view),
+and the execution sweep (`TC-ASSET-002-01`, `-02`, `-03` all formally
+re-executed against the real running app on 2026-09-01 and confirmed PASS,
+with 3 passing automated tests and no regressions across the full 145-test
+frontend suite))
 **Status:** Draft for Traceability Review
-**Source:** [`RAISE-TEST-CASES.md`](../06-test-cases/RAISE-TEST-CASES.md) v0.7, consolidated against [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.7, [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.7, [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.8, [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.9, and [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.11 — **the actual PRD file on disk was re-read in full for this revision, not assumed from downstream citations**, per this document's own standing practice since v0.4. Confirmed: `RAISE-PRD.md` itself did **not** change for this revision — this is a documentation correction to match the already-shipped app, not a requirement change (see Gap 8, §6).
+**Source:** [`RAISE-TEST-CASES.md`](../06-test-cases/RAISE-TEST-CASES.md) v0.9, consolidated against [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.8, [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.8, [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.9, [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.9 (unchanged this revision), and [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.11 (unchanged this revision) — **the actual PRD file on disk was re-read in full for this revision, not assumed from downstream citations**, per this document's own standing practice since v0.4. Confirmed: `RAISE-PRD.md` itself did **not** change for this revision — Open Finding F-27's business decision ("sub-category" = existing `type` field, 2-level hierarchy, no new field/data model) required no PRD-level change, only Prototype/AC/Test Plan/Test Cases correction and, this pass, a real UI code change plus formal execution (see Gap 9, §6).
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
 
@@ -119,7 +125,7 @@ per v0.4 Gap 6's own closure criteria.
 | PRD Requirement | Title | Priority/Scope | Design Area | Prototype Screen(s) | AC Group(s) | Suite ID(s) | TC ID(s) | Test Status |
 |---|---|---|---|---|---|---|---|---|
 | `RAISE-FR-ASSET-001` | Asset Registry | P0 / MVP | §4.1 Asset Management | P-003, P-004 | AC-ASSET-001, AC-ASSET-001-DETAIL | TS-ASSET-001, TS-ASSET-001-DETAIL | TC-ASSET-001-01..04, TC-ASSET-001-D-01..02 | **PASS** — executed 2026-08-26 against the real running app: TC-ASSET-001-01 **PASS** (list displays), TC-ASSET-001-02 **PASS** (search filters), TC-ASSET-001-04 **PASS** (row click opens Detail), TC-ASSET-001-D-02 **PASS** (Detail shows only the selected asset's data, verified across two distinct assets). TC-ASSET-001-03 originally **FAIL** — no Category filter existed anywhere in the Assets page's Filters panel (F-23) — **now PASS**, re-executed after the fix: a Category `Select` narrows the list correctly (verified 15 → 2 assets on "Infrastructure") and "Clear filters" resets it. TC-ASSET-001-D-01 originally **FAIL** — Asset Detail was missing 2 of the 9 required sections entirely (no "Financial" section, no "Lifecycle" section) — **now PASS**, re-executed after the fix (F-24): a "Financial" section (Purchase Cost/Current Value/Purchase Date, sourced from fields the Asset record already carries) and a "Lifecycle" section (a connectivity summary linking to the Custody/Warranty/Maintenance/Audit tabs, per Prototype P-004's "one asset → connected information across its lifecycle" principle and `AC-LIFE-001-01`) were added; all 9 required sections now confirmed present for a seeded asset. All 6 test cases now **PASS** — independent of the pre-existing asset-master-field-list block (PRD §16 Q1), which remains open but no longer blocks this row's Test Status. |
-| `RAISE-FR-ASSET-002` | Category & Hierarchy | P0 / MVP | §4.1 Asset Management | P-005 | AC-ASSET-002 | TS-ASSET-002 | TC-ASSET-002-01..02 | **PASS (scoped)** — executed 2026-08-26: TC-ASSET-002-02 **PASS** (Category is consistent between Asset Registry and Asset Detail for the same asset, e.g. `a1` shows "IT Hardware" in both). TC-ASSET-002-01 originally **FAIL** — no P-005 "Category & Hierarchy" screen existed anywhere in the app's routing/navigation (F-25) — **now PASS on the display mechanism**, re-executed after a scoped-down first cut, now a "By Category" view inside Asset Management (`frontend/src/pages/Assets/index.tsx` — moved there from a standalone `/categories` page per user request, same content/behavior): each category expands to show the real assets registered under it (a genuine, confirmed parent/child relationship — category → its assets — verified live: "IT Hardware" expands to 6 real seeded assets, clicking one navigates to its Asset Detail). This deliberately does **not** implement Prototype P-005's illustrative sub-category tree (Computer > Notebook/Desktop, etc.) — that taxonomy remains explicitly **TBD** per Prototype §11 and AC-ASSET-002's own "NOT TESTABLE YET" note; only the flat-category-to-real-assets grouping is built, since that's the only parent/child data actually confirmed anywhere in the chain. |
+| `RAISE-FR-ASSET-002` | Category & Hierarchy | P0 / MVP | §4.1 Asset Management | P-005 | AC-ASSET-002 (AC-ASSET-002-01/-02/-03) | TS-ASSET-002 | TC-ASSET-002-01..03 | **PASS — spec corrected and re-execution complete 2026-09-01 (Open Finding F-27, RESOLVED).** Prior formal execution (2026-08-26) confirmed TC-ASSET-002-02 **PASS** (Category is consistent between Asset Registry and Asset Detail for the same asset, e.g. `a1` shows "IT Hardware" in both) and TC-ASSET-002-01 **PASS on the display mechanism** (a "By Category" view inside Asset Management, `frontend/src/pages/Assets/index.tsx`, groups Category → its real assets; verified live: "IT Hardware" expands to 6 real seeded assets, clicking one navigates to Asset Detail). At that time, the *spec itself* (AC-ASSET-002-01, Prototype P-005) still described an illustrative, unconfirmed sub-category tree (Computer > Notebook/Desktop, etc.), so the PASS above was explicitly scoped to the flat category-to-assets grouping only, not to a Category→Type hierarchy — the taxonomy question was open, tracked as F-27. **Spec resolved 2026-09-01 (Open Finding F-27, per explicit business decision):** "sub-category" is confirmed as the existing Asset `type` field (no new field/data model); the hierarchy is exactly 2 levels — Category → Type → individual assets — using the real, currently-seeded Category → Type breakdown (IT Hardware → Laptop/Monitor/Headphones; Mobile → Smartphone/Tablet; Office Equipment → Printer/Projector; Infrastructure → Server/Router; Media Equipment → Camera). Propagated through Prototype P-005 (§11, v0.9), AC-ASSET-002 (§8, v0.8, now includes a new **AC-ASSET-002-03**), Test Plan TS-ASSET-002 (v0.8), and Test Cases `TC-ASSET-002-01..03` (v0.9). **UI code change shipped and formally re-executed, same day (2026-09-01):** the "By Category" view (`frontend/src/pages/Assets/index.tsx`) was extended one level deeper to nest Category → Type → individual assets, closing the previously-BLOCKED `TC-ASSET-002-03`. Formal execution against the real running app: navigated to `/assets`, opened "By Category," expanded "IT Hardware" — confirmed it reveals Type-level sub-groups only (Headphones: 1 asset, Laptop: 3 assets, Monitor: 2 assets), with no individual assets shown at that level; expanded "Laptop" — confirmed it reveals exactly its 3 individual assets (MacBook Pro 16" M3 / AST-0001, MacBook Air M2 / AST-0011, ThinkPad X1 Carbon Gen 11 / AST-0012), none of Monitor's or Headphones' assets. Matches `AC-ASSET-002-01`/`-03` and Prototype P-005 (v0.9) exactly. `TC-ASSET-002-01` **PASS** — the corrected Category → Type hierarchy display is now confirmed by this same execution (the 2026-08-26 PASS is no longer relied on; this is a fresh, direct PASS against the corrected wording). `TC-ASSET-002-03` **PASS** — no longer BLOCKED (pending implementation). `TC-ASSET-002-02` **unaffected, still PASS**. Also confirmed: 3 new/updated automated tests in `frontend/src/pages/Assets/index.test.tsx` all pass, the full frontend suite (145 tests) passes with no regressions, and `tsc --noEmit`/lint are both clean. **All three sub-items of Gap 9 (spec correction, UI implementation, execution sweep) are now closed** — see Gap 9, §6, RESOLVED. Overall row status: **PASS**. |
 | `RAISE-FR-ASSET-003` | Custody History | P0 / MVP | §4.2 Custody & Asset Operations | P-006 | AC-ASSET-003 | TS-ASSET-003 | TC-ASSET-003-01..03 | **PASS** — executed 2026-08-26: TC-ASSET-003-01 **PASS** (current holder "Sarah Chen" displays for asset `a1`). TC-ASSET-003-02/-03 originally **FAIL** — the "Assignment History" panel derived a single "current custody state" row instead of a chronological list, and a Check-in **replaced** the prior entry instead of appending — **now PASS**, re-executed after the fix (F-26): the History tab renders from the same per-asset audit trail `RAISE-FR-AUDIT-001` already builds (append-only by construction — `recordMockAuditEntry` only ever `unshift`s), which `assign`/`checkIn` already fed. Verified live on `a1`: Check-in appended "Asset checked in", then Assign appended "Asset assigned to Sarah Chen" alongside it (not replacing it) — both visible, newest-first. Independent of the still-open Check-in/Check-out-exclusivity question (Gap 4), which only concerns *other* write paths, not this one. |
 | `RAISE-FR-OPS-001` | QR / Barcode | P0 / MVP | §4.2 Custody & Asset Operations | P-007 | AC-OPS-001 | TS-OPS-001 | TC-OPS-001-01..03 | **PASS** — re-executed 2026-08-26 (after the F-21 fix) against the real running app (`frontend/src/pages/Assets/index.tsx`'s Scan QR flow): TC-OPS-001-01 **PASS** (valid code `AST-0001` opens Asset Detail); TC-OPS-001-02 **PASS** (unmatched-but-well-formed code `AST-9999` shows "No asset found for..."); TC-OPS-001-03 **PASS** (malformed code `%%$#!!garbage///` now shows a distinct "Invalid code — ... doesn't look like a scannable asset code" message, without attempting a lookup — no longer the same message as TC-OPS-001-02). F-21 resolved (`OPEN-FINDINGS.md`). |
 | `RAISE-FR-OPS-002` | Check-in / Check-out | P0 / MVP | §4.2 Custody & Asset Operations | P-008 | AC-OPS-002 | TS-OPS-002 | TC-OPS-002-01..03 | **PASS** — executed 2026-08-28 against the real running app: TC-OPS-002-01 **PASS** (Assign — the app's actual affordance for identifying a holder and confirming, no distinct "Check-out" label exists but the behavior matches: custody state updated to the new holder on asset `a4`); TC-OPS-002-02 **PASS** (Check-in confirmed the asset's return to Available/Unassigned); TC-OPS-002-03 **PASS** (both operations created a corresponding Audit Log entry, verified visible with actor and timestamp). "Appropriate permission"/role-correctness remains untestable (PRD §16 Q22, unchanged) but does not block re-verifying the state-transition and audit-entry behavior itself. |
@@ -471,6 +477,93 @@ match app), and the remaining execution work is now complete. See
 `OPEN-FINDINGS.md` F-22 (now Resolved, R-13) for the corresponding closure
 record there (maintained separately, out of this document's scope).
 
+**Gap 9 (RESOLVED 2026-09-01 — spec corrected, UI shipped, and execution
+sweep complete, all in the same day):** `RAISE-FR-ASSET-002`'s Prototype/AC/
+Test Plan/Test Cases previously described the P-005 "Category & Hierarchy"
+sub-category tree only as an illustrative, unconfirmed example (Computer >
+Notebook/Desktop, etc.) — `AC-ASSET-002-01` carried a "NOT TESTABLE YET"
+note and no criterion existed for expand/drill-down behavior at all. This
+was a genuine quality gap, not merely a missing ID: `RAISE-FR-ASSET-002` is
+a P0/MVP requirement whose only prior test coverage (`TC-ASSET-002-01`) had
+been formally scoped *down* to a flat category-to-assets grouping precisely
+because the intended 2-level taxonomy was undefined — tracked as Open
+Finding F-27.
+
+**What was done to close the spec half:** per explicit business decision on
+F-27 — confirm "sub-category" is not a new field/data model, it is the
+existing Asset `type` field, and the hierarchy is exactly 2 levels
+(Category → Type → individual assets) — the chain was corrected 2026-09-01,
+verified by direct re-read of each document:
+
+- `RAISE-PROTOTYPE.md` §11 (P-005, v0.9) — rewritten to show the real,
+  currently-seeded Category → Type breakdown (IT Hardware →
+  Laptop/Monitor/Headphones; Mobile → Smartphone/Tablet; Office Equipment →
+  Printer/Projector; Infrastructure → Server/Router; Media Equipment →
+  Camera) in place of the prior illustrative tree.
+- `RAISE-ACCEPTANCE-CRITERIA.md` §8 (AC-ASSET-002, v0.8) — AC-ASSET-002-01
+  rewritten to assert the real 2-level Category → Type hierarchy; a new
+  **AC-ASSET-002-03** added for expand/drill-down behavior (Category node
+  reveals Type sub-groups; Type node reveals individual assets). The prior
+  "NOT TESTABLE YET" note is removed — AC-ASSET-002 is now marked Testable.
+- `RAISE-TEST-PLAN.md` §7/§8/§9 (TS-ASSET-002, v0.8) — updated to record
+  AC-ASSET-002 as fully testable, no longer blocked on the taxonomy
+  question.
+- `RAISE-TEST-CASES.md` §7 (TC-ASSET-002-01..03, v0.9) — `TC-ASSET-002-01`
+  rewritten to assert the real Category → Type hierarchy and marked no
+  longer BLOCKED; `TC-ASSET-002-02` unchanged; new `TC-ASSET-002-03` added,
+  initially marked **BLOCKED (pending implementation)**, then formally
+  executed and closed **PASS** the same day (2026-09-01) once the UI change
+  shipped.
+
+**What was then done to close the UI-implementation and execution-sweep
+halves, same day (2026-09-01):**
+
+- The "By Category" view (`frontend/src/pages/Assets/index.tsx`) was
+  extended one level deeper: it now nests Category → Type → individual
+  assets, matching the corrected P-005/AC-ASSET-002 spec exactly.
+- A formal execution sweep was run against the real running app: navigated
+  to `/assets`, opened "By Category," expanded "IT Hardware" — confirmed it
+  reveals Type-level sub-groups only (Headphones: 1 asset, Laptop: 3 assets,
+  Monitor: 2 assets), with no individual assets shown at that level;
+  expanded "Laptop" — confirmed it reveals exactly its 3 individual assets
+  (MacBook Pro 16" M3 / AST-0001, MacBook Air M2 / AST-0011, ThinkPad X1
+  Carbon Gen 11 / AST-0012), none of Monitor's or Headphones' assets.
+- `RAISE-TEST-CASES.md` v0.9 §7 records `TC-ASSET-002-01`, `-02`, and `-03`
+  all **PASS** against this execution. 3 new/updated automated tests in
+  `frontend/src/pages/Assets/index.test.tsx` all pass, the full frontend
+  suite (145 tests) passes with no regressions, and `tsc --noEmit`/lint are
+  both clean.
+- `RAISE-TEST-PLAN.md` TS-ASSET-002 (§7/§8) updated to record the suite as
+  "RESOLVED and CLOSED 2026-09-01," with no remaining blocked item.
+
+**What this closes:**
+
+1. **Closed:** the *specification* ambiguity. Every layer of the chain now
+   agrees "sub-category" = the existing Asset `type` field, the hierarchy is
+   exactly 2 levels, and the same real seeded Category → Type values are
+   used consistently (Prototype, AC, Test Plan, Test Cases all cite the
+   identical breakdown). No document still describes an invented,
+   unconfirmed sub-category tree.
+2. **Closed — UI implementation:** the shipped "By Category" view now nests
+   Category → Type → individual assets, per the change and evidence above.
+   `TC-ASSET-002-03` is no longer BLOCKED and is recorded **PASS** in
+   `RAISE-TEST-CASES.md` v0.9.
+3. **Closed — execution sweep on the corrected `TC-ASSET-002-01`:** rather
+   than carrying forward the 2026-08-26 PASS earned against the *prior*,
+   narrower flat-grouping spec, a fresh formal execution was run against the
+   corrected Category → Type wording (evidence above) and confirmed **PASS**
+   directly — consistent with the same discipline applied to Gap 6 and Gap 8
+   (a spec correction alone never upgrades a Test Status; only a real
+   execution against the corrected wording does). `RAISE-FR-ASSET-002`'s row
+   (§3) is accordingly upgraded from **PASS (scoped)** to a full **PASS**.
+
+**No new Open Question is proposed here** — the business decision that
+resolved the sub-category question (F-27) was already made and documented,
+and the UI-implementation/execution-sweep work that remained open in the
+prior revision has now been completed and evidenced above, closing this gap
+in full. `OPEN-FINDINGS.md` F-27's closure (to Resolved) is tracked and
+handled separately, out of this document's scope.
+
 ---
 
 ## 7. Chain Consistency Check
@@ -579,17 +672,44 @@ downstream document's citation of an upstream document's content:
   §3/§4 rows updated from `NOT_TESTED` to real, evidence-based `PASS`/`PASS
   (partial)` accordingly. Thread confirmed complete end-to-end, including the
   execution-sweep portion (Gap 8, §6, now fully resolved).
+- **`RAISE-FR-ASSET-002` Category/Type sub-taxonomy — thread walked
+  end-to-end this revision (2026-09-01):** Open Finding F-27 →
+  `RAISE-PROTOTYPE.md` §11 (P-005, v0.9, real Category → Type breakdown
+  replacing the illustrative tree) → `RAISE-ACCEPTANCE-CRITERIA.md` §8
+  (AC-ASSET-002, v0.8, AC-ASSET-002-01 rewritten, new AC-ASSET-002-03 added,
+  "NOT TESTABLE YET" note removed) → `RAISE-TEST-PLAN.md` §7/§8/§9
+  (TS-ASSET-002, v0.8, "RESOLVED and CLOSED 2026-09-01," no longer blocked
+  on the taxonomy question, no remaining blocked item) →
+  `RAISE-TEST-CASES.md` §7 (`TC-ASSET-002-01` rewritten and unblocked,
+  `TC-ASSET-002-02` unchanged, new `TC-ASSET-002-03` added — all three now
+  v0.9, all three formally executed against the real running app 2026-09-01
+  and confirmed **PASS**). Every layer now agrees "sub-category" = the
+  existing Asset `type` field and the hierarchy is exactly 2 levels
+  (Category → Type → individual assets), using the identical real seeded
+  breakdown. The spec-correction step itself carried an explicit "no new
+  PASS/FAIL execution result reported" note (per the same discipline applied
+  to the Gap 6/Gap 8 threads above); a separate, subsequent formal execution
+  sweep — navigating to `/assets`, expanding "IT Hardware" (Type sub-groups
+  Headphones/Laptop/Monitor revealed, no individual assets at that level),
+  then expanding "Laptop" (exactly its 3 assets revealed: AST-0001, AST-0011,
+  AST-0012) — was then run the same day and did report a real PASS for all
+  three test cases, corroborated by 3 passing automated tests in
+  `frontend/src/pages/Assets/index.test.tsx` and a clean full 145-test
+  frontend suite. Thread confirmed complete end-to-end — the
+  spec-correction, UI-implementation, and execution-sweep halves are all
+  closed (Gap 9, §6, RESOLVED).
 - Full re-walk confirmed no other Test Status cell in §3/§4 has drifted from
-  the current text of `RAISE-TEST-CASES.md` v0.7 (cross-checked TC-by-TC):
-  `RAISE-FR-ASSET-001..003`, `RAISE-FR-OPS-001/002`,
+  the current text of `RAISE-TEST-CASES.md` v0.9 (cross-checked TC-by-TC):
+  `RAISE-FR-ASSET-001`, `RAISE-FR-ASSET-003`, `RAISE-FR-OPS-001/002`,
   `RAISE-FR-ORACLE-001`, `RAISE-FR-ALERT-001`, `RAISE-FR-AUDIT-001`,
   `RAISE-AI-SEARCH-001`, `RAISE-FR-LIFE-001`,
   `RAISE-AI-DOC-001..004` all match their respective TC Blocked-column text
-  exactly (`RAISE-FR-WARRANTY-001` was checked separately in the prior
+  exactly (`RAISE-FR-WARRANTY-001` was checked separately in a prior
   revision, given that revision's substantive change to that row;
-  `RAISE-FR-EXEC-001` and the Dashboard/Navigation row are checked
+  `RAISE-FR-EXEC-001` and the Dashboard/Navigation row were checked
+  separately in the prior revision; `RAISE-FR-ASSET-002` is checked
   separately immediately above, given this revision's substantive change to
-  both).
+  it).
 
 ---
 
@@ -668,6 +788,17 @@ not touched by this correction.
   **BLOCKED (partial)**, tied to the separate, still-open Open Finding F-03
   — Compliance Review should not treat that narrower sub-item as resolved by
   this sweep. See Gap 8, §6.
+- **Resolved this revision (2026-09-01), Gap 9:** `RAISE-FR-ASSET-002`'s
+  Category/Type sub-taxonomy spec question (Open Finding F-27) is now fully
+  resolved end-to-end. The "By Category" view (`frontend/src/pages/Assets/
+  index.tsx`) was extended to nest Category → Type → individual assets, and
+  a fresh formal execution sweep was run against the real running app
+  2026-09-01, confirming `TC-ASSET-002-01`, `-02`, and `-03` **PASS**
+  (evidence: `RAISE-FR-ASSET-002` row, §3), corroborated by 3 passing
+  automated tests and a clean full 145-test frontend suite. Compliance
+  Review may treat this requirement's Category/Type hierarchy coverage as a
+  confirmed `PASS` — this is a real, evidence-based execution result, not an
+  assumption from the spec correction alone. See Gap 9, §6, RESOLVED.
 
 ---
 
@@ -698,6 +829,16 @@ not touched by this correction.
       a fresh formal execution sweep against the corrected test cases was run
       2026-08-31 against the real running app, confirming PASS — both the
       spec-correction half and the execution half are now closed
+- [x] **Gap 9 (§6) is fully RESOLVED this revision** —
+      `RAISE-FR-ASSET-002`'s Category/Type sub-taxonomy (Open Finding F-27)
+      verified propagated through Prototype P-005 (v0.9) / AC AC-ASSET-002
+      (v0.8) / Test Plan TS-ASSET-002 (v0.8, "RESOLVED and CLOSED") / Test
+      Cases TC-ASSET-002-01..03 (v0.9, all dated 2026-09-01) — **all three**
+      sub-items are now closed: the spec correction, the UI implementation
+      (Type-level nesting shipped in the "By Category" view), and the
+      execution sweep (`TC-ASSET-002-01`, `-02`, `-03` all formally executed
+      against the real running app and confirmed PASS, corroborated by 3
+      passing automated tests and a clean full 145-test frontend suite)
 - [x] No VERSCAN-only item appears anywhere in this matrix
 
 ---
@@ -724,10 +865,16 @@ Development (Source Code)
 RAISE-COMPLIANCE-REVIEW.md
 ```
 
-Gaps 1–8 are resolved and re-confirmed with no drift this revision. **Gap 8
-is now fully resolved** — both the spec-correction half and the formal
+Gaps 1–9 are resolved and re-confirmed with no drift this revision. **Gap 8
+is fully resolved** — both the spec-correction half and the formal
 execution-sweep half are done (see Gap 8, §6, and the `RAISE-FR-EXEC-001`/
-Dashboard-Navigation rows in §3/§4).
+Dashboard-Navigation rows in §3/§4). **Gap 9 is now fully resolved this
+revision** — `RAISE-FR-ASSET-002`'s Category/Type sub-taxonomy spec question
+(Open Finding F-27) is closed at the Prototype/AC/Test Plan/Test Cases
+layer, the UI code change (Type-level nesting in the "By Category" view) has
+shipped, and a fresh formal execution sweep against `TC-ASSET-002-01`/`-02`/
+`-03` confirmed PASS (see Gap 9, §6, and the `RAISE-FR-ASSET-002` row in
+§3).
 
 **Recommended next actions, in order:**
 
@@ -758,33 +905,141 @@ Dashboard-Navigation rows in §3/§4).
 
 ## Document Status
 
-**Version:** 0.8 (Dashboard/Executive Dashboard scope correction fully
-closed — Gap 8, §6, RESOLVED this revision: both the spec correction and a
-fresh formal execution sweep against the corrected test cases are now done,
-confirming PASS)
+**Version:** 1.0 (`RAISE-FR-ASSET-002` Category/Type sub-taxonomy —
+Gap 9, §6, fully RESOLVED this revision: the spec correction, the UI
+implementation (Type-level nesting shipped in the "By Category" view), and
+the execution sweep are all done, with `TC-ASSET-002-01..03` all confirmed
+PASS)
 **Status:** Draft for Traceability Review
-**Source:** [`RAISE-TEST-CASES.md`](../06-test-cases/RAISE-TEST-CASES.md) v0.7 and full upstream chain — `RAISE-TEST-PLAN.md` v0.7, `RAISE-ACCEPTANCE-CRITERIA.md` v0.7, `RAISE-PROTOTYPE.md` v0.8, `RAISE-DESIGN.md` v0.9, and `RAISE-PRD.md` v0.11 (unchanged this revision — this update records a fresh test-execution result, not a document-chain re-sync)
+**Source:** [`RAISE-TEST-CASES.md`](../06-test-cases/RAISE-TEST-CASES.md) v0.9 and full upstream chain — `RAISE-TEST-PLAN.md` v0.8, `RAISE-ACCEPTANCE-CRITERIA.md` v0.8, `RAISE-PROTOTYPE.md` v0.9, `RAISE-DESIGN.md` v0.9 (unchanged this revision), and `RAISE-PRD.md` v0.11 (unchanged this revision — Open Finding F-27's resolution required no PRD-level change)
 **Reference:** VERSCAN only
-**Last Re-Verified:** 2026-08-31 (fresh formal execution sweep against the
-corrected `TC-DASH-01..03`/`TC-EXEC-001-01..02`, run against the real running
-app at `frontend/src/pages/Dashboard/index.tsx`, route `/dashboard` — page
-title confirmed literally "Executive Dashboard," confirming P-002/P-014/this
-route are the same single entry point). Real page text captured and checked
-against every expected item in `TC-DASH-01..03`/`TC-EXEC-001-01..02`: all 8
-KPI tiles present (Total Assets, Available, Assigned, In Maintenance, Expired
-Warranty, Software Licenses, Monthly Depreciation, Monthly Cost) and all 10
-sections present (AI Insights, AI Portfolio Health, Oracle FA Synced, Asset
-Lifecycle, Department Distribution, Asset Status, Asset Type, Pending
-Approvals, Recent Activities, Maintenance Calendar); NBV/Risk/Utilization
-tiles confirmed absent, as expected. Result: `TC-DASH-01`/`TC-EXEC-001-01`
-**PASS**, `TC-DASH-02`/`TC-EXEC-001-02` **PASS**, `TC-DASH-03` **PASS** on
-the absence-check itself (NBV/Risk formula sub-item remains **BLOCKED
-(partial)**, tied to Open Finding F-03, unaffected). §3/§4 rows for
-`RAISE-FR-EXEC-001` and Dashboard/Navigation updated from `NOT_TESTED` to
-real, evidence-based `PASS`/`PASS (partial)` accordingly. No other row
-required re-verification this pass.
+**Last Re-Verified:** 2026-09-01 (re-sync and re-execution of
+`RAISE-FR-ASSET-002` against Prototype P-005 (v0.9) / AC AC-ASSET-002
+(v0.8) / Test Plan TS-ASSET-002 (v0.8, "RESOLVED and CLOSED") / Test Cases
+TC-ASSET-002-01..03 (v0.9), following the F-27 business decision. A fresh
+formal execution sweep **was** run against the real running app this pass,
+after the document-chain re-sync: navigated to `/assets`, opened "By
+Category," expanded "IT Hardware" — confirmed it reveals Type-level
+sub-groups only (Headphones: 1 asset, Laptop: 3 assets, Monitor: 2 assets),
+no individual assets shown at that level; expanded "Laptop" — confirmed it
+reveals exactly its 3 individual assets (MacBook Pro 16" M3 / AST-0001,
+MacBook Air M2 / AST-0011, ThinkPad X1 Carbon Gen 11 / AST-0012), none of
+Monitor's or Headphones' assets. Matches `AC-ASSET-002-01`/`-03` and
+Prototype P-005 (v0.9) exactly. Result: `TC-ASSET-002-02` unchanged
+(**PASS**, from the 2026-08-26 execution, unaffected by the taxonomy
+question); `TC-ASSET-002-01` **PASS** — re-executed directly against the
+corrected Category → Type wording (the prior 2026-08-26 PASS, earned
+against the narrower flat-grouping spec, is not relied on as evidence — this
+is a fresh, direct result); `TC-ASSET-002-03` **PASS** — no longer BLOCKED,
+the UI code change (Type-level nesting) has shipped and was formally
+verified. 3 new/updated automated tests in `frontend/src/pages/Assets/
+index.test.tsx` all pass, the full frontend suite (145 tests) passes with no
+regressions, and `tsc --noEmit`/lint are both clean. §3 `RAISE-FR-ASSET-002`
+row upgraded from **PASS (scoped)** to a full **PASS** (Gap 9, §6, RESOLVED). No other row required re-verification this pass.
 
-**Change Log — v0.7 → v0.8 (this revision, 2026-08-31):**
+**Change Log — v0.9 → v1.0 (this revision, 2026-09-01):**
+
+1. **Gap 9 fully RESOLVED** (was partially resolved in v0.9 — spec
+   correction only). The UI code change nesting the "By Category" view one
+   level deeper (Category → Type → individual assets) has shipped in
+   `frontend/src/pages/Assets/index.tsx`, and a fresh formal execution
+   sweep against `TC-ASSET-002-01..03` was run 2026-09-01 against the real
+   running app, confirming all three **PASS**: navigated to `/assets`,
+   opened "By Category," expanded "IT Hardware" (Type-level sub-groups
+   Headphones: 1 asset, Laptop: 3 assets, Monitor: 2 assets revealed, no
+   individual assets at that level), expanded "Laptop" (exactly its 3
+   individual assets revealed — MacBook Pro 16" M3 / AST-0001, MacBook Air
+   M2 / AST-0011, ThinkPad X1 Carbon Gen 11 / AST-0012 — none of Monitor's or
+   Headphones' assets). Corroborated by 3 new/updated automated tests in
+   `frontend/src/pages/Assets/index.test.tsx` (all pass), the full frontend
+   suite (145 tests, no regressions), and clean `tsc --noEmit`/lint. This
+   closes the UI-implementation and execution-sweep halves of Gap 9 that
+   v0.9 left explicitly open — see Gap 9, §6, for the full closure record
+   (all three sub-items now recorded resolved, none silently dropped).
+2. **§3 `RAISE-FR-ASSET-002` row updated** from `PASS (scoped)` to real,
+   evidence-based **PASS** (Category → Type hierarchy display and drill-down
+   both confirmed), with `TC-ASSET-002-02` unaffected and still PASS.
+3. **§6 Gap 9 updated** from "PARTIALLY RESOLVED" to fully "RESOLVED," with
+   the UI-implementation and execution-sweep evidence added alongside the
+   already-closed spec-correction record.
+4. **§7 Chain Consistency Check** — the `RAISE-FR-ASSET-002` thread-walk
+   bullet updated to record the completed UI shipment and execution sweep,
+   closing out the "UI-implementation and execution-sweep halves remain
+   explicitly open" note that ended the v0.9 bullet.
+5. **§8 Compliance Review Readiness** — the standing caveat warning
+   Compliance Review not to treat `TC-ASSET-002-01`/`-03` as PASS on the
+   spec resolution alone is removed and replaced with a note that all three
+   test cases now carry a real, evidence-based PASS.
+6. **§9 Checklist** — Gap 9 item updated from "PARTIALLY RESOLVED" to
+   "fully RESOLVED."
+7. **§10 Next Step** — item 0 (ship the UI change and run the execution
+   sweep) removed, since it is now done; the numbered list re-sequenced
+   starting at 1.
+8. Version citations updated: Test Cases v0.8 → v0.9 (Prototype unchanged at
+   v0.9, AC unchanged at v0.8, Test Plan unchanged at v0.8 — this revision's
+   change was UI code plus a Test Cases execution-result update, not a
+   further AC/Prototype/Test Plan rewrite; PRD unchanged at v0.11, Design
+   unchanged at v0.9). Document version bumped 0.9 → 1.0. No other gap in §6
+   was found open, closed, or newly discovered during this pass — Gaps 1–8
+   are unchanged from v0.9 and are not re-litigated here; this revision's
+   reverse-chain re-verification was scoped to `RAISE-FR-ASSET-002`
+   specifically, per the instruction that prompted it, not a full re-walk of
+   every requirement. `OPEN-FINDINGS.md` F-27 update (to Resolved) is
+   tracked and handled separately, out of this document's scope.
+
+**Change Log — v0.8 → v0.9 (prior revision, 2026-09-01):**
+
+1. **Gap 9 opened and partially resolved in the same revision:**
+   `RAISE-FR-ASSET-002`'s Category & Hierarchy sub-category taxonomy was
+   previously an illustrative, unconfirmed example with a "NOT TESTABLE
+   YET" note on `AC-ASSET-002-01` and no drill-down criterion at all —
+   tracked as Open Finding F-27. Per explicit business decision — confirm
+   "sub-category" is the existing Asset `type` field (no new field/data
+   model), the hierarchy is exactly 2 levels (Category → Type → individual
+   assets), using real seeded values — the chain was corrected 2026-09-01:
+   `RAISE-PROTOTYPE.md` §11 (P-005, v0.9), `RAISE-ACCEPTANCE-CRITERIA.md` §8
+   (AC-ASSET-002, v0.8, new AC-ASSET-002-03 added), `RAISE-TEST-PLAN.md`
+   §7/§8/§9 (TS-ASSET-002, v0.8), and `RAISE-TEST-CASES.md` §7
+   (`TC-ASSET-002-01` rewritten and unblocked, new `TC-ASSET-002-03` added
+   and marked BLOCKED (pending implementation)). **The spec-correction half
+   of Gap 9 is closed; the UI-implementation half and the execution-sweep
+   half are explicitly not** — see Gap 9, §6, for the full record.
+2. **§3 `RAISE-FR-ASSET-002` row rewritten** to distinguish what is
+   confirmed (the chain is corrected and matches the business decision;
+   `TC-ASSET-002-02` unaffected PASS) from what is not yet confirmed (a
+   fresh execution sweep against `TC-ASSET-002-01`'s corrected
+   Category → Type wording; `TC-ASSET-002-03`'s UI implementation). Overall
+   row status retained at **PASS (scoped)**, explicitly not upgraded on the
+   strength of the spec correction alone.
+3. **§6 Gap 9 added**, following the same "record resolution with evidence,
+   split closed vs. open sub-items, do not silently close" discipline as
+   Gaps 6 and 8.
+4. **§7 Chain Consistency Check** gained a dedicated `RAISE-FR-ASSET-002`
+   thread-walk bullet (F-27 → Prototype → AC → Test Plan → Test Cases)
+   confirming the spec-correction propagated cleanly, and explicitly noting
+   every layer states no new execution result is being reported.
+5. **§8 Compliance Review Readiness** gained a new standing caveat warning
+   Compliance Review not to treat `TC-ASSET-002-01`/`-03` as PASS on the
+   strength of the spec resolution alone.
+6. **§9 Checklist** gained a Gap 9 item, explicitly marked partially
+   resolved (not fully resolved), mirroring the discipline used for Gap 8
+   when its execution half was still open.
+7. **§10 Next Step** gained a new highest-priority action (item 0): ship the
+   Type-level nesting UI change and run a fresh execution sweep against
+   `TC-ASSET-002-01`/`-03`, updating §3's `RAISE-FR-ASSET-002` row from
+   `PASS (scoped)` once run.
+8. Version citations updated throughout: Prototype v0.8 → v0.9, AC v0.7 →
+   v0.8, Test Plan v0.7 → v0.8, Test Cases v0.7 → v0.8 (PRD unchanged at
+   v0.11, Design unchanged at v0.9 — confirmed by direct re-read, not
+   assumed, since F-27's resolution required no PRD/Design-level change).
+   **No other gap in §6 was found open, closed, or newly discovered during
+   this pass** — Gaps 1–8 are unchanged from v0.8 and are not re-litigated
+   here; this revision's reverse-chain re-verification was scoped to
+   `RAISE-FR-ASSET-002` specifically, per the instruction that prompted it,
+   not a full re-walk of every requirement. `OPEN-FINDINGS.md` F-27 update
+   is tracked and handled separately, out of this document's scope.
+
+**Change Log — v0.7 → v0.8 (prior revision, 2026-08-31):**
 
 1. **Gap 8 fully RESOLVED** (was partially resolved in v0.7 — spec
    correction only). A fresh formal execution sweep against the corrected
@@ -993,9 +1248,11 @@ enforcement level noted, and the original Gap 6 finding).
 **Next Action:** With the Dashboard/`RAISE-FR-EXEC-001` spec correction
 propagated end-to-end and the fresh formal execution sweep against the
 corrected `TC-DASH-01..03`/`TC-EXEC-001-01..02` now complete (Gap 8, §6,
-fully resolved), this matrix's own §3/§4 rows have been updated from
-`NOT_TESTED` to real, evidence-based `PASS`/`PASS (partial)`. The standing
-PRD Open Questions and Gap 4's custody-writing-events question (§8, §10
-above) remain the next priority before Development proceeds on the
-requirements they block. No document in the chain requires a further
-consistency correction at this time.
+fully resolved), and with `RAISE-FR-ASSET-002`'s Category/Type sub-taxonomy
+spec correction, UI implementation, and execution sweep now also complete
+(Gap 9, §6, fully resolved), this matrix's own §3/§4 rows have been updated
+to real, evidence-based `PASS`/`PASS (partial)` results. The standing PRD
+Open Questions and Gap 4's custody-writing-events question (§8, §10 above)
+remain the next priority before Development proceeds on the requirements
+they block. No document in the chain requires a further consistency
+correction at this time.

@@ -2,9 +2,9 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Acceptance Criteria
-**Version:** 0.7 Draft
+**Version:** 0.8 Draft
 **Status:** Draft for Acceptance Review
-**Source:** [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.8 §27 (Prototype Traceability Matrix) + §5, §7–§23, §25A (per-screen specs / AI Scope Boundary / NFR Backlog Prototype Note), cross-checked against [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.11 and [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.9
+**Source:** [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.9 §27 (Prototype Traceability Matrix) + §5, §7–§23, §25A (per-screen specs / AI Scope Boundary / NFR Backlog Prototype Note), cross-checked against [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.11 and [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.9
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
 
@@ -53,7 +53,7 @@ detail is "TBD" or "conceptual," the corresponding criterion is marked
 | [AC-ASSET-001](#6-ac-asset-001--p-003-asset-registry) | P-003 | RAISE-FR-ASSET-001 | Testable |
 | [AC-ASSET-001-DETAIL](#7-ac-asset-001-detail--p-004-asset-detail) | P-004 | RAISE-FR-ASSET-001 | Testable |
 | [AC-LIFE-001](#75-ac-life-001--asset-lifecycle-connectivity-cross-cutting) | P-004 (Lifecycle section) | RAISE-FR-LIFE-001 | Partially testable |
-| [AC-ASSET-002](#8-ac-asset-002--p-005-category--hierarchy) | P-005 | RAISE-FR-ASSET-002 | Partially testable |
+| [AC-ASSET-002](#8-ac-asset-002--p-005-category--hierarchy) | P-005 | RAISE-FR-ASSET-002 | Testable (resolved 2026-09-01, Open Finding F-27) |
 | [AC-ASSET-003](#9-ac-asset-003--p-006-custody-history) | P-006 | RAISE-FR-ASSET-003 | Partially testable |
 | [AC-OPS-001](#10-ac-ops-001--p-007-qr--barcode-scan) | P-007 | RAISE-FR-OPS-001 | Testable |
 | [AC-OPS-002](#11-ac-ops-002--p-008-check-in--check-out) | P-008 | RAISE-FR-OPS-002 | Partially testable |
@@ -289,18 +289,42 @@ MVP** (`RAISE-PRD.md` §14 item 7, §16 Resolved Question 26). Accordingly:
 
 **Requirement:** `RAISE-FR-ASSET-002` · **Screen:** P-005
 
+**Resolved 2026-09-01 (Open Finding F-27, per explicit business decision):**
+Prototype v0.9 §11 confirms "sub-category" is not a new field/data model —
+it is the existing Asset `type` field — and that the hierarchy is exactly
+**2 levels: Category → Type → individual assets**, no deeper. The tree
+shown is the real, currently-seeded Category → Type breakdown (IT Hardware
+→ Laptop/Monitor/Headphones; Mobile → Smartphone/Tablet; Office Equipment
+→ Printer/Projector; Infrastructure → Server/Router; Media Equipment →
+Camera), derived directly from `frontend/src/data/fixtures/mockData.ts`,
+not an invented example. It is a live, data-derived grouping, not a closed
+enumerated taxonomy — the specific `type` values will grow as assets with
+new `type` values are added.
+
 - **AC-ASSET-002-01** — Given categories exist, when a user opens
   Category & Hierarchy, then categories are displayed in a parent/child
-  hierarchy.
+  hierarchy, where the parent level is the Asset `category` field and the
+  child level is the Asset `type` field (e.g. IT Hardware → Laptop/Monitor/
+  Headphones; Mobile → Smartphone/Tablet; Office Equipment → Printer/
+  Projector; Infrastructure → Server/Router; Media Equipment → Camera).
 - **AC-ASSET-002-02** — Given an asset is assigned to a category, when
   the user views the Asset Registry or Asset Detail, then the assigned
   category is visible and consistent with the hierarchy view.
+- **AC-ASSET-002-03** — Given a category node in the hierarchy (e.g. "IT
+  Hardware"), when the user expands it, then its Type-level sub-groups are
+  revealed (the distinct `type` values currently present within that
+  `category`, e.g. Laptop/Monitor/Headphones under IT Hardware); when the
+  user expands a Type-level node further (or views the existing
+  per-asset list under it, per the flat category-to-assets grouping
+  resolved by Open Finding F-25), then the individual assets under that
+  `category`/`type` pair are revealed — matching the 2-level Category →
+  Type → individual assets structure and no deeper.
 
-**NOT TESTABLE YET:** the final category hierarchy (e.g., Computer >
-Notebook/Desktop, Network > Switch/Router) shown in the Prototype spec is
-explicitly illustrative, not finalized business data (Prototype §11; PRD
-§16 Q — category structure not enumerated as a numbered open question in
-the PRD but stated as an open item in RAISE-FR-ASSET-002's Open Question).
+This resolves the prior NOT TESTABLE YET note on this AC group. No
+category/type value beyond those listed in Prototype v0.9 §11 is asserted
+by any criterion above; the list is illustrative-but-real and is expected
+to grow as new asset `type` values are seeded, not treated as a closed
+enumeration.
 
 ---
 
@@ -1062,8 +1086,36 @@ as blocked pending business confirmation.
 
 ## Document Status
 
-**Version:** 0.7 (re-synced against `RAISE-PROTOTYPE.md` v0.8, `RAISE-PRD.md` v0.11, and
-`RAISE-DESIGN.md` v0.9, 2026-08-31 — Open Finding F-22 as-built correction)
+**Version:** 0.8 (re-synced against `RAISE-PROTOTYPE.md` v0.9, `RAISE-PRD.md` v0.11, and
+`RAISE-DESIGN.md` v0.9, 2026-09-01 — Open Finding F-27 scope/spec correction)
+
+**Change Log — v0.7 → v0.8 (2026-09-01, Open Finding F-27 scope/spec
+correction, per confirmed business decision):**
+
+1. **Root cause.** `RAISE-PROTOTYPE.md` v0.9 §11 (P-005 Category & Hierarchy) resolved
+   Open Finding F-27: "sub-category" is confirmed to be the existing Asset `type` field
+   (not a new field/data model), the hierarchy is exactly 2 levels (Category → Type →
+   individual assets), and the illustrative "Computer/Notebook/Desktop", "Network/
+   Switch/Router" example tree is replaced with the real, currently-seeded Category →
+   Type breakdown derived from `frontend/src/data/fixtures/mockData.ts`. This is a
+   scope/spec correction resolving a previously-TBD open question, not a new
+   requirement.
+2. **AC-ASSET-002 (§8) rewritten.** AC-ASSET-002-01 now states the parent/child
+   hierarchy explicitly as Category (`category` field) → Type (`type` field), with the
+   real seeded example values. A new **AC-ASSET-002-03** tests that expanding a
+   category reveals its Type-level sub-groups, and expanding further (or the existing
+   per-asset list, per Open Finding F-25) reveals individual assets under each
+   `category`/`type` pair — matching Prototype v0.9 §11's 2-level structure exactly.
+   No category/type value beyond what Prototype v0.9 §11 states is asserted.
+3. **NOT TESTABLE YET note removed from AC-ASSET-002.** The prior note ("the final
+   category hierarchy... is explicitly illustrative, not finalized business data") no
+   longer applies — the hierarchy shape and real example values are now confirmed by
+   business decision. AC-ASSET-002 is now marked **Testable** (previously "Partially
+   testable") in the AC Index (§3).
+4. No other AC group required a correction — this revision touches only §3 (index row)
+   and §8 (AC-ASSET-002). The Not-Yet-Testable Summary (§20) did not carry a numbered
+   row for this item (it was referenced only inline under AC-ASSET-002 itself), so no
+   §20 table row required removal.
 
 **Change Log — v0.6 → v0.7 (2026-08-31, Open Finding F-22 as-built
 correction, per explicit business decision):**

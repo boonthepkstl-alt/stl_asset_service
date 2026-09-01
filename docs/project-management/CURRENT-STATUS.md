@@ -9,9 +9,9 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-08-31, after `CHECKPOINT-2026-08-31-003` (`TS-DASH`/
-`TS-EXEC-001` re-verification — all cases PASS, F-22 Resolved as R-13;
-not yet shipped via PR, see that checkpoint for status). The
+**As of:** 2026-09-01, after `CHECKPOINT-2026-09-01-001` (F-27 resolved,
+implemented, and re-verified — all cases PASS, `RAISE-TRACEABILITY-MATRIX.md`
+reaches v1.0; not yet shipped via PR, see that checkpoint for status). The
 `BASELINE-CHECKPOINT-2026-08-24` scan is still the last
 full live re-verification against `git`/source. F-20 (checkpoint-coverage
 gap) is closed (R-04); F-21 (QR/Barcode invalid-code state) is closed
@@ -99,10 +99,22 @@ actually shipped 8-tile KPI grid / 10-section dashboard, then
 `RAISE-TRACEABILITY-MATRIX.md` (v0.8) updated to PASS/PASS (partial),
 Gap 8 closed. NBV/Risk/Utilization remain a documented, not-yet-scheduled
 enhancement (F-03) — not deleted, not resolved by this fix.
-**F-27** (Category sub-taxonomy, TBD), **F-30** (no Auth mock fallback),
-**F-31** (Oracle FA Financial View not built), **F-32** (Alerts not
-built), and **F-33** (AI Assistant doesn't answer questions) remain the
-5 open findings, each awaiting its own business/design decision.
+**F-27 (Category sub-taxonomy) is now Resolved (R-14, 2026-09-01)** —
+per confirmed business decision, sub-category = the existing Asset `type`
+field (2-level Category → Type → assets, no new field/data model). The
+chain (`RAISE-PROTOTYPE.md` P-005 v0.9, `RAISE-ACCEPTANCE-CRITERIA.md`
+AC-ASSET-002 v0.8, `RAISE-TEST-PLAN.md`/`RAISE-TEST-CASES.md` v0.8/v0.9)
+was corrected, then **implemented and re-verified the same day**: the
+Assets page's "By Category" view was extended one level deeper —
+expanding a category reveals its real Type sub-groups, expanding a Type
+reveals its individual assets. All cases **PASS**; 3 automated tests
+(144→145), full suite passing, `tsc`/lint clean.
+**`RAISE-TRACEABILITY-MATRIX.md` reaches v1.0** — Gap 9 closed, the last
+open gap, all traceability gaps now resolved.
+**F-30** (no Auth mock fallback), **F-31** (Oracle FA Financial View not
+built), **F-32** (Alerts not built), and **F-33** (AI Assistant doesn't
+answer questions) remain the 4 open findings, each awaiting its own
+business/design decision.
 Every
 development session should close out per
 [`SESSION-CLOSEOUT-PROTOCOL.md`](SESSION-CLOSEOUT-PROTOCOL.md), which is
@@ -113,12 +125,15 @@ what keeps this section current.
 ## 1. Overall Health
 
 The documentation chain (`docs/01-requirements/` … `docs/07-traceability-matrix/`)
-is internally consistent and current — all 6 historical traceability gaps
-are closed and re-verified against real file content, not just re-asserted.
-The gap between "documented" and "built" is real but honestly tracked: 3 of
-the platform's MVP domains have a full backend-to-frontend implementation;
-the rest is either genuinely blocked on an open PRD question or
-intentionally out of MVP scope (Roadmap).
+is internally consistent and current — **`RAISE-TRACEABILITY-MATRIX.md` has
+reached v1.0: all 9 traceability gaps identified across this project's
+history are closed** and re-verified against real file content, not just
+re-asserted. The gap between "documented" and "built" is real but honestly
+tracked: several of the platform's MVP domains have a full
+backend-to-frontend implementation, verified by formal test execution;
+the rest is either genuinely blocked on an open PRD/business question
+(F-30/F-31/F-32/F-33, `AC-WARRANTY-001-03`) or intentionally out of MVP
+scope (Roadmap).
 
 ## 2. Deliverable Chain Document Versions
 
@@ -126,11 +141,11 @@ intentionally out of MVP scope (Roadmap).
 |---|---|---|
 | [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) | 0.11 | Draft for Requirement Review — Warranty field list resolved (Resolved Question 40) |
 | [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) | 0.9 | §13 Executive Intelligence corrected to as-built dashboard (F-22, 2026-08-31) |
-| [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) | 0.8 | P-002/P-014 corrected to as-built dashboard, now cross-referencing each other (F-22, 2026-08-31) |
-| [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) | 0.7 | AC-DASH/AC-EXEC-001 rewritten against the as-built dashboard (F-22, 2026-08-31) |
-| [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) | 0.7 | TS-DASH/TS-EXEC-001 corrected to match AC v0.7 |
-| [`RAISE-TEST-CASES.md`](../06-test-cases/RAISE-TEST-CASES.md) | 0.7 | 63 test cases (new TC-DASH-03); TC-DASH-01..03/TC-EXEC-001-01..02 rewritten |
-| [`RAISE-TRACEABILITY-MATRIX.md`](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md) | 0.8 | Gap 8 fully resolved (F-22 spec corrected and re-executed, R-13) |
+| [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) | 0.9 | P-005 corrected to real Category→Type breakdown (F-27, 2026-09-01) |
+| [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) | 0.8 | AC-ASSET-002 resolved, new AC-ASSET-002-03 (F-27, 2026-09-01) |
+| [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) | 0.8 | TS-ASSET-002 resolved and closed (F-27, 2026-09-01) |
+| [`RAISE-TEST-CASES.md`](../06-test-cases/RAISE-TEST-CASES.md) | 0.9 | 63 test cases; TC-ASSET-002-01..03 all PASS (F-27, 2026-09-01) |
+| [`RAISE-TRACEABILITY-MATRIX.md`](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md) | 1.0 | Gap 9 closed (F-27, R-14) — all gaps now resolved |
 | [`RAISE-HIGH-LEVEL-ARCHITECTURE.md`](../08-architecture/RAISE-HIGH-LEVEL-ARCHITECTURE.md) | — | As-built, not versioned against PRD chain |
 | [`RAISE-API-DB-SPEC.md`](../09-api-db-spec/RAISE-API-DB-SPEC.md) | — | As-built |
 | [`RAISE-DETAILED-DESIGN.md`](../10-detailed-design/RAISE-DETAILED-DESIGN.md) | — | As-built |
@@ -142,7 +157,7 @@ intentionally out of MVP scope (Roadmap).
 | Domain | Requirement | Status |
 |---|---|---|
 | Asset Registry | `RAISE-FR-ASSET-001` | ✅ Built, **PASS on all 6 test cases** per formal test execution 2026-08-26/-27 — list/search/row-click/detail-isolation, the Category filter (F-23), and Asset Detail's Financial/Lifecycle sections (F-24) all fixed and verified |
-| Category & Hierarchy | `RAISE-FR-ASSET-002` | ✅ Built (scoped), **PASS (scoped)** per formal test execution 2026-08-26/-28 — category *display* is consistent across screens (PASS), and a first-cut P-005 Category & Hierarchy view now exists (F-25 fixed: each category expands to its real assets) — a "By Category" tab inside Asset Management (`/assets`), folded in from an initial standalone `/categories` page per user request (same content, no separate route). Sub-category taxonomy remains intentionally out of scope (**F-27**, TBD per Prototype §11) |
+| Category & Hierarchy | `RAISE-FR-ASSET-002` | ✅ Built, **PASS** per formal test execution 2026-08-26 and 2026-09-01 — category *display* is consistent across screens, and the "By Category" tab inside Asset Management (`/assets`) now nests 2 levels deep: Category → Type → individual assets (**F-27 resolved, R-14**: sub-category = the existing `type` field, no new field/data model). Expanding a category reveals its real Type sub-groups (e.g. "IT Hardware" → Laptop/Monitor/Headphones); expanding a Type reveals its individual assets |
 | Asset Assign / Check-in | `RAISE-FR-ASSET-003` / `RAISE-FR-OPS-002` | ✅ Built, **PASS on all test cases for both requirements** — `RAISE-FR-ASSET-003` (3/3, 2026-08-26/-27, F-26 fixed: History tab renders from the same audit trail `RAISE-FR-AUDIT-001` builds, append-only) and `RAISE-FR-OPS-002` (3/3, 2026-08-28: Assign functions as the app's Check-out affordance, Check-in restores Available, both create Audit Log entries) |
 | Employee | supports `RAISE-FR-ASSET-003` | ✅ Built |
 | Warranty | `RAISE-FR-WARRANTY-001` | ✅ Built (partial), **PASS (partial)** per formal test execution 2026-08-29 — field list resolved (F-01, `warrantyExpiry` only), implemented as a "Warranty" column on the Assets Registry list (`TC-WARRANTY-001-01/-02` pass), not a standalone P-010 screen (per user direction). The "Expiring" timeline state (3rd of 3) is not implemented — depends on `AC-WARRANTY-001-03`'s still-unconfirmed 90-day-style threshold |
@@ -163,18 +178,18 @@ intentionally out of MVP scope (Roadmap).
 Triaged against [`RAISE-TRACEABILITY-MATRIX.md`](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md)
 §3–§5 — re-check that file before picking an item, it may have changed.
 
-**Buildable now:** None remaining — F-22 is closed (R-13, 2026-08-31:
-spec corrected and re-executed, all cases PASS). Warranty (F-01) is
+**Buildable now:** None remaining — F-22 (R-13, 2026-08-31) and F-27
+(R-14, 2026-09-01) are both closed: spec corrected, implemented (where
+applicable), and re-executed, all cases PASS. Warranty (F-01) is
 implemented (Assets Registry column, R-12) as of the 2026-08-26
 Asset-domain sweep, the 2026-08-28 TS-OPS-002/TS-MAINT-001 sweep, and
 the 2026-08-29 TS-LOGIN sweep — F-23 through F-29 are all now fixed
-(R-06 through R-11). F-27 (Category sub-taxonomy), F-30 (no Auth mock
-fallback), F-31 (Oracle FA Financial View not built), F-32 (Alerts not
-built), F-33 (AI Assistant doesn't answer questions), and
-`AC-WARRANTY-001-03`'s 90-day-window question all remain open but
-aren't directly buildable without a decision — every remaining open
-item is uniformly blocked on a business/design decision, none is a
-"buildable now" engineering task.
+(R-06 through R-11). F-30 (no Auth mock fallback), F-31 (Oracle FA
+Financial View not built), F-32 (Alerts not built), F-33 (AI Assistant
+doesn't answer questions), and `AC-WARRANTY-001-03`'s 90-day-window
+question all remain open but aren't directly buildable without a
+decision — every remaining open item is uniformly blocked on a
+business/design decision, none is a "buildable now" engineering task.
 
 **Needs a scoped-down first cut:** None remaining — Audit Log (PR #31 +
 #35, now covering both Asset and Ticket domains) and Executive Dashboard

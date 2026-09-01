@@ -2,9 +2,9 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Test Plan
-**Version:** 0.7 Draft
+**Version:** 0.8 Draft
 **Status:** Draft for Test Plan Review
-**Source:** [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.7, cross-checked against [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.11, [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.9, [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.8
+**Source:** [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.8, cross-checked against [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.11, [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.9, [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.9
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
 
@@ -168,7 +168,7 @@ Each suite ID mirrors its AC group for direct traceability.
 | TS-ASSET-001 | AC-ASSET-001 | P-003 | L1 | P0 | Yes — field list TBD |
 | TS-ASSET-001-DETAIL | AC-ASSET-001-DETAIL | P-004 | L1 | P0 | No |
 | TS-LIFE-001 | AC-LIFE-001 | P-004 (Lifecycle section) | L3, L5 | P0 | Yes — lifecycle state model TBD; Disposal confirmed Out of Scope for MVP (2026-08-21), not a blocker anymore |
-| TS-ASSET-002 | AC-ASSET-002 | P-005 | L1 | P0 | Yes — hierarchy TBD |
+| TS-ASSET-002 | AC-ASSET-002 | P-005 | L1 | P0 | No — resolved 2026-09-01 (Open Finding F-27, per confirmed business decision); AC-ASSET-002 is now fully testable, including new AC-ASSET-002-03 (category-to-type-to-asset expansion) |
 | TS-ASSET-003 | AC-ASSET-003 | P-006 | L1, L3 | P0 | Yes — holder model TBD; custody-writing-events ambiguity blocks AC-ASSET-003-03's exclusivity scope only |
 | TS-OPS-001 | AC-OPS-001 | P-007 | L1, L2 | P0 | No |
 | TS-OPS-002 | AC-OPS-002 | P-008 | L1, L3 | P0 | Yes — workflow/roles TBD; RBAC MVP enforcement level confirmed as UI-only/client-side (role list/permission matrix still TBD) |
@@ -185,9 +185,14 @@ Each suite ID mirrors its AC group for direct traceability.
 | TS-AI-DOC-003 | AC-AI-DOC-003 | P-005 (incidental) | L5 | P0 | Yes — entire suite blocked; sole criterion NOT TESTABLE YET (assign-vs-suggest classification behavior TBD) |
 | TS-AI-DOC-004 | AC-AI-DOC-004 | P-003 (incidental) | L5 | P0 | Yes — entire suite blocked; sole criterion NOT TESTABLE YET (matching threshold / merge-or-flag workflow TBD) |
 
-Three suites (TS-ASSET-001-DETAIL, TS-OPS-001, TS-AI-STATES) have no
-blocked items and can be executed as soon as the corresponding screen is
-implemented, without waiting on any Open Question.
+Four suites (TS-ASSET-001-DETAIL, TS-OPS-001, TS-AI-STATES, TS-ASSET-002)
+have no blocked items and can be executed as soon as the corresponding
+screen is implemented, without waiting on any Open Question. TS-ASSET-002
+was added to this group 2026-09-01 (Open Finding F-27, per confirmed
+business decision) — see §8's TS-ASSET-002 row for the resolution detail;
+no test case for AC-ASSET-002 has been executed or has passed as of this
+update, since the corresponding Test Case (`RAISE-TEST-CASES.md`) and the
+UI's expand/drill-down behavior (AC-ASSET-002-03) are still pending.
 
 TS-AI-DOC-001 through TS-AI-DOC-004 are fully blocked, not partially blocked
 like the other "Yes" rows above — each AC group (§19.5–§19.8 of the AC
@@ -210,7 +215,7 @@ introduced here.
 | TS-LOGIN | Q21 Authentication mechanism, Q22 Roles/permissions | Which credential type is valid; which roles see access-denied. **RBAC MVP enforcement level confirmed (2026-08-21, PRD §16 Resolved Question 38; Design §16):** business has confirmed a UI-only/client-side permission check is acceptable for MVP (a client-bypassing actor is an accepted, explicit MVP risk), backend enforcement deferred to Enterprise Roadmap. This fixes only *where* AC-LOGIN-03's access-denied check runs, not *what* the roles/permissions are — Q22 (role list, permission matrix contents, authentication mechanism) remains fully open, so AC-LOGIN-03 stays testable only for "an access-denied state exists and is shown for *some* unspecified permission gate," not for any named role being correctly gated. |
 | TS-DASH | Q3–Q4 NBV/Risk KPI formulas, tracked as [Open Finding F-03](../project-management/OPEN-FINDINGS.md#blocking-gates-an-mvp-requirement) | **Corrected 2026-08-31 (Open Finding F-22 business decision):** AC-DASH-01 and AC-DASH-02 test the actual shipped 8-tile KPI grid (Total Assets, Available, Assigned, In Maintenance, Expired Warranty, Software Licenses, Monthly Depreciation, Monthly Cost) and 10-section list (AI Insights, AI Portfolio Health, Oracle FA Reconciliation, Asset Lifecycle, Department Distribution, Asset Status, Asset Type, Pending Approvals, Recent Activities, Maintenance Calendar) — both are fully testable now, no remaining gap on tile/section presence. Only AC-DASH-03 remains NOT TESTABLE YET: it documents that NBV, Risk, and Utilization tiles are **absent** from the shipped grid; the underlying NBV/Risk formulas, thresholds, and dashboard placement remain fully undefined (PRD §16 Q3–Q4) — this is a separate, not-yet-scheduled enhancement layered on top of the current MVP dashboard, not a blocker on AC-DASH-01/-02. Utilization's *definition* remains resolved (2026-08-21, Resolved Question 27 — assignment-time-based, Disposed/Retired/Under-Maintenance excluded from the denominator) and unaffected by this correction; only its dashboard *implementation* is outstanding, and that absence is now covered by AC-DASH-03 alongside NBV/Risk rather than by a separate calculation-mechanics blocker on AC-DASH-01 |
 | TS-ASSET-001 | Q1 Asset master field list | Whether all required fields are present, only that search/filter/select work |
-| TS-ASSET-002 | (RAISE-FR-ASSET-002 Open Question) Category hierarchy | Whether the hierarchy shown is the correct one, only that hierarchy display works |
+| TS-ASSET-002 | **RESOLVED and CLOSED 2026-09-01** (Open Finding F-27) — `RAISE-PROTOTYPE.md` v0.9 §11 confirms the category hierarchy is exactly 2 levels (Asset `category` field → Asset `type` field → individual assets), using the real, currently-seeded Category → Type breakdown from `frontend/src/data/fixtures/mockData.ts`. The "By Category" view (`frontend/src/pages/Assets/index.tsx`) has since been extended one level deeper to match, and `RAISE-TEST-CASES.md` v0.9 records `TC-ASSET-002-01..03` all **PASS** against the real running app (live browser verification: expanding "IT Hardware" reveals Laptop/Monitor/Headphones sub-groups; expanding "Laptop" reveals only its 3 assets) plus 3 passing automated tests. | None — AC-ASSET-002-01/-02/-03 are all fully testable and confirmed PASS. |
 | TS-ASSET-003 | Q13 Holder data model; Custody-writing-events ambiguity (`RAISE-FR-ASSET-003` vs. `RAISE-FR-OPS-002` — PRD Pre-Finalization Quality Pass, "Duplicated / Overlapping Requirements," marked "Needs business confirmation") | Whether holder identity is modeled correctly, only that history is appended/immutable. Separately, for AC-ASSET-003-03: whether Custody History is written *only* by Check-in/Check-out (P-008, `AC-OPS-002`) or also by other custody-changing events (e.g., a direct reassignment outside Check-in/Check-out) — this suite verifies only the Check-in/Check-out-triggered append-and-immutability behavior; a dedicated case for a non-Check-in/Check-out write path cannot be added until that ambiguity is resolved and, if needed, a corresponding flow/screen and AC criterion exist. AC-ASSET-003-01 and -02 are unaffected by this blocker and execute normally. |
 | TS-LIFE-001 | Design §4.2's exact lifecycle state/transition model is TBD. (Resolved: Disposal MVP scope — confirmed Out of Scope for MVP on 2026-08-21, `RAISE-PRD.md` §14 item 7; the former disposal test case is now excluded rather than blocked, see `RAISE-TEST-CASES.md` §6.5.) | Whether cross-domain lifecycle data displays and stays consistent across stage changes |
 | TS-OPS-002 | Q11 Check-in/Check-out workflow, Q12/Q22 Roles | Whether approval/exception rules are enforced, only that the basic state transition + audit trigger occurs. **RBAC MVP enforcement level confirmed (2026-08-21, PRD §16 Resolved Question 38; Design §16):** same narrow decision as TS-LOGIN — UI-only/client-side check accepted for MVP, backend deferred to Roadmap. This fixes only *where* a permission check runs, not *what* the roles/permissions are, so AC-OPS-002-01's "appropriate permission" gate remains untestable for role correctness until the role list/permission matrix (Q22) is defined. |
@@ -290,7 +295,7 @@ respectively — not a concrete UI element or business rule). Consequently:
 | TS-ASSET-001 | AC-ASSET-001 | RAISE-FR-ASSET-001 | §4.1 Asset Management | P-003 |
 | TS-ASSET-001-DETAIL | AC-ASSET-001-DETAIL | RAISE-FR-ASSET-001 | §4.1 Asset Management | P-004 |
 | TS-LIFE-001 | AC-LIFE-001 | RAISE-FR-LIFE-001 | §4.2 Conceptual State / §9 Asset Lifecycle | P-004 (Lifecycle section) |
-| TS-ASSET-002 | AC-ASSET-002 | RAISE-FR-ASSET-002 | §4.1 Asset Management | P-005 |
+| TS-ASSET-002 | AC-ASSET-002 | RAISE-FR-ASSET-002 | §4.1 Asset Management; Prototype v0.9 §11 (resolved 2026-09-01, Open Finding F-27 — real seeded Category → Type breakdown) | P-005 |
 | TS-ASSET-003 | AC-ASSET-003 | RAISE-FR-ASSET-003 | §4.2 Custody & Asset Operations | P-006 |
 | TS-OPS-001 | AC-OPS-001 | RAISE-FR-OPS-001 | §4.2 Custody & Asset Operations | P-007 |
 | TS-OPS-002 | AC-OPS-002 | RAISE-FR-OPS-002 | §4.2 Custody & Asset Operations | P-008 |
@@ -326,13 +331,16 @@ traceable, remain fully blocked pending further design/business input.
 ## 10. Test Data Requirements (Conceptual)
 
 Because the PRD does not define final schemas for several domains (asset
-master fields, category hierarchy, holder model, maintenance fields — see
-§8 Blocked Items), test data requirements below are conceptual
-placeholders, not a finalized data spec. **Exception:** the Warranty
-field list is resolved (2026-08-29, see §8 TS-WARRANTY-001 row) — the
-`warrantyExpiry` bullet below is a concrete data requirement, not a
-placeholder; only the 90-day expiry-window figure it exercises remains
-illustrative/unconfirmed:
+master fields, holder model, maintenance fields — see §8 Blocked Items),
+test data requirements below are conceptual placeholders, not a finalized
+data spec. **Exceptions:** the Warranty field list is resolved
+(2026-08-29, see §8 TS-WARRANTY-001 row) — the `warrantyExpiry` bullet
+below is a concrete data requirement, not a placeholder; only the 90-day
+expiry-window figure it exercises remains illustrative/unconfirmed. The
+Category → Type hierarchy is also resolved (2026-09-01, Open Finding F-27,
+see §8 TS-ASSET-002 row) — the real, currently-seeded `category`/`type`
+breakdown from `frontend/src/data/fixtures/mockData.ts` is a concrete data
+requirement, not a placeholder:
 
 - At least one asset per lifecycle state shown in Design §4.2 (Registered,
   Assigned, In Use, Check-in, Maintenance/Audit, Disposal)
@@ -349,6 +357,10 @@ illustrative/unconfirmed:
   stage-progress-indicator criteria — SLA, vendor, cost, and delegated-approver
   field values remain conceptual placeholders only, per §8
 - At least one alert-triggering condition (exact rule TBD — see §8)
+- At least one asset for each seeded `category`/`type` pair currently in
+  `frontend/src/data/fixtures/mockData.ts` (e.g. IT Hardware/Laptop,
+  IT Hardware/Monitor, Mobile/Smartphone), to exercise AC-ASSET-002-01's
+  category → type display and AC-ASSET-002-03's expand/drill-down behavior
 
 **This test data model must be finalized once the Open Questions in §8
 are resolved** — do not treat the above as a data dictionary.
@@ -434,7 +446,41 @@ the BLOCKED distinctions in §8.
 
 ## Document Status
 
-**Version:** 0.7 (re-synced against `RAISE-ACCEPTANCE-CRITERIA.md` v0.7, 2026-08-31)
+**Version:** 0.8 (re-synced against `RAISE-ACCEPTANCE-CRITERIA.md` v0.8, 2026-09-01 —
+Open Finding F-27 scope/spec correction)
+
+**Change Log — v0.7 → v0.8 (2026-09-01, Open Finding F-27 scope/spec
+correction, per confirmed business decision):**
+
+1. **Root cause.** `RAISE-ACCEPTANCE-CRITERIA.md` v0.8 §8 resolved Open Finding F-27:
+   `RAISE-PROTOTYPE.md` v0.9 §11 confirms "sub-category" is the existing Asset `type`
+   field (not a new field/data model), the hierarchy is exactly 2 levels (Category →
+   Type → individual assets), and the tree shown is the real, currently-seeded Category →
+   Type breakdown derived from `frontend/src/data/fixtures/mockData.ts`, replacing the
+   prior illustrative example. This is a scope/spec correction resolving a
+   previously-open question, not a new requirement.
+2. **TS-ASSET-002 unblocked (§7, §8, §9).** The stale "hierarchy TBD" blocked-item note
+   (tied to the old "category hierarchy not finalized" TBD) is replaced with a resolution
+   note carried forward from AC v0.8 §8. TS-ASSET-002 moves from the "Yes — hierarchy
+   TBD" row to the "No blocked items" group in §7 alongside TS-ASSET-001-DETAIL,
+   TS-OPS-001, and TS-AI-STATES. Coverage expectation for the new **AC-ASSET-002-03**
+   (expanding a category reveals its Type-level sub-groups; expanding further, or viewing
+   the existing per-asset list per Open Finding F-25, reveals individual assets under
+   each category/type pair) is recorded in §7 and §8. §10 Test Data Requirements gained a
+   concrete bullet for the seeded `category`/`type` pairs, and the "category hierarchy"
+   reference was removed from the general "schemas not yet defined" list.
+3. **No test case claimed as passed.** This update resolves the entry-criteria/blocked
+   status only. Writing the corresponding test case(s) in `RAISE-TEST-CASES.md` and
+   confirming the expand/drill-down UI behavior against AC-ASSET-002-03 (a pending
+   follow-up code change as of this sync) are separate, later steps — no PASS/FAIL
+   execution result is reported by this Test Plan update.
+4. Version citations in the document header updated: AC v0.7 → v0.8, Prototype v0.8 →
+   v0.9 (Design unchanged at v0.9, PRD unchanged at v0.11).
+5. No other suite required changes; TS-LOGIN, TS-DASH, TS-ASSET-001,
+   TS-ASSET-001-DETAIL, TS-LIFE-001, TS-ASSET-003, TS-OPS-001, TS-OPS-002, TS-MAINT-001,
+   TS-WARRANTY-001, TS-ORACLE-001, TS-ALERT-001, TS-AUDIT-001, TS-EXEC-001,
+   TS-AI-SEARCH-001, TS-AI-STATES, and TS-AI-DOC-001..004 are unaffected by AC v0.8's
+   changes.
 
 **Change Log — v0.6 → v0.7 (2026-08-31):**
 

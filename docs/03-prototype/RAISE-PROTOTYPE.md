@@ -2,11 +2,30 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Prototype Specification
-**Version:** 0.8 Draft
+**Version:** 0.9 Draft
 **Status:** Draft for Prototype Review
 **Source:** [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.10 + [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.9 (§23 Prototype Preparation, §9A Document Intelligence Capabilities, §5.1 Maintenance Domain, §5.2 Warranty Domain — field list resolved, §5.3 License Domain, §6.4 ReconciliationPage / "Phase 6" Label, §13 Executive Intelligence — corrected to as-built, §16 Security Architecture — MVP Enforcement Level, §16A Other Non-Functional Requirements — Design Backlog, §15/§22 Out of Scope)
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
+
+**Version note (2026-09-01 re-sync, v0.8 → v0.9, Open Finding F-27):**
+[§11 P-005 Category & Hierarchy](#11-p-005-category--hierarchy) previously
+showed an illustrative "Computer / Notebook / Desktop", "Network / Switch /
+Router" example tree, explicitly marked TBD, that did not match any real
+category name in the app (the real seeded categories are IT Hardware,
+Mobile, Office Equipment, Infrastructure, Media Equipment). Per explicit
+business decision on Open Finding F-27, the sub-category concept is now
+resolved: it is the existing Asset `type` field (already present end-to-end
+in `go-template-main` and `frontend/src/data/fixtures/mockData.ts`), not a
+new field or data model, and the hierarchy is exactly 2 levels (Category →
+Type → individual assets). P-005's tree is rewritten to show the real,
+currently-seeded Category → Type breakdown as an illustrative-but-real,
+data-derived grouping (not a closed enumerated list). This is a scope/spec
+correction resolving a previously-TBD open question, not a new requirement —
+`RAISE-FR-ASSET-002` is unchanged, `RAISE-PRD.md` and `RAISE-DESIGN.md` were
+not modified by this pass, and no `## NEEDS_PRD_CONFIRMATION` signal is
+raised (the business decision is already confirmed). See the "Document
+Status" section's Change Log for full detail.
 
 **Version note (2026-08-31 re-sync, v0.7 → v0.8, Open Finding F-22):**
 [§8 P-002 Main Dashboard](#8-p-002-main-dashboard) and [§20 P-014 Executive
@@ -619,22 +638,58 @@ Show asset categories and hierarchy.
 
 ## Prototype
 
+**Resolved 2026-09-01 (Open Finding F-27, per explicit business decision):**
+"sub-category" is **not** a new field or data model — it is the existing
+`type` field already present on the Asset record end-to-end
+(`go-template-main/sql/pg/V1__Assets_Table.sql` `type varchar(100)`;
+`model/assetModel.go` `Type string`; `frontend/src/data/fixtures/mockData.ts`
+already populates it on every seeded asset). The hierarchy is exactly
+**2 levels — Category → Type → individual assets** — not a deeper, freely
+nested taxonomy.
+
+The tree below shows the real, currently-seeded Category → Type breakdown,
+derived directly from `frontend/src/data/fixtures/mockData.ts` (not
+invented). It is illustrative-but-real: this is a **live, data-derived
+grouping**, not a fixed enumerated taxonomy — the specific `type` values
+listed under each category will grow as more assets with new `type` values
+are added, and no closed list of allowed `type` values is being defined
+here.
+
 ```text
-Category
+Category (by `category` field)
 │
-├── Computer
-│   ├── Notebook
-│   └── Desktop
+├── IT Hardware
+│   ├── Laptop
+│   ├── Monitor
+│   └── Headphones
 │
-├── Network
-│   ├── Switch
+├── Mobile
+│   ├── Smartphone
+│   └── Tablet
+│
+├── Office Equipment
+│   ├── Printer
+│   └── Projector
+│
+├── Infrastructure
+│   ├── Server
 │   └── Router
 │
-└── Other
+└── Media Equipment
+    └── Camera
 ```
 
-The actual hierarchy is TBD and must not be treated as finalized
-business data.
+(sub-levels = distinct `type` values currently present within each
+`category` value; individual assets nest one level further below each
+`type`, per the flat category-to-assets grouping already resolved by
+Open Finding F-25.)
+
+This replaces the prior "Computer / Notebook / Desktop", "Network / Switch
+/ Router" example tree, which did not match any real category names in the
+app and was explicitly marked TBD/illustrative-only. The **"By Category"**
+view (currently Category → flat asset list) is to be extended one level to
+Category → Type → asset list to match this structure; no new UI screen is
+introduced by this change.
 
 ## Traceability
 
@@ -1733,7 +1788,7 @@ not be treated as approved MVP functionality.
 |---|---|---|
 | P-003 Asset Registry | RAISE-FR-ASSET-001 | Planned |
 | P-004 Asset Detail | RAISE-FR-LIFE-001 | Planned |
-| P-005 Category | RAISE-FR-ASSET-002 | Planned |
+| P-005 Category | RAISE-FR-ASSET-002 | Planned — sub-category taxonomy resolved 2026-09-01 (Open Finding F-27): sub-category = existing Asset `type` field, 2-level hierarchy (Category → Type), real 2026-09-01 seeded example shown, not a closed enumerated list |
 | P-006 Custody | RAISE-FR-ASSET-003 | Planned |
 | P-007 QR / Barcode | RAISE-FR-OPS-001 | Planned |
 | P-008 Check-in / Check-out | RAISE-FR-OPS-002 | Planned |
@@ -1922,11 +1977,52 @@ The next artifact should be **Acceptance Criteria**, not source code.
 
 ## Document Status
 
-**Version:** 0.8 (as-built correction pass against Open Finding F-22,
-2026-08-31, re-synced against RAISE-PRD.md v0.10 [unchanged] and
-RAISE-DESIGN.md v0.9's own §13 as-built correction — no screens added or
-removed; P-002 and P-014 rewritten to match reality; no
+**Version:** 0.9 (scope/spec correction pass against Open Finding F-27,
+2026-09-01, re-synced against RAISE-PRD.md v0.10 [unchanged] and
+RAISE-DESIGN.md v0.9 [unchanged] — no screens added or removed; P-005
+rewritten to resolve the previously-TBD sub-category taxonomy question; no
 `## NEEDS_PRD_CONFIRMATION` signal raised)
+
+**Change Log — v0.8 → v0.9 (2026-09-01, Open Finding F-27 sub-category
+taxonomy resolution, per explicit business decision):**
+
+1. **Root cause.** [§11 P-005 Category &
+   Hierarchy](#11-p-005-category--hierarchy) showed an illustrative example
+   tree ("Computer / Notebook / Desktop", "Network / Switch / Router"),
+   explicitly marked "TBD and must not be treated as finalized business
+   data," that did not correspond to any real category name in the app —
+   the real seeded categories in `frontend/src/data/fixtures/mockData.ts`
+   are IT Hardware, Mobile, Office Equipment, Infrastructure, and Media
+   Equipment. Recorded as Open Finding F-27 in `OPEN-FINDINGS.md`.
+2. **Business decision confirmed:** the existing Asset `type` field IS the
+   sub-category — no new field or data model is introduced. This field is
+   already present end-to-end: `go-template-main/sql/pg/V1__Assets_Table.sql`
+   (`type varchar(100)`), `model/assetModel.go` (`Type string`), and
+   `frontend/src/data/fixtures/mockData.ts` (populated on every seeded
+   asset).
+3. **Hierarchy is exactly 2 levels** — Category → Type → individual assets —
+   matching what the "By Category" view (currently Category → flat asset
+   list) is to be extended to, one level further.
+4. **P-005's Prototype tree rewritten** to the real, currently-seeded
+   Category → Type breakdown, derived directly from
+   `frontend/src/data/fixtures/mockData.ts` (not invented): IT Hardware →
+   Laptop/Monitor/Headphones; Mobile → Smartphone/Tablet; Office Equipment →
+   Printer/Projector; Infrastructure → Server/Router; Media Equipment →
+   Camera. Explicitly framed as illustrative-but-real and data-derived — not
+   a closed, fixed enumerated taxonomy; the specific `type` values within
+   each category will grow as more assets are added.
+5. **`RAISE-FR-ASSET-002` unchanged; `RAISE-PRD.md` and `RAISE-DESIGN.md` not
+   modified by this pass.** This is a scope/spec correction resolving a
+   previously-TBD open question, not a new requirement. No
+   `## NEEDS_PRD_CONFIRMATION` signal is raised — the business decision on
+   F-27 is already confirmed.
+6. **§27 Prototype Traceability Matrix** row for P-005 updated to note the
+   resolution. The separate, still-open `RAISE-AI-DOC-003` (Classification)
+   incidental note on P-005 is unchanged by this pass — it concerns
+   AI-suggested/assigned category values, a distinct question from the
+   sub-category taxonomy resolved here.
+7. Header metadata updated: Version bumped to 0.9; PRD/Design sources
+   re-verified unchanged at v0.10/v0.9.
 
 **Change Log — v0.7 → v0.8 (2026-08-31, Open Finding F-22 as-built
 correction, per explicit business decision):**

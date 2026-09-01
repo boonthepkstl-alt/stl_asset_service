@@ -29,11 +29,14 @@ export function AssetsPage() {
   // started as a standalone /categories screen, then was folded into Asset Management as an
   // alternate view (per user request) since it's just another lens on the same Asset Registry
   // data, not a separate domain -- Design/Prototype group P-005 under Asset Management too.
-  // Deliberately shows only the one parent/child relationship actually confirmed anywhere in
-  // the chain (category -> its real assets), not Prototype P-005's illustrative sub-category
-  // tree (Computer > Notebook/Desktop, etc.), which remains TBD (tracked as F-27).
+  // Category -> Type -> assets (F-27, resolved 2026-09-01): sub-category is the asset's
+  // existing `type` field, not a new field or a deeper tree.
   const [view, setView] = useState<'list' | 'category'>('list');
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
+  // RAISE-FR-ASSET-002 / Prototype P-005 (F-27, OPEN-FINDINGS.md, resolved 2026-09-01): the
+  // confirmed sub-category is the asset's existing `type` field -- a 2-level Category -> Type
+  // -> assets hierarchy, not a new field or a deeper tree.
+  const [expandedTypes, setExpandedTypes] = useState<Set<string>>(new Set());
   const [deleteTarget, setDeleteTarget] = useState<Asset | null>(null);
   const [qrAsset, setQrAsset] = useState<Asset | null>(null);
   const [scanOpen, setScanOpen] = useState(false);
@@ -84,6 +87,15 @@ export function AssetsPage() {
       const next = new Set(prev);
       if (next.has(category)) next.delete(category);
       else next.add(category);
+      return next;
+    });
+  };
+
+  const toggleTypeExpanded = (categoryTypeKey: string) => {
+    setExpandedTypes((prev) => {
+      const next = new Set(prev);
+      if (next.has(categoryTypeKey)) next.delete(categoryTypeKey);
+      else next.add(categoryTypeKey);
       return next;
     });
   };
@@ -358,6 +370,10 @@ export function AssetsPage() {
             {categories.map((category) => {
               const categoryAssets = assets.filter((a) => a.category === category);
               const isOpen = expandedCategories.has(category);
+              // AC-ASSET-002-03 / TC-ASSET-002-03 (F-27, resolved 2026-09-01): sub-category is
+              // the asset's existing `type` field -- group by the distinct `type` values
+              // actually present within this category, not a fixed enumerated list.
+              const typesInCategory = Array.from(new Set(categoryAssets.map((a) => a.type))).sort();
               return (
                 <div key={category} className="border-b border-surface-100 last:border-0">
                   <button
@@ -371,22 +387,41 @@ export function AssetsPage() {
                   </button>
                   {isOpen && (
                     <div className="pl-11 pb-2">
-                      {categoryAssets.length === 0 ? (
+                      {typesInCategory.length === 0 ? (
                         <p className="text-caption text-surface-400 py-2">No assets currently in this category.</p>
                       ) : (
-                        categoryAssets.map((asset) => {
-                          const Icon = getAssetIcon(asset.type);
+                        typesInCategory.map((type) => {
+                          const typeKey = `${category}::${type}`;
+                          const typeAssets = categoryAssets.filter((a) => a.type === type);
+                          const isTypeOpen = expandedTypes.has(typeKey);
+                          const Icon = getAssetIcon(type);
                           return (
-                            <button
-                              key={asset.id}
-                              onClick={() => navigate(`/assets/${asset.id}`)}
-                              className="w-full flex items-center gap-3 py-2 text-left hover:bg-surface-50 rounded-md transition-colors -ml-1 pl-1"
-                            >
-                              <Icon className="h-4 w-4 text-surface-400 shrink-0" />
-                              <span className="text-body text-surface-800 flex-1 min-w-0 truncate">{asset.name}</span>
-                              <span className="text-caption text-surface-400 font-mono">{asset.code}</span>
-                              <StatusBadge status={asset.status} />
-                            </button>
+                            <div key={typeKey}>
+                              <button
+                                onClick={() => toggleTypeExpanded(typeKey)}
+                                className="w-full flex items-center gap-3 py-2 text-left hover:bg-surface-50 rounded-md transition-colors -ml-1 pl-1"
+                              >
+                                {isTypeOpen ? <ChevronDown className="h-3.5 w-3.5 text-surface-400 shrink-0" /> : <ChevronRight className="h-3.5 w-3.5 text-surface-400 shrink-0" />}
+                                <Icon className="h-4 w-4 text-surface-400 shrink-0" />
+                                <span className="text-body text-surface-800 flex-1 min-w-0 truncate">{type}</span>
+                                <Badge variant="neutral">{typeAssets.length} asset{typeAssets.length === 1 ? '' : 's'}</Badge>
+                              </button>
+                              {isTypeOpen && (
+                                <div className="pl-7">
+                                  {typeAssets.map((asset) => (
+                                    <button
+                                      key={asset.id}
+                                      onClick={() => navigate(`/assets/${asset.id}`)}
+                                      className="w-full flex items-center gap-3 py-2 text-left hover:bg-surface-50 rounded-md transition-colors -ml-1 pl-1"
+                                    >
+                                      <span className="text-body text-surface-800 flex-1 min-w-0 truncate">{asset.name}</span>
+                                      <span className="text-caption text-surface-400 font-mono">{asset.code}</span>
+                                      <StatusBadge status={asset.status} />
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
                           );
                         })
                       )}

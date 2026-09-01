@@ -9,9 +9,9 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-09-01, after `CHECKPOINT-2026-09-01-006` (Warranty
-"Expiring" threshold resolved, implemented, and verified; not yet shipped
-via PR, see that checkpoint for status). The
+**As of:** 2026-09-01, after `CHECKPOINT-2026-09-01-007` (`TC-WARRANTY-001-06`
+executed — found and fixed a real RBAC gap: Settings wasn't actually
+admin-gated; not yet shipped via PR, see that checkpoint for status). The
 `BASELINE-CHECKPOINT-2026-08-24` scan is still the last
 full live re-verification against `git`/source. F-20 (checkpoint-coverage
 gap) is closed (R-04); F-21 (QR/Barcode invalid-code state) is closed
@@ -189,8 +189,22 @@ executed — tracked as **F-34** (Gap 13, still open).
 **With this resolved, the only genuinely undecided open item from the
 prior standing backlog is closed** — remaining open findings are either
 standing Blocking/Unresolved/Infrastructure items unrelated to this
-session's work, explicitly deferred (F-31, F-33), or real-but-minor
-coverage gaps (F-34).
+session's work, or explicitly deferred (F-31, F-33).
+**R-18 (F-34, `TC-WARRANTY-001-06`) is now Resolved (2026-09-01)** —
+executing the last unexecuted Warranty test case surfaced a real defect:
+`frontend/src/App.tsx`'s Settings route wasn't actually gated to ADMIN,
+sitting in the general authenticated-user route block instead of the
+existing `ProtectedRoute allowedRoles={['ADMIN']}` block that already
+gates Administration/User/Role Management. Fixed by moving it into that
+block — no new RBAC mechanism invented. 2 new tests in `App.rbac.test.tsx`
+pass; full suite 153/153 (was 151), `tsc`/lint clean. Live-verified: an
+EMPLOYEE-role user hitting `/settings` sees the real "403 — Access
+denied" page; ADMIN access is unaffected. `RAISE-TEST-CASES.md` (v0.12)
+`TC-WARRANTY-001-06` now PASS; `RAISE-TRACEABILITY-MATRIX.md` reached
+**v1.4** — Gap 13 closed, `RAISE-FR-WARRANTY-001` now a full,
+unqualified **PASS** (all 6 test cases). **Every open finding in the
+standing backlog is now either Resolved or explicitly deferred — no
+coverage gaps remain.**
 Every
 development session should close out per
 [`SESSION-CLOSEOUT-PROTOCOL.md`](SESSION-CLOSEOUT-PROTOCOL.md), which is
@@ -221,8 +235,8 @@ infrastructure half) or intentionally out of MVP scope (Roadmap).
 | [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) | 0.10 | P-010 rewritten + new §23A P-018 Settings screen (Resolved Question 41, 2026-09-01) |
 | [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) | 0.9 | AC-WARRANTY-001-03 rewritten, new AC-WARRANTY-001-04/-05/-06 (R-17, 2026-09-01) |
 | [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) | 0.9 | TS-WARRANTY-001 fully unblocked (R-17, 2026-09-01) |
-| [`RAISE-TEST-CASES.md`](../06-test-cases/RAISE-TEST-CASES.md) | 0.11 | 66 test cases; TC-WARRANTY-001-01..05 PASS, -06 not yet executed (R-17, 2026-09-01) |
-| [`RAISE-TRACEABILITY-MATRIX.md`](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md) | 1.3 | Gap 12 opened and closed same revision (R-17); Gap 13 opened, still OPEN (F-34) |
+| [`RAISE-TEST-CASES.md`](../06-test-cases/RAISE-TEST-CASES.md) | 0.12 | 66 test cases; TC-WARRANTY-001-01..06 all PASS (R-18, 2026-09-01) |
+| [`RAISE-TRACEABILITY-MATRIX.md`](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md) | 1.4 | Gap 13 closed (R-18) — `RAISE-FR-WARRANTY-001` now full unqualified PASS |
 | [`RAISE-HIGH-LEVEL-ARCHITECTURE.md`](../08-architecture/RAISE-HIGH-LEVEL-ARCHITECTURE.md) | — | As-built, not versioned against PRD chain |
 | [`RAISE-API-DB-SPEC.md`](../09-api-db-spec/RAISE-API-DB-SPEC.md) | — | As-built |
 | [`RAISE-DETAILED-DESIGN.md`](../10-detailed-design/RAISE-DETAILED-DESIGN.md) | — | As-built |
@@ -237,7 +251,7 @@ infrastructure half) or intentionally out of MVP scope (Roadmap).
 | Category & Hierarchy | `RAISE-FR-ASSET-002` | ✅ Built, **PASS** per formal test execution 2026-08-26 and 2026-09-01 — category *display* is consistent across screens, and the "By Category" tab inside Asset Management (`/assets`) now nests 2 levels deep: Category → Type → individual assets (**F-27 resolved, R-14**: sub-category = the existing `type` field, no new field/data model). Expanding a category reveals its real Type sub-groups (e.g. "IT Hardware" → Laptop/Monitor/Headphones); expanding a Type reveals its individual assets |
 | Asset Assign / Check-in | `RAISE-FR-ASSET-003` / `RAISE-FR-OPS-002` | ✅ Built, **PASS on all test cases for both requirements** — `RAISE-FR-ASSET-003` (3/3, 2026-08-26/-27, F-26 fixed: History tab renders from the same audit trail `RAISE-FR-AUDIT-001` builds, append-only) and `RAISE-FR-OPS-002` (3/3, 2026-08-28: Assign functions as the app's Check-out affordance, Check-in restores Available, both create Audit Log entries) |
 | Employee | supports `RAISE-FR-ASSET-003` | ✅ Built |
-| Warranty | `RAISE-FR-WARRANTY-001` | ✅ Built, **PASS (partial)** per formal test execution 2026-09-01 — field list resolved (F-01, `warrantyExpiry` only) and Expiring-threshold configurability resolved (R-17): a 3-state Active/Expiring/Expired badge on the Assets Registry list and Asset Detail, with the "Expiring" threshold per-Asset-Category configurable (default 90 days) via a new Settings screen (P-018). `TC-WARRANTY-001-01..05` **PASS**; `TC-WARRANTY-001-06` (non-admin denial to P-018) written but not yet executed (**F-34**, still open) |
+| Warranty | `RAISE-FR-WARRANTY-001` | ✅ Built, **full unqualified PASS** per formal test execution 2026-09-01 — field list resolved (F-01), Expiring-threshold configurability resolved (R-17), and the Settings admin-only access gate resolved (R-18, a real defect found and fixed on execution). 3-state Active/Expiring/Expired badge on Assets Registry/Asset Detail, per-Asset-Category configurable threshold (default 90 days) via Settings (P-018), now correctly ADMIN-gated. `TC-WARRANTY-001-01..06` all **PASS** |
 | Maintenance / Ticket | `RAISE-FR-MAINT-001` | ✅ Built, **PASS on all 9 test cases** per formal test execution 2026-08-28 — all 4 stage transitions (submit/approve/reject/dispatch/status-update/complete) work correctly, the record list shows date/cost per record (F-28 fixed), and the stage-progress indicator now visually distinguishes Current from Pending (F-29 fixed). SLA/vendor/cost model remain separately TBD |
 | Auth | supports `RAISE-NFR-SEC-RBAC-001` | 🟡 Built, demo-only — backend is a hardcoded single user, no real user store (Roadmap-confirmed, F-11/F-12). Frontend **PASS on all 3 test cases** per formal test execution 2026-08-29/2026-09-01 — `TC-LOGIN-03` (access-denied) PASS; `TC-LOGIN-01`/`-02` (valid/invalid login) now **PASS** (F-30 resolved, R-15) via a new `MockAuthRepository` (4 demo accounts, one per Role) gated by `AUTH_API_ENABLED`. This resolves the infrastructure/testability gap only — the production auth mechanism and role/permission matrix content (PRD §16 Q21–Q22) remain undefined |
 | QR / Barcode lookup | `RAISE-FR-OPS-001` | ✅ Built, PASS on all test cases — [PR #29](https://github.com/boonthepkstl-alt/stl_asset_service/pull/29) + a follow-up F-21 fix (see `DEVELOPMENT-LOG.md` for the PR number once shipped). `GET /assets/:id` resolves by `code` too (dual lookup); real QR generation + Scan QR flow live on both Assets list and Asset Detail. `TC-OPS-001-01..03` all **PASS** — the invalid-code state (F-21) is fixed via a plausible-code-format check before lookup |
@@ -255,11 +269,9 @@ infrastructure half) or intentionally out of MVP scope (Roadmap).
 Triaged against [`RAISE-TRACEABILITY-MATRIX.md`](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md)
 §3–§5 — re-check that file before picking an item, it may have changed.
 
-**Buildable now:** `TC-WARRANTY-001-06` (F-34) — a non-admin
-access/write-denial test for the new P-018 Settings screen; the
-underlying UI-only MVP RBAC mechanism already exists elsewhere in the
-app, so this is a small, non-decision-dependent execution task, not a
-blocked one. Otherwise none remaining — F-22 (R-13, 2026-08-31), F-27
+**Buildable now:** None remaining — `TC-WARRANTY-001-06` (F-34) has been
+executed (R-18, 2026-09-01), which caught and fixed a real defect
+(Settings wasn't actually ADMIN-gated). Otherwise none remaining — F-22 (R-13, 2026-08-31), F-27
 (R-14, 2026-09-01), F-30 (R-15, 2026-09-01), F-32 (R-16, 2026-09-01),
 and the Warranty Expiring-threshold question (R-17, 2026-09-01) are all
 closed: spec corrected/confirmed, implemented, and re-executed, all
@@ -286,10 +298,9 @@ Roadmap-confirmed, not just TBD). Alerts' trigger-rule/severity
 question (F-05) remains open, but the build gap itself (F-32) is now
 resolved with a scoped implementation. F-31 and F-33's build gaps are
 explicitly deferred, not awaiting a decision. Warranty's field list
-(F-01, 2026-08-29) and Expiring-threshold configurability (R-17,
-2026-09-01) are both resolved — no Warranty-domain question remains
-open beyond executing `TC-WARRANTY-001-06` (F-34, a buildable-now task,
-not a blocked one).
+(F-01), Expiring-threshold configurability (R-17), and the Settings
+access gate (R-18) are all resolved — no Warranty-domain question or
+coverage gap remains open.
 
 **Explicitly out of scope (Roadmap/Pilot):** License Management, AI
 Decision Center, Risk Scoring, Lifecycle Prediction, Asset Disposal,

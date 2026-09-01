@@ -2520,6 +2520,40 @@ Commit: pending — predicted next PR after #61/#62 (verify via `gh pr list` bef
 
 ---
 
+## CHECKPOINT-2026-09-01-007
+
+**Phase:** Phase 3 — Asset Management (Warranty sub-domain)
+**Feature:** Execute `TC-WARRANTY-001-06` (F-34) — non-admin access/write denial to the new Settings (P-018) screen
+**Task:** Execute the last remaining written-but-unexecuted Warranty test case
+
+**What was implemented:** N/A — this uncovered and fixed a real defect rather than confirming already-correct behavior.
+**What was modified:** `frontend/src/App.tsx` (moved `ROUTES.SETTINGS` into the existing ADMIN-only `<ProtectedRoute allowedRoles={['ADMIN']}>` route block, alongside Administration/User Management/Role Management).
+**What was fixed:** A real RBAC gap — Settings (which now includes the per-Category Warranty threshold editor) was reachable by any authenticated user, not just ADMIN, despite `AC-WARRANTY-001-06` requiring admin-only access.
+**What was added:** 2 new tests in `frontend/src/App.rbac.test.tsx`.
+**What was removed:** None.
+
+**Decision:** User instruction: "ทำ TC-WARRANTY-001-06 ต่อเลย" (execute TC-WARRANTY-001-06 next). No business decision was needed — the RBAC enforcement mechanism itself was already confirmed (PRD §16 Resolved Q38); executing the test case surfaced that Settings simply hadn't been wired into it.
+
+**Files changed:** 2 frontend files (`App.tsx`, `App.rbac.test.tsx`) + 2 documentation files (`RAISE-TEST-CASES.md` v0.12, `RAISE-TRACEABILITY-MATRIX.md` v1.4) + `OPEN-FINDINGS.md` (R-18 added, F-34 removed/superseded by R-18).
+**Database changes:** None. **API changes:** None. **Frontend changes:** Settings route now ADMIN-gated.
+
+**Tests:** Full suite **153/153 passing** (was 151). `npx tsc --noEmit` → clean. `npm run lint` → clean, 0 warnings.
+**Validation:** Live browser execution: an EMPLOYEE-role user navigating to `/settings` sees the app's real "403 — Access denied" Forbidden page; an ADMIN-role user sees the real Settings page render correctly.
+
+**Requirement Traceability:**
+PRD: `RAISE-FR-WARRANTY-001` (unchanged — this closes a test-execution gap, not a PRD question).
+Acceptance Criteria / Test Case: `AC-WARRANTY-001-06` / `TC-WARRANTY-001-06` — now formally executed, **PASS**. `RAISE-FR-WARRANTY-001`'s Test Status in `RAISE-TRACEABILITY-MATRIX.md` (v1.4) is now a full, unqualified **PASS** — `TC-WARRANTY-001-01` through `-06` all pass. Gap 13 closed (opened v1.3, resolved v1.4).
+
+**Git:**
+Branch: pending (not yet created as of this checkpoint).
+Commit: pending — predicted next PR after #63 (verify via `gh pr list` before treating as final; must not be merged until the user explicitly instructs "merge PR #N").
+
+**Known Issues:** None new.
+**Remaining Work:** Git branch/commit/push/PR for this checkpoint's changes.
+**Next Step:** Recalculate `NEXT-STEP.md`. Create git branch, commit, push, open PR, and wait for the user's explicit "merge PR #N" instruction before merging.
+
+---
+
 ## Level 2 — Feature Checkpoints
 
 ### FEATURE-CHECKPOINT-project-tracking-governance

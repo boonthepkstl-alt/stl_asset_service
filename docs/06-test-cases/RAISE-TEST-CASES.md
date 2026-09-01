@@ -2,7 +2,7 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Test Cases
-**Version:** 0.11 Draft
+**Version:** 0.12 Draft
 **Status:** Draft for Test Case Review
 **Source:** [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.9 §7 (Test Suites) + §8 (Blocked Items) + §8.1 (Fully-Blocked Suites — AI Document Intelligence Capabilities) + §3.3 (PRD §10 NFR Backlog — No Suite), expanding [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.9
 **Source of Truth:** RAISE PRD
@@ -347,9 +347,9 @@ P-003/P-004 only) and two new cases, `TC-WARRANTY-001-04` and `-05`, are added f
 new P-018 Settings criteria. A sixth case, `TC-WARRANTY-001-06`, is added for the new
 admin-only access-gate criterion.
 
-`TC-WARRANTY-001-01` through `-05` have been **formally executed** against the real
+`TC-WARRANTY-001-01` through `-06` have been **formally executed** against the real
 running app and automated tests, with **PASS** confirmed on their full testable scope
-(no criterion in AC-WARRANTY-001-01 through -05 remains NOT TESTABLE YET):
+(no criterion in AC-WARRANTY-001-01 through -06 remains NOT TESTABLE YET):
 
 - **Automated:** `frontend/src/pages/Assets/index.test.tsx` carries `TC-WARRANTY-001-01`
   and `TC-WARRANTY-001-02` (pre-existing, still passing — Active/Expired badge states)
@@ -382,8 +382,34 @@ the automated `settings-service.test.ts` seed test only — it was not separatel
 re-verified live *after* the live-browser session's IT Hardware edit, since editing to
 5000 was the point of that manual pass. This does not weaken the PASS (the automated
 test independently confirms the default-seed behavior), but the live-browser pass alone
-did not re-observe it. `TC-WARRANTY-001-06` (non-admin denial) was **not** executed —
-see its row below.
+did not re-observe it.
+
+**`TC-WARRANTY-001-06` formally executed 2026-09-01, with a root cause found and fixed
+first.** Formal execution surfaced a real defect, not a documentation gap: the Settings
+route (`ROUTES.SETTINGS`) was **not** actually gated by role in `frontend/src/App.tsx`
+— it sat in the general `<Route element={<ProtectedRoute />}>` block (any authenticated
+user), not the `<Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>` block
+that already gates Administration/User Management/Role Management. Fixed by moving
+`<Route path={ROUTES.SETTINGS} element={<SettingsPage />} />` into the ADMIN-only route
+block, matching the existing pattern exactly — no new RBAC mechanism was invented, this
+reuses the same `ProtectedRoute allowedRoles` mechanism already used for
+Administration. Evidence:
+
+- **Automated:** `frontend/src/App.rbac.test.tsx` (existing file, already had
+  `ProtectedRoute` coverage for Administration) gained 2 new tests:
+  `'TC-WARRANTY-001-06: redirects a non-ADMIN authenticated user away from Settings'`
+  (seeds an EMPLOYEE-role user, navigates to `/settings`, asserts the Forbidden page
+  renders and the Settings page does not) and `'TC-WARRANTY-001-06: allows an ADMIN
+  user through to Settings'` (seeds an ADMIN-role user, asserts the Settings page
+  renders). Both pass. Full frontend suite: 153/153 passing (was 151); `tsc --noEmit`
+  clean; `npm run lint` clean.
+- **Live browser (2026-09-01):** set `localStorage` to an EMPLOYEE-role user and
+  navigated to `/settings` — the app rendered "403 — Access denied / Your account
+  doesn't have permission to view this page." (the existing Forbidden page,
+  `frontend/src/pages/Forbidden/index.tsx`). Switched `localStorage` to an ADMIN-role
+  user and navigated to `/settings` again — the real Settings page rendered (General
+  Settings section with Organization Name, Support Email, Timezone, etc. visible),
+  confirming ADMIN access is unaffected by the fix.
 
 | TC ID | Title | Steps | Test Data | Expected Result | Blocked |
 |---|---|---|---|---|---|
@@ -392,7 +418,7 @@ see its row below.
 | TC-WARRANTY-001-03 | Category-specific Expiring threshold flags an asset as Expiring | 1. As an admin, set an Asset Category's Expiring threshold on P-018 Settings > Warranty (or via `settingsService.updateSettings`) so that an asset's `warrantyExpiry` falls within it. 2. Open that asset on Asset Registry (P-003) or Asset Detail (P-004). | 1 asset (MacBook Pro, IT Hardware, `warrantyExpiry` 2027-01-15); IT Hardware threshold set to 5000 days | That asset's Warranty badge/state shows **Expiring**, distinct from **Active** (threshold not yet reached) and **Expired** (`warrantyExpiry` already passed) — no standalone "expiring-assets view" screen is asserted, since none exists (Prototype §14: inline on P-003/P-004 only) | No — **PASS**, formally executed 2026-09-01: automated test `'TC-WARRANTY-001-03: a category-specific Expiring threshold flags an asset as Expiring'` in `frontend/src/pages/Assets/index.test.tsx`, plus live-browser confirmation (see Status Note above) |
 | TC-WARRANTY-001-04 | P-018 Settings Warranty section shows all 5 categories with editable threshold inputs defaulting to 90 | 1. Log in as an admin. 2. Open Settings (P-018) and its Warranty section. | Fresh/default `WarrantySettings` (no prior edits) | Each of the 5 current Asset Categories (IT Hardware, Mobile, Office Equipment, Infrastructure, Media Equipment) shows an editable "Days before expiry to flag as Expiring" number input, defaulting to **90** | No — **PASS**, formally executed 2026-09-01: automated test in `frontend/src/services/settings-service.test.ts` confirms the 90-day seed for every category at the service layer; live-browser pass confirmed all 5 categories render with a "90" default input each (see Status Note above for the one caveat: the default was not re-observed live after the IT Hardware edit in the same session, only via the automated seed test) |
 | TC-WARRANTY-001-05 | Editing/saving one category's threshold does not affect other categories | 1. As an admin on P-018 Settings > Warranty, change one Asset Category's threshold value. 2. Select Save Changes. 3. Open assets in the changed category and assets in other, unchanged categories. | IT Hardware threshold changed from 90 to 5000; Mobile and other categories left at 90 | Assets in the changed category (IT Hardware) recompute their Warranty badge/state per the new threshold; assets in other, unchanged categories (e.g., Mobile) retain their existing threshold and are unaffected — no cross-category leakage | No — **PASS**, formally executed 2026-09-01: automated test in `frontend/src/services/settings-service.test.ts` confirms `updateSettings` merges a per-category change without clobbering others; live-browser pass confirmed MacBook Pro/Dell UltraSharp Monitor (IT Hardware) flipped to "Expiring" while iPhone 15 Pro (Mobile, already expired) still showed "Expired" (see Status Note above) |
-| TC-WARRANTY-001-06 | Non-admin access/write to P-018 Settings is denied | 1. Log in as a non-admin user. 2. Attempt to navigate to Settings (P-018) and/or edit a Warranty threshold. | 1 non-admin user session | Access and/or write is denied at the confirmed MVP UI-only/client-side RBAC enforcement level (`RAISE-NFR-SEC-RBAC-001`, PRD §16 Resolved Question 38) — this case tests only that a denial exists at the UI layer, not any specific role name or backend enforcement (role list/permission matrix remain TBD, PRD §16 Q22) | No — not blocked, not yet executed. The underlying AC criterion is fully specified and testable (the UI-only RBAC denial mechanism already exists and is exercised elsewhere in the app — see `frontend/src/pages/Forbidden/index.tsx`, `frontend/src/pages/RoleManagement/index.tsx`, `frontend/src/services/role-service.test.ts`), but it has not yet been wired to or exercised against the Settings (P-018) screen specifically. No PASS/FAIL claim is made until a formal execution sweep (automated or live-browser) is run against this screen |
+| TC-WARRANTY-001-06 | Non-admin access/write to P-018 Settings is denied | 1. Log in as a non-admin user. 2. Attempt to navigate to Settings (P-018) and/or edit a Warranty threshold. | 1 non-admin user session | Access and/or write is denied at the confirmed MVP UI-only/client-side RBAC enforcement level (`RAISE-NFR-SEC-RBAC-001`, PRD §16 Resolved Question 38) — this case tests only that a denial exists at the UI layer, not any specific role name or backend enforcement (role list/permission matrix remain TBD, PRD §16 Q22) | No — **PASS**, formally executed 2026-09-01. A real defect was found and fixed first: the Settings route was not actually role-gated in `frontend/src/App.tsx` (it sat in the general authenticated-user route block, not the ADMIN-only `ProtectedRoute allowedRoles={['ADMIN']}` block already used for Administration/User Management/Role Management). Fixed by moving the Settings route into that same ADMIN-only block — no new RBAC mechanism invented. Automated: 2 new tests in `frontend/src/App.rbac.test.tsx` (non-ADMIN redirected to Forbidden; ADMIN allowed through), full suite 153/153 passing. Live-browser: EMPLOYEE-role session hitting `/settings` rendered the Forbidden page ("403 — Access denied"); ADMIN-role session hitting `/settings` rendered the real Settings page. See §12 Status Note for full evidence |
 
 ---
 
@@ -703,11 +729,31 @@ Warranty and the resulting Asset Registry/Asset Detail badge recomputation.
 evidence; `TC-WARRANTY-001-03` moves from **BLOCKED (partial)** to fully testable,
 confirmed **PASS**; two new cases, `TC-WARRANTY-001-04`/`-05` (P-018 Settings
 threshold display and per-category isolation), are added and confirmed **PASS**;
-a sixth new case, `TC-WARRANTY-001-06` (non-admin access denial to P-018), is
-added as fully testable but **not yet executed** — no PASS/FAIL claim is made for
-it. Grand **Total** row moves from `63 | 35 | 23 | 4 | 1` to `66 | 39 | 22 | 4 | 1`
-(three new test cases added; `TC-WARRANTY-001-03` reclassified from partially
-blocked to fully testable and passing).
+a sixth new case, `TC-WARRANTY-001-06` (non-admin access denial to P-018), was
+added as fully testable but not yet executed. Grand **Total** row moves from
+`63 | 35 | 23 | 4 | 1` to `66 | 39 | 22 | 4 | 1` (three new test cases added;
+`TC-WARRANTY-001-03` reclassified from partially blocked to fully testable and
+passing).
+
+**`TC-WARRANTY-001-06` formally executed 2026-09-01, same day it was added (Total
+TC count unchanged — no rows added or removed, `66/66` total stays exactly as
+above; only the pending-execution case now carries a confirmed result).** Formal
+execution surfaced and fixed a real defect: the Settings route (`ROUTES.SETTINGS`)
+was not actually gated by role in `frontend/src/App.tsx` — it sat in the general
+authenticated-user route block rather than the ADMIN-only `ProtectedRoute
+allowedRoles={['ADMIN']}` block already used for Administration/User
+Management/Role Management. Fixed by moving the Settings route into that same
+ADMIN-only block, reusing the existing mechanism (no new RBAC code path
+invented). Automated coverage added: 2 new tests in `frontend/src/App.rbac.test.tsx`
+(non-ADMIN redirected to Forbidden; ADMIN allowed through); full frontend suite
+153/153 passing (was 151), `tsc --noEmit` clean, lint clean. Live-browser pass
+confirmed an EMPLOYEE-role session hitting `/settings` renders the Forbidden page,
+and an ADMIN-role session hitting `/settings` renders the real Settings page. See
+§12 Status Note for full evidence. This is a real PASS execution result, not a
+rescope — the TS-WARRANTY-001 row stays `6 | 6 | 0 | 0 | 0` and the grand Total
+row stays `66 | 39 | 22 | 4 | 1`, unchanged in counts (all 6 test cases in the
+suite are now fully testable *and* formally executed with a confirmed PASS,
+whereas before this update `-06` was fully testable but unexecuted).
 
 22 of 66 test cases are partially blocked — executable against their
 structural/interaction behavior, with full correctness pending a PRD Open
@@ -828,11 +874,44 @@ Suite ID → TC ID) into one master table for compliance review.
 
 ## Document Status
 
-**Version:** 0.11 (2026-09-01 — TS-WARRANTY-001 rewritten/expanded to match
-`RAISE-TEST-PLAN.md` v0.9 / `RAISE-ACCEPTANCE-CRITERIA.md` v0.9's per-Asset-Category
-configurable Expiring-threshold resolution (PRD §16 Resolved Question 41), and
-`TC-WARRANTY-001-01` through `-05` formally executed with confirmed **PASS**; new
-`TC-WARRANTY-001-06` added as testable-but-not-yet-executed)
+**Version:** 0.12 (2026-09-01 — `TC-WARRANTY-001-06` formally executed against the real
+running app, same day it was added in v0.11, with a confirmed **PASS**. Formal execution
+found and fixed a real RBAC gap in `frontend/src/App.tsx`: the Settings route was not
+actually gated to ADMIN — see the Change Log entry below and §12's Status Note for full
+evidence)
+
+**Change Log — v0.11 → v0.12 (2026-09-01, formal test case execution of
+`TC-WARRANTY-001-06` — real PASS result, root cause found and fixed first):**
+
+1. **Root cause / trigger.** `TC-WARRANTY-001-06` (non-admin access/write to P-018
+   Settings is denied) was added in v0.11 as fully testable but not yet executed.
+   Running it against the real app surfaced a genuine defect, not just an untested
+   path: `ROUTES.SETTINGS` was registered in the general `<Route element={<ProtectedRoute
+   />}>` block in `frontend/src/App.tsx` (any authenticated user), not the ADMIN-only
+   `<Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>` block that already
+   gates Administration/User Management/Role Management — meaning any authenticated
+   non-admin user could reach Settings.
+2. **Fix.** Moved `<Route path={ROUTES.SETTINGS} element={<SettingsPage />} />` into the
+   existing ADMIN-only route block, matching the existing pattern exactly. No new RBAC
+   mechanism was invented — this reuses the same `ProtectedRoute allowedRoles` mechanism
+   already used for Administration.
+3. **Formal execution evidence.** Automated: `frontend/src/App.rbac.test.tsx` gained 2
+   new tests (`'TC-WARRANTY-001-06: redirects a non-ADMIN authenticated user away from
+   Settings'` and `'TC-WARRANTY-001-06: allows an ADMIN user through to Settings'`),
+   both passing; full frontend suite 153/153 passing (was 151); `tsc --noEmit` clean;
+   `npm run lint` clean. Live browser (2026-09-01): an EMPLOYEE-role `localStorage`
+   session navigating to `/settings` rendered the Forbidden page ("403 — Access
+   denied"); an ADMIN-role session navigating to `/settings` rendered the real Settings
+   page (General Settings section visible), confirming the fix did not regress ADMIN
+   access.
+4. **§12 TS-WARRANTY-001 Status Note and `TC-WARRANTY-001-06` row updated** to record
+   this evidence and change the result from "not yet executed" to **PASS**.
+5. **§19 Test Case Summary counts unchanged in totals** — no test case was added or
+   removed; one case moved from "fully testable, not yet executed" to "fully testable,
+   PASS." TS-WARRANTY-001 row stays `6 | 6 | 0 | 0 | 0`; grand **Total** row stays
+   `66 | 39 | 22 | 4 | 1`. A note was added directly beneath the existing v0.11
+   TS-WARRANTY-001 narrative recording this execution explicitly, per this document's
+   own convention of never silently updating a result without a dated note.
 
 **Change Log — v0.10 → v0.11 (2026-09-01, upstream layer resolution + formal test
 case execution — real PASS result on 5 of 6 cases, not a full re-scope):**

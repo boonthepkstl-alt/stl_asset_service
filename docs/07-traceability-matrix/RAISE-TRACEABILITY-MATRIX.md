@@ -2,38 +2,38 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Requirement Traceability Matrix (RTM)
-**Version:** 1.3 Draft (`RAISE-FR-WARRANTY-001`'s "Expiring" threshold
-open question (PRD §16 Open Question 15b) — **RESOLVED this revision, per
-explicit confirmed business decision (Resolved Question 41, 2026-09-01) and
-now implemented.** The Expiring threshold is confirmed as
-**per-Asset-Category configurable**, not a single global 90-day constant —
-defaulting to 90 days for all 5 current Asset Categories (IT Hardware,
-Mobile, Office Equipment, Infrastructure, Media Equipment), admin-adjustable
-via a new **P-018 Settings** screen. Propagated through the full chain:
-`RAISE-PRD.md` v0.12 (§16 Resolved Question 41), `RAISE-DESIGN.md` v0.10
-(§5.2 Warranty Domain 3-state model + new §5.4 Settings Domain),
-`RAISE-PROTOTYPE.md` v0.10 (P-010 rewritten + new §23A P-018 Settings),
-`RAISE-ACCEPTANCE-CRITERIA.md` v0.9 (AC-WARRANTY-001-03 rewritten + new
-AC-WARRANTY-001-04/-05/-06), `RAISE-TEST-PLAN.md` v0.9 (TS-WARRANTY-001
-fully unblocked), and `RAISE-TEST-CASES.md` v0.11 (6 test cases:
-`TC-WARRANTY-001-01` through `-05` formally executed and **PASS**;
-`TC-WARRANTY-001-06`, the non-admin-denial case for the new P-018 screen,
-is written and fully specified but **not yet executed** — a distinct
-"testable, not yet exercised" status, not a business-open-question and not
-a FAIL/BLOCKED). **This closes Gap 7's previously-still-open residual item
-in full** (the separate, unrelated 90-day-window blocker Gap 7 explicitly
-carved out in v0.4) — tracked here as **new Gap 12, opened and RESOLVED in
-the same revision**, following the same convention as Gaps 9/10/11. A
-second, genuinely still-open item is newly tracked as **Gap 13**:
-`TC-WARRANTY-001-06` has not yet been formally executed against the real
-running app — this is a real coverage gap (distinct from a business-open
-question, since the underlying UI-only RBAC denial mechanism is already
-confirmed elsewhere in the app per `RAISE-NFR-SEC-RBAC-001`), and remains
-**open** pending a formal execution sweep. See the `RAISE-FR-WARRANTY-001`
-row (§3) and Gaps 12/13 (§6) for the full record. Gaps 1–11 remain fully
-RESOLVED from v1.2, unchanged this revision.)
+**Version:** 1.4 Draft (`TC-WARRANTY-001-06` — non-admin access/write denial
+to the new P-018 Settings screen — **formally executed 2026-09-01 and now
+PASSES**, per `RAISE-TEST-CASES.md` v0.12. **This closes Gap 13.** Unlike
+Gap 12 (opened and resolved in the same v1.3 revision), Gap 13 was **opened
+in v1.3 and closed in this later revision, v1.4**, once the execution sweep
+actually ran — the pattern this document's own §6 rules anticipated when
+Gap 13 was first opened. **Executing the test caught a real defect, not
+just an unexecuted-but-already-correct behavior**: the Settings route
+(`ROUTES.SETTINGS`) in `frontend/src/App.tsx` was **not actually gated to
+ADMIN** — it sat in the general authenticated-user route block instead of
+the existing `<Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>`
+block that already gates Administration/User Management/Role Management.
+**Root cause found and fixed during execution**, before the PASS was
+recorded: the Settings route was moved into that existing ADMIN-gated
+block. No new RBAC mechanism was invented — this reuses the exact
+mechanism already confirmed elsewhere in the app (PRD §16 Resolved
+Question 38, UI-only/client-side MVP enforcement level, per
+`RAISE-NFR-SEC-RBAC-001`). Evidence: 2 new tests in
+`frontend/src/App.rbac.test.tsx` (a non-ADMIN `EMPLOYEE`-role user is
+redirected to the Forbidden page when navigating to `/settings`; an ADMIN
+user is let through) — both pass; full suite 153/153 (was 151),
+`tsc --noEmit` clean, `npm run lint` clean; live browser verification
+(2026-09-01) confirmed an EMPLOYEE-role user sees the real "403 — Access
+denied" Forbidden page at `/settings` and an ADMIN-role user sees the real
+Settings page render. **`RAISE-FR-WARRANTY-001`'s row moves from `PASS
+(partial)` to a full, unqualified `PASS`** — `TC-WARRANTY-001-01` through
+`-06` all now PASS, no more `NOT_TESTED` entries for this requirement. See
+the `RAISE-FR-WARRANTY-001` row (§3) and Gap 13 (§6, now RESOLVED) for the
+full record. Gaps 1–12 remain fully resolved from v1.3, unchanged this
+revision.)
 **Status:** Draft for Traceability Review
-**Source:** [`RAISE-TEST-CASES.md`](../06-test-cases/RAISE-TEST-CASES.md) v0.11 (updated this revision — `TC-WARRANTY-001-01` through `-05` now record formal 2026-09-01 execution evidence; new `TC-WARRANTY-001-04`/`-05`/`-06` added for the P-018 Settings criteria), consolidated against [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.9 (updated this revision — TS-WARRANTY-001 fully unblocked), [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.9 (updated this revision — AC-WARRANTY-001-03 rewritten, new AC-WARRANTY-001-04/-05/-06), [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.10 (updated this revision — P-010 rewritten, new §23A P-018 Settings screen), [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.10 (updated this revision — §5.2 Warranty Domain 3-state model, new §5.4 Settings Domain), and [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.12 (updated this revision — §16 Resolved Question 41) — **the actual PRD file on disk was re-read in full for this revision, not assumed from downstream citations**, per this document's own standing practice since v0.4. Confirmed: this is a genuine requirement-content resolution (a real business decision closing PRD Open Question 15b), propagated through every layer of the chain, not a build/infrastructure-only fix like Gaps 9–11.
+**Source:** [`RAISE-TEST-CASES.md`](../06-test-cases/RAISE-TEST-CASES.md) v0.12 (updated this revision — `TC-WARRANTY-001-06` now records formal 2026-09-01 execution evidence, **PASS**, including the root-cause fix applied first), consolidated against [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.9 (unchanged this revision), [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.9 (unchanged this revision), [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.10 (unchanged this revision), [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.10 (unchanged this revision), and [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.12 (unchanged this revision) — **the actual PRD file on disk was re-read in full for this revision, not assumed from downstream citations**, per this document's own standing practice since v0.4. Confirmed: this is an execution-sweep closure that surfaced and fixed a genuine build/RBAC-gating defect (`frontend/src/App.tsx`), not a requirement-content resolution like Gap 12 and not a no-op re-confirmation either — a real bug was caught and fixed as part of closing this gap.
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
 
@@ -148,7 +148,7 @@ per v0.4 Gap 6's own closure criteria.
 | `RAISE-FR-OPS-001` | QR / Barcode | P0 / MVP | §4.2 Custody & Asset Operations | P-007 | AC-OPS-001 | TS-OPS-001 | TC-OPS-001-01..03 | **PASS** — re-executed 2026-08-26 (after the F-21 fix) against the real running app (`frontend/src/pages/Assets/index.tsx`'s Scan QR flow): TC-OPS-001-01 **PASS** (valid code `AST-0001` opens Asset Detail); TC-OPS-001-02 **PASS** (unmatched-but-well-formed code `AST-9999` shows "No asset found for..."); TC-OPS-001-03 **PASS** (malformed code `%%$#!!garbage///` now shows a distinct "Invalid code — ... doesn't look like a scannable asset code" message, without attempting a lookup — no longer the same message as TC-OPS-001-02). F-21 resolved (`OPEN-FINDINGS.md`). |
 | `RAISE-FR-OPS-002` | Check-in / Check-out | P0 / MVP | §4.2 Custody & Asset Operations | P-008 | AC-OPS-002 | TS-OPS-002 | TC-OPS-002-01..03 | **PASS** — executed 2026-08-28 against the real running app: TC-OPS-002-01 **PASS** (Assign — the app's actual affordance for identifying a holder and confirming, no distinct "Check-out" label exists but the behavior matches: custody state updated to the new holder on asset `a4`); TC-OPS-002-02 **PASS** (Check-in confirmed the asset's return to Available/Unassigned); TC-OPS-002-03 **PASS** (both operations created a corresponding Audit Log entry, verified visible with actor and timestamp). "Appropriate permission"/role-correctness remains untestable (PRD §16 Q22, unchanged) but does not block re-verifying the state-transition and audit-entry behavior itself. |
 | `RAISE-FR-MAINT-001` | Maintenance (4-stage workflow: User Requisition → Dept Approval (Delegated) → IT Dispatch → Technician Execution) | P0 / MVP | §5.1 Maintenance Domain | P-009 | AC-MAINT-001 (AC-MAINT-001-01..09) | TS-MAINT-001 | TC-MAINT-001-01..09 | **PASS** — executed 2026-08-28 against the real running app, all 9 cases: TC-MAINT-001-03 **PASS** (a new requisition submitted via "New IT Requisition" enters `PENDING_DEPT_APPROVAL`). TC-MAINT-001-04 **PASS** (Dept Sign-off → Approve transitions to `PENDING_IT_DISPATCH`). TC-MAINT-001-05 **PASS** (Reject on a separate `PENDING_DEPT_APPROVAL` ticket resulted in `REJECTED_BY_DEPT`, confirmed **not** `PENDING_IT_DISPATCH` — per this case's own scope, no claim is made about whether that specific resulting state is itself correct). TC-MAINT-001-06 **PASS** (Assign Tech + Dispatch transitions to `IN_PROGRESS`, one of the three allowed states). TC-MAINT-001-07 **PASS** (Update Status to On-Hold with a hold reason correctly reflects "3. On-Hold" and shows the reason banner). TC-MAINT-001-08 **PASS** (Mark Complete transitions to `DONE`/"4. Resolved & Closed" with resolution notes shown). TC-MAINT-001-01 originally **FAIL** — the Maintenance record list showed no date/cost fields (F-28) — **now PASS**, re-executed after the fix: each record now shows created date and cost, verified live on asset `a1`. TC-MAINT-001-09 originally **FAIL** — the 4-stage progress indicator (`GovernanceStep` in `TicketDetail/index.tsx`) only rendered two visual states (done ✓ vs. a plain gray circle with the step number), so the "Current" stage and any not-yet-reached "Pending" stage were visually identical (F-29) — **now PASS**, re-executed after the fix: the current stage is derived from `ticket.status` and rendered with a distinct brand-colored circle, ring, and a "Current" badge; verified live across `PENDING_DEPT_APPROVAL` (stage 2 current), `PENDING_IT_DISPATCH` (stage 3 current), and `DONE` (no stage marked current, all done). TC-MAINT-001-02 **PASS** (2 records for asset `a1` displayed in ascending-chronological order by observed outcome, though the underlying code has no explicit sort — `assetTickets` in `AssetDetail/index.tsx` is unsorted array-filter order — a fragility worth watching, not a current failure since the observed order was correct). **The 4-stage workflow shape and state model remain verified present in `RAISE-PRD.md` v0.9 §6 and §16 Resolved Question 33.** |
-| `RAISE-FR-WARRANTY-001` | Warranty | P0 / MVP | §5.2 Warranty Domain (3-state model); §5.4 Settings Domain | P-003 (Asset Registry column), P-004 (Asset Detail), P-018 (Settings > Warranty, new) | AC-WARRANTY-001 (AC-WARRANTY-001-01..06) | TS-WARRANTY-001 | TC-WARRANTY-001-01..06 | **PASS (partial)** — field-list blocker resolved 2026-08-29 (`RAISE-PRD.md` §16 Resolved Question 40, resolving Open Question 15: `warrantyExpiry` is the only MVP field). **Expiring-threshold blocker resolved 2026-09-01** (`RAISE-PRD.md` §16 Resolved Question 41, resolving follow-on Open Question 15b): the Expiring threshold is confirmed **per-Asset-Category configurable**, not a single global 90-day constant — defaulting to 90 days for all 5 current Asset Categories, admin-adjustable via a new P-018 Settings screen. **Implemented and formally executed 2026-09-01:** `frontend/src/lib/warranty.ts` (`getWarrantyStatus`, 3-state Active/Expiring/Expired), `frontend/src/types/settings.ts` (`WarrantySettings`), `frontend/src/services/settings-service.ts` + `settings-repository.ts` (per-category seed/merge), `frontend/src/pages/Settings/index.tsx` (new Warranty section, P-018), `frontend/src/pages/Assets/index.tsx` + `AssetDetail/index.tsx` (3-state badge). TC-WARRANTY-001-01 **PASS** (Warranty column/field displays `warrantyExpiry`). TC-WARRANTY-001-02 **PASS** (Active/Expiring/Expired badge correctly derived from `warrantyExpiry` + the asset's category's configured threshold, via `getWarrantyStatus()`). TC-WARRANTY-001-03 **PASS** — no longer BLOCKED: a category-specific threshold correctly flags an asset as Expiring, confirmed by automated test and live browser (setting IT Hardware to 5000 days flagged only IT Hardware assets Expiring, with an unrelated Mobile-category expired asset unaffected — no cross-category leakage). TC-WARRANTY-001-04 **PASS** (P-018 Settings > Warranty renders all 5 Asset Categories with a "90" default threshold input each). TC-WARRANTY-001-05 **PASS** (editing/saving one category's threshold recomputes only that category's assets; other categories unaffected). Verified via 151/151 automated tests (`tsc --noEmit`/lint clean) and live browser execution. TC-WARRANTY-001-06 (non-admin access/write denial to P-018) is **NOT_TESTED** — the AC criterion is fully specified and testable (the UI-only RBAC denial mechanism already exists and is exercised elsewhere in the app, per `RAISE-NFR-SEC-RBAC-001`), but it has not yet been formally executed against the P-018 screen specifically; this is a real, distinct coverage gap, not a business-open question — see Gap 13 (§6). **Both PRD-content blockers this row previously carried (field list, Q15; Expiring-threshold shape, Q15b) are now fully resolved** — see Gap 7 (§6, resolved 2026-08-29) and new Gap 12 (§6, opened and RESOLVED this revision, 2026-09-01). Overall row status: **PASS (partial)** — partial solely because of the still-open TC-WARRANTY-001-06 execution gap (Gap 13), not because of any remaining PRD-content blocker. |
+| `RAISE-FR-WARRANTY-001` | Warranty | P0 / MVP | §5.2 Warranty Domain (3-state model); §5.4 Settings Domain | P-003 (Asset Registry column), P-004 (Asset Detail), P-018 (Settings > Warranty, new) | AC-WARRANTY-001 (AC-WARRANTY-001-01..06) | TS-WARRANTY-001 | TC-WARRANTY-001-01..06 | **PASS (partial)** — field-list blocker resolved 2026-08-29 (`RAISE-PRD.md` §16 Resolved Question 40, resolving Open Question 15: `warrantyExpiry` is the only MVP field). **Expiring-threshold blocker resolved 2026-09-01** (`RAISE-PRD.md` §16 Resolved Question 41, resolving follow-on Open Question 15b): the Expiring threshold is confirmed **per-Asset-Category configurable**, not a single global 90-day constant — defaulting to 90 days for all 5 current Asset Categories, admin-adjustable via a new P-018 Settings screen. **Implemented and formally executed 2026-09-01:** `frontend/src/lib/warranty.ts` (`getWarrantyStatus`, 3-state Active/Expiring/Expired), `frontend/src/types/settings.ts` (`WarrantySettings`), `frontend/src/services/settings-service.ts` + `settings-repository.ts` (per-category seed/merge), `frontend/src/pages/Settings/index.tsx` (new Warranty section, P-018), `frontend/src/pages/Assets/index.tsx` + `AssetDetail/index.tsx` (3-state badge). TC-WARRANTY-001-01 **PASS** (Warranty column/field displays `warrantyExpiry`). TC-WARRANTY-001-02 **PASS** (Active/Expiring/Expired badge correctly derived from `warrantyExpiry` + the asset's category's configured threshold, via `getWarrantyStatus()`). TC-WARRANTY-001-03 **PASS** — no longer BLOCKED: a category-specific threshold correctly flags an asset as Expiring, confirmed by automated test and live browser (setting IT Hardware to 5000 days flagged only IT Hardware assets Expiring, with an unrelated Mobile-category expired asset unaffected — no cross-category leakage). TC-WARRANTY-001-04 **PASS** (P-018 Settings > Warranty renders all 5 Asset Categories with a "90" default threshold input each). TC-WARRANTY-001-05 **PASS** (editing/saving one category's threshold recomputes only that category's assets; other categories unaffected). Verified via 151/151 automated tests (`tsc --noEmit`/lint clean) and live browser execution. **TC-WARRANTY-001-06 (non-admin access/write denial to P-018) formally executed 2026-09-01 and now PASS** — but only after a real defect was found and fixed first: the Settings route (`ROUTES.SETTINGS`) in `frontend/src/App.tsx` was **not actually gated to ADMIN**, sitting in the general authenticated-user route block instead of the existing `<Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>` block that already gates Administration/User Management/Role Management. Fixed by moving the Settings route into that existing block — no new RBAC mechanism invented, this reuses the exact mechanism already confirmed elsewhere in the app (PRD §16 Resolved Question 38, UI-only/client-side MVP enforcement level, per `RAISE-NFR-SEC-RBAC-001`). Confirmed by 2 new tests in `frontend/src/App.rbac.test.tsx` (non-ADMIN `EMPLOYEE`-role user redirected to the Forbidden page at `/settings`; ADMIN user let through), full suite 153/153 (was 151), `tsc --noEmit`/lint both clean, and live browser verification (2026-09-01): an EMPLOYEE-role user sees the app's real "403 — Access denied" Forbidden page at `/settings`, an ADMIN-role user sees the real Settings page render. **Both PRD-content blockers this row previously carried (field list, Q15; Expiring-threshold shape, Q15b) are now fully resolved** — see Gap 7 (§6, resolved 2026-08-29) and Gap 12 (§6, opened and RESOLVED same-revision, v1.3, 2026-09-01). **The one remaining coverage gap (TC-WARRANTY-001-06 unexecuted) is now also closed** — see Gap 13 (§6, opened v1.3, RESOLVED this revision v1.4, 2026-09-01). Overall row status: **PASS** — no remaining PRD-content blocker and no remaining unexecuted test case for this requirement. |
 | `RAISE-FR-ORACLE-001` | Oracle FA Integration + NBV/Depreciation | P0 / MVP | §6 Oracle FA Integration (incl. §6.4 "Phase 6" label note) | P-011 | AC-ORACLE-001 | TS-ORACLE-001 | TC-ORACLE-001-01..04 | **FAIL** — executed 2026-08-29 against the real running app, and the result is worse than the pre-existing BLOCKED status: the route the app maps to `RAISE-FR-ORACLE-001` (`/reconciliation`, labeled "Oracle FA Reconcile" in navigation) renders `ModulePage` — a generic, literal "foundation placeholder" `EmptyState` ("Oracle FA Reconciliation — foundation placeholder / Migrates from src/pages/Reconciliation.tsx once Oracle FA is connected in Phase 6."), confirmed via `frontend/src/pages/_shared/ModulePage.tsx` and real page text. TC-ORACLE-001-01 **FAILS even on its testable-now scope** — no "Asset Number", "Acquisition Information", "NBV", "Depreciation", "Oracle Source", or "Synchronization Status" field exists anywhere on this page (the closest analog, Asset Detail's own "Financial" section added for F-24, shows only Purchase Cost/Current Value/Purchase Date — no Oracle-specific fields at all). TC-ORACLE-001-02/-03/-04 **FAIL** — no "data unavailable"/"sync error"/"data conflict" state is rendered anywhere; the placeholder has no state logic at all. This is independent of, and does not wait on, the still-open integration-mechanism question (PRD §16 Q6–Q10, tracked as F-04) or the `ReconciliationPage` mapping question (Open Question 10a) — even presence-only testing of the four UI states fails, since no P-011 screen was actually built (a stub exists in its place). See `OPEN-FINDINGS.md` F-31 for this new build-gap finding (distinct from F-04's integration-mechanism gap). |
 | `RAISE-FR-ALERT-001` | Alerts | P0 / MVP | §14 Alert Architecture | P-012 | AC-ALERT-001 | TS-ALERT-001 | TC-ALERT-001-01..02 | **PASS (partial) — Open Finding F-32 (no P-012 screen at all, route 404'd) RESOLVED 2026-09-01, per explicit business decision and now implemented.** Prior execution (2026-08-29) found `/notifications` rendered the app's generic 404 page, worse than the pre-existing BLOCKED status — see the superseded evidence retained in the Change Log (v1.1 → v1.2) for the historical record. **Business decision (2026-09-01):** scope the Alerts screen to derive its one alert-triggering condition from the one already confirmed elsewhere in the app — an asset's `warrantyExpiry` being in the past (the same `isWarrantyExpired` check the Assets list's Warranty column, `RAISE-FR-WARRANTY-001`, already uses) — no new field or data model. Severity is rendered honestly as "Not yet defined" rather than an invented High/Medium/Low, since severity mapping and trigger rules for any other condition remain undefined (PRD §6.9 Open Question, Open Finding F-05, **still genuinely open, not resolved by this fix**). **Implemented:** new `frontend/src/pages/Alerts/index.tsx`, registered at `ROUTES.NOTIFICATIONS` (`/notifications`) in `App.tsx` (previously had no route at all). `RAISE-ACCEPTANCE-CRITERIA.md` `AC-ALERT-001` was **not** modified — it already correctly scoped `AC-ALERT-001-01` as testable only for structural display (severity/description/asset present), separate from which severity/trigger-rule values are correct, so this implementation satisfies that existing scope without a spec correction first (unlike the F-22/F-27 pattern where the spec itself was wrong). **Formally executed 2026-09-01** against the real running app (`RAISE-TEST-CASES.md` v0.10): `/notifications` now renders 11 alert rows, matching the Dashboard's "Expired Warranty: 11" tile exactly. TC-ALERT-001-01 **PASS** — the row for AST-0013 (Dell OptiPlex 7090) displays Severity "Not yet defined," Description "Warranty expired 2024-03-15," and the associated Asset as a clickable link that navigated correctly to Asset Detail. TC-ALERT-001-02 **PASS** — confirmed the screen presents all 11 rows purely as an in-app table, with no Email/Teams/LINE or other delivery-channel UI anywhere on the page. Also covered by 2 new passing automated tests in `frontend/src/pages/Alerts/index.test.tsx`; full frontend suite 149/149 (was 147), `tsc --noEmit`/lint both clean. **What this closes, and what it explicitly does not close:** this resolves only the build-gap half of the finding (a real, evidence-based PASS on the testable-now, single-trigger-condition scope) — it does **not** resolve the separate, still-open severity/trigger-rule definition question (PRD §6.9 Open Question, F-05), and the "authorized user" gate remains untestable (PRD §16 Q22), both unaffected by this fix. See new Gap 11 (§6, RESOLVED — infrastructure/build-gap scope only). |
 | `RAISE-FR-AUDIT-001` | Immutable Audit Log | P0 / MVP | §15 Audit Architecture | P-013 | AC-AUDIT-001 | TS-AUDIT-001 | TC-AUDIT-001-01..03 | **BLOCKED (partial)** — testable subset executed 2026-08-26 against the real running app, all **PASS**: TC-AUDIT-001-01 (checked in a real asset via the UI; confirmed via `auditService.listAuditLogs` that an entry was recorded with actor `"Demo Admin"`, action `"Asset checked in"`, entity `asset/a2`, and a real timestamp); TC-AUDIT-001-02 (no edit/delete control exists anywhere near a rendered audit entry, and neither `AuditRepository`/`MockAuditRepository` nor the backend router expose any update/delete method or route — verified by both UI inspection and code); TC-AUDIT-001-03 (the recorded entry is visible on Asset Detail's "Audit" tab to a logged-in user). Field taxonomy (Design §15) and role-gate correctness (PRD §16 Q22) remain BLOCKED — unchanged by this execution, since those require a PRD/Design answer, not more testing. |
@@ -763,29 +763,63 @@ propagated end-to-end at every layer this revision:
 tracked for PRD Open Question 15b) is handled separately, out of this
 document's scope.
 
-**Gap 13 (opened this revision, 2026-09-01 — still OPEN, a real coverage
-gap, not a business-open question):** `TC-WARRANTY-001-06` (non-admin
-access/write to the new P-018 Settings screen is denied) is written and
-fully specified in `RAISE-TEST-CASES.md` v0.11 §12, but has **not yet been
-formally executed** against the real running app or in an automated test
-targeting P-018 specifically. This is distinct from every other BLOCKED/
-NOT TESTABLE YET item in this matrix: the underlying UI-only RBAC denial
-mechanism is already confirmed and exercised elsewhere in the app
-(`frontend/src/pages/Forbidden/index.tsx`, `frontend/src/pages/
-RoleManagement/index.tsx`, `frontend/src/services/role-service.test.ts`,
-per `RAISE-NFR-SEC-RBAC-001`, PRD §16 Resolved Question 38) — there is no
-missing business decision or undefined mechanism blocking this case, only a
-missing execution pass. Test Status for this criterion is recorded as
-**NOT_TESTED** (per `RAISE-PRD.md` §17's recommended status values), not
-PASS/FAIL/BLOCKED, to avoid overclaiming or underclaiming.
+**Gap 13 (opened v1.3, 2026-09-01 — RESOLVED v1.4, 2026-09-01, a real
+coverage gap that, once executed, turned out to be a real defect, not just
+an unexecuted-but-already-correct behavior):** `TC-WARRANTY-001-06`
+(non-admin access/write to the new P-018 Settings screen is denied) was
+written and fully specified in `RAISE-TEST-CASES.md` v0.11 §12 but had
+**not yet been formally executed** against the real running app or in an
+automated test targeting P-018 specifically. Unlike Gap 12 (opened and
+resolved in the same v1.3 revision), this gap was deliberately left open at
+v1.3 pending a genuine execution sweep — this record shows why that
+discipline mattered.
 
-**This gap remains open** — per this document's own rule, it is not closed
-without a real execution record (automated test or live-browser pass)
-against P-018 specifically. **Recommended next action:** run a formal
-execution sweep of `TC-WARRANTY-001-06` (e.g., log in as a non-admin demo
-account — `employee@raise.dev`/`demo1234` — attempt to navigate to
-`/settings` and/or edit a Warranty threshold, confirm denial) and update
-`RAISE-TEST-CASES.md` §12 with the result, then re-sync this row.
+**What the execution sweep found (2026-09-01):** running `TC-WARRANTY-001-06`
+against the real app surfaced an actual RBAC-gating defect, not merely
+confirmation of already-correct behavior. The Settings route
+(`ROUTES.SETTINGS`) in `frontend/src/App.tsx` was **not gated to ADMIN at
+all** — it was declared in the general authenticated-user route block
+instead of the existing `<Route element={<ProtectedRoute
+allowedRoles={['ADMIN']} />}>` block that already gates
+Administration/User Management/Role Management. Any authenticated user of
+any Role (including `EMPLOYEE`) could reach `/settings` and edit Warranty
+thresholds before the fix.
+
+**What was done to close it:** the Settings route was moved into the
+existing ADMIN-gated `<ProtectedRoute allowedRoles={['ADMIN']} />` block in
+`frontend/src/App.tsx` — **no new RBAC mechanism was invented**; this
+reuses the exact mechanism already confirmed elsewhere in the app (PRD §16
+Resolved Question 38, UI-only/client-side MVP enforcement level, per
+`RAISE-NFR-SEC-RBAC-001`). Verified:
+
+- 2 new tests in `frontend/src/App.rbac.test.tsx`:
+  `'TC-WARRANTY-001-06: redirects a non-ADMIN authenticated user away from
+  Settings'` (an `EMPLOYEE`-role user navigating to `/settings` is
+  redirected to the Forbidden page, not the Settings page) and
+  `'TC-WARRANTY-001-06: allows an ADMIN user through to Settings'` — both
+  pass.
+- Full frontend suite 153/153 (was 151, +2), `tsc --noEmit` clean, `npm run
+  lint` clean.
+- Live browser verification (2026-09-01): an `EMPLOYEE`-role user navigating
+  to `/settings` sees the app's real "403 — Access denied" Forbidden page;
+  an `ADMIN`-role user navigating to `/settings` sees the real Settings page
+  render correctly.
+- `RAISE-TEST-CASES.md` v0.12, §12 — `TC-WARRANTY-001-06` updated to record
+  this formal execution and root-cause-fix, **PASS**.
+
+**What this closes, and what it explicitly does not close:** this closes
+the coverage gap for `TC-WARRANTY-001-06` and, as a direct consequence,
+fixes a real production-facing RBAC defect on the Settings screen — it does
+**not** reopen or touch the requirement-content question already closed by
+Gap 12 (the Expiring-threshold shape/value itself), and it does **not**
+resolve the separate, still-open authentication-mechanism / role-permission
+matrix content question (PRD §16 Q21–Q22), which remains genuinely open and
+unaffected by this fix. `RAISE-FR-WARRANTY-001`'s row (§3) moves from `PASS
+(partial)` to a full, unqualified **PASS** — `TC-WARRANTY-001-01` through
+`-06` all now PASS.
+
+`OPEN-FINDINGS.md` update (recording this as a newly-found-and-fixed defect,
+if tracked there) is handled separately, out of this document's scope.
 
 ---
 
@@ -881,13 +915,24 @@ downstream document's citation of an upstream document's content:
   defaulting to 90 days for all 5 current categories, admin-adjustable via
   P-018 — no layer still asserts a single global constant. A formal
   execution sweep against the real running app and 151/151 passing
-  automated tests confirm `TC-WARRANTY-001-01` through `-05`
-  **PASS**; `TC-WARRANTY-001-06` is written and testable but **not yet
-  executed** (`NOT_TESTED`), correctly not claimed PASS anywhere in the
-  chain. Thread confirmed complete — the threshold-configurability half is
-  closed (Gap 12, §6, RESOLVED); the P-018 access-gate execution half is a
-  genuinely separate, still-open coverage gap (Gap 13, §6, OPEN), not
-  claimed closed here.
+  automated tests confirmed `TC-WARRANTY-001-01` through `-05`
+  **PASS**. Thread confirmed complete for the threshold-configurability half
+  (Gap 12, §6, RESOLVED v1.3).
+- **`RAISE-FR-WARRANTY-001` / P-018 access-gate execution (`TC-WARRANTY-001-06`)
+  — thread walked this revision (2026-09-01, v1.4):** `RAISE-TEST-CASES.md`
+  v0.12 §12 (`TC-WARRANTY-001-06` formally executed, **PASS**, root-cause
+  fix recorded) → `frontend/src/App.tsx` (Settings route moved into the
+  existing `<ProtectedRoute allowedRoles={['ADMIN']} />` block that already
+  gates Administration/User Management/Role Management) →
+  `frontend/src/App.rbac.test.tsx` (2 new tests, both pass) → live browser
+  verification (EMPLOYEE-role user denied at `/settings` via the real
+  Forbidden page; ADMIN-role user let through). This thread was
+  deliberately left incomplete at v1.3 (Gap 13, opened) precisely because no
+  execution record existed yet; it is now complete, and the execution
+  surfaced a genuine defect (Settings was not actually ADMIN-gated before
+  this fix) rather than merely re-confirming already-correct behavior — see
+  Gap 13, §6, RESOLVED, for the full record. `RAISE-FR-WARRANTY-001`'s row
+  (§3) now carries a full, unqualified **PASS**.
 - **`RAISE-FR-EXEC-001` / Dashboard-Navigation spec correction — thread
   walked end-to-end this revision (2026-08-31):** Open Finding F-22 →
   `RAISE-DESIGN.md` §13 (v0.9, "Logical Dashboard — Current MVP (As Built)")
@@ -1114,15 +1159,20 @@ not touched by this correction.
   confirming no cross-category leakage. Compliance Review may treat this
   requirement's Warranty-state and P-018 threshold-configuration coverage as
   a confirmed `PASS`. See Gap 12, §6.
-- **Opened this revision (2026-09-01), Gap 13 — still OPEN, real coverage
-  gap:** `TC-WARRANTY-001-06` (non-admin access/write denial to the new
-  P-018 Settings screen) is written and fully specified but **has not been
-  formally executed**. **Compliance Review must not** treat
-  `RAISE-FR-WARRANTY-001`'s row as a full, unqualified `PASS` — it is
-  `PASS (partial)` until a formal execution sweep of `TC-WARRANTY-001-06` is
-  run and recorded in `RAISE-TEST-CASES.md`. This is a coverage gap, not an
-  open business question — the underlying UI-only RBAC denial mechanism is
-  already confirmed elsewhere in the app. See Gap 13, §6.
+- **Resolved this revision (2026-09-01), Gap 13:** `TC-WARRANTY-001-06`
+  (non-admin access/write denial to the new P-018 Settings screen) has now
+  been formally executed and confirmed **PASS**, per `RAISE-TEST-CASES.md`
+  v0.12. The execution sweep found and fixed a real defect first — the
+  Settings route in `frontend/src/App.tsx` was not actually gated to ADMIN
+  — before recording the PASS; the fix reuses the existing ADMIN-gating
+  mechanism already confirmed elsewhere in the app, no new mechanism was
+  invented. Compliance Review may now treat `RAISE-FR-WARRANTY-001`'s row
+  as a full, unqualified `PASS` — `TC-WARRANTY-001-01` through `-06` all
+  PASS, no remaining coverage gap and no remaining PRD-content blocker for
+  this requirement. **Compliance Review should note**, for the record, that
+  this defect existed in the shipped app until this execution sweep caught
+  it — a concrete example of why unexecuted-but-specified test cases must
+  not be treated as equivalent to a passing result. See Gap 13, §6.
 
 ---
 
@@ -1193,12 +1243,14 @@ not touched by this correction.
       cross-category-leakage check. **Explicitly not part of this
       closure** and correctly not claimed as such: `TC-WARRANTY-001-06`'s
       execution status — see Gap 13.
-- [ ] **Gap 13 (§6) is OPEN, opened this revision** — `TC-WARRANTY-001-06`
-      (non-admin denial to P-018 Settings) is written and testable but has
-      not been formally executed. This is a coverage gap, not a business-
-      open question. Must not be closed until a real execution record
-      (automated or live-browser) against P-018 specifically is added to
-      `RAISE-TEST-CASES.md` and re-synced into this row.
+- [x] **Gap 13 (§6) is RESOLVED this revision (opened v1.3, closed v1.4)** —
+      `TC-WARRANTY-001-06` (non-admin denial to P-018 Settings) has been
+      formally executed and confirmed **PASS**, per `RAISE-TEST-CASES.md`
+      v0.12. The execution sweep found and fixed a real defect first — the
+      Settings route in `frontend/src/App.tsx` was not gated to ADMIN before
+      this fix — reusing the existing ADMIN-gating mechanism, not inventing
+      a new one. `RAISE-FR-WARRANTY-001`'s row (§3) is now a full,
+      unqualified `PASS`.
 - [x] No VERSCAN-only item appears anywhere in this matrix
 
 ---
@@ -1225,8 +1277,10 @@ Development (Source Code)
 RAISE-COMPLIANCE-REVIEW.md
 ```
 
-Gaps 1–12 are resolved and re-confirmed with no drift this revision (Gap 12
-newly opened and closed this revision). **Gap 13 remains OPEN** — see below.
+Gaps 1–13 are now all resolved — Gaps 1–11 are re-confirmed with no drift
+this revision, and **Gap 13 (opened v1.3, RESOLVED this revision, v1.4)**
+— see below for the closure record, distinct from Gap 12, which was opened
+and closed within the same revision (v1.3).
 **Gap 8
 is fully resolved** — both the spec-correction half and the formal
 execution-sweep half are done (see Gap 8, §6, and the `RAISE-FR-EXEC-001`/
@@ -1259,22 +1313,19 @@ question (PRD §16 Open Question 15b) is closed: the threshold is confirmed
 per-Asset-Category configurable, defaulting to 90 days for all 5 categories,
 admin-adjustable via new P-018 Settings; `TC-WARRANTY-001-03/-04/-05`
 execute against the real running app and confirmed PASS (see Gap 12, §6,
-and the `RAISE-FR-WARRANTY-001` row in §3). **Gap 13 is newly opened this
-revision and remains OPEN** — `TC-WARRANTY-001-06` (non-admin denial to the
-new P-018 Settings screen) is written and fully specified but has not been
-formally executed; this is a real coverage gap, not an open business
-question, and is carried forward as the first recommended next action
-below.
+and the `RAISE-FR-WARRANTY-001` row in §3). **Gap 13, opened in v1.3, is now
+RESOLVED in this revision (v1.4)** — `TC-WARRANTY-001-06` (non-admin denial
+to the new P-018 Settings screen) has been formally executed and confirmed
+PASS; the execution sweep found and fixed a real RBAC-gating defect first
+(the Settings route in `frontend/src/App.tsx` was not gated to ADMIN),
+reusing the existing ADMIN-gating mechanism rather than inventing a new one
+(see Gap 13, §6, and the `RAISE-FR-WARRANTY-001` row in §3). This closes the
+last open item for `RAISE-FR-WARRANTY-001`; the row now carries a full,
+unqualified PASS.
 
 **Recommended next actions, in order:**
 
-1. **Run a formal execution sweep of `TC-WARRANTY-001-06`** (Gap 13, §6,
-   OPEN) — log in as a non-admin demo account, attempt to navigate to
-   Settings (P-018) and/or edit a Warranty threshold, confirm denial at the
-   UI-only RBAC enforcement level, and record the result in
-   `RAISE-TEST-CASES.md` §12; then re-sync the `RAISE-FR-WARRANTY-001` row
-   (§3) from `PASS (partial)` to a full `PASS` once done.
-2. Resolve the remaining PRD Open Questions that block full testability of
+1. Resolve the remaining PRD Open Questions that block full testability of
    P0/MVP requirements (§3/§4 above) — in particular Q1 (asset master
    fields), Q3/Q4 residual KPI formulas, Q6–Q10 (Oracle integration design),
    Q11–Q13 (Check-in/Check-out and custody model) (Q15's field-list portion
@@ -1291,15 +1342,15 @@ below.
    proposed answer to this question**, tracked as Open Finding F-05), Open
    Question 10a (`ReconciliationPage` mapping), and Open Question 20a
    (`RAISE-AI-DOC-004` matching/merge behavior).
-3. Resolve the `RAISE-FR-ASSET-003` vs. `RAISE-FR-OPS-002` custody-writing-
+2. Resolve the `RAISE-FR-ASSET-003` vs. `RAISE-FR-OPS-002` custody-writing-
    events exclusivity question (Gap 4) before any custody-writing code path
    beyond Check-in/Check-out is built.
-4. If and when any PRD §10 NFR backlog area (§4.2 above) receives a defined
+3. If and when any PRD §10 NFR backlog area (§4.2 above) receives a defined
    value/target, add the corresponding Traceability ID to `RAISE-PRD.md`
    first, then propagate a real AC group / Suite / Test Case down the chain
    — do not add test coverage for these areas ahead of a PRD-level
    definition.
-5. Proceed to Development for requirements with no open blocker (e.g.,
+4. Proceed to Development for requirements with no open blocker (e.g.,
    `RAISE-FR-OPS-001`, `TS-AI-STATES`), while tracking the BLOCKED items
    above for the remaining requirements.
 
@@ -1307,34 +1358,53 @@ below.
 
 ## Document Status
 
-**Version:** 1.3 (PRD §16 Open Question 15b — `RAISE-FR-WARRANTY-001`'s
-Expiring-threshold shape/value — RESOLVED this revision, per explicit
-confirmed business decision (Resolved Question 41, 2026-09-01) and now
-implemented: the Expiring threshold is per-Asset-Category configurable,
-defaulting to 90 days for all 5 current Asset Categories, admin-adjustable
-via a new P-018 Settings screen. `TC-WARRANTY-001-01` through `-05`
-formally executed against the real running app and confirmed PASS. A new
-test case, `TC-WARRANTY-001-06` (non-admin denial to P-018), is written and
-testable but has **not** yet been executed — tracked as new, still-**OPEN**
-Gap 13, distinct from the newly-opened-and-closed Gap 12 covering the
-threshold-configurability question itself. Gaps 1–11 unchanged from v1.2.)
+**Version:** 1.4 (`TC-WARRANTY-001-06` — non-admin access/write denial to
+the new P-018 Settings screen — formally executed this revision,
+2026-09-01, and confirmed **PASS**, per `RAISE-TEST-CASES.md` v0.12. The
+execution sweep found and fixed a real defect first: the Settings route
+(`ROUTES.SETTINGS`) in `frontend/src/App.tsx` was not actually gated to
+ADMIN — it was moved into the existing `<ProtectedRoute
+allowedRoles={['ADMIN']} />` block that already gates
+Administration/User Management/Role Management, reusing the exact
+mechanism already confirmed elsewhere in the app (PRD §16 Resolved Question
+38), not inventing a new one. `RAISE-FR-WARRANTY-001`'s row moves from
+`PASS (partial)` to a full, unqualified **PASS** — `TC-WARRANTY-001-01`
+through `-06` all PASS. **This closes Gap 13** (opened v1.3, resolved this
+revision, v1.4 — distinct from Gap 12, which was opened and closed within
+the same revision, v1.3). Gaps 1–12 unchanged from v1.3.)
 **Status:** Draft for Traceability Review
-**Source:** [`RAISE-TEST-CASES.md`](../06-test-cases/RAISE-TEST-CASES.md) v0.11 (updated this revision — `TC-WARRANTY-001-01` through `-05` now record formal execution evidence; new `TC-WARRANTY-001-04`/`-05`/`-06`) and full upstream chain — `RAISE-TEST-PLAN.md` v0.9 (updated this revision — TS-WARRANTY-001 fully unblocked), `RAISE-ACCEPTANCE-CRITERIA.md` v0.9 (updated this revision — AC-WARRANTY-001-03 rewritten, new AC-WARRANTY-001-04/-05/-06), `RAISE-PROTOTYPE.md` v0.10 (updated this revision — P-010 rewritten, new §23A P-018 Settings), `RAISE-DESIGN.md` v0.10 (updated this revision — §5.2 Warranty Domain 3-state model, new §5.4 Settings Domain), and `RAISE-PRD.md` v0.12 (updated this revision — §16 Resolved Question 41)
+**Source:** [`RAISE-TEST-CASES.md`](../06-test-cases/RAISE-TEST-CASES.md) v0.12 (updated this revision — `TC-WARRANTY-001-06` now records formal 2026-09-01 execution evidence, **PASS**, including the root-cause-fix record) and full upstream chain — `RAISE-TEST-PLAN.md` v0.9 (unchanged this revision), `RAISE-ACCEPTANCE-CRITERIA.md` v0.9 (unchanged this revision), `RAISE-PROTOTYPE.md` v0.10 (unchanged this revision), `RAISE-DESIGN.md` v0.10 (unchanged this revision), and `RAISE-PRD.md` v0.12 (unchanged this revision)
 **Reference:** VERSCAN only
 **Last Re-Verified:** 2026-09-01 (`RAISE-FR-WARRANTY-001` row re-executed
-against the real running app following the Q15b threshold-configurability
-resolution — see Change Log v1.2 → v1.3 below and Gaps 12/13, §6, for the
-full record. Prior re-verification of `RAISE-FR-ALERT-001`, unchanged this
-revision, retained below for history: `/notifications` renders 11 alert
-rows, matching the Dashboard's "Expired Warranty: 11" tile exactly;
-`TC-ALERT-001-01`/`-02` re-executed against the real running app and
-confirmed PASS (Gap 11, §6, RESOLVED, v1.2).
+against the real running app following `TC-WARRANTY-001-06`'s formal
+execution and the Settings-route ADMIN-gating fix — see Change Log v1.3 →
+v1.4 below and Gap 13, §6, for the full record. Prior re-verification of
+the threshold-configurability half, unchanged this revision, retained
+below for history: `TC-WARRANTY-001-01` through `-05` executed against the
+real running app and confirmed PASS (Gap 12, §6, RESOLVED, v1.3).
 
-**This revision's execution evidence (2026-09-01):** 151/151 automated
-tests pass (`tsc --noEmit`/lint clean, up from 149/149 in v1.2 — 2 new
-tests: `frontend/src/pages/Assets/index.test.tsx`'s
+**This revision's execution evidence (2026-09-01, v1.4):** 153/153
+automated tests pass (`tsc --noEmit`/lint clean, up from 151/151 in v1.3 —
+2 new tests in `frontend/src/App.rbac.test.tsx`:
+`'TC-WARRANTY-001-06: redirects a non-ADMIN authenticated user away from
+Settings'` and `'TC-WARRANTY-001-06: allows an ADMIN user through to
+Settings'`). Live browser: an `EMPLOYEE`-role user navigating to
+`/settings` was redirected to the app's real "403 — Access denied"
+Forbidden page (no Settings content ever rendered); an `ADMIN`-role user
+navigating to `/settings` saw the real Settings page render correctly,
+including the Warranty section (5 Asset Categories, per-category threshold
+inputs). **Root cause fixed before this PASS was recorded:** the Settings
+route (`ROUTES.SETTINGS`) in `frontend/src/App.tsx` had been declared in
+the general authenticated-user route block rather than the existing
+`<Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>` block that
+already gates Administration/User Management/Role Management — moved into
+that block, no new mechanism invented.
+
+**Prior revision's execution evidence (2026-09-01, v1.3, retained for
+history):** 151/151 automated tests passed (`tsc --noEmit`/lint clean, up
+from 149/149 in v1.2 — 2 new tests: `frontend/src/pages/Assets/index.test.tsx`'s
 `TC-WARRANTY-001-03` case, `frontend/src/services/settings-service.test.ts`'s
-per-category-seed/merge case). Live browser: Settings > Warranty renders
+per-category-seed/merge case). Live browser: Settings > Warranty rendered
 all 5 Asset Categories (IT Hardware, Mobile, Office Equipment,
 Infrastructure, Media Equipment), each with a "90" default threshold input;
 editing IT Hardware to 5000 and saving correctly flagged MacBook Pro and
@@ -1342,10 +1412,66 @@ Dell UltraSharp Monitor (both IT Hardware) as "Expiring" on Asset Registry,
 while iPhone 15 Pro (Mobile, already-expired) still correctly showed
 "Expired" — confirming no cross-category leakage; Asset Detail for MacBook
 Pro showed "Expiring" consistently in both its Lifecycle row and Warranty &
-Coverage section badge. `TC-WARRANTY-001-06` was **not** executed this
-pass — see Gap 13, §6.
+Coverage section badge. `TC-WARRANTY-001-06` was **not** executed that
+pass — this is exactly the gap v1.4 closes above.
 
-**Change Log — v1.2 → v1.3 (this revision, 2026-09-01):**
+**Change Log — v1.3 → v1.4 (this revision, 2026-09-01):**
+
+1. **Gap 13 (opened v1.3) RESOLVED this revision, execution-sweep closure
+   that surfaced a real defect:** `TC-WARRANTY-001-06` (non-admin
+   access/write denial to the P-018 Settings screen) has been formally
+   executed against the real running app and confirmed **PASS**, per
+   `RAISE-TEST-CASES.md` v0.12 §12. The execution sweep found the Settings
+   route (`ROUTES.SETTINGS`) in `frontend/src/App.tsx` was **not** actually
+   gated to ADMIN — any authenticated user of any Role could reach
+   `/settings` and edit Warranty thresholds before this fix. **Fixed** by
+   moving the Settings route into the existing `<ProtectedRoute
+   allowedRoles={['ADMIN']} />` block that already gates
+   Administration/User Management/Role Management — reusing the exact
+   mechanism already confirmed elsewhere in the app (PRD §16 Resolved
+   Question 38, per `RAISE-NFR-SEC-RBAC-001`), no new RBAC mechanism
+   invented. Verified via 2 new tests in `frontend/src/App.rbac.test.tsx`
+   (both pass), a clean full 153/153 frontend suite (was 151), clean
+   `tsc --noEmit`/lint, and live browser verification (EMPLOYEE-role user
+   denied via the real Forbidden page; ADMIN-role user let through).
+2. **§3 `RAISE-FR-WARRANTY-001` row updated**: Test Status moved from `PASS
+   (partial)` to a full, unqualified **PASS** — `TC-WARRANTY-001-01`
+   through `-06` all PASS, no remaining unexecuted test case and no
+   remaining PRD-content blocker for this requirement.
+3. **§6 Gap 13 rewritten** from "opened this revision, still OPEN" to
+   "opened v1.3, RESOLVED v1.4" — the root cause found (a real route-gating
+   defect, not just an unexecuted test) and the fix applied are both
+   recorded in full, following this document's own rule that a gap is not
+   closed without a real execution record.
+4. **§7 Chain Consistency Check** gained a dedicated `RAISE-FR-WARRANTY-001`
+   / P-018 access-gate execution thread-walk bullet for this revision; the
+   pre-existing threshold-configurability bullet (v1.3) is retained,
+   trimmed to its own closed scope only.
+5. **§8 Compliance Review Readiness** — the Gap 13 open-item note is
+   rewritten as a resolved-item note; Compliance Review may now treat
+   `RAISE-FR-WARRANTY-001`'s row as a full, unqualified PASS.
+6. **§9 Checklist** — the Gap 13 item is checked off (`[x]`), the first
+   Gap in this document to move from an unchecked `[ ]` state (v1.3) to
+   checked (v1.4) rather than being opened-and-closed within one revision.
+7. **§10 Next Step** — the Gaps 1–12/"Gap 13 remains OPEN" summary text is
+   updated to "Gaps 1–13 are now all resolved"; the former recommended
+   next-action item 1 (run the `TC-WARRANTY-001-06` execution sweep) is
+   removed as complete, and the remaining items renumbered 1–4.
+8. Version citation for `RAISE-TEST-CASES.md` updated this revision: v0.11
+   → v0.12 (the only upstream document that changed this revision — every
+   other document in the chain, `RAISE-PRD.md` through `RAISE-TEST-PLAN.md`,
+   is unchanged from v1.3, since this was purely an execution-sweep-and-fix
+   revision, not a further requirement-content resolution). Document
+   version bumped 1.3 → 1.4. **No other gap in §6 was found open, closed,
+   or newly discovered during this pass** — Gaps 1–12 are unchanged from
+   v1.3 and are not re-litigated here; this revision's reverse-chain
+   re-verification was scoped to `RAISE-FR-WARRANTY-001` /
+   `TC-WARRANTY-001-06` specifically, per the instruction that prompted it,
+   not a full re-walk of every requirement. `OPEN-FINDINGS.md` updates, if
+   any are tracked for this newly-found-and-fixed RBAC-gating defect, are
+   handled separately, out of this document's scope.
+
+**Change Log — v1.2 → v1.3 (prior revision, 2026-09-01):**
 
 1. **Gap 12 opened and RESOLVED in the same revision, requirement-content
    scope (not a build-gap fix like Gaps 9–11):** `RAISE-FR-WARRANTY-001`'s

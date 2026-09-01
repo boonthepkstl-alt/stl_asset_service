@@ -24,6 +24,7 @@ function RbacHarness({ initialRoute }: { initialRoute: string }) {
           <Route path="/forbidden" element={<div>Forbidden Page</div>} />
           <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
             <Route path="/administration" element={<div>Admin Page</div>} />
+            <Route path="/settings" element={<div>Settings Page</div>} />
           </Route>
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" element={<div>Dashboard Page</div>} />
@@ -64,6 +65,28 @@ describe('ProtectedRoute role enforcement', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Dashboard Page')).toBeInTheDocument();
+    });
+  });
+
+  // AC-WARRANTY-001-06 (TC-WARRANTY-001-06, resolved 2026-09-01): Settings -- which now
+  // includes the per-Category Warranty Expiring-threshold editor (P-018) -- is admin-only,
+  // at the same UI-only MVP RBAC enforcement level as Administration/User/Role Management.
+  it('TC-WARRANTY-001-06: redirects a non-ADMIN authenticated user away from Settings', async () => {
+    seedAuth('EMPLOYEE');
+    render(<RbacHarness initialRoute="/settings" />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Forbidden Page')).toBeInTheDocument();
+    });
+    expect(screen.queryByText('Settings Page')).not.toBeInTheDocument();
+  });
+
+  it('TC-WARRANTY-001-06: allows an ADMIN user through to Settings', async () => {
+    seedAuth('ADMIN');
+    render(<RbacHarness initialRoute="/settings" />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Settings Page')).toBeInTheDocument();
     });
   });
 });

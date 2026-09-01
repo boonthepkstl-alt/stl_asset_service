@@ -85,16 +85,18 @@ const App: React.FC = () => {
                 )}
                 <Route path={ROUTES.RECONCILIATION} element={<ReconciliationPage />} />
                 <Route path={ROUTES.NOTIFICATIONS} element={<AlertsPage />} />
-                <Route path={ROUTES.SETTINGS} element={<SettingsPage />} />
                 <Route path={ROUTES.FORBIDDEN} element={<Forbidden />} />
 
                 {/* Administration is restricted to ADMIN — see docs/template-analysis/
                     PROJECT-FOUNDATION-BASELINE.md's NEEDS_PRD_CONFIRMATION log for whether a
-                    finer-grained role mapping (e.g. IT_MANAGER read-only) is required by MVP. */}
+                    finer-grained role mapping (e.g. IT_MANAGER read-only) is required by MVP.
+                    Settings (AC-WARRANTY-001-06) is admin-only for the same reason — it edits
+                    platform-wide config, not per-user preferences. */}
                 <Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>
                   <Route path={ROUTES.ADMINISTRATION} element={<AdministrationPage />} />
                   <Route path={ROUTES.ADMIN_USERS} element={<UserManagementPage />} />
                   <Route path={ROUTES.ADMIN_ROLES} element={<RoleManagementPage />} />
+                  <Route path={ROUTES.SETTINGS} element={<SettingsPage />} />
                 </Route>
               </Route>
 

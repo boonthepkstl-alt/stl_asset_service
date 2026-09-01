@@ -23,6 +23,12 @@ changes user-visible or API-visible behavior. Pure documentation-sync PRs
   an asset is flagged "Expiring" is configurable per Asset Category
   (default 90 days) via a new "Warranty" section in System Settings.
 
+### Fixed
+- **System Settings is now restricted to admin accounts** — previously
+  any signed-in user could reach the Settings page (including the new
+  Warranty threshold editor); it's now gated the same way as
+  Administration/User Management/Role Management.
+
 ## 2026-08-29
 
 ### Added

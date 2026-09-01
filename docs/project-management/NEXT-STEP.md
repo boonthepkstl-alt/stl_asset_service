@@ -4,20 +4,20 @@
 Overwritten in place each time the protocol is re-run — do not treat an
 old copy of this file as still valid; re-run Step 11 (Recalculate) first.
 
-**Run date:** 2026-09-01, immediately after `CHECKPOINT-2026-09-01-006` (Warranty "Expiring" threshold resolved, implemented, and verified — R-17).
+**Run date:** 2026-09-01, immediately after `CHECKPOINT-2026-09-01-007` (`TC-WARRANTY-001-06` executed — found and fixed a real RBAC gap, Settings was not actually admin-gated — R-18).
 
 ---
 
 ## Current State
 
-- **Current phase:** Phase 3 — Asset Management (Warranty sub-domain). `RAISE-FR-WARRANTY-001` now `PASS (partial)` — 5 of 6 test cases formally executed and passing; `TC-WARRANTY-001-06` written but not yet executed (F-34).
-- **Current feature:** None actively in progress. Last work: resolved the Warranty "Expiring" threshold open question (the last genuinely undecided item in the standing backlog), implemented it, verified it (automated + live browser), and propagated the decision through the full deliverable chain.
-- **Current task:** None in progress. Last task checkpoint: `CHECKPOINT-2026-09-01-006`.
-- **Last completed checkpoint:** `CHECKPOINT-2026-09-01-006` (not yet shipped via PR at the time this file was written — see that checkpoint's Git section; branch/commit/push/PR still pending).
-- **Current status:** 🟡 Code changed, tests passing, live-verified, **not yet committed to git** — working tree is on `main`, uncommitted, awaiting branch creation and PR (predicted #63, per `gh pr list`).
-- **Open blockers:** None from a business-decision standpoint — every finding in the standing backlog now has an explicit decision recorded (Resolved or explicitly deferred). One real coverage gap remains: `TC-WARRANTY-001-06` (F-34) is written but unexecuted.
-- **Open findings:** F-02 through F-34 in `OPEN-FINDINGS.md`. **F-22, F-27, F-30, F-32 are Resolved (R-13/R-14/R-15/R-16); the Warranty threshold question is now Resolved (R-17). F-31 and F-33 are explicitly deferred by business decision, not awaiting one.** F-34 is a real, small, non-decision-dependent coverage gap (execute one test case against an already-built RBAC mechanism).
-- **Remaining work:** (1) Git branch/commit/push/PR for this session's Warranty threshold work — not yet done. (2) `TC-WARRANTY-001-06` execution (F-34) — buildable now, not blocked.
+- **Current phase:** Phase 3 — Asset Management (Warranty sub-domain). `RAISE-FR-WARRANTY-001` now a full, unqualified `PASS` — all 6 test cases formally executed and passing.
+- **Current feature:** None actively in progress. Last work: executed `TC-WARRANTY-001-06`, which surfaced and fixed a real defect (Settings wasn't actually gated to ADMIN).
+- **Current task:** None in progress. Last task checkpoint: `CHECKPOINT-2026-09-01-007`.
+- **Last completed checkpoint:** `CHECKPOINT-2026-09-01-007` (not yet shipped via PR at the time this file was written — see that checkpoint's Git section; branch/commit/push/PR still pending).
+- **Current status:** 🟡 Code changed, tests passing (153/153), live-verified, **not yet committed to git** — working tree is on `main`, uncommitted, awaiting branch creation and PR (predicted #64, per `gh pr list`).
+- **Open blockers:** None. Every finding in the standing backlog is now either Resolved or explicitly deferred, and no coverage gap remains in the Warranty domain.
+- **Open findings:** F-02 through F-33 in `OPEN-FINDINGS.md` (F-34 resolved as R-18, no longer a standalone open row). **F-22, F-27, F-30, F-32 Resolved (R-13/R-14/R-15/R-16); the Warranty threshold question Resolved (R-17); the Settings access-gate defect Resolved (R-18). F-31 and F-33 explicitly deferred by business decision, not awaiting one.**
+- **Remaining work:** Git branch/commit/push/PR for this session's `TC-WARRANTY-001-06` fix — not yet done.
 - **Dependencies:** N/A.
 - **Plan vs. actual variance:** None — user confirmed a per-Asset-Category configurable threshold (not a fixed global number) after an initial "specify a different number" answer was followed by an explicit clarification ("different equipment's warranty periods aren't the same").
 
@@ -111,12 +111,12 @@ Already done: `npx tsc --noEmit`, `npm run lint`, `npx vitest run`
 
 ## Related Checkpoint
 
-`CHECKPOINT-2026-09-01-006` (most recent, Warranty threshold resolution).
+`CHECKPOINT-2026-09-01-007` (most recent, `TC-WARRANTY-001-06` execution + RBAC fix).
 
 ## Related Git Branch/Commit
 
 Not yet created — predicted branch name
-`frontend/resolve-warranty-expiring-threshold`, predicted PR #63 (verify
+`frontend/execute-tc-warranty-001-06`, predicted PR #64 (verify
 via `gh pr list` before treating as final).
 
 ---

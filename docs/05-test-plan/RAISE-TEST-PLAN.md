@@ -2,9 +2,9 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Test Plan
-**Version:** 0.9 Draft
+**Version:** 0.10 Draft
 **Status:** Draft for Test Plan Review
-**Source:** [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.9, cross-checked against [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.12, [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.10, [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.10
+**Source:** [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.10, cross-checked against [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.13, [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.11, [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.12
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
 
@@ -95,7 +95,7 @@ corresponding AC group):
 | PRD §10 NFR Area | Test Suite Status |
 |---|---|
 | Authentication | Already covered narrowly by `TS-LOGIN` (existence of success/error/access-denied states only; mechanism BLOCKED per §8) |
-| Authorization / RBAC | Already covered narrowly by `TS-LOGIN`, `TS-OPS-002`, `TS-MAINT-001` (MVP enforcement level only, per `RAISE-NFR-SEC-RBAC-001`); role list/permission matrix content BLOCKED per §8 |
+| Authorization / RBAC | Already covered narrowly by `TS-LOGIN`, `TS-MAINT-001` (MVP enforcement level only, per `RAISE-NFR-SEC-RBAC-001`); role list/permission matrix content BLOCKED per §8. `TS-OPS-002`'s own permission gate is a narrow exception, fully resolved 2026-09-01 (PRD §16 Resolved Question 42 — any authenticated user, no role restriction) — this does not extend to the general role/permission-matrix content question for other domains |
 | Performance | No test suite — no target defined in PRD/Design/Prototype/AC |
 | Availability | No test suite — no target defined in PRD/Design/Prototype/AC |
 | Scalability | No test suite — no target defined in PRD/Design/Prototype/AC |
@@ -171,7 +171,7 @@ Each suite ID mirrors its AC group for direct traceability.
 | TS-ASSET-002 | AC-ASSET-002 | P-005 | L1 | P0 | No — resolved 2026-09-01 (Open Finding F-27, per confirmed business decision); AC-ASSET-002 is now fully testable, including new AC-ASSET-002-03 (category-to-type-to-asset expansion) |
 | TS-ASSET-003 | AC-ASSET-003 | P-006 | L1, L3 | P0 | Yes — holder model TBD; custody-writing-events ambiguity blocks AC-ASSET-003-03's exclusivity scope only |
 | TS-OPS-001 | AC-OPS-001 | P-007 | L1, L2 | P0 | No |
-| TS-OPS-002 | AC-OPS-002 | P-008 | L1, L3 | P0 | Yes — workflow/roles TBD; RBAC MVP enforcement level confirmed as UI-only/client-side (role list/permission matrix still TBD) |
+| TS-OPS-002 | AC-OPS-002 | P-008 | L1, L3 | P0 | No — resolved 2026-09-01 (PRD §16 Resolved Question 42); AC-OPS-002 is now fully testable: any authenticated user (no role restriction) may Check-out/Check-in, and the operation is an immediate state change with no approval/exception-handling step |
 | TS-MAINT-001 | AC-MAINT-001 | P-009 | L1, L3 | P0 | Yes — field model (date/event/status/cost), SLA/vendor/cost model, and delegated-approver rules TBD; stage-transition criteria (AC-MAINT-001-03..09) testable for state-transition behavior; AC-MAINT-001-04..08 depend on `RAISE-NFR-SEC-RBAC-001` (enforcement level confirmed UI-only/client-side, role list/permission matrix still TBD) |
 | TS-WARRANTY-001 | AC-WARRANTY-001 | P-010, P-018 | L1, L2 | P0 | No — resolved 2026-09-01 (PRD §16 Resolved Question 41); AC-WARRANTY-001 is now fully testable, including new AC-WARRANTY-001-04/-05/-06 (P-018 Settings threshold configuration and admin-only access gate) |
 | TS-ORACLE-001 | AC-ORACLE-001 | P-011 | L1, L2, L4 | P0 | Yes — integration design TBD |
@@ -185,9 +185,10 @@ Each suite ID mirrors its AC group for direct traceability.
 | TS-AI-DOC-003 | AC-AI-DOC-003 | P-005 (incidental) | L5 | P0 | Yes — entire suite blocked; sole criterion NOT TESTABLE YET (assign-vs-suggest classification behavior TBD) |
 | TS-AI-DOC-004 | AC-AI-DOC-004 | P-003 (incidental) | L5 | P0 | Yes — entire suite blocked; sole criterion NOT TESTABLE YET (matching threshold / merge-or-flag workflow TBD) |
 
-Five suites (TS-ASSET-001-DETAIL, TS-OPS-001, TS-AI-STATES, TS-ASSET-002,
-TS-WARRANTY-001) have no blocked items and can be executed as soon as the
-corresponding screen is implemented, without waiting on any Open Question.
+Six suites (TS-ASSET-001-DETAIL, TS-OPS-001, TS-AI-STATES, TS-ASSET-002,
+TS-WARRANTY-001, TS-OPS-002) have no blocked items and can be executed as
+soon as the corresponding screen is implemented, without waiting on any Open
+Question.
 TS-ASSET-002 was added to this group 2026-09-01 (Open Finding F-27, per
 confirmed business decision) — see §8's TS-ASSET-002 row for the resolution
 detail; no test case for AC-ASSET-002 has been executed or has passed as of
@@ -199,6 +200,16 @@ row for the resolution detail; no test case for AC-WARRANTY-001 has been
 executed or has passed as of this update, since the corresponding Test Case
 (`RAISE-TEST-CASES.md`) update for AC-WARRANTY-001-04/-05/-06 (P-018 Settings)
 is a separate, already-underway follow-up.
+TS-OPS-002 was also added to this group 2026-09-01 (PRD §16 Resolved Question
+42, resolving Open Questions 11 and 12) — see §8's TS-OPS-002 row for the
+resolution detail. Unlike TS-ASSET-002 and TS-WARRANTY-001 above, **no new
+test case execution is required for this scope**: `TC-OPS-002-01..03` were
+already formally executed and recorded **PASS** on 2026-08-28
+(`RAISE-TRACEABILITY-MATRIX.md` §3, `RAISE-FR-OPS-002` row), and that
+execution already covered "any authenticated user" behavior (no role gate was
+ever tested against, since none exists in the app) — the newly-confirmed
+scope is already covered by the existing PASS result, not newly satisfied by
+this Test Plan sync.
 
 TS-AI-DOC-001 through TS-AI-DOC-004 are fully blocked, not partially blocked
 like the other "Yes" rows above — each AC group (§19.5–§19.8 of the AC
@@ -224,7 +235,7 @@ introduced here.
 | TS-ASSET-002 | **RESOLVED and CLOSED 2026-09-01** (Open Finding F-27) — `RAISE-PROTOTYPE.md` v0.9 §11 confirms the category hierarchy is exactly 2 levels (Asset `category` field → Asset `type` field → individual assets), using the real, currently-seeded Category → Type breakdown from `frontend/src/data/fixtures/mockData.ts`. The "By Category" view (`frontend/src/pages/Assets/index.tsx`) has since been extended one level deeper to match, and `RAISE-TEST-CASES.md` v0.9 records `TC-ASSET-002-01..03` all **PASS** against the real running app (live browser verification: expanding "IT Hardware" reveals Laptop/Monitor/Headphones sub-groups; expanding "Laptop" reveals only its 3 assets) plus 3 passing automated tests. | None — AC-ASSET-002-01/-02/-03 are all fully testable and confirmed PASS. |
 | TS-ASSET-003 | Q13 Holder data model; Custody-writing-events ambiguity (`RAISE-FR-ASSET-003` vs. `RAISE-FR-OPS-002` — PRD Pre-Finalization Quality Pass, "Duplicated / Overlapping Requirements," marked "Needs business confirmation") | Whether holder identity is modeled correctly, only that history is appended/immutable. Separately, for AC-ASSET-003-03: whether Custody History is written *only* by Check-in/Check-out (P-008, `AC-OPS-002`) or also by other custody-changing events (e.g., a direct reassignment outside Check-in/Check-out) — this suite verifies only the Check-in/Check-out-triggered append-and-immutability behavior; a dedicated case for a non-Check-in/Check-out write path cannot be added until that ambiguity is resolved and, if needed, a corresponding flow/screen and AC criterion exist. AC-ASSET-003-01 and -02 are unaffected by this blocker and execute normally. |
 | TS-LIFE-001 | Design §4.2's exact lifecycle state/transition model is TBD. (Resolved: Disposal MVP scope — confirmed Out of Scope for MVP on 2026-08-21, `RAISE-PRD.md` §14 item 7; the former disposal test case is now excluded rather than blocked, see `RAISE-TEST-CASES.md` §6.5.) | Whether cross-domain lifecycle data displays and stays consistent across stage changes |
-| TS-OPS-002 | Q11 Check-in/Check-out workflow, Q12/Q22 Roles | Whether approval/exception rules are enforced, only that the basic state transition + audit trigger occurs. **RBAC MVP enforcement level confirmed (2026-08-21, PRD §16 Resolved Question 38; Design §16):** same narrow decision as TS-LOGIN — UI-only/client-side check accepted for MVP, backend deferred to Roadmap. This fixes only *where* a permission check runs, not *what* the roles/permissions are, so AC-OPS-002-01's "appropriate permission" gate remains untestable for role correctness until the role list/permission matrix (Q22) is defined. |
+| TS-OPS-002 | **RESOLVED and CLOSED 2026-09-01** (PRD §16 Resolved Question 42, resolving Open Questions 11 and 12). AC-OPS-002-01/-02 (`RAISE-ACCEPTANCE-CRITERIA.md` §11, v0.10) now state the confirmed rule directly: Check-in/Check-out is an immediate state-change operation with no approval step and no exception-handling workflow, and "a user with appropriate permission" means simply **any authenticated user** (no role restriction) — matching the already-confirmed MVP RBAC enforcement level (UI-only/client-side, PRD §16 Resolved Question 38). This resolution is scoped narrowly to this one AC group's own permission gate — it does **not** resolve the general role-model/permission-matrix content question for other domains (Audit, Alerts, Warranty admin access, etc.), which remains NOT TESTABLE YET per PRD §16 Q21–Q22 (tracked in Open Finding F-08), and it does **not** resolve the separate, still-open question of whether Check-in/Check-out is the *exclusive* mechanism that writes Custody History (see the TS-ASSET-003 row above; tracked in Open Finding F-10, Status: Open). | None on AC-OPS-002's own scope — AC-OPS-002-01 through -03 are all fully testable. **No new test execution is required by this sync:** `TC-OPS-002-01..03` were already formally executed and recorded **PASS** 2026-08-28 (`RAISE-TRACEABILITY-MATRIX.md` §3), and that execution already exercised "any authenticated user" behavior, since no role gate was ever implemented or tested against — the existing PASS result already covers the newly-confirmed scope. |
 | TS-MAINT-001 | Q14 Maintenance fields / SLA / vendor model / cost model (workflow shape and state model now confirmed — Resolved Question 33; only SLA, vendor model, cost model, and delegated-approver configuration remain open); Q22 Roles/permissions | Whether the full field set (beyond date/event/status/cost) is complete, only that records/history render (AC-MAINT-001-01/-02). **Stage-transition criteria now testable (2026-08-21):** the 4-stage workflow (User Requisition → Dept Approval (Delegated) → IT Dispatch → Technician Execution) and its state model (`PENDING_DEPT_APPROVAL → PENDING_IT_DISPATCH → PLANNING/IN_PROGRESS/ON_HOLD → DONE`) are business-confirmed (PRD §16 Resolved Question 33; Design §5.1), so AC-MAINT-001-03, -06, -07, -08, -09 are executable for the confirmed state transitions and stage-progress indicator. Remaining NOT TESTABLE YET items: (a) AC-MAINT-001-05's Reject/Request Info resulting state/downstream flow — Prototype §15 shows these as UI actions only with no defined resulting state; (b) delegated-approver configuration rules (*who* may delegate, *to whom*, how delegation is audited) — AC-MAINT-001-04 tests only that an Approve action advances the state, not any delegation authorization rule; (c) SLA per stage, the vendor model (internal technician vs. external vendor dispatch), and the cost model/tracking — the "Priority," "Vendor model," and "Cost incurred" fields shown in the Prototype are placeholders only. **RBAC dependency (AC-MAINT-001-04 through -08):** MVP enforcement level is confirmed as UI-only/client-side (PRD §16 Resolved Question 38; Design §16), backend deferred to Roadmap — this fixes only *where* a permission check would run, not *what* the roles/permissions are; the role list, permission matrix contents, and authentication/delegation mechanism remain TBD (Q22), so these five criteria are executable only for the state-transition behavior itself, not for whether the acting user's role (Dept Approver, IT Dispatcher, Technician) is correctly gated or verified. No behavior is defined for Mark Complete attempted from an invalid state, or for skipped/reversed stages — no test case exists for those cases. |
 | TS-WARRANTY-001 | **RESOLVED and CLOSED 2026-09-01** (PRD §16 Resolved Question 41, resolving Open Question 15b). Q15 Warranty fields was already resolved 2026-08-29 (PRD §16 Resolved Question 40; Design §5.2; Prototype §14 P-010 — the Warranty domain has exactly one MVP field, `warrantyExpiry`; a draft 8-field proposal was explicitly rejected for MVP, not deferred), closing AC-WARRANTY-001-01/-02. The formerly-open, separate blocker on AC-WARRANTY-001-03 — that the 90-day expiry-window figure was only the PRD §6.7 illustrative business example, not a confirmed generalizable rule — is now closed: the "Expiring" threshold is confirmed as **per-Asset-Category configurable**, defaulting to 90 days, admin-adjustable via the new **P-018 Settings** screen (Design §5.2/§5.4; Prototype §14 P-010, §23A P-018 Settings). AC-WARRANTY-001-03 is rewritten to test this resolved rule directly (no standalone "expiring-assets view" screen is asserted, since none exists). Three new criteria were added and are covered by this suite: **AC-WARRANTY-001-04** (P-018 Warranty section shows all 5 Asset Categories with an editable threshold input defaulting to 90), **AC-WARRANTY-001-05** (editing and saving one category's threshold affects only that category's assets, no cross-category leakage), and **AC-WARRANTY-001-06** (non-admin access/write to P-018 is denied, at the confirmed MVP UI-only/client-side RBAC enforcement level per PRD §16 Resolved Question 38 — no new role list/permission matrix is asserted; role name/backend enforcement remain TBD per Q22, same narrow scope already applied to TS-LOGIN/TS-OPS-002/TS-MAINT-001). | None — AC-WARRANTY-001-01 through -06 are all fully testable. No test case has been executed or has passed as of this Test Plan update; writing/updating the corresponding test cases in `RAISE-TEST-CASES.md` for AC-WARRANTY-001-04/-05/-06 and re-executing the suite is a separate, already-underway follow-up. |
 | TS-ORACLE-001 | Q6–Q10 Integration method, sync, mapping, error handling, ownership, source-of-truth, security | Whether the integration itself is correct, only that the four UI states (available/unavailable/error/conflict) render appropriately |
@@ -304,7 +315,7 @@ respectively — not a concrete UI element or business rule). Consequently:
 | TS-ASSET-002 | AC-ASSET-002 | RAISE-FR-ASSET-002 | §4.1 Asset Management; Prototype v0.9 §11 (resolved 2026-09-01, Open Finding F-27 — real seeded Category → Type breakdown) | P-005 |
 | TS-ASSET-003 | AC-ASSET-003 | RAISE-FR-ASSET-003 | §4.2 Custody & Asset Operations | P-006 |
 | TS-OPS-001 | AC-OPS-001 | RAISE-FR-OPS-001 | §4.2 Custody & Asset Operations | P-007 |
-| TS-OPS-002 | AC-OPS-002 | RAISE-FR-OPS-002 | §4.2 Custody & Asset Operations | P-008 |
+| TS-OPS-002 | AC-OPS-002 | RAISE-FR-OPS-002 | §4.2 Custody & Asset Operations (workflow shape/permission gate resolved 2026-09-01, PRD §16 Resolved Question 42) | P-008 |
 | TS-MAINT-001 | AC-MAINT-001 | RAISE-FR-MAINT-001 | §5.1 Maintenance Domain | P-009 |
 | TS-WARRANTY-001 | AC-WARRANTY-001 | RAISE-FR-WARRANTY-001 | §5.2 Warranty Domain (threshold display/state); §5.4 (per-category configuration, resolved 2026-09-01, PRD §16 Resolved Question 41) | P-010, P-018 |
 | TS-ORACLE-001 | AC-ORACLE-001 | RAISE-FR-ORACLE-001 | §6 Oracle FA Integration | P-011 |
@@ -460,8 +471,54 @@ the BLOCKED distinctions in §8.
 
 ## Document Status
 
-**Version:** 0.9 (re-synced against `RAISE-ACCEPTANCE-CRITERIA.md` v0.9, 2026-09-01 —
-Warranty threshold scope/spec correction, per confirmed business decision)
+**Version:** 0.10 (re-synced against `RAISE-ACCEPTANCE-CRITERIA.md` v0.10, 2026-09-01 —
+Check-in/Check-out workflow-shape/permission-gate scope/spec correction, per confirmed
+business decision)
+
+**Change Log — v0.9 → v0.10 (2026-09-01, per confirmed business decision
+resolving PRD §16 Resolved Question 42):**
+
+1. **Root cause.** `RAISE-ACCEPTANCE-CRITERIA.md` v0.10 §11 resolved the previously-open
+   "appropriate permission undefined; approval/exception-handling TBD" blocker on
+   AC-OPS-002: PRD §16 Resolved Question 42 confirms Check-in/Check-out is an
+   **immediate state-change operation** with no approval step and no
+   exception-handling workflow, and "a user with appropriate permission" means simply
+   **any authenticated user** (no role restriction) — matching the already-confirmed MVP
+   RBAC enforcement level (UI-only/client-side, PRD §16 Resolved Question 38). This is a
+   scope/spec correction resolving previously-open PRD §16 Open Questions 11 and 12, not
+   a new requirement.
+2. **TS-OPS-002 fully unblocked (§7, §8, §9).** The prior "Yes — workflow/roles TBD"
+   blocked-item note is removed. §7's Blocked Items column changed from "Yes" to "No";
+   TS-OPS-002 moves into the "no blocked items" group in §7 alongside
+   TS-ASSET-001-DETAIL, TS-OPS-001, TS-AI-STATES, TS-ASSET-002, and TS-WARRANTY-001
+   (now six suites in that group, not five). §8's TS-OPS-002 row is rewritten to record
+   the resolution; it now also explicitly excludes two other, still-open questions that
+   this resolution does **not** touch: (a) the general role-model/permission-matrix
+   content question for other domains (PRD §16 Q21–Q22, Open Finding F-08), and (b)
+   whether Check-in/Check-out is the exclusive writer of Custody History (Open Finding
+   F-10, Status: Open) — both remain exactly as previously stated.
+3. **No new test execution required — existing PASS already covers the confirmed
+   scope.** Unlike the TS-ASSET-002/TS-WARRANTY-001 precedent (where the corresponding
+   test cases were still pending as of their resolution), `TC-OPS-002-01..03` were
+   already formally executed and recorded **PASS** on 2026-08-28
+   (`RAISE-TRACEABILITY-MATRIX.md` §3, `RAISE-FR-OPS-002` row), and that execution
+   already exercised "any authenticated user" behavior, since no role gate was ever
+   implemented or tested against. This Test Plan update therefore resolves the
+   entry-criteria/blocked status only, and notes that the existing PASS result already
+   covers the newly-confirmed scope — no new test case is claimed as newly passed by
+   this sync alone.
+4. §3.3 and §3.2's RBAC summary language (Authorization/RBAC row) updated: TS-OPS-002 is
+   no longer grouped with TS-LOGIN/TS-MAINT-001 as "narrow MVP-enforcement-level-only"
+   coverage; it is now called out as a resolved narrow exception (any authenticated
+   user, no role restriction) that does not extend to the general role/permission-matrix
+   content question for other domains.
+5. Version citations in the document header updated: AC v0.9 → v0.10, PRD v0.12 → v0.13,
+   Design v0.10 → v0.11, Prototype v0.10 → v0.12.
+6. No other suite required changes; TS-LOGIN, TS-DASH, TS-ASSET-001,
+   TS-ASSET-001-DETAIL, TS-LIFE-001, TS-ASSET-002, TS-ASSET-003, TS-OPS-001,
+   TS-MAINT-001, TS-WARRANTY-001, TS-ORACLE-001, TS-ALERT-001, TS-AUDIT-001, TS-EXEC-001,
+   TS-AI-SEARCH-001, TS-AI-STATES, and TS-AI-DOC-001..004 are unaffected by AC v0.10's
+   changes.
 
 **Change Log — v0.8 → v0.9 (2026-09-01, per confirmed business decision
 resolving PRD §16 Resolved Question 41):**

@@ -2,9 +2,9 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Test Cases
-**Version:** 0.12 Draft
+**Version:** 0.13 Draft
 **Status:** Draft for Test Case Review
-**Source:** [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.9 §7 (Test Suites) + §8 (Blocked Items) + §8.1 (Fully-Blocked Suites — AI Document Intelligence Capabilities) + §3.3 (PRD §10 NFR Backlog — No Suite), expanding [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.9
+**Source:** [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.10 §7 (Test Suites) + §8 (Blocked Items) + §8.1 (Fully-Blocked Suites — AI Document Intelligence Capabilities) + §3.3 (PRD §10 NFR Backlog — No Suite), expanding [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.10
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
 
@@ -254,11 +254,36 @@ made here.
 
 **Suite:** TS-OPS-002 · **AC Group:** AC-OPS-002 · **Requirement:** `RAISE-FR-OPS-002` · **Screen:** P-008
 
+**Status Note — Resolved 2026-09-01 (`RAISE-TEST-PLAN.md` v0.10 / `RAISE-ACCEPTANCE-CRITERIA.md`
+v0.10, PRD §16 Resolved Question 42, resolving previously-open PRD §16 Open Questions 11 and
+12):** both prior blockers on this suite are closed. `AC-OPS-002-01`/`-02` now confirm the rule
+directly: **any authenticated user (no role restriction)** may Check-out/Check-in, and each
+operation is an **immediate state change with no approval step or exception-handling
+workflow**. `TC-OPS-002-01`/`-02` below are rewritten to test this confirmed rule directly and
+are **no longer BLOCKED**. This resolution is scoped narrowly to Check-in/Check-out's own
+permission gate and workflow shape — it does **not** resolve the general role-list/
+permission-matrix content question for other domains (PRD §16 Q21–Q22, Open Finding F-08), and
+it does **not** touch the separate, still-open question of whether Check-in/Check-out is the
+*exclusive* writer of Custody History (Open Finding F-10, Status: Open, unaffected — see
+`TC-ASSET-003-03`, §8 above, left untouched).
+
+**No new test execution is required or claimed by this update.** `TC-OPS-002-01`..`-03` were
+already formally executed against the real running app on 2026-08-28 and recorded **PASS**
+(`RAISE-TRACEABILITY-MATRIX.md` §3, `RAISE-FR-OPS-002` row): an authenticated user performed
+Assign (the app's actual affordance for Check-out — identifying a holder and confirming) and
+Check-in with no role gate blocking them, because none was ever implemented or tested against —
+that execution already exercised exactly the behavior now confirmed as the intended rule ("any
+authenticated user, no role restriction," immediate state change). The existing PASS result
+already covers the newly-confirmed scope; this is a scope/spec correction to the Blocked-column
+wording only, not a report of a new PASS/FAIL result, and not a new test case (the existing
+three cases already cover "any authenticated user can perform the operation" via that
+execution).
+
 | TC ID | Title | Steps | Test Data | Expected Result | Blocked |
 |---|---|---|---|---|---|
-| TC-OPS-002-01 | Check-out updates custody | 1. Select an available asset. 2. Choose Check-out. 3. Identify a holder. 4. Confirm. | 1 available asset, 1 holder identity | Custody state updates to new holder | **BLOCKED (partial)** — basic transition testable; "appropriate permission" gating is TBD (PRD §16 Q12/Q22). **RBAC MVP enforcement level confirmed (2026-08-21, PRD §16 Resolved Question 38; Design §16):** a UI-only/client-side permission check is confirmed acceptable for MVP, backend enforcement deferred to Enterprise Roadmap — this fixes only *where* a permission check runs, not *what* the roles/permissions are (Q22 role list/permission matrix remain TBD), so this case verifies only the state transition itself, not whether the acting user's role is correctly gated. |
-| TC-OPS-002-02 | Check-in updates custody | 1. Select a checked-out asset. 2. Confirm return. | 1 checked-out asset | Custody state updates to reflect return | **BLOCKED (partial)** — same as above; also approval/exception rules TBD (PRD §16 Q11) |
-| TC-OPS-002-03 | Check-in/Check-out triggers audit entry | 1. Perform Check-out. 2. Open Audit Log. | 1 asset | New Audit Log entry created for the operation | No |
+| TC-OPS-002-01 | Check-out updates custody | 1. Select an available asset. 2. As any authenticated user, choose Check-out. 3. Identify a holder. 4. Confirm. | 1 available asset, 1 holder identity | Custody state updates immediately to the new holder — no approval step or intermediate pending state, and no role restriction on who may perform it | No — resolved 2026-09-01 (PRD §16 Resolved Question 42): any authenticated user may perform Check-out, and the operation is an immediate state change with no approval/exception-handling step. **Already PASS**, formally executed 2026-08-28 against the real running app (`RAISE-TRACEABILITY-MATRIX.md` §3): Assign — the app's actual affordance for identifying a holder and confirming, no distinct "Check-out" label exists but the behavior matches — updated custody state to the new holder on asset `a4`, performed by an authenticated user with no role gate blocking the action. This existing execution already covers the newly-confirmed "any authenticated user" scope; no new execution is claimed by this update. General role-list/permission-matrix content for other domains remains a separate, still-open question (PRD §16 Q21–Q22, Open Finding F-08), unaffected here. |
+| TC-OPS-002-02 | Check-in updates custody | 1. Select a checked-out asset. 2. As any authenticated user, confirm return. | 1 checked-out asset | Custody state updates immediately to reflect the return — no approval step or intermediate pending state, and no role restriction on who may perform it | No — resolved 2026-09-01 (PRD §16 Resolved Question 42): any authenticated user may perform Check-in, and the operation is an immediate state change with no approval/exception-handling step (the prior "approval/exception rules TBD, PRD §16 Q11" block is closed). **Already PASS**, formally executed 2026-08-28 against the real running app (`RAISE-TRACEABILITY-MATRIX.md` §3): Check-in confirmed the asset's return to Available/Unassigned, with no approval step or intermediate pending state observed, and no role gate blocking the action. This existing execution already covers the newly-confirmed scope; no new execution is claimed by this update. This case does not test, and must not be read as confirming, whether Check-in/Check-out is the *exclusive* writer of Custody History (Open Finding F-10, Status: Open, unaffected — see `TC-ASSET-003-03`). |
+| TC-OPS-002-03 | Check-in/Check-out triggers audit entry | 1. Perform Check-out. 2. Open Audit Log. | 1 asset | New Audit Log entry created for the operation | No — unaffected by this resolution (was already fully testable). **Already PASS**, formally executed 2026-08-28 against the real running app (`RAISE-TRACEABILITY-MATRIX.md` §3): both operations created a corresponding Audit Log entry, verified visible with actor and timestamp. |
 
 ---
 
@@ -624,7 +649,7 @@ per its own §1/§2 principle (no test case without a matching AC criterion):
 | PRD §10 NFR Area | Test Case Status |
 |---|---|
 | Authentication | Already covered narrowly by `TC-LOGIN-01`/`-02` (existence of success/error states only; mechanism BLOCKED — see §3 above) |
-| Authorization / RBAC | Already covered narrowly by `TC-LOGIN-03`, `TC-OPS-002-01`, `TC-MAINT-001-04..08` (MVP enforcement level only, per `RAISE-NFR-SEC-RBAC-001`); role list/permission matrix content BLOCKED — see §3, §10, §11 above |
+| Authorization / RBAC | Already covered narrowly by `TC-LOGIN-03`, `TC-MAINT-001-04..08` (MVP enforcement level only, per `RAISE-NFR-SEC-RBAC-001`); role list/permission matrix content BLOCKED — see §3, §11 above. `TC-OPS-002-01`/`-02`'s own permission gate is a narrow exception, fully resolved 2026-09-01 (PRD §16 Resolved Question 42 — any authenticated user, no role restriction; already PASS, executed 2026-08-28) — see §10 above; this does not extend to the general role/permission-matrix content question for other domains |
 | Performance | No test case — no target defined in PRD/Design/Prototype/AC |
 | Availability | No test case — no target defined in PRD/Design/Prototype/AC |
 | Scalability | No test case — no target defined in PRD/Design/Prototype/AC |
@@ -671,7 +696,7 @@ situation.
 | TS-ASSET-002 | 3 | 3 | 0 | 0 | 0 |
 | TS-ASSET-003 | 3 | 1 | 2 | 0 | 0 |
 | TS-OPS-001 | 3 | 3 | 0 | 0 | 0 |
-| TS-OPS-002 | 3 | 1 | 2 | 0 | 0 |
+| TS-OPS-002 | 3 | 3 | 0 | 0 | 0 |
 | TS-MAINT-001 | 9 | 3 | 6 | 0 | 0 |
 | TS-WARRANTY-001 | 6 | 6 | 0 | 0 | 0 |
 | TS-ORACLE-001 | 4 | 3 | 1 | 0 | 0 |
@@ -684,7 +709,26 @@ situation.
 | TS-AI-DOC-002 | 1 | 0 | 0 | 1 | 0 |
 | TS-AI-DOC-003 | 1 | 0 | 0 | 1 | 0 |
 | TS-AI-DOC-004 | 1 | 0 | 0 | 1 | 0 |
-| **Total** | **66** | **39** | **22** | **4** | **1** |
+| **Total** | **66** | **41** | **20** | **4** | **1** |
+
+**TS-OPS-002 updated 2026-09-01 (`RAISE-TEST-PLAN.md` v0.10 / `RAISE-ACCEPTANCE-CRITERIA.md`
+v0.10 resolution, PRD §16 Resolved Question 42 — no new test execution reported):** row moves
+from `3 | 1 | 2 | 0 | 0` to `3 | 3 | 0 | 0 | 0`. `TC-OPS-002-01`/`-02` move from **BLOCKED
+(partial)** to fully testable — the "appropriate permission"/approval-exception blockers they
+previously carried are closed by the confirmed rule (any authenticated user, no role
+restriction; immediate state change, no approval step). `TC-OPS-002-03` was already fully
+testable and is unaffected. **No new test case execution is claimed by this update**: all three
+cases were already formally executed against the real running app on 2026-08-28 and recorded
+**PASS** (`RAISE-TRACEABILITY-MATRIX.md` §3, `RAISE-FR-OPS-002` row) — that execution already
+exercised "any authenticated user" behavior, since no role gate was ever implemented or tested
+against, so the existing PASS result already covers the newly-confirmed scope. This is a
+scope/spec correction to the Blocked-column classification only. Grand **Total** row moves from
+`66 | 39 | 22 | 4 | 1` to `66 | 41 | 20 | 4 | 1` (no test case added or removed; two cases
+reclassified from partially blocked to fully testable, both already carrying a PASS result).
+Unaffected and left untouched by this update: the general role-list/permission-matrix content
+question for other domains (PRD §16 Q21–Q22, Open Finding F-08), and the still-open question of
+whether Check-in/Check-out is the exclusive writer of Custody History (Open Finding F-10,
+Status: Open — `TC-ASSET-003-03`, §8 above).
 
 **TS-ASSET-002 updated 2026-09-01 (Open Finding F-27 resolution, then closed
 the same day by formal execution):** row grows from `2 | 1 | 1 | 0 | 0` to
@@ -874,11 +918,58 @@ Suite ID → TC ID) into one master table for compliance review.
 
 ## Document Status
 
-**Version:** 0.12 (2026-09-01 — `TC-WARRANTY-001-06` formally executed against the real
-running app, same day it was added in v0.11, with a confirmed **PASS**. Formal execution
-found and fixed a real RBAC gap in `frontend/src/App.tsx`: the Settings route was not
-actually gated to ADMIN — see the Change Log entry below and §12's Status Note for full
-evidence)
+**Version:** 0.13 (2026-09-01 — `RAISE-TEST-PLAN.md` v0.10 / `RAISE-ACCEPTANCE-CRITERIA.md`
+v0.10 sync: `TS-OPS-002` fully unblocked, PRD §16 Resolved Question 42. `TC-OPS-002-01`/`-02`
+move from BLOCKED (partial) to fully testable — no new test execution reported; the existing
+2026-08-28 PASS result already covers the newly-confirmed "any authenticated user, no role
+restriction, immediate state change" scope. See the Change Log entry below and §10's Status
+Note for full detail)
+
+**Change Log — v0.12 → v0.13 (2026-09-01, `RAISE-TEST-PLAN.md` v0.10 / `RAISE-ACCEPTANCE-
+CRITERIA.md` v0.10 sync — scope/spec correction only, no new test execution reported):**
+
+1. **Root cause / trigger.** `RAISE-ACCEPTANCE-CRITERIA.md` v0.10 (§11) resolves both
+   remaining blockers on `AC-OPS-002` per PRD §16 Resolved Question 42 (resolving
+   previously-open PRD §16 Open Questions 11 and 12): Check-in/Check-out's permission gate is
+   confirmed as **any authenticated user (no role restriction)**, and the operation is
+   confirmed as an **immediate state change with no approval step or exception-handling
+   workflow**. `RAISE-TEST-PLAN.md` v0.10 (§7, §8) mirrors this: `TS-OPS-002`'s Blocked Items
+   entry changes from "Yes" to "No," and the suite moves into the "no blocked items" group
+   alongside `TS-ASSET-001-DETAIL`, `TS-OPS-001`, `TS-AI-STATES`, `TS-ASSET-002`, and
+   `TS-WARRANTY-001`.
+2. **§10 TS-OPS-002 rewritten.** A new Status Note records the resolution and its scope
+   boundary, matching the AC-layer note: this does **not** resolve the general role-list/
+   permission-matrix content question for other domains (PRD §16 Q21–Q22, Open Finding F-08),
+   and does **not** touch the separate, still-open question of whether Check-in/Check-out is
+   the exclusive writer of Custody History (Open Finding F-10, Status: Open — left untouched
+   in `TC-ASSET-003-03`, §8). `TC-OPS-002-01`/`-02`'s Expected Result and Blocked columns are
+   rewritten to test the confirmed rule directly (immediate state change; any authenticated
+   user; no approval step). `TC-OPS-002-03` is unaffected (was already fully testable).
+3. **No new test execution is claimed.** All three cases were already formally executed
+   against the real running app on 2026-08-28 and recorded **PASS**
+   (`RAISE-TRACEABILITY-MATRIX.md` §3, `RAISE-FR-OPS-002` row) — that execution already
+   exercised "any authenticated user" behavior end to end (an authenticated user performed
+   Assign/Check-in with no role gate blocking them, since none was ever implemented or tested
+   against), so the existing PASS result already covers the newly-confirmed scope. Each
+   rewritten row's Blocked column cites this explicitly rather than claiming a fresh execution.
+   No new test case was added, since the existing three already cover "any authenticated user
+   can perform the operation."
+4. **§18.5 NFR backlog table (Authorization/RBAC row) updated** to remove `TC-OPS-002-01` from
+   the "MVP-enforcement-level-only" grouping (shared with `TC-LOGIN-03`/`TC-MAINT-001-04..08`)
+   and instead call it out as a resolved narrow exception, mirroring the equivalent updates
+   already made at the Test Plan (§3.2) and Acceptance Criteria (§19.9) layers.
+5. **§19 Test Case Summary** updated: `TS-OPS-002` row moves from `3 | 1 | 2 | 0 | 0` to
+   `3 | 3 | 0 | 0 | 0`. Grand **Total** row moves from `66 | 39 | 22 | 4 | 1` to
+   `66 | 41 | 20 | 4 | 1` (no test case added or removed; two cases reclassified from
+   partially blocked to fully testable, both already carrying a PASS result).
+6. **Open Finding F-10 untouched**, per explicit instruction and per `RAISE-ACCEPTANCE-
+   CRITERIA.md` v0.10's own stated scope boundary — `TC-ASSET-003-03` (§8) is unchanged.
+7. Version citations in the document header updated: AC v0.9 → v0.10, Test Plan v0.9 → v0.10.
+8. No other suite required changes; `TS-LOGIN`, `TS-DASH`, `TS-ASSET-001`,
+   `TS-ASSET-001-DETAIL`, `TS-LIFE-001`, `TS-ASSET-002`, `TS-ASSET-003`, `TS-OPS-001`,
+   `TS-MAINT-001`, `TS-WARRANTY-001`, `TS-ORACLE-001`, `TS-ALERT-001`, `TS-AUDIT-001`,
+   `TS-EXEC-001`, `TS-AI-SEARCH-001`, `TS-AI-STATES`, and `TS-AI-DOC-001..004` are unaffected
+   by this sync.
 
 **Change Log — v0.11 → v0.12 (2026-09-01, formal test case execution of
 `TC-WARRANTY-001-06` — real PASS result, root cause found and fixed first):**

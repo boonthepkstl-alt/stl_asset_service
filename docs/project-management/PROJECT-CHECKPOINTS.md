@@ -2587,6 +2587,40 @@ Commit: pending — predicted next PR after #64 (verify via `gh pr list` before 
 
 ---
 
+## CHECKPOINT-2026-09-01-009
+
+**Phase:** Phase 3 — Asset Management (Custody & Asset Operations)
+**Feature:** Resolve Open Finding F-02 — Check-in/Check-out workflow shape, permission gate, and Custody holder data model (PRD §16 Q11–Q13)
+**Task:** Present F-02 with context, record the confirmed business decision, and propagate it through the full deliverable chain
+
+**What was implemented:** N/A — all three confirmed answers matched already-built, already-tested behavior exactly; no new code was required.
+**What was modified:** None (code). Documentation only: `RAISE-PRD.md` (v0.13), `RAISE-DESIGN.md` (v0.11), `RAISE-PROTOTYPE.md` (v0.12), `RAISE-ACCEPTANCE-CRITERIA.md` (v0.10), `RAISE-TEST-PLAN.md` (v0.10), `RAISE-TEST-CASES.md` (v0.13), `RAISE-TRACEABILITY-MATRIX.md` (v1.5), `OPEN-FINDINGS.md` (R-19 added, F-02 removed from Blocking table).
+**What was fixed:** A drafting overreach caught mid-session — the Prototype sync's first pass (v0.11) incorrectly inferred an answer to a separate, unconfirmed question (whether Check-in/Check-out exclusively writes Custody History, Open Finding F-10) from the fact that no other code path currently exists. Caught immediately, corrected in the same session (v0.12), restoring F-10 to genuinely open.
+**What was added:** None.
+**What was removed:** None.
+
+**Decision:** Presented F-02's three sub-questions (Q11 workflow shape, Q12 permission gate, Q13 holder data model) with the app's current behavior described for each. User confirmed all three recommended options via `AskUserQuestion`, all of which matched the current implementation exactly: (1) immediate state-change, no approval workflow; (2) any authenticated user, no role restriction; (3) direct 1:1 Employee link, no additional org-relationship model.
+
+**Files changed:** 7 documentation files (listed above) + `OPEN-FINDINGS.md`.
+**Database changes:** None. **API changes:** None. **Frontend changes:** None.
+
+**Tests:** Full suite re-run as a sanity check (no code changed) — **153/153 passing**, unchanged from before this checkpoint.
+**Validation:** N/A beyond the sanity-check test run — no new behavior to verify live, since nothing changed. The existing `TC-OPS-002-01..03` PASS result (2026-08-28) already covers the newly-confirmed scope.
+
+**Requirement Traceability:**
+PRD: `RAISE-FR-OPS-002`, `RAISE-FR-ASSET-003` — Open Questions 11, 12, 13 resolved as `§16 Resolved Question 42`.
+Acceptance Criteria / Test Case: `AC-OPS-002-01/-02` rewritten to state the confirmed rule directly; `TC-OPS-002-01..03` reclassified from partially-blocked to fully PASS (no new execution). `RAISE-TRACEABILITY-MATRIX.md` (v1.5) — Gap 14 opened and closed same revision. **Explicitly unaffected:** Open Finding F-10 (Custody History write-path exclusivity) and Open Finding F-08 (general RBAC role/permission-matrix content for other domains) both remain genuinely open.
+
+**Git:**
+Branch: pending (not yet created as of this checkpoint).
+Commit: pending — predicted next PR after #66 (verify via `gh pr list` before treating as final; must not be merged until the user explicitly instructs "merge PR #N").
+
+**Known Issues:** None new.
+**Remaining Work:** Git branch/commit/push/PR for this checkpoint's changes.
+**Next Step:** Recalculate `NEXT-STEP.md`. Create git branch, commit, push, open PR, and wait for the user's explicit "merge PR #N" instruction before merging.
+
+---
+
 ## Level 2 — Feature Checkpoints
 
 ### FEATURE-CHECKPOINT-project-tracking-governance

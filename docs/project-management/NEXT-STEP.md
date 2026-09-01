@@ -4,134 +4,130 @@
 Overwritten in place each time the protocol is re-run — do not treat an
 old copy of this file as still valid; re-run Step 11 (Recalculate) first.
 
-**Run date:** 2026-09-01, immediately after `CHECKPOINT-2026-09-01-007` (`TC-WARRANTY-001-06` executed — found and fixed a real RBAC gap, Settings was not actually admin-gated — R-18).
+**Run date:** 2026-09-01, immediately after `CHECKPOINT-2026-09-01-008` (`RAISE-COMPLIANCE-REVIEW.md` v1.0 drafted and merged as [PR #65](https://github.com/boonthepkstl-alt/stl_asset_service/pull/65)).
 
 ---
 
 ## Current State
 
-- **Current phase:** Phase 3 — Asset Management (Warranty sub-domain). `RAISE-FR-WARRANTY-001` now a full, unqualified `PASS` — all 6 test cases formally executed and passing.
-- **Current feature:** None actively in progress. Last work: executed `TC-WARRANTY-001-06`, which surfaced and fixed a real defect (Settings wasn't actually gated to ADMIN).
-- **Current task:** None in progress. Last task checkpoint: `CHECKPOINT-2026-09-01-007`.
-- **Last completed checkpoint:** `CHECKPOINT-2026-09-01-007` (not yet shipped via PR at the time this file was written — see that checkpoint's Git section; branch/commit/push/PR still pending).
-- **Current status:** 🟡 Code changed, tests passing (153/153), live-verified, **not yet committed to git** — working tree is on `main`, uncommitted, awaiting branch creation and PR (predicted #64, per `gh pr list`).
-- **Open blockers:** None. Every finding in the standing backlog is now either Resolved or explicitly deferred, and no coverage gap remains in the Warranty domain.
-- **Open findings:** F-02 through F-33 in `OPEN-FINDINGS.md` (F-34 resolved as R-18, no longer a standalone open row). **F-22, F-27, F-30, F-32 Resolved (R-13/R-14/R-15/R-16); the Warranty threshold question Resolved (R-17); the Settings access-gate defect Resolved (R-18). F-31 and F-33 explicitly deferred by business decision, not awaiting one.**
-- **Remaining work:** Git branch/commit/push/PR for this session's `TC-WARRANTY-001-06` fix — not yet done.
+- **Current phase:** Cross-cutting (deliverable-chain tooling). The full chain — `RAISE-PRD.md` through `RAISE-COMPLIANCE-REVIEW.md` — now has a real artifact at every stage for the first time.
+- **Current feature:** None actively in progress. Last work: drafted `docs/11-compliance-review/RAISE-COMPLIANCE-REVIEW.md` v1.0, consolidating `RAISE-TRACEABILITY-MATRIX.md` v1.4 into a per-requirement verdict table (no new test execution — a consolidation layer only).
+- **Current task:** None in progress. Last task checkpoint: `CHECKPOINT-2026-09-01-008`.
+- **Last completed checkpoint:** `CHECKPOINT-2026-09-01-008` — shipped and merged as [PR #65](https://github.com/boonthepkstl-alt/stl_asset_service/pull/65).
+- **Current status:** 🟢 Clean — `main` is up to date with `origin/main`, no uncommitted changes, no open branch.
+- **Open blockers:** None from a shipping standpoint. 6 of 17 MVP requirements carry a `BLOCKED`/`BLOCKED (partial)` verdict in the new Compliance Review, each waiting on a specific, already-identified business decision (see Incomplete Work Inventory below) — none of these are engineering tasks.
+- **Open findings:** F-02 through F-19, F-31, F-33 in `OPEN-FINDINGS.md` (all standing/deferred items, unchanged by this session's work). F-22, F-27, F-30, F-32 Resolved (R-13–R-16); Warranty threshold Resolved (R-17); Settings access-gate defect Resolved (R-18). F-31/F-33 remain explicitly deferred by business decision.
+- **Remaining work:** None shipping-related. The only remaining work across the whole project is business decisions on the 8 "Blocking" findings (F-02–F-09) that gate the 6 `BLOCKED`/`FAIL` requirement verdicts, or non-decision-dependent process work (see Primary Next Step).
 - **Dependencies:** N/A.
-- **Plan vs. actual variance:** None — user confirmed a per-Asset-Category configurable threshold (not a fixed global number) after an initial "specify a different number" answer was followed by an explicit clarification ("different equipment's warranty periods aren't the same").
+- **Plan vs. actual variance:** None — the Compliance Review was drafted exactly as scoped (a verdict consolidation, not a new test-execution pass), matching what was described to the user before drafting began.
 
 ## Incomplete Work Inventory (classified)
 
 | Item | Classification | Note |
 |---|---|---|
-| Git branch/commit/push/PR for the Warranty threshold work | `SHIP_PENDING` | Code implemented, tested, live-verified, and doc chain fully synced — only git governance steps remain |
-| `TC-WARRANTY-001-06` (non-admin denial to new Settings screen, F-34) | `FINDING` (coverage gap, not a business question) | The underlying UI-only MVP RBAC mechanism already exists elsewhere in the app — this is executing one test case, not building new capability |
-| F-33: AI Assistant (P-015) doesn't answer questions or exhibit response states | `FINDING` (build gap, confirmed by execution) | **Explicitly deferred 2026-09-01** — not building until real AI backend integration lands |
-| F-31: Oracle FA / Financial View (P-011) not built | `FINDING` (build gap, confirmed by execution) | **Explicitly deferred 2026-09-01** — not building until real Oracle FA integration lands (F-04 resolved) |
-| F-06/F-05/F-04: citation format / alert rules (beyond warranty) / Oracle integration mechanism | Blocked on business decision | Underlying content questions beneath the deferred F-33/F-31 build gaps |
-| Auth mechanism / role-permission matrix content | Blocked on business decision | PRD §16 Q21–Q22 — separate from F-30's now-resolved infrastructure half |
-| NBV/Risk/Utilization-mechanics KPIs (`RAISE-FR-EXEC-001` remainder) | Blocked on business decision | PRD §16 Q3/Q4/Q29 — retained as a documented future enhancement by F-22's resolution, not itself resolved |
-| `RAISE-FR-ASSET-003` vs. `RAISE-FR-OPS-002` overlap | `FINDING` (F-10) | Unresolved scope question, unaffected by recent work |
-| Delegated-approver configuration rules (`RAISE-FR-MAINT-001`) | Blocked on business decision | Who may delegate, to whom, how audited — TBD |
-| Document Intelligence, User/Role Management backend | Blocked on business decision | See `CURRENT-STATUS.md` §4 |
-| No real user/auth store | `TECHNICAL_DEBT` | Accepted — Roadmap-confirmed (F-11/F-12) |
+| `RAISE-FR-ORACLE-001` (Oracle FA Integration) — `FAIL` in Compliance Review | Blocked on business decision (F-04) + explicitly deferred build (F-31) | Won't be built until the integration mechanism itself is resolved |
+| `RAISE-AI-SEARCH-001` (Natural Language Search) — `FAIL` in Compliance Review | Blocked on business decision (F-06) + explicitly deferred build (F-33) | Won't be built until a real AI backend integration lands |
+| `RAISE-FR-AUDIT-001` field taxonomy / audit-review role gate — `BLOCKED (partial)` | Blocked on business decision (F-08, PRD §16 Q22) | Testable subset already PASS; this is the untestable remainder |
+| `RAISE-FR-LIFE-001` (Asset Lifecycle Connectivity) — `BLOCKED` | Blocked on business decision | Lifecycle-stage detail beyond Disposal (already correctly Roadmap-excluded) undefined |
+| `RAISE-AI-DOC-001..004` (Document Intelligence) — `BLOCKED (full)` ×4 | Blocked on business decision (F-07) | Confidence thresholds / field lists / matching rules — one item (duplicate-detection threshold) was explicitly asked once already and left unanswered |
+| F-02: Check-in/Check-out exact workflow, holder data model | Blocked on business decision | PRD §16 Q11–Q13 |
+| F-03: NBV/Risk KPI formulas | Blocked on business decision | PRD §16 Q3–Q4 — Dashboard's confirmed 8-tile/10-section scope is unaffected, already PASS |
+| F-05: Alert trigger rules beyond warranty | Blocked on business decision | Alerts' confirmed warranty-only scope is unaffected, already PASS (partial) |
+| F-08: Auth mechanism / role-permission matrix content | Blocked on business decision | PRD §16 Q21–Q22 — separate from the now-fully-resolved UI-only enforcement *location* |
+| F-09: Full asset master field list | Blocked on business decision | PRD §16 Q1 |
+| F-10: `RAISE-FR-ASSET-003` vs. `RAISE-FR-OPS-002` overlap | `FINDING` (scope question) | Unresolved, not blocking a build |
+| No real user/auth store (F-11/F-12) | `TECHNICAL_DEBT` | Accepted — Roadmap-confirmed |
 | Frontend bundle size (F-18) | `TECHNICAL_DEBT` | Not urgent |
+| Backend raw error strings in some `500` responses (F-19) | `TECHNICAL_DEBT` | Acceptable pre-production |
+| Hosting / CI-CD / API versioning / DB migration tooling (F-13–F-16) | `TECHNICAL_DEBT` (infra) | Outside PRD scope |
 | Header bell-icon dropdown still hardcoded empty | `TECHNICAL_DEBT` (minor) | Flagged in F-32's resolution as a separate, smaller-scope item |
 | License, AI Decision Center, Risk/Lifecycle/Recommendation | `ENHANCEMENT` (out of scope) | Roadmap-only |
 
 ## Priority Application
 
-Per `NEXT-STEP-PROTOCOL.md` §Step 3: the Warranty threshold question —
-the last genuinely undecided item in the standing backlog — is now
-resolved, implemented, and verified, but **not yet shipped**. The
-highest-priority next action is completing the git governance steps
-(branch → commit → push → PR), not starting new work. `TC-WARRANTY-001-06`
-(F-34) is the only remaining buildable-now item, and it is small
-(one test case against an already-confirmed RBAC mechanism), not urgent
-relative to shipping.
+Per `NEXT-STEP-PROTOCOL.md` §Step 3: every buildable-now engineering item
+in the standing backlog has been completed and shipped. What remains is
+entirely business-decision-gated (8 Blocking findings, F-02–F-09) or
+explicitly deferred (F-31/F-33) or accepted technical debt. There is no
+direct-fix engineering task or unexecuted validation task left to pick
+autonomously — the honest next step is either a business check-in or
+optional non-decision-dependent process work.
 
 ---
 
 ## Primary Next Step
 
-**Ship this session's work:** create a git branch, commit the frontend
-code + all 7 synced deliverable-chain documents + `OPEN-FINDINGS.md`/
-`PROJECT-CHECKPOINTS.md`/`CURRENT-STATUS.md`/`PROJECT-TIMELINE.md`/
-`CHANGELOG.md`/`DEVELOPMENT-LOG.md`, push, and open a PR (predicted
-#63). **Do not merge until the user explicitly says "merge PR #N"** —
-per this project's strict, unwavering governance rule.
+**Check in with the user on which Blocking finding to resolve next** —
+`RAISE-COMPLIANCE-REVIEW.md`'s §7 deliberately does not recommend an
+order among F-02–F-09, since prioritizing them is a business scheduling
+question, not an engineering one. Candidates, in the order they appear
+in `OPEN-FINDINGS.md`:
 
-After shipping, reasonable next items (in no particular priority order,
-none blocking):
-- Execute `TC-WARRANTY-001-06` (F-34) — a non-admin user should be
-  denied access/write to the new Settings > Warranty screen, at the
-  already-confirmed MVP UI-only RBAC enforcement level.
-- A `/code-review` pass across this session's diff.
-- Drafting `RAISE-COMPLIANCE-REVIEW.md` — the one deliverable-chain
-  document that has never been started, per `CLAUDE.md`'s deliverable
-  chain diagram. The traceability matrix it would summarize is at v1.3
-  with every historical gap resolved except the newly-opened, still-
-  open Gap 13 (F-34).
+- **F-02** (Check-in/Check-out workflow detail, holder data model)
+- **F-03** (NBV/Risk KPI formulas — would unblock the Dashboard's remaining `BLOCKED (partial)` sub-item)
+- **F-04** (Oracle FA integration mechanism — would unblock `RAISE-FR-ORACLE-001`'s `FAIL`)
+- **F-05** (Alert trigger rules beyond warranty)
+- **F-06** (NL Search citation format — would unblock `RAISE-AI-SEARCH-001`'s `FAIL`)
+- **F-07** (Document Intelligence thresholds/fields — would unblock all 4 `RAISE-AI-DOC-*` rows)
+- **F-08** (Auth mechanism / role-permission matrix content)
+- **F-09** (Full asset master field list)
+
+If the user has no immediate answer, reasonable non-decision-dependent
+work includes:
+- A `/code-review` pass across recent PRs (#63–#65) — none has had one yet.
 - A live re-verification sweep against `BASELINE-CHECKPOINT-2026-08-24`
   (still the last full live `git`/source re-scan) to confirm
   `CURRENT-STATUS.md` hasn't drifted from reality after this session's
-  volume of changes.
+  volume of changes (PRs #58–#65).
+- Re-visiting the Minor/Tech-Debt items (F-18 bundle size, F-19 raw
+  error strings) if the user wants small, low-risk cleanup work.
 
 ## Why This Is Next
 
-The Warranty threshold question was the last genuinely undecided item
-in the standing backlog. It has now been resolved, implemented, tested
-(151/151, `tsc`/lint clean), and live-verified in the browser, and the
-decision has been propagated through all 7 documents in the deliverable
-chain plus `OPEN-FINDINGS.md`. The only thing standing between this
-work and "done" is git shipping — no further design or business
-decision is required.
+Every previously-identified "clearly next" item this session — the
+Warranty threshold decision, its implementation, `TC-WARRANTY-001-06`'s
+execution (which caught a real RBAC defect), and drafting the
+Compliance Review — has been completed and shipped. `RAISE-COMPLIANCE-REVIEW.md`
+now gives a single, honest, evidence-linked answer to "what's left,"
+and it points to a business-decision backlog, not an engineering one.
 
 ## Dependencies
 
-None — this is a shipping task, not a decision.
+None — this is a question, not a task.
 
 ## Expected Output
 
-A merged PR (once the user instructs merging) containing: 8 frontend
-files, 7 deliverable-chain documents, and 6 `docs/project-management/`
-tracking files.
+Not yet started — pending user direction on which finding to resolve
+next, or confirmation to proceed with non-decision-dependent work.
 
 ## Acceptance Criteria
 
-`AC-WARRANTY-001-01` through `-05` PASS (already verified). `-06` is a
-separate, smaller follow-up (F-34), not a blocker on shipping this PR.
+N/A.
 
 ## Validation Method
 
-Already done: `npx tsc --noEmit`, `npm run lint`, `npx vitest run`
-(151/151), live browser verification via `mcp__Claude_Browser__*` tools
-(Settings > Warranty, Assets list, Asset Detail).
+N/A until a direction is chosen.
 
 ## Related Checkpoint
 
-`CHECKPOINT-2026-09-01-007` (most recent, `TC-WARRANTY-001-06` execution + RBAC fix).
+`CHECKPOINT-2026-09-01-008` (most recent, Compliance Review drafted).
 
 ## Related Git Branch/Commit
 
-Not yet created — predicted branch name
-`frontend/execute-tc-warranty-001-06`, predicted PR #64 (verify
-via `gh pr list` before treating as final).
+None pending — [PR #65](https://github.com/boonthepkstl-alt/stl_asset_service/pull/65) is merged, `main` is clean.
 
 ---
 
 ## Risks / Blockers
 
-None. The only open item (F-34) is non-blocking and independently
-schedulable.
+None from asking. Risk of *not* asking: guessing at a decision only the
+user can make, or picking an arbitrary Blocking finding to work on
+without the user's actual priority.
 
 ## Files to Update (after implementation, per Step 10)
 
-N/A — already done as part of this checkpoint (all 7 chain documents +
-6 tracking files updated).
+N/A until direction is chosen.
 
 ## After Completion
 
-Recalculate once the PR is created (and again once merged, per
-`SESSION-CLOSEOUT-PROTOCOL.md`).
+Recalculate once the user responds.

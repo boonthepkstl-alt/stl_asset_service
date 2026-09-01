@@ -205,6 +205,15 @@ denied" page; ADMIN access is unaffected. `RAISE-TEST-CASES.md` (v0.12)
 unqualified **PASS** (all 6 test cases). **Every open finding in the
 standing backlog is now either Resolved or explicitly deferred — no
 coverage gaps remain.**
+**`RAISE-COMPLIANCE-REVIEW.md` drafted (2026-09-01)** — the deliverable
+chain's first artifact consuming real source code, per `CLAUDE.md`'s
+diagram (`docs/11-compliance-review/RAISE-COMPLIANCE-REVIEW.md` v1.0).
+Consolidates `RAISE-TRACEABILITY-MATRIX.md` v1.4 into a per-requirement
+verdict table: of 17 MVP requirements, 8 full `PASS`, 1 `PASS (partial)`,
+2 `FAIL` (both explicitly deferred by business decision, not silent
+defects), 1 `BLOCKED (partial)`, 1 `BLOCKED`, 4 `BLOCKED (full)` — no
+new test execution was performed, this is a consolidation/verdict layer
+only.
 Every
 development session should close out per
 [`SESSION-CLOSEOUT-PROTOCOL.md`](SESSION-CLOSEOUT-PROTOCOL.md), which is

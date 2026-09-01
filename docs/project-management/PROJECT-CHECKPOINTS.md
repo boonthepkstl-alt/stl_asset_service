@@ -2273,11 +2273,58 @@ Test Case: `TC-DASH-01..03`, `TC-EXEC-001-01..02` — now **PASS**/**PASS (parti
 
 **Git:**
 Branch: `docs/tc-execution-dash-reverify`
-Commit: pending — predicted next PR after #56 (verify via `gh pr list` before treating as final).
+Commit: `dac0ae2` (implementation), merged via [PR #57](https://github.com/boonthepkstl-alt/stl_asset_service/pull/57).
 
 **Known Issues:** None new.
 **Remaining Work:** F-27, F-30, F-31, F-32, F-33, and `AC-WARRANTY-001-03`'s 90-day threshold remain open items blocked on a business/design decision — no engineering task is currently unblocked and buildable from these. F-22 is fully closed.
-**Next Step:** Recalculate `NEXT-STEP.md`. With F-22 closed, check in with the user on direction for one of the five remaining open findings.
+**Next Step:** Recalculate `NEXT-STEP.md`. With F-22 closed, check in with the user on direction for one of the five remaining open findings. User chose F-27 next — see `CHECKPOINT-2026-09-01-001` below.
+
+---
+
+## CHECKPOINT-2026-09-01-001
+
+**Phase:** Phase 3 — Asset Management (Category & Hierarchy sub-taxonomy)
+**Feature:** Resolve Open Finding F-27's business decision, propagate through the deliverable chain, implement, and re-verify — all in one session
+**Task:** Per explicit user decision (sub-category = existing Asset `type` field, 2-level Category → Type → assets hierarchy), propagate via `/run-full-chain`-style sequential subagent sync (Prototype P-005 → Acceptance Criteria AC-ASSET-002 → Test Plan TS-ASSET-002 → Test Cases TC-ASSET-002-01..03), then implement the UI change, verify with automated tests and live browser execution, then close the loop in Test Cases/Traceability Matrix/Open Findings
+
+**What was implemented:** Extended the Assets page's "By Category" view (`frontend/src/pages/Assets/index.tsx`) one level deeper — Category → Type → individual assets, where "Type" groups are the distinct `type` values actually present within each category (not a fixed enumerated list). Added `expandedTypes` state and `toggleTypeExpanded()`, mirroring the existing category-expand pattern; each Type node shows an asset-count badge and its own expand/collapse.
+**What was modified:**
+- `RAISE-PROTOTYPE.md` P-005 (v0.8→0.9): replaced the fictional "Computer/Notebook/Desktop" illustrative tree with the real, currently-seeded Category→Type breakdown; states plainly that "sub-category" = the existing `type` field, not a new concept.
+- `RAISE-ACCEPTANCE-CRITERIA.md` AC-ASSET-002 (v0.7→0.8): resolved the "NOT TESTABLE YET" note; rewrote `AC-ASSET-002-01` to assert the Category→Type hierarchy explicitly; added new `AC-ASSET-002-03` for the expand-to-reveal behavior.
+- `RAISE-TEST-PLAN.md` TS-ASSET-002 (v0.7→0.8, then closed): blocked-item note resolved, then updated again same day to "RESOLVED and CLOSED" once the UI shipped and passed.
+- `RAISE-TEST-CASES.md` TC-ASSET-002-01..03 (v0.7→0.9): `TC-ASSET-002-01` rewritten for the new spec; new `TC-ASSET-002-03` added (initially `BLOCKED (pending implementation)`, then closed to **PASS** same day once the code shipped and was verified).
+- `frontend/src/pages/Assets/index.tsx` / `index.test.tsx`: the UI implementation itself, plus 1 rewritten and 1 new automated test (3 total for this view).
+- `RAISE-TRACEABILITY-MATRIX.md` (v0.7→1.0): `RAISE-FR-ASSET-002` row updated to full **PASS**; Gap 9 opened then fully closed same day — **this closes the last open gap, bringing the matrix to v1.0**.
+- `docs/project-management/OPEN-FINDINGS.md`: F-27 moved from "Blocking" to **Resolved**, recorded as R-14.
+**What was fixed:** None — this implements a newly-resolved requirement (sub-category taxonomy), not a defect.
+**What was added:** The Type-level grouping UI; `AC-ASSET-002-03`/`TC-ASSET-002-03`; 1 new automated test (`TC-ASSET-002-03`), 1 rewritten (`expanding a category shows its Type sub-groups`).
+**What was removed:** None — the old flat Category→assets test was upgraded in place, not deleted.
+
+**Files changed:** 8 files — `RAISE-PROTOTYPE.md`, `RAISE-ACCEPTANCE-CRITERIA.md`, `RAISE-TEST-PLAN.md`, `RAISE-TEST-CASES.md`, `RAISE-TRACEABILITY-MATRIX.md`, `OPEN-FINDINGS.md`, `frontend/src/pages/Assets/index.tsx`, `frontend/src/pages/Assets/index.test.tsx`.
+**Database changes:** None — deliberately uses the existing `type` column, no migration needed. **API changes:** None. **Frontend changes:** "By Category" tab on Assets page now nests one level deeper (Category → Type → assets).
+
+**Tests:**
+- Unit Test: `frontend/src/pages/Assets/index.test.tsx` — `TC-ASSET-002-01` (unchanged assertion, still passes), rewrote the second test to assert Type sub-groups instead of flat assets, added `TC-ASSET-002-03` (expand a Type sub-group, confirm only its assets show, confirm other types' assets are absent) — 3 tests, all passing. Full suite: 145/145 passing, no regressions.
+- Integration Test: None. E2E Test: None.
+
+**Validation:**
+- Build: covered by Type Check below. Lint: `npm run lint` ✅ (0 warnings).
+- Test: `npx vitest run` ✅ (145/145).
+- Type Check: `npx tsc --noEmit` ✅.
+- Manual browser verification (Chrome preview, `raise-frontend` dev server): on `/assets` → "By Category," expanded "IT Hardware" — confirmed Type sub-groups (Headphones: 1, Laptop: 3, Monitor: 2) with no individual assets shown at that level; expanded "Laptop" — confirmed exactly its 3 assets (MacBook Pro 16" M3/AST-0001, MacBook Air M2/AST-0011, ThinkPad X1 Carbon Gen 11/AST-0012) and none of Monitor's/Headphones'.
+
+**Requirement Traceability:**
+PRD: `RAISE-FR-ASSET-002` (unchanged — no new requirement).
+Acceptance Criteria: `AC-ASSET-002-01/-02/-03` — all **PASS**.
+Test Case: `TC-ASSET-002-01..03` — all **PASS**; `RAISE-TRACEABILITY-MATRIX.md` updated to full PASS, Gap 9 closed, matrix reaches **v1.0**.
+
+**Git:**
+Branch: `frontend/resolve-f27-category-type-hierarchy`
+Commit: pending — predicted next PR after #57 (verify via `gh pr list` before treating as final).
+
+**Known Issues:** None new.
+**Remaining Work:** F-30, F-31, F-32, F-33, and `AC-WARRANTY-001-03`'s 90-day threshold remain open items blocked on a business/design decision. F-22 and F-27 are both fully closed.
+**Next Step:** Recalculate `NEXT-STEP.md`. Check in with the user on direction for one of the four remaining open findings.
 
 ---
 

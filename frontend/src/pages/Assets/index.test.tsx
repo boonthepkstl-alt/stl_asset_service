@@ -99,7 +99,9 @@ describe('AssetsPage', () => {
   // (CHECKPOINT-2026-08-26-003). Originally failed here (F-25, OPEN-FINDINGS.md) -- no
   // Category & Hierarchy screen existed anywhere. First shipped as a standalone /categories
   // page, then folded into Asset Management as a "By Category" view (per user request) since
-  // it's just another lens on the same Asset Registry data. Locks in the fix.
+  // it's just another lens on the same Asset Registry data. Extended to a 2-level Category ->
+  // Type -> assets hierarchy (F-27, resolved 2026-09-01) -- sub-category is the asset's
+  // existing `type` field.
   describe('By Category view', () => {
     it('TC-ASSET-002-01: switching to "By Category" shows every known category as an expandable parent node', async () => {
       renderWithProviders(<AssetsPage />, { route: '/assets', path: '/assets' });
@@ -116,7 +118,7 @@ describe('AssetsPage', () => {
       expect(screen.getByText('Media Equipment')).toBeInTheDocument();
     });
 
-    it('expanding a category shows the real assets registered under it, matching TC-ASSET-002-02\'s consistency requirement', async () => {
+    it('expanding a category shows its Type sub-groups, matching TC-ASSET-002-02\'s consistency requirement', async () => {
       renderWithProviders(<AssetsPage />, { route: '/assets', path: '/assets' });
       await waitFor(() => screen.getByText('MacBook Pro 16" M3'));
 
@@ -125,9 +127,31 @@ describe('AssetsPage', () => {
       fireEvent.click(screen.getByText('IT Hardware'));
 
       await waitFor(() => {
+        expect(screen.getByText('Laptop')).toBeInTheDocument();
+      });
+      expect(screen.getByText('Monitor')).toBeInTheDocument();
+      expect(screen.getByText('Headphones')).toBeInTheDocument();
+    });
+
+    // AC-ASSET-002-03 / TC-ASSET-002-03 (F-27, OPEN-FINDINGS.md, resolved 2026-09-01):
+    // sub-category is the asset's existing `type` field -- a 2-level Category -> Type ->
+    // assets hierarchy. Expanding a Type sub-group reveals the individual assets under it.
+    it('TC-ASSET-002-03: expanding a Type sub-group reveals the individual assets under it', async () => {
+      renderWithProviders(<AssetsPage />, { route: '/assets', path: '/assets' });
+      await waitFor(() => screen.getByText('MacBook Pro 16" M3'));
+
+      fireEvent.click(screen.getByRole('button', { name: 'By Category' }));
+      await waitFor(() => screen.getByText('IT Hardware'));
+      fireEvent.click(screen.getByText('IT Hardware'));
+      await waitFor(() => screen.getByText('Laptop'));
+      fireEvent.click(screen.getByText('Laptop'));
+
+      await waitFor(() => {
         expect(screen.getAllByText('MacBook Pro 16" M3').length).toBeGreaterThan(0);
       });
       expect(screen.getByText('AST-0001')).toBeInTheDocument();
+      // Monitor's assets aren't shown -- only the expanded "Laptop" sub-group's assets are.
+      expect(screen.queryByText('AST-0002')).not.toBeInTheDocument();
     });
   });
 });

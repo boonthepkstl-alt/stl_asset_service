@@ -4,22 +4,22 @@
 Overwritten in place each time the protocol is re-run — do not treat an
 old copy of this file as still valid; re-run Step 11 (Recalculate) first.
 
-**Run date:** 2026-08-31, immediately after `CHECKPOINT-2026-08-31-003` (`TS-DASH`/`TS-EXEC-001` re-verification — all cases PASS, F-22 Resolved as R-13).
+**Run date:** 2026-09-01, immediately after `CHECKPOINT-2026-09-01-001` (F-27 resolved, implemented, and re-verified — all cases PASS, `RAISE-TRACEABILITY-MATRIX.md` reaches v1.0).
 
 ---
 
 ## Current State
 
-- **Current phase:** Phase 8 — Executive Dashboard & Reporting. `RAISE-FR-EXEC-001` now **PASS** — confirmed by real execution, not just a documentation fix.
-- **Current feature:** None actively in progress. Last work: re-executed `TC-DASH-01..03`/`TC-EXEC-001-01..02` against the real running app to confirm F-22's spec correction (PR #56) actually holds.
-- **Current task:** None in progress. Last task checkpoint: `CHECKPOINT-2026-08-31-003`.
-- **Last completed checkpoint:** `CHECKPOINT-2026-08-31-003` (not yet shipped via PR at the time this file was written — see that checkpoint's Git section).
-- **Current status:** 🟢 Docs-only change, no build/lint/test/type-check impact. Browser-verified live on `/dashboard` — all 8 KPI tiles and all 10 sections confirmed present via real page text.
-- **Open blockers:** None directly buildable — every remaining open item (F-27, F-30, F-31, F-32, F-33, `AC-WARRANTY-001-03`) needs a business/design decision, not an engineering fix.
-- **Open findings:** F-02 through F-33 in `OPEN-FINDINGS.md`, minus **F-22 (now Resolved, R-13)**. Five findings remain open: F-27, F-30, F-31, F-32, F-33.
-- **Remaining work:** No direct-fix findings and no unexecuted validation remain. F-22 was the last item with a confirmed business decision still pending verification — that's now done. Every remaining open item is a genuine decision point for the user.
+- **Current phase:** Phase 3 — Asset Management. `RAISE-FR-ASSET-002` now fully **PASS** — Category & Hierarchy has a real 2-level Category → Type → assets structure, confirmed by both automated tests and live browser execution.
+- **Current feature:** None actively in progress. Last work: resolved F-27's business decision (sub-category = existing `type` field), propagated through Prototype/AC/Test Plan/Test Cases, implemented the UI nesting, and re-verified against the real app.
+- **Current task:** None in progress. Last task checkpoint: `CHECKPOINT-2026-09-01-001`.
+- **Last completed checkpoint:** `CHECKPOINT-2026-09-01-001` (not yet shipped via PR at the time this file was written — see that checkpoint's Git section).
+- **Current status:** 🟢 `tsc --noEmit`, `npm run lint` (0 warnings), `npx vitest run` (145/145) all pass; browser-verified live on `/assets` → "By Category" (expanding "IT Hardware" reveals Laptop/Monitor/Headphones; expanding "Laptop" reveals exactly its 3 assets).
+- **Open blockers:** None directly buildable — every remaining open item (F-30, F-31, F-32, F-33, `AC-WARRANTY-001-03`) needs a business/design decision, not an engineering fix.
+- **Open findings:** F-02 through F-33 in `OPEN-FINDINGS.md`, minus **F-22 and F-27 (both now Resolved, R-13/R-14)**. Four findings remain open: F-30, F-31, F-32, F-33.
+- **Remaining work:** No direct-fix findings and no unexecuted validation remain. `RAISE-TRACEABILITY-MATRIX.md` has reached **v1.0** — every traceability gap identified across this project's history is now closed.
 - **Dependencies:** N/A.
-- **Plan vs. actual variance:** None — this was exactly the recommended next step from the prior `NEXT-STEP.md`, and it confirmed the expected outcome (PASS, since the app was already correct — only the documentation was wrong).
+- **Plan vs. actual variance:** None — the user chose to define the sub-category taxonomy themselves (using the existing `type` field) rather than have it invented, which is exactly the kind of business decision this session's discipline requires deferring to the user for.
 
 ## Incomplete Work Inventory (classified)
 
@@ -28,7 +28,6 @@ old copy of this file as still valid; re-run Step 11 (Recalculate) first.
 | F-33: AI Assistant (P-015) doesn't answer questions or exhibit response states | `FINDING` (build gap, confirmed by execution) | Distinct from F-06; needs a business/design decision on scope before any code |
 | F-32: Alerts (P-012) not built — route 404s | `FINDING` (build gap, confirmed by execution) | Distinct from F-05 |
 | F-31: Oracle FA / Financial View (P-011) not built | `FINDING` (build gap, confirmed by execution) | Distinct from F-04 |
-| F-27: Category & Hierarchy sub-taxonomy undefined | `FINDING` (scope question) | Prototype P-005's illustrative tree isn't finalized business data |
 | F-30: No mock fallback for Auth | `FINDING` (infra, not a defect) | Would need a decision to add a `MockAuthRepository`-style path |
 | F-06/F-05/F-04: citation format / alert rules / Oracle integration mechanism | Blocked on business decision | Each independent of the corresponding F-33/F-32/F-31 build-gap finding |
 | `AC-WARRANTY-001-03`'s 90-day-window threshold | Blocked on business decision | Separate from F-01 |
@@ -43,18 +42,18 @@ old copy of this file as still valid; re-run Step 11 (Recalculate) first.
 
 ## Priority Application
 
-Per `NEXT-STEP-PROTOCOL.md` §Step 3: F-22 is now fully closed — spec
-corrected, re-executed, and confirmed PASS. **Every remaining item in
-the Incomplete Work Inventory is blocked on a business/design decision.**
-There is no direct-fix engineering item and no unexecuted validation
-task left to pick autonomously. This is the same genuine decision point
-reached after the nine test-execution sweeps, minus F-22 (now resolved).
+Per `NEXT-STEP-PROTOCOL.md` §Step 3: F-27 is now fully closed — spec
+resolved, implemented, and confirmed PASS. `RAISE-TRACEABILITY-MATRIX.md`
+has reached v1.0. **Every remaining item in the Incomplete Work Inventory
+is blocked on a business/design decision.** There is no direct-fix
+engineering item and no unexecuted validation task left to pick
+autonomously.
 
 ---
 
 ## Primary Next Step
 
-**Check in with the user on direction.** Five open findings now need a
+**Check in with the user on direction.** Four open findings now need a
 business/design decision, each independent of the others:
 
 1. **F-33** — AI Assistant (P-015) doesn't answer questions or exhibit
@@ -62,24 +61,25 @@ business/design decision, each independent of the others:
    leave until real AI backend integration lands?
 2. **F-32** — Alerts (P-012) is entirely unbuilt (404).
 3. **F-31** — Oracle FA Financial View (P-011) is a bare placeholder.
-4. **F-27** — Category sub-taxonomy definition (Prototype P-005).
-5. **F-30** — No Auth mock fallback for local dev/testing.
-6. **`AC-WARRANTY-001-03`** — the Warranty "Expiring" 90-day rule.
+4. **F-30** — No Auth mock fallback for local dev/testing.
+5. **`AC-WARRANTY-001-03`** — the Warranty "Expiring" 90-day rule.
 
-(F-22, previously in this list, is now Resolved — R-13.)
+(F-22 and F-27, previously in this list, are now Resolved — R-13 and R-14.)
 
 Alternatively, reasonable non-decision-dependent work: a `/code-review`
 pass across other recent PR diffs, or drafting `RAISE-COMPLIANCE-REVIEW.md`
 (the one deliverable-chain document that has never been started, per
-`CLAUDE.md`'s deliverable chain diagram).
+`CLAUDE.md`'s deliverable chain diagram) — now a stronger candidate than
+before, since the traceability matrix that document would summarize has
+just reached v1.0 with zero open gaps.
 
 ## Why This Is Next
 
 Every previously-identified "clearly next" item — nine formal
 test-execution sweeps, F-01's resolution and implementation, a
-`/code-review` fix, and now F-22's full resolution — has been completed.
-The remaining backlog is uniformly blocked on decisions this session
-cannot make unilaterally.
+`/code-review` fix, F-22's full resolution, and now F-27's full
+resolution — has been completed. The remaining backlog is uniformly
+blocked on decisions this session cannot make unilaterally.
 
 ## Dependencies
 
@@ -99,11 +99,11 @@ N/A until a direction is chosen.
 
 ## Related Checkpoint
 
-`CHECKPOINT-2026-08-31-003` (most recent, F-22 re-verification — Resolved).
+`CHECKPOINT-2026-09-01-001` (most recent, F-27 resolution — Resolved).
 
 ## Related Git Branch/Commit
 
-`docs/tc-execution-dash-reverify` — pending PR (predicted #57).
+`frontend/resolve-f27-category-type-hierarchy` — pending PR (predicted #58).
 
 ---
 

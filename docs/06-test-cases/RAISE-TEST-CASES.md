@@ -2,9 +2,9 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Test Cases
-**Version:** 0.7 Draft
+**Version:** 0.9 Draft
 **Status:** Draft for Test Case Review
-**Source:** [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.7 §7 (Test Suites) + §8 (Blocked Items) + §8.1 (Fully-Blocked Suites — AI Document Intelligence Capabilities) + §3.3 (PRD §10 NFR Backlog — No Suite), expanding [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.7
+**Source:** [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.8 §7 (Test Suites) + §8 (Blocked Items) + §8.1 (Fully-Blocked Suites — AI Document Intelligence Capabilities) + §3.3 (PRD §10 NFR Backlog — No Suite), expanding [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.8
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
 
@@ -38,6 +38,25 @@ Two distinct BLOCKED markings are used, matching Test Plan §7/§8/§8.1:
   and to be re-verified at each L5 Traceability Regression run (Test Plan
   §4, §8.1). `TS-AI-DOC-001`–`TS-AI-DOC-004` (§18.1–§18.4 below) are the
   first instance of BLOCKED (full) in this document.
+- **BLOCKED (pending implementation)** — a distinct third marking, first
+  used for `TC-ASSET-002-03` (§7, added 2026-09-01, Open Finding F-27) and
+  **closed the same day** once the blocking UI code change shipped and a
+  formal execution sweep confirmed the built behavior (§7) — it currently
+  has zero active occurrences in this document, but the marking itself is
+  retained here for any future case in the same situation. Unlike the two
+  markings above, it is **not** driven by an unresolved PRD Open Question
+  or an AC criterion marked NOT TESTABLE YET — the underlying AC criterion
+  is fully specified and testable as written. The block exists solely
+  because the UI behavior it describes has not yet been built. Test steps
+  are still written in full (the behavior to verify is well-defined), but
+  the case cannot be executed until the corresponding code change ships;
+  no PASS/FAIL claim may be made until a subsequent formal execution sweep
+  confirms the built behavior against those steps — exactly what happened
+  for `TC-ASSET-002-03` (§7): the shipped "By Category" view was extended
+  to nest one level deeper (Category → Type → individual assets), and
+  formal execution against the real running app confirmed the described
+  behavior, so the case is now closed with a **PASS** result and is no
+  longer BLOCKED.
 
 ---
 
@@ -150,10 +169,60 @@ sub-gap referenced below.
 
 **Suite:** TS-ASSET-002 · **AC Group:** AC-ASSET-002 · **Requirement:** `RAISE-FR-ASSET-002` · **Screen:** P-005
 
+**Status Note — Resolved 2026-09-01 (Open Finding F-27, per confirmed business
+decision):** `RAISE-TEST-PLAN.md` v0.8 and `RAISE-ACCEPTANCE-CRITERIA.md` v0.8
+confirm the category hierarchy is exactly 2 levels — Asset `category` field →
+Asset `type` field → individual assets — using the real, currently-seeded
+Category → Type breakdown from `frontend/src/data/fixtures/mockData.ts` (IT
+Hardware → Laptop/Monitor/Headphones; Mobile → Smartphone/Tablet; Office
+Equipment → Printer/Projector; Infrastructure → Server/Router; Media Equipment
+→ Camera), not an invented example. `TC-ASSET-002-01` is rewritten below to
+assert this real hierarchy and is **no longer BLOCKED**. `TC-ASSET-002-02` is
+unchanged. A new `TC-ASSET-002-03` is added for the new `AC-ASSET-002-03`
+(category → type expand/drill-down behavior); it is marked **BLOCKED
+(pending implementation)** — see §1 — because the shipped "By Category" view
+currently groups Category → flat asset list only, with no Type-level nesting
+yet. This is a scope/spec correction resolving a previously-open question, not
+a report of any new PASS/FAIL execution result.
+
+**Status Note — Closed 2026-09-01 (formal test case execution, same day as
+the F-27 resolution above):** the UI code change described in the note above
+(nesting the "By Category" view one level deeper: Category → Type →
+individual assets) has now shipped, and `TC-ASSET-002-03` has been formally
+executed against the real running app, with **PASS** confirmed:
+
+- Navigated to `/assets`, opened the "By Category" tab, and expanded the "IT
+  Hardware" category node — confirmed it reveals Type-level sub-groups only
+  (Headphones: 1 asset, Laptop: 3 assets, Monitor: 2 assets), each shown with
+  a count badge and **no individual assets displayed at this level**.
+- Expanded the "Laptop" sub-group — confirmed it reveals exactly the 3
+  individual assets under it (MacBook Pro 16" M3 / AST-0001, MacBook Air M2 /
+  AST-0011, ThinkPad X1 Carbon Gen 11 / AST-0012), each with a status badge,
+  and none of Monitor's or Headphones' assets.
+
+This matches the 2-level Category → Type → individual-assets structure
+exactly as specified in `AC-ASSET-002-01`/`AC-ASSET-002-03` and
+`RAISE-PROTOTYPE.md` P-005 (v0.9), with no deeper nesting observed.
+Automated coverage was also added: `frontend/src/pages/Assets/index.test.tsx`
+now carries 3 tests for this view (covering `TC-ASSET-002-01`, the
+Type-sub-group-expansion behavior, and `TC-ASSET-002-03`) — all pass, and the
+full frontend suite (145 tests) passes with no regressions. `TC-ASSET-002-03`
+is therefore **no longer BLOCKED (pending implementation)** and is marked
+**PASS** below. `TC-ASSET-002-01` and `TC-ASSET-002-02` are unaffected by
+this execution beyond the corroborating evidence added to
+`TC-ASSET-002-01`'s row (its own classification does not change — it was
+already fully testable, not blocked). This is a real test execution
+reporting a PASS, not a further scope/spec correction — see §19 for the
+updated Test Case Summary totals. A follow-up note in
+`RAISE-TEST-PLAN.md` §8's blocked-item entry for this same item may also need
+updating to match, but that update is deferred to a separate pass and is not
+made here.
+
 | TC ID | Title | Steps | Test Data | Expected Result | Blocked |
 |---|---|---|---|---|---|
-| TC-ASSET-002-01 | Category hierarchy displays | 1. Open Category & Hierarchy screen. | ≥2-level category tree | Categories shown in parent/child hierarchy | **BLOCKED (partial)** — display mechanism testable; the actual hierarchy taxonomy is illustrative only, not finalized |
-| TC-ASSET-002-02 | Asset category consistent across screens | 1. Assign asset to a category. 2. View it in Asset Registry. 3. View it in Asset Detail. | 1 asset, 1 assigned category | Same category shown in both Registry and Detail, matching the hierarchy view | No |
+| TC-ASSET-002-01 | Category → Type hierarchy displays with real seeded values | 1. Log in. 2. Open Category & Hierarchy screen (P-005). | Assets seeded across the real `category`/`type` pairs in `frontend/src/data/fixtures/mockData.ts` (at minimum: IT Hardware with Laptop/Monitor/Headphones; Mobile with Smartphone/Tablet; Office Equipment with Printer/Projector; Infrastructure with Server/Router; Media Equipment with Camera) | Categories are displayed in a parent/child hierarchy where the parent level is the Asset `category` field and the child level is the Asset `type` field, matching the real seeded breakdown (e.g. IT Hardware shown as parent of Laptop, Monitor, and Headphones) | No — fully testable now against the real seeded data (Open Finding F-27, resolved 2026-09-01). The list of `category`/`type` pairs is live/data-derived, not a closed enumeration — it is expected to grow as new `type` values are seeded; this case asserts the hierarchy display mechanism and the currently-seeded values, not a fixed, permanently-exhaustive taxonomy. **Formally executed 2026-09-01 against the real running app — PASS:** confirmed on `/assets`, "By Category" tab, that the "IT Hardware" category correctly renders its Type-level parent/child structure (see the closure note above); also covered by an automated test in `frontend/src/pages/Assets/index.test.tsx`. |
+| TC-ASSET-002-02 | Asset category consistent across screens | 1. Assign asset to a category. 2. View it in Asset Registry. 3. View it in Asset Detail. | 1 asset, 1 assigned category | Same category shown in both Registry and Detail, matching the hierarchy view | No — unaffected by the 2026-09-01 closure above; unchanged, consistency-only case. |
+| TC-ASSET-002-03 | Expanding a category reveals Type sub-groups, expanding a Type reveals individual assets | 1. Log in. 2. Open Category & Hierarchy screen (P-005). 3. Locate the "IT Hardware" category node. 4. Expand the "IT Hardware" node. 5. Observe the revealed sub-groups. 6. Expand (or view the per-asset list under) one revealed Type sub-group, e.g. "Laptop." 7. Observe the assets listed under it. | Assets seeded across IT Hardware's Type values (at least one asset each for Laptop, Monitor, and Headphones) | Step 5: expanding "IT Hardware" reveals its Type-level sub-groups — Laptop, Monitor, and Headphones — as the distinct `type` values currently present within that `category`, with no individual assets shown yet at this level. Step 7: expanding/viewing the "Laptop" sub-group reveals only the individual assets whose `category` is IT Hardware and `type` is Laptop — matching the 2-level Category → Type → individual assets structure and no deeper. | No — **closed and PASS, 2026-09-01.** The blocking UI code change (nesting the "By Category" view one level deeper) has shipped. Formally executed against the real running app: expanding "IT Hardware" revealed exactly the 3 Type sub-groups (Headphones/Laptop/Monitor) with count badges and no individual assets at that level; expanding "Laptop" then revealed exactly its 3 individual assets (AST-0001, AST-0011, AST-0012) and none of the other Type sub-groups' assets — matching every step above. Also covered by an automated test in `frontend/src/pages/Assets/index.test.tsx` (part of the full 145-test suite, all passing). No longer **BLOCKED (pending implementation)** — see §1 and the closure note above. |
 
 ---
 
@@ -480,6 +549,15 @@ below.
 
 ## 19. Test Case Summary
 
+**Note on columns:** the "Partially Blocked" column includes the
+AC-Open-Question-driven BLOCKED (partial) marking (§1). A third marking,
+BLOCKED (pending implementation) (§1), was introduced 2026-09-01 for
+`TC-ASSET-002-03` but closed the same day, once the underlying UI code
+change shipped and formal execution confirmed the built behavior against it
+(§7) — it currently has **zero active occurrences** in this document, though
+the marking itself is retained in §1 for any future case in the same
+situation.
+
 | Suite | Total TCs | Fully Testable | Partially Blocked | Blocked (Full) | Out of Scope |
 |---|---|---|---|---|---|
 | TS-LOGIN | 3 | 0 | 3 | 0 | 0 |
@@ -487,7 +565,7 @@ below.
 | TS-ASSET-001 | 4 | 3 | 1 | 0 | 0 |
 | TS-ASSET-001-DETAIL | 2 | 2 | 0 | 0 | 0 |
 | TS-LIFE-001 | 4 | 0 | 3 | 0 | 1 (`TC-LIFE-001-03` — Disposal, Enterprise Roadmap) |
-| TS-ASSET-002 | 2 | 1 | 1 | 0 | 0 |
+| TS-ASSET-002 | 3 | 3 | 0 | 0 | 0 |
 | TS-ASSET-003 | 3 | 1 | 2 | 0 | 0 |
 | TS-OPS-001 | 3 | 3 | 0 | 0 | 0 |
 | TS-OPS-002 | 3 | 1 | 2 | 0 | 0 |
@@ -503,9 +581,24 @@ below.
 | TS-AI-DOC-002 | 1 | 0 | 0 | 1 | 0 |
 | TS-AI-DOC-003 | 1 | 0 | 0 | 1 | 0 |
 | TS-AI-DOC-004 | 1 | 0 | 0 | 1 | 0 |
-| **Total** | **62** | **32** | **25** | **4** | **1** |
+| **Total** | **63** | **34** | **24** | **4** | **1** |
 
-25 of 62 test cases are partially blocked — executable against their
+**TS-ASSET-002 updated 2026-09-01 (Open Finding F-27 resolution, then closed
+the same day by formal execution):** row grows from `2 | 1 | 1 | 0 | 0` to
+`3 | 2 | 1 | 0 | 0` when `TC-ASSET-002-03` was first added (`TC-ASSET-002-01`
+moved from BLOCKED (partial) to fully testable; `TC-ASSET-002-02` unchanged;
+new `TC-ASSET-002-03` entered marked **BLOCKED (pending implementation)**),
+then to **`3 | 3 | 0 | 0 | 0`** later the same day once the corresponding UI
+code change (nesting the "By Category" view one level deeper) shipped and
+`TC-ASSET-002-03` was formally executed against the real running app with a
+confirmed **PASS** (see §7's closure note for the full evidence, including
+automated test coverage in `frontend/src/pages/Assets/index.test.tsx`). Net
+effect across both updates: grand **Total** row moves from `62 | 32 | 25 | 4 | 1`
+to `63 | 34 | 24 | 4 | 1` (one new test case added, and it is fully
+testable and passing — not partially blocked as it was between the two
+updates).
+
+24 of 63 test cases are partially blocked — executable against their
 structural/interaction behavior, with full correctness pending a PRD Open
 Question. This count includes `TC-ASSET-003-03`, updated 2026-08-21 to
 **BLOCKED (partial)**: the Check-in/Check-out-triggered append-and-
@@ -578,6 +671,11 @@ Before moving to the Requirement Traceability Matrix / Development:
       Question it depends on, and confirms no non-blocked structural
       behavior exists to test in the interim (else it should be
       BLOCKED (partial), not full)
+- [ ] Every BLOCKED (pending implementation) test case (§1) confirms the
+      underlying AC criterion is fully specified and testable, and that
+      the block is solely due to the described UI behavior not yet being
+      built — not conflated with a PRD-Open-Question-driven BLOCKED
+      (partial)/(full) marking
 - [ ] Test data listed is illustrative/minimal, not a finalized data
       dictionary (schemas remain TBD per Test Plan §10)
 - [ ] No test case was written for a Pilot/Roadmap capability
@@ -619,7 +717,117 @@ Suite ID → TC ID) into one master table for compliance review.
 
 ## Document Status
 
-**Version:** 0.7 (re-synced against `RAISE-TEST-PLAN.md` v0.7, 2026-08-31)
+**Version:** 0.9 (2026-09-01 — formal test case execution closes out
+`TC-ASSET-002-03`; `RAISE-TEST-PLAN.md`/`RAISE-ACCEPTANCE-CRITERIA.md` remain
+at v0.8, unchanged by this update)
+
+**Change Log — v0.8 → v0.9 (2026-09-01, formal test case execution — real
+PASS result, not a scope/spec correction):**
+
+1. **Root cause / trigger.** The UI code change identified as outstanding in
+   the v0.7 → v0.8 log below (nesting the "By Category" view one level
+   deeper: Category → Type → individual assets) has now shipped in
+   `frontend/`, and `TC-ASSET-002-03` was formally executed against the real
+   running app.
+2. **§7 TS-ASSET-002 — new "Status Note — Closed 2026-09-01" added**,
+   recording the execution evidence: navigating to `/assets`, opening the "By
+   Category" tab, expanding "IT Hardware" (confirmed Type-level sub-groups
+   only — Headphones/Laptop/Monitor with count badges, no individual assets
+   at that level), then expanding "Laptop" (confirmed exactly its 3
+   individual assets — AST-0001/AST-0011/AST-0012 — and none of the other
+   Type sub-groups' assets). Also records new automated coverage:
+   `frontend/src/pages/Assets/index.test.tsx` now carries 3 tests for this
+   view (`TC-ASSET-002-01`, the Type-sub-group-expansion behavior, and
+   `TC-ASSET-002-03`), and the full frontend suite (145 tests) passes with no
+   regressions.
+3. **`TC-ASSET-002-03`'s Blocked column changed from BLOCKED (pending
+   implementation) to `No — closed and PASS, 2026-09-01`**, with the
+   execution evidence summarized inline. This is the first case in this
+   document to close out of the BLOCKED (pending implementation) marking
+   introduced at v0.8 — §1's definition of that marking was updated to note
+   the closure and that the marking currently has zero active occurrences,
+   though it remains defined for future use.
+4. **`TC-ASSET-002-01`'s Blocked column appended** with the same execution
+   evidence (it corroborates the Category → Type hierarchy `TC-ASSET-002-01`
+   already asserts); its classification is unchanged — it was already fully
+   testable, not blocked, before this update.
+5. **`TC-ASSET-002-02` unchanged** — a one-line note was added confirming it
+   is unaffected by this execution (still a consistency-only case), per its
+   own scope.
+6. **§19 Test Case Summary** updated: TS-ASSET-002 row moves from
+   `3 | 2 | 1 | 0 | 0` to `3 | 3 | 0 | 0 | 0` (Total/Fully Testable/Partially
+   Blocked/Blocked Full/Out of Scope). Grand **Total** row updated from
+   `63 | 33 | 25 | 4 | 1` to `63 | 34 | 24 | 4 | 1`; the narrative "25 of 63
+   test cases are partially blocked" sentence updated to "24 of 63," and the
+   "Note on columns" paragraph updated to record that the BLOCKED (pending
+   implementation) marking now has zero active occurrences.
+7. **Follow-up noted, not made here:** `RAISE-TEST-PLAN.md` §8's blocked-item
+   entry for this same item may also need a matching update to reflect the
+   closure — that is out of scope for this update (per instruction, Test
+   Plan and earlier layers are not touched here) and is left as an explicit
+   follow-up.
+8. **No other suite required changes.** `TC-LOGIN-*`, `TC-DASH-*`,
+   `TC-ASSET-001-*`, `TC-ASSET-001-D-*`, `TC-LIFE-001-*`, `TC-ASSET-003-*`,
+   `TC-OPS-001-*`, `TC-OPS-002-*`, `TC-MAINT-001-*`, `TC-WARRANTY-001-*`,
+   `TC-ORACLE-001-*`, `TC-ALERT-001-*`, `TC-AUDIT-001-*`, `TC-EXEC-001-*`,
+   `TC-AI-SEARCH-001-*`, `TC-AI-STATES-*`, and `TC-AI-DOC-001-01`–
+   `TC-AI-DOC-004-01` retain their prior status and wording verbatim.
+
+**Change Log — v0.7 → v0.8 (2026-09-01, Open Finding F-27 scope/spec
+correction, per confirmed business decision):**
+
+1. **Root cause.** `RAISE-TEST-PLAN.md` v0.8 §7/§8 and
+   `RAISE-ACCEPTANCE-CRITERIA.md` v0.8 §8 resolved Open Finding F-27:
+   `RAISE-PROTOTYPE.md` v0.9 §11 confirms "sub-category" is the existing Asset
+   `type` field (not a new field/data model), the hierarchy is exactly 2
+   levels (Category → Type → individual assets), and the tree shown is the
+   real, currently-seeded Category → Type breakdown from
+   `frontend/src/data/fixtures/mockData.ts`, replacing the prior illustrative
+   example. This is a scope/spec correction resolving a previously-open
+   question, not a new requirement.
+2. **New third BLOCKED marking introduced (§1): BLOCKED (pending
+   implementation).** Distinct from BLOCKED (partial)/(full), which are both
+   driven by an AC criterion marked NOT TESTABLE YET, this new marking covers
+   a case where the AC criterion is fully specified and testable, but the UI
+   behavior it describes has not yet been built. First used for
+   `TC-ASSET-002-03` below.
+3. **§7 TS-ASSET-002 — `TC-ASSET-002-01` rewritten and unblocked.** Now
+   asserts the real, currently-seeded Category → Type hierarchy (IT Hardware
+   → Laptop/Monitor/Headphones; Mobile → Smartphone/Tablet; Office Equipment
+   → Printer/Projector; Infrastructure → Server/Router; Media Equipment →
+   Camera) instead of an illustrative, unfinalized taxonomy. No longer
+   BLOCKED.
+4. **§7 TS-ASSET-002 — `TC-ASSET-002-02` unchanged.**
+5. **§7 TS-ASSET-002 — new `TC-ASSET-002-03` added**, mapping the also-new
+   `AC-ASSET-002-03` (category → type expand/drill-down behavior). Marked
+   **BLOCKED (pending implementation)**: the shipped "By Category" view (Open
+   Finding F-25) currently groups Category → flat asset list only, with no
+   Type-level nesting yet, so the described expand behavior cannot be
+   executed until a follow-up UI code change ships. This case does **not**
+   report a PASS or an expected-pass — it is not executable in the current
+   build, and no execution result (PASS or FAIL) is claimed by this update.
+6. **§19 Test Case Summary** updated: TS-ASSET-002 row moves from
+   `2 | 1 | 1 | 0 | 0` to `3 | 2 | 1 | 0 | 0` (Total/Fully
+   Testable/Partially Blocked/Blocked Full/Out of Scope). Grand **Total** row
+   updated from `62 | 32 | 25 | 4 | 1` to `63 | 33 | 25 | 4 | 1`; the
+   narrative "25 of 62 test cases are partially blocked" sentence updated to
+   "25 of 63," with a note distinguishing `TC-ASSET-002-03`'s
+   implementation-pending block from the PRD-Open-Question-driven blocks in
+   the rest of that count. A new note explaining the column-mapping choice
+   for the new marking (no new summary column added yet) was also added.
+7. **§20 Test Case Review Checklist** gained a new item confirming BLOCKED
+   (pending implementation) cases are not conflated with the two existing
+   AC-Open-Question-driven markings.
+8. Version citations in the document header updated: Test Plan v0.7 → v0.8,
+   AC v0.7 → v0.8. **No other suite required changes** — Test Plan v0.8's
+   only substantive change from v0.7 is the TS-ASSET-002 resolution; every
+   other AC group this document maps 1:1 to is unchanged in substance.
+   `TC-LOGIN-*`, `TC-DASH-*`, `TC-ASSET-001-*`, `TC-ASSET-001-D-*`,
+   `TC-LIFE-001-*`, `TC-ASSET-003-*`, `TC-OPS-001-*`, `TC-OPS-002-*`,
+   `TC-MAINT-001-*`, `TC-WARRANTY-001-*`, `TC-ORACLE-001-*`,
+   `TC-ALERT-001-*`, `TC-AUDIT-001-*`, `TC-EXEC-001-*`, `TC-AI-SEARCH-001-*`,
+   `TC-AI-STATES-*`, and `TC-AI-DOC-001-01`–`TC-AI-DOC-004-01` retain their
+   prior status and wording verbatim.
 
 **Change Log — v0.6 → v0.7 (2026-08-31):**
 
@@ -811,8 +1019,14 @@ No other suite's test cases required changes; `TC-DASH-*`, `TC-ASSET-001-*`,
    fully testable, 23 partially blocked, 4 blocked (full), 1 out of scope).
 
 **Status:** Draft for Test Case Review
-**Source:** [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.5
+**Source:** [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.8
 **Reference:** VERSCAN only
-**Next Action:** Review the v0.5 update (new §18.5 NFR Backlog — No Test Cases, mirroring
-Test Plan §3.3 / AC §19.9) before Traceability Matrix. Confirm blocked-item scoping
-remains accurate, then proceed to `RAISE-TRACEABILITY-MATRIX.md`.
+**Next Action:** Review the v0.9 update — `TC-ASSET-002-03` (and its
+corroborating evidence on `TC-ASSET-002-01`) is now formally executed and
+**closed with a PASS** result, following the UI code change that nested the
+"By Category" view one level deeper (Category → Type → individual assets).
+TS-ASSET-002 is now fully testable and fully passing (3 of 3 test cases). A
+follow-up update to `RAISE-TEST-PLAN.md` §8's blocked-item note for this same
+item is recommended but not made here (out of scope for this update). Then
+proceed to `RAISE-TRACEABILITY-MATRIX.md` to propagate this PASS result and
+close the corresponding gap/finding entries there.

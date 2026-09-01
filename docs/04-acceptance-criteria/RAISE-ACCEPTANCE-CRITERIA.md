@@ -2,9 +2,9 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Acceptance Criteria
-**Version:** 0.8 Draft
+**Version:** 0.9 Draft
 **Status:** Draft for Acceptance Review
-**Source:** [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.9 §27 (Prototype Traceability Matrix) + §5, §7–§23, §25A (per-screen specs / AI Scope Boundary / NFR Backlog Prototype Note), cross-checked against [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.11 and [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.9
+**Source:** [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.10 §27 (Prototype Traceability Matrix) + §5, §7–§23, §23A, §25A (per-screen specs / P-018 Settings / AI Scope Boundary / NFR Backlog Prototype Note), cross-checked against [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.12 and [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.10
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
 
@@ -58,7 +58,7 @@ detail is "TBD" or "conceptual," the corresponding criterion is marked
 | [AC-OPS-001](#10-ac-ops-001--p-007-qr--barcode-scan) | P-007 | RAISE-FR-OPS-001 | Testable |
 | [AC-OPS-002](#11-ac-ops-002--p-008-check-in--check-out) | P-008 | RAISE-FR-OPS-002 | Partially testable |
 | [AC-MAINT-001](#12-ac-maint-001--p-009-maintenance) | P-009 | RAISE-FR-MAINT-001 | Partially testable (workflow shape testable; SLA/vendor/cost NOT TESTABLE YET) |
-| [AC-WARRANTY-001](#13-ac-warranty-001--p-010-warranty) | P-010 | RAISE-FR-WARRANTY-001 | Testable (field list resolved 2026-08-29; 90-day rule still illustrative) |
+| [AC-WARRANTY-001](#13-ac-warranty-001--p-010-warranty--p-018-settings) | P-010, P-018 | RAISE-FR-WARRANTY-001 | Testable (field list resolved 2026-08-29; per-category configurable threshold resolved 2026-09-01) |
 | [AC-ORACLE-001](#14-ac-oracle-001--p-011-oracle-fa--financial-view) | P-011 | RAISE-FR-ORACLE-001 | Partially testable |
 | [AC-ALERT-001](#15-ac-alert-001--p-012-alerts) | P-012 | RAISE-FR-ALERT-001 | Partially testable |
 | [AC-AUDIT-001](#16-ac-audit-001--p-013-audit-log) | P-013 | RAISE-FR-AUDIT-001 | Partially testable |
@@ -491,9 +491,11 @@ Prototype §15's own "Confirmed" vs. "Still TBD" split (its Open Question note).
 
 ---
 
-## 13. AC-WARRANTY-001 — P-010 Warranty
+## 13. AC-WARRANTY-001 — P-010 Warranty / P-018 Settings
 
-**Requirement:** `RAISE-FR-WARRANTY-001` · **Screen:** P-010
+**Requirement:** `RAISE-FR-WARRANTY-001` · **Screen:** P-010 (Warranty display, surfaced
+on P-003 Asset Registry and P-004 Asset Detail — no standalone Warranty screen exists,
+per Prototype §14) and **P-018 Settings** (admin-facing threshold configuration)
 
 **Field list resolved 2026-08-29** (`RAISE-PRD.md` §16 Resolved Question 40, resolving
 Open Question 15; `RAISE-DESIGN.md` §5.2 Warranty Domain; `RAISE-PROTOTYPE.md` §14 P-010
@@ -502,20 +504,54 @@ Warranty): for MVP, the Warranty domain has exactly one field on the Asset recor
 provider/vendor, type, coverage details, cost, claim contact, document reference) was
 presented to the business as a candidate and was **explicitly rejected for MVP**, not
 deferred — none of those seven fields is asserted below or in any criterion in this
-document. The criteria below are updated accordingly (previously referenced a stale
-"Start Date, End Date, Status" three-field shape that no longer matches the Prototype).
+document.
+
+**Expiring threshold resolved 2026-09-01** (`RAISE-PRD.md` §16 Resolved Question 41,
+resolving Open Question 15b; `RAISE-DESIGN.md` §5.2/§5.4; `RAISE-PROTOTYPE.md` §14 P-010
+and §23A P-018 Settings): the "Expiring" boundary used to compute the 3-state Active/
+Expiring/Expired Warranty status is **per-Asset-Category configurable**, not a single
+fixed global number. All 5 current Asset Categories (IT Hardware, Mobile, Office
+Equipment, Infrastructure, Media Equipment) default to **90 days**, and an admin may
+adjust each category's threshold independently via the new **P-018 Settings** screen
+("Warranty" section — one editable "Days before expiry to flag as Expiring" number input
+per category, Save Changes / Reset, admin-only per `RAISE-NFR-SEC-RBAC-001`). The
+threshold is stored on a Settings-domain `WarrantySettings` configuration record, not on
+the Asset or Warranty record itself. This closes the prior "90-day threshold is
+illustrative only" gap — the criteria below are rewritten accordingly (previously
+referenced a stale "Start Date, End Date, Status" three-field shape, and separately a
+single-fixed-90-day assumption; neither matches the Prototype anymore).
 
 - **AC-WARRANTY-001-01** — Given an asset has a `warrantyExpiry` value set, when a
-  user opens the Warranty screen, then that asset's `warrantyExpiry` date is displayed.
-- **AC-WARRANTY-001-02** — Given `warrantyExpiry` places an asset's warranty in the
-  Active, Expiring, or Expired state, when the Warranty screen is opened, then the
-  corresponding Warranty Timeline state is shown — this is a UI-computed display
-  derived from `warrantyExpiry` (relative to today's date), not a separately stored
-  field (Prototype §14).
-- **AC-WARRANTY-001-03** — Given an asset's `warrantyExpiry` falls within the 90-day
-  expiry window (the PRD's illustrative business example), when a user views the
-  Warranty list, then that asset appears in an expiring-assets view that links to its
-  Asset Detail.
+  user views the Asset Registry (P-003) or Asset Detail (P-004), then that asset's
+  `warrantyExpiry` date is displayed.
+- **AC-WARRANTY-001-02** — Given `warrantyExpiry` and the asset's Asset Category's
+  configured threshold together place an asset's warranty in the Active, Expiring, or
+  Expired state, when a user views the Asset Registry (P-003) or Asset Detail (P-004),
+  then the corresponding Warranty badge/state is shown — this is a UI-computed display
+  derived from `warrantyExpiry`, the category's configured threshold, and today's date,
+  not a separately stored field (Prototype §14).
+- **AC-WARRANTY-001-03** — Given an asset's `warrantyExpiry` falls within its Asset
+  Category's configured "Expiring" threshold (default 90 days) from today, when a user
+  views that asset on the Asset Registry (P-003) list or its Asset Detail (P-004) page,
+  then that asset's Warranty badge/state shows **Expiring**, distinct from **Active**
+  (threshold not yet reached) and **Expired** (`warrantyExpiry` already passed) — this
+  criterion does not assert a separate, standalone "expiring-assets view" screen, since
+  none exists (Prototype §14: Warranty is shown inline on P-003/P-004 only).
+- **AC-WARRANTY-001-04** — Given an admin user opens Settings (P-018) and its Warranty
+  section, when the section loads, then each of the 5 current Asset Categories (IT
+  Hardware, Mobile, Office Equipment, Infrastructure, Media Equipment) shows an editable
+  "Days before expiry to flag as Expiring" number input, defaulting to **90**.
+- **AC-WARRANTY-001-05** — Given an admin changes one Asset Category's threshold value
+  on P-018 and selects Save Changes, when the change is saved, then only assets in that
+  changed category are affected by the new threshold (their Warranty badge/state
+  recomputes accordingly on P-003/P-004) — assets in other, unchanged categories retain
+  their existing threshold and are unaffected (no cross-category leakage).
+- **AC-WARRANTY-001-06** — Given a non-admin user, when they attempt to access Settings
+  (P-018) or edit a threshold, then access/write is denied, per `RAISE-NFR-SEC-RBAC-001`'s
+  confirmed UI-only/client-side MVP enforcement level (PRD §16 Resolved Question 38) —
+  this criterion tests only that a denial exists at the UI layer, not any specific role
+  name or backend enforcement, since the role list/permission matrix remain **TBD** (PRD
+  §16 Q22).
 
 **RESOLVED (was: NOT TESTABLE YET — field list):** the field-list blocker on
 AC-WARRANTY-001-01/-02 is closed. No criterion here asserts, or should ever assert, any
@@ -523,11 +559,15 @@ of the seven rejected fields (warranty start date, provider/vendor, type, covera
 details, cost, claim contact, document reference) — those remain out of scope for MVP
 unless a future, separately-confirmed business decision adds them.
 
-**NOT TESTABLE YET (unchanged — separate from the field-list question):** the exact
-90-day threshold used in AC-WARRANTY-001-03 is the PRD's illustrative business example
-(PRD §6.7 Business Example), not a confirmed, generalizable business rule for what
-window(s) MVP must actually use for the expiring-assets view. This is independent of the
-now-resolved field-list question and remains open.
+**RESOLVED (was: NOT TESTABLE YET — 90-day threshold):** the prior blocker — that the
+90-day figure was only the PRD's illustrative business example (PRD §6.7), not a
+confirmed generalizable rule — is closed by PRD §16 Resolved Question 41. The threshold
+is now a confirmed, per-Asset-Category-configurable value (default 90 days,
+admin-adjustable via P-018), not a single hardcoded constant. AC-WARRANTY-001-03 tests
+this resolved rule directly; AC-WARRANTY-001-04/-05 test the P-018 Settings screen that
+makes the threshold configurable; AC-WARRANTY-001-06 tests the admin-only access gate at
+the confirmed MVP enforcement level. This AC group is now fully testable — no note in
+this document should be read as leaving the threshold shape open any longer.
 
 ---
 
@@ -952,14 +992,22 @@ Resolved Question 40 (2026-08-29) confirmed `warrantyExpiry` as the only Warrant
 for MVP; a draft 8-field proposal was explicitly rejected, not deferred
 (`RAISE-DESIGN.md` §5.2; `RAISE-PROTOTYPE.md` §14 P-010). AC-WARRANTY-001-01 and -02
 (§13 above) are now fully testable against this single-field model; no seven-field
-content is asserted anywhere in this document. AC-WARRANTY-001-03's 90-day threshold
-remains **NOT TESTABLE YET** as a separate, unresolved item (PRD §6.7 Business Example
-is illustrative, not a confirmed generalizable rule) — this row is removed from the
-table above because Q15 itself (the field list) is closed; AC-WARRANTY-001-03's
-narrower 90-day-rule blocker is tracked in its own NOT TESTABLE YET note under §13, not
-in this table, consistent with how AC-DASH-01/AC-EXEC-001-01's narrower
-calculation-mechanics blocker is handled after Q27's resolution (see the Q27 note
-below).
+content is asserted anywhere in this document.
+
+**Resolved since last revision (2026-09-01):** Q15b (Warranty "Expiring" threshold
+shape) — `RAISE-PRD.md` §16 Resolved Question 41 confirmed the threshold is
+per-Asset-Category configurable, defaulting to 90 days for all 5 current Asset
+Categories, admin-adjustable via a new **P-018 Settings** screen
+(`RAISE-DESIGN.md` §5.2/§5.4; `RAISE-PROTOTYPE.md` §14 P-010 and §23A P-018 Settings).
+This closes the prior "AC-WARRANTY-001-03's 90-day threshold is the PRD's illustrative
+business example only, not a confirmed generalizable rule" blocker. AC-WARRANTY-001-03
+(§13) is rewritten to test the resolved per-category rule directly; two new criteria —
+AC-WARRANTY-001-04 (P-018 threshold inputs default to 90 per category) and
+AC-WARRANTY-001-05 (editing one category's threshold does not affect other categories)
+— test the P-018 Settings screen itself; AC-WARRANTY-001-06 tests the admin-only access
+gate at the already-confirmed MVP enforcement level (PRD §16 Resolved Question 38), not
+a new role model. AC-WARRANTY-001 (§13) is now **fully testable** — no NOT TESTABLE YET
+note remains under §13.
 
 **Resolved since last revision:** Q14 (partial) — the `RAISE-FR-MAINT-001` 4-stage
 workflow shape (User Requisition → Dept Approval (Delegated) → IT Dispatch →
@@ -1086,8 +1134,58 @@ as blocked pending business confirmation.
 
 ## Document Status
 
-**Version:** 0.8 (re-synced against `RAISE-PROTOTYPE.md` v0.9, `RAISE-PRD.md` v0.11, and
-`RAISE-DESIGN.md` v0.9, 2026-09-01 — Open Finding F-27 scope/spec correction)
+**Version:** 0.9 (re-synced against `RAISE-PROTOTYPE.md` v0.10, `RAISE-PRD.md` v0.12, and
+`RAISE-DESIGN.md` v0.10, 2026-09-01 — PRD §16 Resolved Question 41 / Warranty
+per-Asset-Category threshold + P-018 Settings scope/spec correction)
+
+**Change Log — v0.8 → v0.9 (2026-09-01, PRD §16 Resolved Question 41, per confirmed
+business decision):**
+
+1. **Root cause.** `RAISE-PRD.md` §16 Resolved Question 41 (resolving Open Question
+   15b, a follow-on to Resolved Question 40) confirmed that the Warranty "Expiring"
+   threshold is **per-Asset-Category configurable**, defaulting to 90 days for all 5
+   current Asset Categories, admin-adjustable via a new **P-018 Settings** screen.
+   `RAISE-DESIGN.md` v0.10 §5.2/§5.4/§4.1B and `RAISE-PROTOTYPE.md` v0.10 §14 (P-010)
+   and new §23A (P-018 Settings) were corrected first; this document is corrected to
+   match. This closes AC-WARRANTY-001-03's prior blocker (the 90-day figure was only
+   the PRD's illustrative business example, not a confirmed generalizable rule).
+2. **AC-WARRANTY-001 (§13) rewritten and expanded.** The group header now cites both
+   P-010 (Warranty display, inline on P-003/P-004 — no standalone Warranty screen
+   exists) and P-018 Settings. AC-WARRANTY-001-01/-02 are reworded to reference the
+   Asset Registry (P-003) / Asset Detail (P-004) display surfaces explicitly (not a
+   "Warranty screen"), consistent with the already-existing P-010 note that no
+   standalone Warranty screen was built. **AC-WARRANTY-001-03 is rewritten** to test
+   that an asset within its category's configured threshold shows an **Expiring**
+   Warranty badge/state distinct from Active/Expired, on P-003 and P-004 — replacing
+   the prior "expiring-assets view" wording (no such standalone view exists). **Two new
+   criteria added:** AC-WARRANTY-001-04 (P-018 Settings shows all 5 categories with an
+   editable threshold input defaulting to 90) and AC-WARRANTY-001-05 (editing and
+   saving one category's threshold affects only that category's assets, not others — no
+   cross-category leakage). **A new AC-WARRANTY-001-06** tests the admin-only access
+   gate to P-018 at the already-confirmed MVP enforcement level (PRD §16 Resolved
+   Question 38) — no new role model is invented.
+3. **NOT TESTABLE YET note on the 90-day threshold removed.** The prior note ("the
+   exact 90-day threshold used in AC-WARRANTY-001-03 is the PRD's illustrative business
+   example... not a confirmed, generalizable business rule") no longer applies — the
+   threshold shape (per-category, default 90, admin-adjustable) is now confirmed by
+   business decision and implemented end-to-end (verified via 151/151 automated tests
+   passing, including a dedicated TC-WARRANTY-001-03 test, and live browser execution
+   per the implementation record cited in `RAISE-PROTOTYPE.md` §23A). AC-WARRANTY-001
+   is now marked **Testable** (previously "Testable (field list resolved 2026-08-29;
+   90-day rule still illustrative)") in the AC Index (§3).
+4. **AC Index (§3)** — AC-WARRANTY-001 row's Screen(s) column updated to "P-010, P-018"
+   and Status updated to "Testable (field list resolved 2026-08-29; per-category
+   configurable threshold resolved 2026-09-01)."
+5. **Not-Yet-Testable Summary (§20)** — a new "Resolved since last revision
+   (2026-09-01): Q15b" note added explaining the resolution and listing the new/changed
+   criteria; the prior Q15 note is left intact for the field-list resolution (unchanged
+   in substance) but no longer implies AC-WARRANTY-001-03 remains blocked.
+6. No other AC group required a correction — this revision touches only the document
+   header, §3 (index row), §13 (AC-WARRANTY-001), and §20 (Not-Yet-Testable Summary).
+   The Login/Asset/Ops/Maintenance/Oracle/Alert/Audit/Executive/AI-Search/AI-Doc groups
+   were checked against the corresponding Prototype v0.10 sections and found unchanged
+   in substance — Prototype v0.9 → v0.10's only content change was the Warranty
+   threshold resolution and the new P-018 Settings screen itself.
 
 **Change Log — v0.7 → v0.8 (2026-09-01, Open Finding F-27 scope/spec
 correction, per confirmed business decision):**
@@ -1324,11 +1422,12 @@ No other screen changes were found in Prototype v0.3; no existing criterion beyo
 the two items above required correction.
 
 **Status:** Draft for Acceptance Review
-**Source:** [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.6, [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.9, [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.8
+**Source:** [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.10, [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.12, [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.10
 **Reference:** VERSCAN only
-**Next Action:** Review the v0.5 update (new §19.9 NFR Backlog — Acceptance Criteria
-Note, mirroring Prototype §25A / Design §16A) and resolve blocking Open Questions (§20)
-before Test Plan. `RAISE-TEST-PLAN.md` / `RAISE-TEST-CASES.md` should be checked next
-for the same drift, in particular whether they already cover (or need to add coverage
-for) the AC-MAINT-001-03..09 stage-transition criteria, and whether they need an
-equivalent NFR-backlog acknowledgment note of their own.
+**Next Action:** Review the v0.9 update (AC-WARRANTY-001 §13 rewritten/expanded for the
+per-Asset-Category configurable Expiring threshold and new P-018 Settings screen) and
+resolve remaining blocking Open Questions (§20) before Test Plan. `RAISE-TEST-PLAN.md` /
+`RAISE-TEST-CASES.md` should be checked next for the same drift, in particular whether
+they need new test cases for AC-WARRANTY-001-04/-05/-06 (P-018 Settings) alongside the
+already-noted AC-MAINT-001-03..09 stage-transition coverage check, and whether they need
+an equivalent NFR-backlog acknowledgment note of their own.

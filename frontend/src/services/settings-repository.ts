@@ -38,6 +38,11 @@ export class MockSettingsRepository implements SettingsRepository {
       appearance: { ...this.settings.appearance, ...patch.appearance },
       email: { ...this.settings.email, ...patch.email },
       data: { ...this.settings.data, ...patch.data },
+      warranty: {
+        ...this.settings.warranty,
+        ...patch.warranty,
+        expiringThresholdDaysByCategory: { ...this.settings.warranty.expiringThresholdDaysByCategory, ...patch.warranty?.expiringThresholdDaysByCategory },
+      },
     };
     return simulateNetwork({ ...this.settings });
   }

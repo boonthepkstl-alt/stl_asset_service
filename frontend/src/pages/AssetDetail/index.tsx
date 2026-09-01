@@ -45,7 +45,8 @@ import { ticketService } from '@/services/ticket-service';
 import { assetService } from '@/services/asset-service';
 import type { Ticket } from '@/types/ticket';
 import { cn } from '@/lib/cn';
-import { isWarrantyExpired } from '@/lib/warranty';
+import { getWarrantyStatus } from '@/lib/warranty';
+import { useSettings } from '@/hooks/useSettings';
 
 // Ported from src/pages/AssetDetail.tsx. The core asset record (header, General Information,
 // Technical Specifications, Warranty) goes through assetService/useAsset; the Maintenance &
@@ -75,6 +76,7 @@ export function AssetDetailPage() {
   const navigate = useNavigate();
   const { push } = useToast();
   const { asset, loading, error, notFound, refetch } = useAsset(assetId);
+  const { settings: platformSettings } = useSettings();
   const [tab, setTab] = useState('overview');
 
   const { entries: auditEntries, refetch: refetchAuditEntries } = useAuditLogs({ entityType: 'asset', entityId: asset?.id ?? '' });
@@ -141,7 +143,10 @@ export function AssetDetailPage() {
   }
 
   const Icon = getAssetIcon(asset.type);
-  const warrantyExpired = isWarrantyExpired(asset.warrantyExpiry);
+  // AC-WARRANTY-001-03 (resolved 2026-09-01): Expiring threshold is per-Category, from Settings.
+  const warrantyThreshold = platformSettings?.warranty.expiringThresholdDaysByCategory[asset.category] ?? 90;
+  const warrantyStatus = getWarrantyStatus(asset.warrantyExpiry, warrantyThreshold);
+  const warrantyBadgeVariant = warrantyStatus === 'Expired' ? 'error' : warrantyStatus === 'Expiring' ? 'warning' : 'success';
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: <Settings className="h-4 w-4" /> },
@@ -394,7 +399,7 @@ export function AssetDetailPage() {
                   <LifecycleRow
                     icon={<Shield className="h-4 w-4 text-surface-400" />}
                     label="Warranty"
-                    value={warrantyExpired ? `Expired ${asset.warrantyExpiry}` : `Active until ${asset.warrantyExpiry}`}
+                    value={warrantyStatus === 'Active' ? `Active until ${asset.warrantyExpiry}` : `${warrantyStatus} ${asset.warrantyExpiry}`}
                   />
                   <LifecycleRow
                     icon={<Wrench className="h-4 w-4 text-surface-400" />}
@@ -419,8 +424,8 @@ export function AssetDetailPage() {
                     <Shield className="h-4 w-4 text-surface-400" />
                     <span className="text-body text-surface-700">Expires {asset.warrantyExpiry}</span>
                   </div>
-                  <Badge variant={warrantyExpired ? 'error' : 'success'} dot>
-                    {warrantyExpired ? 'Expired' : 'Active Warranty'}
+                  <Badge variant={warrantyBadgeVariant} dot>
+                    {warrantyStatus === 'Active' ? 'Active Warranty' : warrantyStatus}
                   </Badge>
                 </div>
               </SectionCard>

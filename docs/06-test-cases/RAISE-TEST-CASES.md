@@ -2,9 +2,9 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Test Cases
-**Version:** 0.10 Draft
+**Version:** 0.11 Draft
 **Status:** Draft for Test Case Review
-**Source:** [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.8 §7 (Test Suites) + §8 (Blocked Items) + §8.1 (Fully-Blocked Suites — AI Document Intelligence Capabilities) + §3.3 (PRD §10 NFR Backlog — No Suite), expanding [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.8
+**Source:** [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.9 §7 (Test Suites) + §8 (Blocked Items) + §8.1 (Fully-Blocked Suites — AI Document Intelligence Capabilities) + §3.3 (PRD §10 NFR Backlog — No Suite), expanding [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.9
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
 
@@ -318,7 +318,7 @@ that time — not before.
 
 ## 12. TS-WARRANTY-001 Test Cases
 
-**Suite:** TS-WARRANTY-001 · **AC Group:** AC-WARRANTY-001 · **Requirement:** `RAISE-FR-WARRANTY-001` · **Screen:** P-010
+**Suite:** TS-WARRANTY-001 · **AC Group:** AC-WARRANTY-001 · **Requirement:** `RAISE-FR-WARRANTY-001` · **Screen:** P-010 (Warranty display, surfaced on P-003 Asset Registry / P-004 Asset Detail) · **P-018 Settings** (admin-facing threshold configuration)
 
 **Field list resolved 2026-08-29:** for MVP, the Warranty domain has exactly
 one field on the Asset record — `warrantyExpiry`. A draft 8-field proposal (start date,
@@ -328,11 +328,71 @@ appears in any test case below (`TC-WARRANTY-001-01`/`-02` previously referenced
 "Start Date, End Date, Status" three-field shape — corrected below to match
 `RAISE-ACCEPTANCE-CRITERIA.md` §13 AC-WARRANTY-001).
 
+**Status Note — Resolved and formally executed 2026-09-01 (`RAISE-TEST-PLAN.md` v0.9,
+`RAISE-ACCEPTANCE-CRITERIA.md` v0.9, PRD §16 Resolved Question 41; Open Finding tracked
+in the AC document's §13 "RESOLVED" notes):** the prior `TC-WARRANTY-001-03` blocker (the
+90-day figure was only the PRD's illustrative business example, not a confirmed
+generalizable rule) is closed. The Expiring threshold is now a confirmed,
+per-Asset-Category-configurable value on a Settings-domain `WarrantySettings` record
+(`frontend/src/types/settings.ts`), defaulting to **90 days** for all 5 categories
+(seeded in `frontend/src/services/settings-service.ts`) and admin-adjustable via the new
+**P-018 Settings > Warranty** section (`frontend/src/pages/Settings/index.tsx`). Both
+`frontend/src/pages/Assets/index.tsx` (Asset Registry) and
+`frontend/src/pages/AssetDetail/index.tsx` (Asset Detail) compute the Warranty
+badge/state via `frontend/src/lib/warranty.ts`'s `getWarrantyStatus(warrantyExpiry,
+thresholdDays, asOf)`, using the asset's own category's configured threshold — not a
+single hardcoded constant. `TC-WARRANTY-001-03` is rewritten below (no standalone
+"expiring-assets view" exists — Prototype §14 confirms Warranty is inline on
+P-003/P-004 only) and two new cases, `TC-WARRANTY-001-04` and `-05`, are added for the
+new P-018 Settings criteria. A sixth case, `TC-WARRANTY-001-06`, is added for the new
+admin-only access-gate criterion.
+
+`TC-WARRANTY-001-01` through `-05` have been **formally executed** against the real
+running app and automated tests, with **PASS** confirmed on their full testable scope
+(no criterion in AC-WARRANTY-001-01 through -05 remains NOT TESTABLE YET):
+
+- **Automated:** `frontend/src/pages/Assets/index.test.tsx` carries `TC-WARRANTY-001-01`
+  and `TC-WARRANTY-001-02` (pre-existing, still passing — Active/Expired badge states)
+  and a new `TC-WARRANTY-001-03` test (`'TC-WARRANTY-001-03: a category-specific
+  Expiring threshold flags an asset as Expiring'`) that calls
+  `settingsService.updateSettings({ warranty: { expiringThresholdDaysByCategory: {
+  'IT Hardware': 5000 } } })`, renders `AssetsPage`, and asserts the "Expiring" badge
+  appears for the IT Hardware asset (MacBook Pro, `warrantyExpiry` 2027-01-15) — passes,
+  with cleanup restoring the threshold to 90 afterward.
+  `frontend/src/services/settings-service.test.ts` carries a new test ("seeds a 90-day
+  warranty Expiring threshold for every category, and updateSettings merges per-category
+  changes") confirming the 90-day default seed for every category and that
+  `updateSettings` merges one category's change without affecting others (covers
+  `TC-WARRANTY-001-04`/`-05` at the service layer). Full frontend suite: 151/151 passing;
+  `tsc --noEmit` clean; lint clean.
+- **Live browser (2026-09-01):** navigated to Settings > Warranty — confirmed all 5
+  Asset Categories (IT Hardware, Mobile, Office Equipment, Infrastructure, Media
+  Equipment) render, each with a "90" default number input (`TC-WARRANTY-001-04`). Set
+  IT Hardware's threshold to 5000, clicked Save Changes, and saw a "Settings saved"
+  toast. Navigated (client-side, no reload) to Asset Registry — confirmed MacBook Pro
+  and Dell UltraSharp Monitor (both IT Hardware) now show an "Expiring" badge, while
+  iPhone 15 Pro (Mobile category, already-expired warranty) still correctly shows
+  "Expired" — confirming no cross-category leakage (`TC-WARRANTY-001-05`). Opened
+  MacBook Pro's Asset Detail page — confirmed both the "Lifecycle" row ("Warranty —
+  Expiring 2027-01-15") and the "Warranty & Coverage" section badge show "Expiring."
+
+**Not covered by this evidence, noted precisely so as not to overclaim:**
+`TC-WARRANTY-001-04`'s "defaults to 90 for a fresh/first-load state" was confirmed via
+the automated `settings-service.test.ts` seed test only — it was not separately
+re-verified live *after* the live-browser session's IT Hardware edit, since editing to
+5000 was the point of that manual pass. This does not weaken the PASS (the automated
+test independently confirms the default-seed behavior), but the live-browser pass alone
+did not re-observe it. `TC-WARRANTY-001-06` (non-admin denial) was **not** executed —
+see its row below.
+
 | TC ID | Title | Steps | Test Data | Expected Result | Blocked |
 |---|---|---|---|---|---|
-| TC-WARRANTY-001-01 | Warranty expiry field displays | 1. Open Warranty screen for an asset with `warrantyExpiry` set. | 1 asset with a `warrantyExpiry` date set | That asset's `warrantyExpiry` date is displayed | No |
-| TC-WARRANTY-001-02 | Warranty timeline state displays | 1. Open Warranty screen for assets whose `warrantyExpiry` places them in each state. | 3 assets, each with a `warrantyExpiry` value placing it in the Active, Expiring, or Expired state respectively | Corresponding UI-computed Warranty Timeline state (Active/Expiring/Expired) shown for each asset, derived from `warrantyExpiry` relative to today's date — not a separately stored field | No |
-| TC-WARRANTY-001-03 | 90-day expiring asset appears in expiring view | 1. Set an asset's `warrantyExpiry` within 90 days. 2. Open Warranty expiring-assets view. | 1 asset, `warrantyExpiry` = today+45 | Asset appears in expiring list; link opens its Asset Detail | **BLOCKED (partial)** — the 90-day threshold is the PRD's illustrative business example, not a confirmed, generalizable business rule (PRD §6.7; unaffected by the 2026-08-29 field-list resolution) |
+| TC-WARRANTY-001-01 | Warranty expiry field displays | 1. Open Asset Registry (P-003) or Asset Detail (P-004) for an asset with `warrantyExpiry` set. | 1 asset with a `warrantyExpiry` date set | That asset's `warrantyExpiry` date is displayed | No — **PASS**, formally executed 2026-09-01 (see Status Note above; pre-existing automated coverage in `frontend/src/pages/Assets/index.test.tsx`) |
+| TC-WARRANTY-001-02 | Warranty badge state displays (Active/Expiring/Expired) | 1. Open Asset Registry (P-003) or Asset Detail (P-004) for assets whose `warrantyExpiry`, combined with their category's configured threshold, places them in each state. | 3 assets, each with a `warrantyExpiry` value placing it in the Active, Expiring, or Expired state respectively, at the default 90-day threshold | Corresponding UI-computed Warranty badge/state (Active/Expiring/Expired) shown for each asset, derived from `warrantyExpiry`, the asset's category's configured threshold, and today's date via `getWarrantyStatus()` — not a separately stored field | No — **PASS**, formally executed 2026-09-01 (see Status Note above; pre-existing automated coverage in `frontend/src/pages/Assets/index.test.tsx`) |
+| TC-WARRANTY-001-03 | Category-specific Expiring threshold flags an asset as Expiring | 1. As an admin, set an Asset Category's Expiring threshold on P-018 Settings > Warranty (or via `settingsService.updateSettings`) so that an asset's `warrantyExpiry` falls within it. 2. Open that asset on Asset Registry (P-003) or Asset Detail (P-004). | 1 asset (MacBook Pro, IT Hardware, `warrantyExpiry` 2027-01-15); IT Hardware threshold set to 5000 days | That asset's Warranty badge/state shows **Expiring**, distinct from **Active** (threshold not yet reached) and **Expired** (`warrantyExpiry` already passed) — no standalone "expiring-assets view" screen is asserted, since none exists (Prototype §14: inline on P-003/P-004 only) | No — **PASS**, formally executed 2026-09-01: automated test `'TC-WARRANTY-001-03: a category-specific Expiring threshold flags an asset as Expiring'` in `frontend/src/pages/Assets/index.test.tsx`, plus live-browser confirmation (see Status Note above) |
+| TC-WARRANTY-001-04 | P-018 Settings Warranty section shows all 5 categories with editable threshold inputs defaulting to 90 | 1. Log in as an admin. 2. Open Settings (P-018) and its Warranty section. | Fresh/default `WarrantySettings` (no prior edits) | Each of the 5 current Asset Categories (IT Hardware, Mobile, Office Equipment, Infrastructure, Media Equipment) shows an editable "Days before expiry to flag as Expiring" number input, defaulting to **90** | No — **PASS**, formally executed 2026-09-01: automated test in `frontend/src/services/settings-service.test.ts` confirms the 90-day seed for every category at the service layer; live-browser pass confirmed all 5 categories render with a "90" default input each (see Status Note above for the one caveat: the default was not re-observed live after the IT Hardware edit in the same session, only via the automated seed test) |
+| TC-WARRANTY-001-05 | Editing/saving one category's threshold does not affect other categories | 1. As an admin on P-018 Settings > Warranty, change one Asset Category's threshold value. 2. Select Save Changes. 3. Open assets in the changed category and assets in other, unchanged categories. | IT Hardware threshold changed from 90 to 5000; Mobile and other categories left at 90 | Assets in the changed category (IT Hardware) recompute their Warranty badge/state per the new threshold; assets in other, unchanged categories (e.g., Mobile) retain their existing threshold and are unaffected — no cross-category leakage | No — **PASS**, formally executed 2026-09-01: automated test in `frontend/src/services/settings-service.test.ts` confirms `updateSettings` merges a per-category change without clobbering others; live-browser pass confirmed MacBook Pro/Dell UltraSharp Monitor (IT Hardware) flipped to "Expiring" while iPhone 15 Pro (Mobile, already expired) still showed "Expired" (see Status Note above) |
+| TC-WARRANTY-001-06 | Non-admin access/write to P-018 Settings is denied | 1. Log in as a non-admin user. 2. Attempt to navigate to Settings (P-018) and/or edit a Warranty threshold. | 1 non-admin user session | Access and/or write is denied at the confirmed MVP UI-only/client-side RBAC enforcement level (`RAISE-NFR-SEC-RBAC-001`, PRD §16 Resolved Question 38) — this case tests only that a denial exists at the UI layer, not any specific role name or backend enforcement (role list/permission matrix remain TBD, PRD §16 Q22) | No — not blocked, not yet executed. The underlying AC criterion is fully specified and testable (the UI-only RBAC denial mechanism already exists and is exercised elsewhere in the app — see `frontend/src/pages/Forbidden/index.tsx`, `frontend/src/pages/RoleManagement/index.tsx`, `frontend/src/services/role-service.test.ts`), but it has not yet been wired to or exercised against the Settings (P-018) screen specifically. No PASS/FAIL claim is made until a formal execution sweep (automated or live-browser) is run against this screen |
 
 ---
 
@@ -587,7 +647,7 @@ situation.
 | TS-OPS-001 | 3 | 3 | 0 | 0 | 0 |
 | TS-OPS-002 | 3 | 1 | 2 | 0 | 0 |
 | TS-MAINT-001 | 9 | 3 | 6 | 0 | 0 |
-| TS-WARRANTY-001 | 3 | 2 | 1 | 0 | 0 |
+| TS-WARRANTY-001 | 6 | 6 | 0 | 0 | 0 |
 | TS-ORACLE-001 | 4 | 3 | 1 | 0 | 0 |
 | TS-ALERT-001 | 2 | 2 | 0 | 0 | 0 |
 | TS-AUDIT-001 | 3 | 1 | 2 | 0 | 0 |
@@ -598,7 +658,7 @@ situation.
 | TS-AI-DOC-002 | 1 | 0 | 0 | 1 | 0 |
 | TS-AI-DOC-003 | 1 | 0 | 0 | 1 | 0 |
 | TS-AI-DOC-004 | 1 | 0 | 0 | 1 | 0 |
-| **Total** | **63** | **35** | **23** | **4** | **1** |
+| **Total** | **66** | **39** | **22** | **4** | **1** |
 
 **TS-ASSET-002 updated 2026-09-01 (Open Finding F-27 resolution, then closed
 the same day by formal execution):** row grows from `2 | 1 | 1 | 0 | 0` to
@@ -632,7 +692,24 @@ row moves from `63 | 34 | 24 | 4 | 1` to `63 | 35 | 23 | 4 | 1` (no new test
 case added; one case reclassified from partially blocked to fully testable
 and passing).
 
-23 of 63 test cases are partially blocked — executable against their
+**TS-WARRANTY-001 updated 2026-09-01 (`RAISE-TEST-PLAN.md` v0.9 /
+`RAISE-ACCEPTANCE-CRITERIA.md` v0.9 threshold resolution, formally executed the
+same day):** row moves from `3 | 2 | 1 | 0 | 0` to `6 | 6 | 0 | 0 | 0`. See §12's
+Status Note for the full execution evidence, including automated coverage in
+`frontend/src/pages/Assets/index.test.tsx` and `frontend/src/services/
+settings-service.test.ts`, and a live-browser pass confirming P-018 Settings >
+Warranty and the resulting Asset Registry/Asset Detail badge recomputation.
+`TC-WARRANTY-001-01`/`-02` retain their scope but now carry formal PASS execution
+evidence; `TC-WARRANTY-001-03` moves from **BLOCKED (partial)** to fully testable,
+confirmed **PASS**; two new cases, `TC-WARRANTY-001-04`/`-05` (P-018 Settings
+threshold display and per-category isolation), are added and confirmed **PASS**;
+a sixth new case, `TC-WARRANTY-001-06` (non-admin access denial to P-018), is
+added as fully testable but **not yet executed** — no PASS/FAIL claim is made for
+it. Grand **Total** row moves from `63 | 35 | 23 | 4 | 1` to `66 | 39 | 22 | 4 | 1`
+(three new test cases added; `TC-WARRANTY-001-03` reclassified from partially
+blocked to fully testable and passing).
+
+22 of 66 test cases are partially blocked — executable against their
 structural/interaction behavior, with full correctness pending a PRD Open
 Question. This count includes `TC-ASSET-003-03`, updated 2026-08-21 to
 **BLOCKED (partial)**: the Check-in/Check-out-triggered append-and-
@@ -751,10 +828,78 @@ Suite ID → TC ID) into one master table for compliance review.
 
 ## Document Status
 
-**Version:** 0.10 (2026-09-01 — formal test case execution closes out
-`TC-ALERT-001-01`/`-02` against the newly implemented Alerts screen (P-012,
-Open Finding F-32); `RAISE-TEST-PLAN.md`/`RAISE-ACCEPTANCE-CRITERIA.md`
-remain at v0.8, unchanged by this update)
+**Version:** 0.11 (2026-09-01 — TS-WARRANTY-001 rewritten/expanded to match
+`RAISE-TEST-PLAN.md` v0.9 / `RAISE-ACCEPTANCE-CRITERIA.md` v0.9's per-Asset-Category
+configurable Expiring-threshold resolution (PRD §16 Resolved Question 41), and
+`TC-WARRANTY-001-01` through `-05` formally executed with confirmed **PASS**; new
+`TC-WARRANTY-001-06` added as testable-but-not-yet-executed)
+
+**Change Log — v0.10 → v0.11 (2026-09-01, upstream layer resolution + formal test
+case execution — real PASS result on 5 of 6 cases, not a full re-scope):**
+
+1. **Root cause / trigger.** `RAISE-TEST-PLAN.md` v0.9 and
+   `RAISE-ACCEPTANCE-CRITERIA.md` v0.9 resolved the prior "90-day threshold is the
+   PRD's illustrative business example only" blocker (PRD §16 Resolved Question 41):
+   the Warranty "Expiring" threshold is now a confirmed, per-Asset-Category-
+   configurable value (default 90 days for all 5 categories), admin-adjustable via a
+   new **P-018 Settings > Warranty** section, backed by a Settings-domain
+   `WarrantySettings` record. AC-WARRANTY-001-03 was rewritten to test this resolved
+   rule directly, and two new criteria were added: AC-WARRANTY-001-04 (P-018 shows
+   all 5 categories with editable threshold inputs defaulting to 90) and
+   AC-WARRANTY-001-05 (editing/saving one category's threshold affects only that
+   category, no cross-category leakage). A new AC-WARRANTY-001-06 tests the
+   admin-only access gate to P-018 at the confirmed MVP UI-only RBAC enforcement
+   level (PRD §16 Resolved Question 38).
+2. **§12 TS-WARRANTY-001 rewritten and expanded**, mirroring the AC document's
+   structure: `TC-WARRANTY-001-01`/`-02` reworded to reference Asset Registry
+   (P-003) / Asset Detail (P-004) rather than a standalone Warranty screen (none
+   exists, Prototype §14); `TC-WARRANTY-001-03` rewritten from the stale
+   "expiring-assets view" wording to test the category-specific threshold directly;
+   new `TC-WARRANTY-001-04`/`-05` added for the P-018 Settings criteria; new
+   `TC-WARRANTY-001-06` added for the admin-only access-gate criterion.
+3. **`TC-WARRANTY-001-01` through `-05` formally executed against the real running
+   app and automated tests, with PASS confirmed on their full testable-now scope** —
+   following the precedent set by `TC-DASH-01`/`TC-EXEC-001-01`/`TC-ASSET-002-01`/
+   `TC-ALERT-001-01`. Evidence recorded in §12's Status Note: automated coverage in
+   `frontend/src/pages/Assets/index.test.tsx` (new `TC-WARRANTY-001-03` test) and
+   `frontend/src/services/settings-service.test.ts` (new 90-day-default-seed and
+   per-category-merge test, covering `TC-WARRANTY-001-04`/`-05` at the service
+   layer); full frontend suite 151/151 passing, `tsc --noEmit` clean, lint clean.
+   Live-browser execution the same day confirmed all 5 categories render with a
+   "90" default input on P-018 Settings > Warranty, that setting IT Hardware to
+   5000 and saving flips only IT Hardware assets (MacBook Pro, Dell UltraSharp
+   Monitor) to "Expiring" while Mobile-category iPhone 15 Pro remains "Expired"
+   (no cross-category leakage), and that Asset Detail reflects the same "Expiring"
+   state for MacBook Pro on both its Lifecycle row and Warranty & Coverage section.
+4. **`TC-WARRANTY-001-06` added as testable but explicitly NOT executed.** The
+   underlying AC criterion is fully specified and testable — the UI-only RBAC
+   denial mechanism already exists and is exercised elsewhere in the app
+   (`frontend/src/pages/Forbidden/index.tsx`, `frontend/src/pages/
+   RoleManagement/index.tsx`, `frontend/src/services/role-service.test.ts`) — but it
+   has not yet been wired to or exercised against the Settings (P-018) screen
+   specifically. Marked `No — not blocked, not yet executed`, the same vocabulary
+   used for `TC-ALERT-001-02` prior to its own execution (§14); it is **not** marked
+   BLOCKED (partial/full), since nothing about the criterion itself is undecided,
+   and it is **not** marked PASS, since no execution — automated or live-browser —
+   has been run against it yet.
+5. **§19 Test Case Summary** updated: TS-WARRANTY-001 row moves from
+   `3 | 2 | 1 | 0 | 0` to `6 | 6 | 0 | 0 | 0` (Total/Fully Testable/Partially
+   Blocked/Blocked Full/Out of Scope). Grand **Total** row updated from
+   `63 | 35 | 23 | 4 | 1` to `66 | 39 | 22 | 4 | 1`; the narrative "23 of 63 test
+   cases are partially blocked" sentence updated to "22 of 66."
+6. **No other suite required changes.** `TC-LOGIN-*`, `TC-DASH-*`,
+   `TC-ASSET-001-*`, `TC-ASSET-001-D-*`, `TC-LIFE-001-*`, `TC-ASSET-002-*`,
+   `TC-ASSET-003-*`, `TC-OPS-001-*`, `TC-OPS-002-*`, `TC-MAINT-001-*`,
+   `TC-ORACLE-001-*`, `TC-ALERT-001-*`, `TC-AUDIT-001-*`, `TC-EXEC-001-*`,
+   `TC-AI-SEARCH-001-*`, `TC-AI-STATES-*`, and `TC-AI-DOC-001-01`–
+   `TC-AI-DOC-004-01` retain their prior status and wording verbatim.
+7. **Neither `RAISE-TEST-PLAN.md` nor `RAISE-ACCEPTANCE-CRITERIA.md` was touched**
+   by this update — both were already at v0.9 prior to this session (their own
+   resolution of the per-category threshold question and the new
+   AC-WARRANTY-001-04/-05/-06 criteria was a prior change, made upstream of this
+   document). This v0.10 → v0.11 change is this document catching up to that
+   already-resolved upstream state and reporting real formal execution evidence
+   against it.
 
 **Change Log — v0.9 → v0.10 (2026-09-01, formal test case execution — real
 PASS result, not a scope/spec correction):**

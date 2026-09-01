@@ -7,8 +7,9 @@ import { DataTable, type Column } from '@/components/DataTable';
 import { AssetQrCode } from '@/components/AssetQrCode';
 import { departments, locations, categories } from '@/data/fixtures/mockData';
 import { getAssetIcon } from '@/data/asset-icons';
-import { isWarrantyExpired } from '@/lib/warranty';
+import { getWarrantyStatus } from '@/lib/warranty';
 import { useAssets } from '@/hooks/useAssets';
+import { useSettings } from '@/hooks/useSettings';
 import { assetService } from '@/services/asset-service';
 import type { Asset } from '@/types/asset';
 
@@ -45,6 +46,11 @@ export function AssetsPage() {
   const [scanning, setScanning] = useState(false);
   const [aiQuery, setAiQuery] = useState('');
   const [aiInterpretation, setAiInterpretation] = useState<{ filters: { label: string; value: string }[]; count: number } | null>(null);
+
+  // AC-WARRANTY-001-03 (resolved 2026-09-01): the Expiring threshold is per-Category, sourced
+  // from Settings -- 90 is only the seeded default, not a hardcoded MVP rule.
+  const { settings: platformSettings } = useSettings();
+  const warrantyThresholdFor = (category: string): number => platformSettings?.warranty.expiringThresholdDaysByCategory[category] ?? 90;
 
   const { assets, loading, error, refetch } = useAssets({
     search,
@@ -195,17 +201,17 @@ export function AssetsPage() {
       header: 'Warranty',
       sortable: true,
       sortValue: (r) => r.warrantyExpiry,
-      // AC-WARRANTY-001-01/-02 (RAISE-FR-WARRANTY-001, field list resolved 2026-08-29:
-      // warrantyExpiry only for MVP). Per explicit user direction, this isn't a standalone
-      // Warranty screen (P-010) -- it's added to the relevant asset page instead, same
-      // Active/Expired binary already shown on Asset Detail's "Warranty & Coverage" section
-      // (a 3rd "Expiring" state would need the still-unconfirmed 90-day-style threshold from
-      // AC-WARRANTY-001-03, which stays a separate open question -- not invented here).
+      // AC-WARRANTY-001-01/-02/-03 (RAISE-FR-WARRANTY-001). Per explicit user direction, this
+      // isn't a standalone Warranty screen (P-010) -- it's added to the relevant asset page
+      // instead. All 3 Warranty Timeline states (Active/Expiring/Expired) are shown; the
+      // Expiring threshold is per-Category, sourced from Settings (AC-WARRANTY-001-03,
+      // resolved 2026-09-01).
       render: (r) => {
-        const expired = isWarrantyExpired(r.warrantyExpiry);
+        const status = getWarrantyStatus(r.warrantyExpiry, warrantyThresholdFor(r.category));
+        const variant = status === 'Expired' ? 'error' : status === 'Expiring' ? 'warning' : 'success';
         return (
           <div className="flex flex-col gap-0.5">
-            <Badge variant={expired ? 'error' : 'success'} dot>{expired ? 'Expired' : 'Active'}</Badge>
+            <Badge variant={variant} dot>{status}</Badge>
             <span className="text-caption text-surface-400">{r.warrantyExpiry}</span>
           </div>
         );

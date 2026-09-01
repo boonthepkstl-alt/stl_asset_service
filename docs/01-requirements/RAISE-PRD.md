@@ -2,7 +2,7 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document Type:** Product Requirements Document
-**Version:** 0.10 Draft — target organization confirmed: **RAISE is developed for direct use by Singer (Thailand)** (§16 Resolved Question 39), not a generic platform — a branding/identity fact, no functional scope change. All six `## NEEDS_PRD_CONFIRMATION` items from `docs/template-analysis/FRONTEND-FOUNDATION-BASELINE.md` §4 remain closed out (RAISE-FR-MAINT-001 4-stage workflow business-confirmed; License Management confirmed **Roadmap-only** — `RAISE-FR-LICENSE-001` added; six ESAPS-reference-only pages confirmed **out of scope**; RAISE-AI-RECOMMEND-001 re-confirmed **Roadmap-only, no MVP subset**; Oracle FA Reconciliation "Phase 6" code-comment label confirmed **not a PRD phase** (the separate `ReconciliationPage`↔`RAISE-FR-ORACLE-001` mapping question remains **unanswered** — carried forward as Open Question 10a); `RAISE-NFR-SEC-RBAC-001` MVP enforcement level confirmed **UI-only/client-side, backend deferred to Roadmap**). See Document Status change log at the bottom of this file for full history, including a correction to an earlier inaccurate draft of License Management's scope.
+**Version:** 0.12 Draft — `RAISE-FR-WARRANTY-001`'s "Expiring" warranty threshold confirmed **per-Asset-Category configurable** (default 90 days for all 5 current categories, admin-adjustable via Settings UI), not a single global constant (§16 Resolved Question 41) — already implemented and verified end-to-end. Prior: warranty field list confirmed **`warrantyExpiry` only for MVP** (§16 Resolved Question 40); target organization confirmed: **RAISE is developed for direct use by Singer (Thailand)** (§16 Resolved Question 39), not a generic platform — a branding/identity fact, no functional scope change. All six `## NEEDS_PRD_CONFIRMATION` items from `docs/template-analysis/FRONTEND-FOUNDATION-BASELINE.md` §4 remain closed out (RAISE-FR-MAINT-001 4-stage workflow business-confirmed; License Management confirmed **Roadmap-only** — `RAISE-FR-LICENSE-001` added; six ESAPS-reference-only pages confirmed **out of scope**; RAISE-AI-RECOMMEND-001 re-confirmed **Roadmap-only, no MVP subset**; Oracle FA Reconciliation "Phase 6" code-comment label confirmed **not a PRD phase** (the separate `ReconciliationPage`↔`RAISE-FR-ORACLE-001` mapping question remains **unanswered** — carried forward as Open Question 10a); `RAISE-NFR-SEC-RBAC-001` MVP enforcement level confirmed **UI-only/client-side, backend deferred to Roadmap**). See Document Status change log at the bottom of this file for full history, including a correction to an earlier inaccurate draft of License Management's scope.
 **Status:** Draft for Requirement Review
 **Primary Source:** RAISE — Enterprise Asset Intelligence Platform — Final(1).pdf, ADT-RAISE Hackathon Pitch Day, 26 July 2026 (via `RAISE-PRD.md` v0.1 draft supplied 2026-08-20)
 **Source of Truth:** RAISE Hackathon Proposal / RAISE business objectives and MVP scope
@@ -221,12 +221,12 @@ determinable from the source are marked **TBD** rather than invented.
 | User/Actor | IT Asset, Finance |
 | Priority | P0 |
 | Scope | MVP |
-| Acceptance Criteria | Warranty information can be associated with an asset; warranty status can be used for tracking; warranty information can be used as an input to AI analysis. |
-| Dependencies | RAISE-FR-ASSET-001 |
-| Source Reference | v0.1 draft §6.7 |
+| Acceptance Criteria | Warranty information can be associated with an asset; warranty information can be used as an input to AI analysis. Warranty status is a **3-state model — Active / Expiring / Expired** — derived from `warrantyExpiry` and a threshold. The "Expiring" threshold is **configurable per Asset Category** (not a single global value): each of the 5 current Asset Categories (IT Hardware, Mobile, Office Equipment, Infrastructure, Media Equipment) has its own threshold, defaulting to **90 days**, independently adjustable by an admin via a Settings UI. **Resolved 2026-09-01** — see [§16 Resolved Question 41](#16-open-questions). |
+| Dependencies | RAISE-FR-ASSET-001; RAISE-FR-ASSET-002 (Asset Category, since the Expiring threshold is configured per category); RAISE-NFR-SEC-RBAC-001 (admin-only access to the Settings UI that edits per-category thresholds) |
+| Source Reference | v0.1 draft §6.7; Expiring-threshold per-category configurability business-confirmed via direct chat session, 2026-09-01, see [§16 Resolved Question 41](#16-open-questions) |
 | Traceability ID | RAISE-FR-WARRANTY-001 |
-| Business Example | Identifying assets whose warranty will expire within 90 days (source-cited use case). |
-| Open Question | **Resolved 2026-08-29** — Required warranty fields are now confirmed: **`warrantyExpiry` only for MVP** (already implemented on the Asset record). No additional Warranty fields are in scope for MVP. See [§16 Resolved Question 40](#16-open-questions). |
+| Business Example | Identifying assets whose warranty will expire within a configurable threshold (illustrative source use case cited **90 days**; the 90-day figure is now confirmed as the **default** value seeded for all 5 current Asset Categories, not a single fixed global number — each category's threshold is independently adjustable via an admin Settings UI). See [§16 Resolved Question 41](#16-open-questions). |
+| Open Question | **Resolved 2026-08-29** — Required warranty fields are now confirmed: **`warrantyExpiry` only for MVP** (already implemented on the Asset record). No additional Warranty fields are in scope for MVP. See [§16 Resolved Question 40](#16-open-questions). **Resolved 2026-09-01** — the "Expiring" threshold is now confirmed as **per-Asset-Category configurable** (default 90 days for all 5 current categories, admin-adjustable via Settings UI), not a single global constant. See [§16 Resolved Question 41](#16-open-questions). This does not reopen or expand the Warranty data model settled by Resolved Question 40 — `warrantyExpiry` remains the only Warranty field on the Asset record; the threshold itself lives on a new `WarrantySettings` configuration record, not on the Asset. |
 
 ### RAISE-FR-LICENSE-001 — Software / SaaS License Management
 
@@ -756,6 +756,11 @@ this PRD.
     [Resolved Question 40](#16-open-questions)**: for MVP, `warrantyExpiry` is the only
     Warranty field. No additional fields (start date, provider/vendor, type, coverage
     details, cost, claim contact, document reference, etc.) are in scope.
+15b. What is the "Expiring" warranty threshold (the illustrative "90 days" from the
+    source Business Example) — a single fixed global number, or something else? —
+    **Resolved 2026-09-01, see [Resolved Question 41](#16-open-questions)**:
+    **per-Asset-Category configurable**, defaulting to 90 days for all 5 current
+    categories, admin-adjustable via a Settings UI. Not a single global constant.
 15a. What is the license field model, renewal/expiry alert rule, seat/utilization
     tracking, and vendor/cost tracking for `RAISE-FR-LICENSE-001`? — new open question
     raised alongside the requirement's addition, 2026-08-21; see
@@ -976,6 +981,42 @@ recorded here explicitly so it is not mistaken for a resolved item alongside 29�
     and the [§17 Requirement Traceability Matrix](#17-requirement-traceability-matrix) row
     for the corresponding status update.
 
+41. **What is the "Expiring" warranty threshold for `RAISE-FR-WARRANTY-001` — a single
+    fixed global number (e.g., the illustrative "90 days" cited in the source Business
+    Example), or something else?** — Raised as [Open Question 15b](#16-open-questions),
+    following on from Resolved Question 40 (which settled the Warranty *field list* but
+    left the threshold *value/shape* explicitly open — see `RAISE-ACCEPTANCE-CRITERIA.md`
+    §13's "NOT TESTABLE YET" note on AC-WARRANTY-001-03, which cited PRD §6.7's Business
+    Example as illustrative only, not a confirmed generalizable rule). Business
+    confirmed, **2026-09-01, via direct chat confirmation: the Expiring threshold is
+    NOT a single fixed global number** — it is **configurable per Asset Category**,
+    because different equipment categories have different warranty periods and a single
+    global threshold does not fit all categories. All 5 current Asset Categories (IT
+    Hardware, Mobile, Office Equipment, Infrastructure, Media Equipment) default to
+    **90 days**. An admin-facing Settings UI allows adjusting each category's threshold
+    independently after the default is seeded. **This is a scope decision (per-category
+    configurability), not merely a numeric-value confirmation of "90."** This has
+    already been implemented and verified end-to-end: `frontend/src/types/settings.ts`
+    (new `WarrantySettings` type: `Record<AssetCategory, number>`),
+    `frontend/src/services/settings-service.ts` (seeds 90 for every category),
+    `frontend/src/services/settings-repository.ts` (per-category merge on update),
+    `frontend/src/lib/warranty.ts` (new `getWarrantyStatus(warrantyExpiry, thresholdDays,
+    asOf)` returning Active/Expiring/Expired), `frontend/src/pages/Assets/index.tsx` and
+    `frontend/src/pages/AssetDetail/index.tsx` (3-state Warranty badge using the
+    category's configured threshold), and a new Settings "Warranty" section/tab
+    (`frontend/src/pages/Settings/index.tsx`) with one editable number input per
+    category. Verified via automated tests (151/151 passing) and live browser execution
+    (Settings > Warranty tab renders all 5 categories at default 90; editing IT Hardware
+    to 5000 and saving correctly flags IT Hardware assets as "Expiring" on both the
+    Assets list and Asset Detail page, while a Mobile-category asset with an expired
+    warranty correctly still shows "Expired," confirming no cross-category leakage).
+    **Does not reopen or expand the Warranty data model settled by Resolved Question
+    40** — `warrantyExpiry` remains the only Warranty field on the Asset record; the
+    per-category threshold lives on a separate `WarrantySettings` configuration record.
+    See `RAISE-FR-WARRANTY-001` in [§6 Functional Requirements](#6-functional-requirements)
+    and the [§17 Requirement Traceability Matrix](#17-requirement-traceability-matrix) row
+    for the corresponding status update.
+
 ---
 
 ## 17. Requirement Traceability Matrix
@@ -988,7 +1029,7 @@ recorded here explicitly so it is not mistaken for a resolved item alongside 29�
 | RAISE-FR-OPS-001 | QR / Barcode | MVP | P0 | APPROVED | v0.1 §6.4 |
 | RAISE-FR-OPS-002 | Check-in / Check-out | MVP | P0 | TBD (workflow detail) | v0.1 §6.5 |
 | RAISE-FR-MAINT-001 | Maintenance | MVP | P0 | Workflow shape confirmed; SLA/vendor/cost model still TBD | v0.1 §6.6; workflow shape confirmed 2026-08-21 |
-| RAISE-FR-WARRANTY-001 | Warranty | MVP | P0 | APPROVED — field list confirmed 2026-08-29: `warrantyExpiry` only | v0.1 §6.7; field list confirmed 2026-08-29 (§16 Resolved Question 40) |
+| RAISE-FR-WARRANTY-001 | Warranty | MVP | P0 | APPROVED — field list confirmed 2026-08-29: `warrantyExpiry` only; Expiring-threshold per-Asset-Category configurability (default 90 days, admin Settings UI) confirmed 2026-09-01 and implemented | v0.1 §6.7; field list confirmed 2026-08-29 (§16 Resolved Question 40); Expiring-threshold configurability confirmed 2026-09-01 (§16 Resolved Question 41) |
 | RAISE-FR-LICENSE-001 | Software / SaaS License Management | Roadmap | Not MVP-confirmed | ROADMAP — identity/scope confirmed 2026-08-21; field model/alert rules/vendor-cost tracking TBD | New requirement, not in v0.1 draft; added 2026-08-21, confirmed Roadmap-only |
 | RAISE-FR-ORACLE-001 | Oracle FA Integration | MVP | P0 | TBD (integration design) | v0.1 §6.8 |
 | RAISE-FR-ALERT-001 | Alerts | MVP | P0 | TBD (rules/channels) | v0.1 §6.9 |
@@ -1210,9 +1251,46 @@ implements the requirement; Test Case passes; Requirement Compliance Review pass
 
 ## Document Status
 
-**Version:** 0.11 (Draft for Requirement Review)
+**Version:** 0.12 (Draft for Requirement Review)
 **Status:** Draft for Requirement Review
 **Primary Source:** RAISE — Enterprise Asset Intelligence Platform — Final(1).pdf, ADT-RAISE Hackathon Pitch Day, 26 July 2026
+
+**Change Log — v0.11 → v0.12 (2026-09-01, business confirmation via direct chat
+conversation):**
+
+1. **`RAISE-FR-WARRANTY-001` "Expiring" warranty threshold confirmed as per-Asset-Category
+   configurable** (new [§16 Resolved Question 41](#16-open-questions), resolving new
+   [Open Question 15b](#16-open-questions), a follow-on from Resolved Question 40 which
+   had settled the Warranty field list but explicitly left the threshold value/shape
+   open): the illustrative "90 days" figure from the source Business Example (v0.1
+   draft §6.7 / PRD §2) is **not a single fixed global number** — the Expiring threshold
+   is **configurable per Asset Category**, because different equipment categories have
+   different warranty periods. All 5 current Asset Categories (IT Hardware, Mobile,
+   Office Equipment, Infrastructure, Media Equipment) default to **90 days**, with an
+   admin-facing Settings UI to adjust each category's threshold independently. This is
+   a **scope decision (per-category configurability)**, not just a numeric-value
+   confirmation, and does **not** reopen or expand the Warranty data model settled by
+   Resolved Question 40 — `warrantyExpiry` remains the only Warranty field on the Asset
+   record; the threshold lives on a separate `WarrantySettings` configuration record.
+   Already implemented and verified end-to-end (`frontend/src/types/settings.ts`,
+   `frontend/src/services/settings-service.ts`, `frontend/src/services/settings-repository.ts`,
+   `frontend/src/lib/warranty.ts`, `frontend/src/pages/Assets/index.tsx`,
+   `frontend/src/pages/AssetDetail/index.tsx`, `frontend/src/pages/Settings/index.tsx`) —
+   151/151 automated tests passing plus live browser verification. Updated in §6
+   (`RAISE-FR-WARRANTY-001` Business Example, Acceptance Criteria, Dependencies, Source
+   Reference, and Open Question fields) and §17 (Traceability Matrix row, status note
+   expanded).
+2. **Impact on downstream documents:** `RAISE-ACCEPTANCE-CRITERIA.md` §13's
+   AC-WARRANTY-001-03 was marked "NOT TESTABLE YET" specifically because this threshold
+   question was open — it should now be revisited to reflect the confirmed 3-state
+   Active/Expiring/Expired model and per-category configurability.
+   `RAISE-DESIGN.md`, `RAISE-PROTOTYPE.md`, `RAISE-TEST-PLAN.md`, `RAISE-TEST-CASES.md`,
+   and `RAISE-TRACEABILITY-MATRIX.md` should also be checked for any warranty-threshold
+   assumptions and corrected to match. **This PRD update was scoped to `RAISE-PRD.md`
+   only** per this task's explicit boundary — the downstream documents above were not
+   edited by this change. Downstream synchronization (`/sync-design`,
+   `/sync-prototype`, `/sync-acceptance-criteria`, `/sync-test-plan`,
+   `/sync-test-cases`, `/sync-traceability-matrix`) should be run in a subsequent pass.
 
 **Change Log — v0.10 → v0.11 (2026-08-29, business confirmation via direct chat
 conversation):**

@@ -9,9 +9,9 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-09-01, after `CHECKPOINT-2026-09-01-002` (F-30 resolved,
-implemented, and re-verified — all cases PASS, `RAISE-TRACEABILITY-MATRIX.md`
-now v1.1; not yet shipped via PR, see that checkpoint for status). The
+**As of:** 2026-09-01, after `CHECKPOINT-2026-09-01-003` (F-31 explicitly
+deferred by user decision, not built; not yet shipped via PR, see that
+checkpoint for status). The
 `BASELINE-CHECKPOINT-2026-08-24` scan is still the last
 full live re-verification against `git`/source. F-20 (checkpoint-coverage
 gap) is closed (R-04); F-21 (QR/Barcode invalid-code state) is closed
@@ -124,9 +124,18 @@ automated tests (145→147), full suite passing, `tsc`/lint clean.
 **this resolves the infrastructure gap only**; the separate PRD-content
 question (auth mechanism/role-permission matrix, PRD §16 Q21–Q22)
 remains genuinely undefined.
-**F-31** (Oracle FA Financial View not built), **F-32** (Alerts not
-built), and **F-33** (AI Assistant doesn't answer questions) remain the
-3 open findings, each awaiting its own business/design decision.
+**F-31 (Oracle FA Financial View not built) has a confirmed business
+decision (2026-09-01): explicitly deferred** — do not build a
+placeholder-vs-real Financial View now; wait until real Oracle FA
+integration lands (F-04 resolved). Unlike F-22/F-27/F-30, there is no
+existing field/data in the app to reuse for a "match reality" fix, so
+building anything now would either fabricate NBV/Depreciation/Oracle
+Source/Sync Status data or pre-empt the still-open F-04 formula
+question. `OPEN-FINDINGS.md` F-31 updated to record this — remains
+**Open**, not Resolved (nothing was built; the app's behavior is
+unchanged).
+**F-32** (Alerts not built) and **F-33** (AI Assistant doesn't answer
+questions) remain the 2 open findings still awaiting a decision.
 Every
 development session should close out per
 [`SESSION-CLOSEOUT-PROTOCOL.md`](SESSION-CLOSEOUT-PROTOCOL.md), which is
@@ -179,7 +188,7 @@ infrastructure half) or intentionally out of MVP scope (Roadmap).
 | QR / Barcode lookup | `RAISE-FR-OPS-001` | ✅ Built, PASS on all test cases — [PR #29](https://github.com/boonthepkstl-alt/stl_asset_service/pull/29) + a follow-up F-21 fix (see `DEVELOPMENT-LOG.md` for the PR number once shipped). `GET /assets/:id` resolves by `code` too (dual lookup); real QR generation + Scan QR flow live on both Assets list and Asset Detail. `TC-OPS-001-01..03` all **PASS** — the invalid-code state (F-21) is fixed via a plausible-code-format check before lookup |
 | Audit Log | `RAISE-FR-AUDIT-001` | 🟡 Built — [PR #31](https://github.com/boonthepkstl-alt/stl_asset_service/pull/31) (Asset domain) + [PR #35](https://github.com/boonthepkstl-alt/stl_asset_service/pull/35) (Ticket domain). `GET /audit-logs` + recording on Asset create/assign/check-in and Ticket create/approve/dispatch/status-update. No update/delete path exists (immutability by omission). The testable subset of `TC-AUDIT-001-01..03` **PASSED** formal execution 2026-08-26; field taxonomy and the audit-review role gate remain TBD (unchanged, blocked on PRD) |
 | Executive Dashboard KPIs (first cut) | `RAISE-FR-EXEC-001` | ✅ Built, **PASS** per formal test execution 2026-08-31 — [PR #33](https://github.com/boonthepkstl-alt/stl_asset_service/pull/33). `GET /dashboard/stats` computes status counts, expired-warranty count, and department/type distribution from real Asset data. Software License count still comes from the frontend's mock license service (no backend License table exists — Roadmap-only). **F-22 resolved (R-13)**: the full chain (Design/Prototype/AC/Test Plan/Test Cases/Traceability Matrix) was corrected to document the actually shipped 8-tile KPI grid / 10-section dashboard, then re-executed against the real app — all cases **PASS** (`TC-DASH-01..03`/`TC-EXEC-001-01..02`). NBV/Risk/Utilization is retained as a documented, not-yet-scheduled enhancement (PRD §16 Q3/Q4/Q29 TBD), tracked separately as **F-03** — presence-check for its absence passes (`TC-DASH-03`), but building it remains blocked on that formula question |
-| Oracle FA Integration | `RAISE-FR-ORACLE-001` | 🔴 Integration method/mapping/sync/security all TBD (F-04), **and `TC-ORACLE-001-01..04` FAILED formal execution 2026-08-29** — the `/reconciliation` route renders a generic "foundation placeholder" `EmptyState` (`frontend/src/pages/_shared/ModulePage.tsx`), not an actual Financial View screen; no field or state from `AC-ORACLE-001-01..04` exists at all. A distinct build gap from F-04 — see `OPEN-FINDINGS.md` F-31 |
+| Oracle FA Integration | `RAISE-FR-ORACLE-001` | 🔴 Integration method/mapping/sync/security all TBD (F-04), **and `TC-ORACLE-001-01..04` FAILED formal execution 2026-08-29** — the `/reconciliation` route renders a generic "foundation placeholder" `EmptyState` (`frontend/src/pages/_shared/ModulePage.tsx`), not an actual Financial View screen; no field or state from `AC-ORACLE-001-01..04` exists at all. **Explicitly deferred by user decision 2026-09-01 (F-31)** — no placeholder-vs-real Financial View will be built until real Oracle FA integration lands |
 | Alerts | `RAISE-FR-ALERT-001` | 🔴 Trigger rules/channels all TBD (F-05), **and `TC-ALERT-001-01..02` FAILED formal execution 2026-08-29** — the "Notification Center" route (`/notifications`) renders the app's generic 404 page, not even a placeholder stub; the header bell-icon dropdown is hardcoded empty. No alert is ever listed with severity/description/asset per `AC-ALERT-001-01..02`. A distinct build gap from F-05, worse than F-31's Oracle FA placeholder — see `OPEN-FINDINGS.md` F-32 |
 | Natural Language Search | `RAISE-AI-SEARCH-001` | 🔴 Citation precision/format TBD (F-06), **and `TC-AI-SEARCH-001-01..03`/`TC-AI-STATES-01..05` (all 8) FAILED formal execution 2026-08-29** — the header "AI Assistant" drawer accepts no input (static placeholder only); the Assets page's "Ask AI" box is a hardcoded keyword-to-filter matcher (legacy ESAPS content), not a natural-language answer engine, and exhibits none of the 5 required response states. No field or state from `AC-AI-SEARCH-001-01..03`/`AC-AI-STATES-01..05` exists at all. A distinct build gap from F-06 — see `OPEN-FINDINGS.md` F-33 |
 | Document Intelligence | `RAISE-AI-DOC-001..004` | Confidence thresholds / field lists / matching rules undefined |
@@ -197,12 +206,13 @@ corrected, implemented, and re-executed, all cases PASS. Warranty
 (F-01) is implemented (Assets Registry column, R-12) as of the
 2026-08-26 Asset-domain sweep, the 2026-08-28 TS-OPS-002/TS-MAINT-001
 sweep, and the 2026-08-29 TS-LOGIN sweep — F-23 through F-29 are all
-now fixed (R-06 through R-11). F-31 (Oracle FA Financial View not
-built), F-32 (Alerts not built), F-33 (AI Assistant doesn't answer
-questions), and `AC-WARRANTY-001-03`'s 90-day-window question all
-remain open but aren't directly buildable without a decision — every
-remaining open item is uniformly blocked on a business/design
-decision, none is a "buildable now" engineering task.
+now fixed (R-06 through R-11). F-31 (Oracle FA Financial View, **explicitly deferred by user decision
+2026-09-01** — not a "waiting for a decision" item anymore, but a
+"decided not to build yet" item), F-32 (Alerts not built), F-33 (AI
+Assistant doesn't answer questions), and `AC-WARRANTY-001-03`'s
+90-day-window question all remain open but aren't directly buildable —
+every remaining open item is either explicitly deferred or blocked on
+a business/design decision, none is a "buildable now" engineering task.
 
 **Needs a scoped-down first cut:** None remaining — Audit Log (PR #31 +
 #35, now covering both Asset and Ticket domains) and Executive Dashboard

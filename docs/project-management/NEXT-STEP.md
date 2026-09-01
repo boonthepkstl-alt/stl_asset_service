@@ -4,22 +4,22 @@
 Overwritten in place each time the protocol is re-run — do not treat an
 old copy of this file as still valid; re-run Step 11 (Recalculate) first.
 
-**Run date:** 2026-09-01, immediately after `CHECKPOINT-2026-09-01-002` (F-30 resolved, implemented, and re-verified — all cases PASS, `RAISE-TRACEABILITY-MATRIX.md` now v1.1).
+**Run date:** 2026-09-01, immediately after `CHECKPOINT-2026-09-01-003` (F-31 explicitly deferred by user decision — not built).
 
 ---
 
 ## Current State
 
-- **Current phase:** Phase 2 — Authentication / RBAC. `RAISE-NFR-SEC-RBAC-001`'s testable subset now fully **PASS** — the infrastructure gap that blocked `TC-LOGIN-01/-02` is closed; the deeper PRD-content question (auth mechanism/role-matrix) remains open, unaffected.
-- **Current feature:** None actively in progress. Last work: resolved F-30's business decision (add a `MockAuthRepository`), implemented it, and re-verified through the real Login UI.
-- **Current task:** None in progress. Last task checkpoint: `CHECKPOINT-2026-09-01-002`.
-- **Last completed checkpoint:** `CHECKPOINT-2026-09-01-002` (not yet shipped via PR at the time this file was written — see that checkpoint's Git section).
-- **Current status:** 🟢 `tsc --noEmit`, `npm run lint` (0 warnings), `npx vitest run` (147/147) all pass; browser-verified live through the real Login page — invalid credentials rejected, valid credentials (`admin@raise.dev`/`demo1234`) log in and land on the Dashboard.
-- **Open blockers:** None directly buildable — every remaining open item (F-31, F-32, F-33, `AC-WARRANTY-001-03`) needs a business/design decision, not an engineering fix.
-- **Open findings:** F-02 through F-33 in `OPEN-FINDINGS.md`, minus **F-22, F-27, and F-30 (all now Resolved, R-13/R-14/R-15)**. Three findings remain open: F-31, F-32, F-33.
-- **Remaining work:** No direct-fix findings and no unexecuted validation remain. `RAISE-TRACEABILITY-MATRIX.md` is at **v1.1** — every traceability gap identified across this project's history is closed.
+- **Current phase:** Phase 6 — Oracle FA Integration & Reconciliation. `RAISE-FR-ORACLE-001` unchanged (still an unbuilt placeholder) — the decision is to leave it that way until real Oracle FA integration lands.
+- **Current feature:** None actively in progress. Last work: presented F-31's options to the user; recorded the decision to defer.
+- **Current task:** None in progress. Last task checkpoint: `CHECKPOINT-2026-09-01-003`.
+- **Last completed checkpoint:** `CHECKPOINT-2026-09-01-003` (not yet shipped via PR at the time this file was written — see that checkpoint's Git section).
+- **Current status:** 🟢 No code changed — this was a documentation-only decision record. No build/lint/test/type-check impact.
+- **Open blockers:** None directly buildable — every remaining open item (F-32, F-33, `AC-WARRANTY-001-03`) needs a business/design decision, not an engineering fix. F-31 is now explicitly deferred, not merely blocked.
+- **Open findings:** F-02 through F-33 in `OPEN-FINDINGS.md`, minus **F-22, F-27, and F-30 (Resolved, R-13/R-14/R-15)**. F-31 remains Open but is now explicitly deferred (a decided "not yet," not an unanswered question). Two findings remain genuinely open: F-32, F-33.
+- **Remaining work:** No direct-fix findings and no unexecuted validation remain.
 - **Dependencies:** N/A.
-- **Plan vs. actual variance:** None — the user again chose to make the concrete decision themselves (4 demo accounts, one per existing Role) rather than have it invented, consistent with F-27's pattern.
+- **Plan vs. actual variance:** None — the user considered the 3 options presented (scoped interim build, defer, ask for more detail) and chose to defer, a legitimate decision this session correctly did not make unilaterally.
 
 ## Incomplete Work Inventory (classified)
 
@@ -27,7 +27,7 @@ old copy of this file as still valid; re-run Step 11 (Recalculate) first.
 |---|---|---|
 | F-33: AI Assistant (P-015) doesn't answer questions or exhibit response states | `FINDING` (build gap, confirmed by execution) | Distinct from F-06; needs a business/design decision on scope before any code |
 | F-32: Alerts (P-012) not built — route 404s | `FINDING` (build gap, confirmed by execution) | Distinct from F-05 |
-| F-31: Oracle FA / Financial View (P-011) not built | `FINDING` (build gap, confirmed by execution) | Distinct from F-04 |
+| F-31: Oracle FA / Financial View (P-011) not built | `FINDING` (build gap, confirmed by execution) | **Explicitly deferred 2026-09-01** — not building until real Oracle FA integration lands (F-04 resolved) |
 | F-06/F-05/F-04: citation format / alert rules / Oracle integration mechanism | Blocked on business decision | Each independent of the corresponding F-33/F-32/F-31 build-gap finding |
 | Auth mechanism / role-permission matrix content | Blocked on business decision | PRD §16 Q21–Q22 — separate from F-30's now-resolved infrastructure half |
 | `AC-WARRANTY-001-03`'s 90-day-window threshold | Blocked on business decision | Separate from F-01 |
@@ -41,29 +41,29 @@ old copy of this file as still valid; re-run Step 11 (Recalculate) first.
 
 ## Priority Application
 
-Per `NEXT-STEP-PROTOCOL.md` §Step 3: F-30 is now fully closed (infrastructure
-half) — spec resolved, implemented, and confirmed PASS. `RAISE-TRACEABILITY-MATRIX.md`
-is at v1.1. **Every remaining item in the Incomplete Work Inventory is
-blocked on a business/design decision.** There is no direct-fix
-engineering item and no unexecuted validation task left to pick
-autonomously.
+Per `NEXT-STEP-PROTOCOL.md` §Step 3: F-31 now has an explicit decision
+(defer) recorded, distinguishing it from a still-open question. **Every
+remaining item in the Incomplete Work Inventory is either explicitly
+deferred (F-31) or blocked on a business/design decision this session
+cannot make unilaterally (F-32, F-33, and the rest).** There is no
+direct-fix engineering item and no unexecuted validation task left to
+pick autonomously.
 
 ---
 
 ## Primary Next Step
 
-**Check in with the user on direction.** Three open findings now need a
-business/design decision, each independent of the others:
+**Check in with the user on direction.** Two open findings still need a
+business/design decision:
 
 1. **F-33** — AI Assistant (P-015) doesn't answer questions or exhibit
    any response state at all. Worth a scoped interim experience, or
    leave until real AI backend integration lands?
 2. **F-32** — Alerts (P-012) is entirely unbuilt (404).
-3. **F-31** — Oracle FA Financial View (P-011) is a bare placeholder.
-4. **`AC-WARRANTY-001-03`** — the Warranty "Expiring" 90-day rule.
+3. **`AC-WARRANTY-001-03`** — the Warranty "Expiring" 90-day rule.
 
-(F-22, F-27, and F-30, previously in this list, are now Resolved —
-R-13, R-14, R-15.)
+(F-22, F-27, and F-30 are Resolved — R-13/R-14/R-15. F-31 is now
+explicitly deferred by decision, not awaiting one.)
 
 Alternatively, reasonable non-decision-dependent work: a `/code-review`
 pass across other recent PR diffs, or drafting `RAISE-COMPLIANCE-REVIEW.md`
@@ -76,9 +76,9 @@ every historical gap closed.
 
 Every previously-identified "clearly next" item — nine formal
 test-execution sweeps, F-01's resolution and implementation, a
-`/code-review` fix, and F-22/F-27/F-30's full resolutions — has been
-completed. The remaining backlog is uniformly blocked on decisions this
-session cannot make unilaterally.
+`/code-review` fix, and F-22/F-27/F-30's full resolutions, plus F-31's
+deferral decision — has been completed. The remaining backlog is
+uniformly blocked on decisions this session cannot make unilaterally.
 
 ## Dependencies
 
@@ -98,11 +98,11 @@ N/A until a direction is chosen.
 
 ## Related Checkpoint
 
-`CHECKPOINT-2026-09-01-002` (most recent, F-30 resolution — Resolved).
+`CHECKPOINT-2026-09-01-003` (most recent, F-31 deferral decision).
 
 ## Related Git Branch/Commit
 
-`frontend/resolve-f30-mock-auth` — pending PR (predicted #59).
+`docs/defer-f31-oracle-fa` — pending PR (predicted #60).
 
 ---
 

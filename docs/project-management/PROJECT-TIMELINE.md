@@ -123,12 +123,12 @@ happened. Every phase's **Checkpoint** row should link to a real entry in
 | **Target Date** | Not scheduled |
 | **Actual Start** | — |
 | **Actual Completion** | — |
-| **Status** | ⚪ Not started — blocked on open PRD questions. Formal test execution confirms the gap is worse than "not started": no placeholder exists at all |
+| **Status** | 🟡 Scoped-down first cut shipped (single-condition Alerts screen) 2026-09-01 · trigger-rule/severity content still TBD |
 | **Scope** | `RAISE-FR-ALERT-001` — surfacing conditions like approaching warranty expiry or maintenance SLA breach to an "authorized user." Trigger rules and delivery channels are undefined; multi-channel delivery (Email/Teams/LINE) is confirmed Roadmap, not MVP. |
-| **Deliverables** | None yet. |
-| **Dependencies** | Phase 3 (Warranty data) and Phase 4 (Maintenance SLA data) — Alerts has no data of its own to watch until those exist. |
-| **Risks** | Trigger-rule thresholds are unconfirmed — building this before Phase 3/4's own TBDs (warranty field list, SLA model) resolve risks building alerts against data shapes that later change. Role gate for who receives alerts shares the same open question as Phases 2/4. Formal test execution (`TC-ALERT-001-01/-02`, 2026-08-29) confirms a second, independent gap: the sidebar "Notification Center" route (`/notifications`) renders the app's generic 404 page — not even a `ModulePage`-style placeholder like Oracle FA (Phase 6) has — and the header bell-icon dropdown is hardcoded empty. Tracked as **F-32**, distinct from F-05's trigger-rule question. |
-| **Checkpoint** | `CHECKPOINT-2026-08-29-006` (`TS-ALERT-001` sweep, docs-only, new finding F-32) — see `PROJECT-CHECKPOINTS.md`. Otherwise none yet — not started. |
+| **Deliverables** | `frontend/src/pages/Alerts/index.tsx` — a scoped Alerts screen (P-012) registered at `ROUTES.NOTIFICATIONS` (`/notifications`), listing one alert per warranty-expired asset (severity/description/asset per `AC-ALERT-001-01`). Deliberately reuses the existing `isWarrantyExpired` check instead of inventing a broader trigger-rule set. |
+| **Dependencies** | Phase 3 (Warranty data) and Phase 4 (Maintenance SLA data) — the one condition wired so far (warranty expiry) already existed from Phase 3; any further condition (e.g. maintenance SLA breach) still needs its own data model resolved first. |
+| **Risks** | Trigger-rule thresholds beyond warranty expiry are unconfirmed — building further conditions before Phase 3/4's own TBDs (SLA model) resolve risks building alerts against data shapes that later change. Role gate for who receives alerts shares the same open question as Phases 2/4. Formal test execution (`TC-ALERT-001-01/-02`, 2026-08-29) confirmed the sidebar "Notification Center" route (`/notifications`) rendered the app's generic 404 page — worse than a `ModulePage`-style placeholder. **Resolved 2026-09-01**: per confirmed business decision, built the scoped screen above; severity is rendered honestly as "Not yet defined" since severity/trigger-rule content (**F-05**, PRD §6.9) remains genuinely open, unaffected by this fix. The header bell-icon dropdown across other pages remains hardcoded empty — a separate, smaller-scope item not wired in this change. |
+| **Checkpoint** | `CHECKPOINT-2026-08-29-006` (`TS-ALERT-001` sweep, docs-only, new finding F-32); `CHECKPOINT-2026-09-01-004` (F-32 resolved, implemented, re-verified) — see `PROJECT-CHECKPOINTS.md`. |
 
 ## Phase 8 — Executive Dashboard & Reporting
 

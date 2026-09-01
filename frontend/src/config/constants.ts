@@ -17,6 +17,7 @@ export const ROUTES = {
   LICENSES: '/licenses',
   LICENSE_DETAIL: '/licenses/:licenseId',
   RECONCILIATION: '/reconciliation',
+  NOTIFICATIONS: '/notifications',
   AI_DECISION: '/ai',
   ADMINISTRATION: '/administration',
   ADMIN_USERS: '/administration/users',

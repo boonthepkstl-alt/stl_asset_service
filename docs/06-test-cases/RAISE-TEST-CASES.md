@@ -2,7 +2,7 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Test Cases
-**Version:** 0.9 Draft
+**Version:** 0.10 Draft
 **Status:** Draft for Test Case Review
 **Source:** [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.8 §7 (Test Suites) + §8 (Blocked Items) + §8.1 (Fully-Blocked Suites — AI Document Intelligence Capabilities) + §3.3 (PRD §10 NFR Backlog — No Suite), expanding [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.8
 **Source of Truth:** RAISE PRD
@@ -353,10 +353,27 @@ appears in any test case below (`TC-WARRANTY-001-01`/`-02` previously referenced
 
 **Suite:** TS-ALERT-001 · **AC Group:** AC-ALERT-001 · **Requirement:** `RAISE-FR-ALERT-001` · **Screen:** P-012
 
+**Status Note — Formally executed 2026-09-01 (Open Finding F-32, resolved):** the
+Alerts screen (P-012) has now been implemented — `frontend/src/pages/Alerts/index.tsx`,
+registered at `ROUTES.NOTIFICATIONS` (`/notifications`) in `App.tsx`. Per explicit
+business decision, this scoped-down screen derives its one alert-triggering condition
+from the one already confirmed elsewhere in the app: an asset's `warrantyExpiry` being in
+the past (the same `isWarrantyExpired` check the Assets list's Warranty column already
+uses). Each row shows Severity (rendered honestly as "Not yet defined" — not an invented
+High/Medium/Low value, since severity mapping remains undefined per Open Finding F-05),
+the Description ("Warranty expired {date}"), and the associated Asset (clickable,
+navigates to Asset Detail). No Email/Teams/LINE delivery UI exists anywhere on the page.
+This satisfies exactly the structural-display scope `AC-ALERT-001-01` already limited
+itself to (`RAISE-ACCEPTANCE-CRITERIA.md` §15) — the still-open question of which
+conditions/severities are the *correct* MVP alert-triggering rules remains **NOT TESTABLE
+YET** (PRD §6.9 Open Question, Open Finding F-05) and is unaffected by this closure; no
+upstream document (`RAISE-ACCEPTANCE-CRITERIA.md`, `RAISE-TEST-PLAN.md`) changed as a
+result. Both cases below were re-executed against the real running app and both **PASS**.
+
 | TC ID | Title | Steps | Test Data | Expected Result | Blocked |
 |---|---|---|---|---|---|
-| TC-ALERT-001-01 | Triggered alert displays with severity/asset | 1. Trigger an alert-worthy condition. 2. Open Alerts. | 1 asset meeting an alert condition | Alert shown with severity, description, associated asset | **BLOCKED (partial)** — display testable; which conditions/severities are correct is TBD (PRD §6.9 Open Question); separately, the "authorized user" gate is testable only structurally since the role/permission model is undefined (PRD §16 Q22) |
-| TC-ALERT-001-02 | Only in-app presentation verified | 1. Open Alerts screen. | ≥1 alert | Alert shown on-screen only; no Email/Teams/LINE delivery attempted | No |
+| TC-ALERT-001-01 | Triggered alert displays with severity/asset | 1. Trigger an alert-worthy condition. 2. Open Alerts. | 1 asset meeting an alert condition | Alert shown with severity, description, associated asset | No — **PASS on the display mechanism**, fully testable against the as-built Alerts screen (P-012), scoped to `AC-ALERT-001-01`'s structural-display criterion (`RAISE-ACCEPTANCE-CRITERIA.md` §15): an alert lists severity/description/asset when opened. Which specific severity/trigger-rule values are correct remains **NOT TESTABLE YET** (PRD §6.9 Open Question, Open Finding F-05) — a separate, still-unresolved question this case does not claim to close. The "authorized user" gate remains testable only structurally since the role/permission model is undefined (PRD §16 Q22), unaffected by this update. **Formally executed 2026-09-01 against the real running app — PASS:** navigated to `/notifications` (previously 404'd; now renders the Alerts screen with 11 rows, matching the Dashboard's "Expired Warranty: 11" tile exactly); confirmed the row for AST-0013 (Dell OptiPlex 7090) displays Severity "Not yet defined," Description "Warranty expired 2024-03-15," and the associated Asset as a clickable link; clicking it navigated correctly to that asset's Asset Detail page. Also covered by an automated test in `frontend/src/pages/Alerts/index.test.tsx`. |
+| TC-ALERT-001-02 | Only in-app presentation verified | 1. Open Alerts screen. | ≥1 alert | Alert shown on-screen only; no Email/Teams/LINE delivery attempted | No — **formally executed 2026-09-01 against the real running app — PASS:** confirmed the Alerts screen (`/notifications`, P-012) presents all 11 alert rows purely as an in-app table, with no Email/Teams/LINE or other delivery-channel UI anywhere on the page. Also covered by an automated test in `frontend/src/pages/Alerts/index.test.tsx`. |
 
 ---
 
@@ -572,7 +589,7 @@ situation.
 | TS-MAINT-001 | 9 | 3 | 6 | 0 | 0 |
 | TS-WARRANTY-001 | 3 | 2 | 1 | 0 | 0 |
 | TS-ORACLE-001 | 4 | 3 | 1 | 0 | 0 |
-| TS-ALERT-001 | 2 | 1 | 1 | 0 | 0 |
+| TS-ALERT-001 | 2 | 2 | 0 | 0 | 0 |
 | TS-AUDIT-001 | 3 | 1 | 2 | 0 | 0 |
 | TS-EXEC-001 | 2 | 2 | 0 | 0 | 0 |
 | TS-AI-SEARCH-001 | 3 | 2 | 1 | 0 | 0 |
@@ -581,7 +598,7 @@ situation.
 | TS-AI-DOC-002 | 1 | 0 | 0 | 1 | 0 |
 | TS-AI-DOC-003 | 1 | 0 | 0 | 1 | 0 |
 | TS-AI-DOC-004 | 1 | 0 | 0 | 1 | 0 |
-| **Total** | **63** | **34** | **24** | **4** | **1** |
+| **Total** | **63** | **35** | **23** | **4** | **1** |
 
 **TS-ASSET-002 updated 2026-09-01 (Open Finding F-27 resolution, then closed
 the same day by formal execution):** row grows from `2 | 1 | 1 | 0 | 0` to
@@ -598,7 +615,24 @@ to `63 | 34 | 24 | 4 | 1` (one new test case added, and it is fully
 testable and passing — not partially blocked as it was between the two
 updates).
 
-24 of 63 test cases are partially blocked — executable against their
+**TS-ALERT-001 updated 2026-09-01 (Open Finding F-32, resolved — Alerts
+screen implemented and formally re-executed):** row moves from `2 | 1 | 1 |
+0 | 0` to `2 | 2 | 0 | 0 | 0`. `TC-ALERT-001-01` moves from **BLOCKED
+(partial)** to fully testable, marked **PASS on the display mechanism** —
+the structural-display scope `AC-ALERT-001-01` already limited itself to
+(`RAISE-ACCEPTANCE-CRITERIA.md` §15) is now confirmed working against the
+real running app; the still-open severity/trigger-rule correctness question
+(PRD §6.9, Open Finding F-05) and the "authorized user" gate note (PRD §16
+Q22) are both unaffected and remain explicitly unresolved. `TC-ALERT-001-02`
+was already fully testable and is now also formally executed with a
+confirmed **PASS**. See §14's Status Note for the full execution evidence.
+This is a real test execution reporting a PASS on the testable-now scope,
+not a scope/spec correction — no upstream document changed. Grand **Total**
+row moves from `63 | 34 | 24 | 4 | 1` to `63 | 35 | 23 | 4 | 1` (no new test
+case added; one case reclassified from partially blocked to fully testable
+and passing).
+
+23 of 63 test cases are partially blocked — executable against their
 structural/interaction behavior, with full correctness pending a PRD Open
 Question. This count includes `TC-ASSET-003-03`, updated 2026-08-21 to
 **BLOCKED (partial)**: the Check-in/Check-out-triggered append-and-
@@ -717,9 +751,70 @@ Suite ID → TC ID) into one master table for compliance review.
 
 ## Document Status
 
-**Version:** 0.9 (2026-09-01 — formal test case execution closes out
-`TC-ASSET-002-03`; `RAISE-TEST-PLAN.md`/`RAISE-ACCEPTANCE-CRITERIA.md` remain
-at v0.8, unchanged by this update)
+**Version:** 0.10 (2026-09-01 — formal test case execution closes out
+`TC-ALERT-001-01`/`-02` against the newly implemented Alerts screen (P-012,
+Open Finding F-32); `RAISE-TEST-PLAN.md`/`RAISE-ACCEPTANCE-CRITERIA.md`
+remain at v0.8, unchanged by this update)
+
+**Change Log — v0.9 → v0.10 (2026-09-01, formal test case execution — real
+PASS result, not a scope/spec correction):**
+
+1. **Root cause / trigger.** The Alerts screen (P-012) has been implemented:
+   new `frontend/src/pages/Alerts/index.tsx`, registered at
+   `ROUTES.NOTIFICATIONS` (`/notifications`) in `App.tsx`. Per explicit
+   business decision, this scoped-down screen derives its one
+   alert-triggering condition from the one already confirmed elsewhere in
+   the app — an asset's `warrantyExpiry` being in the past, the same
+   `isWarrantyExpired` check the Assets list's Warranty column already uses.
+   Severity is rendered honestly as "Not yet defined" (not an invented
+   High/Medium/Low value, since severity mapping remains undefined per Open
+   Finding F-05); Description and the associated Asset (clickable, navigates
+   to Asset Detail) are also shown. No Email/Teams/LINE delivery UI exists
+   anywhere on the page.
+2. **No change to `RAISE-ACCEPTANCE-CRITERIA.md` AC-ALERT-001.** It already
+   correctly scoped `AC-ALERT-001-01` as testable only for structural
+   behavior (an alert lists severity/description/asset when opened),
+   separately from which specific severity/trigger-rule values are correct
+   (that remains **NOT TESTABLE YET**, tied to Open Finding F-05, PRD §6.9).
+   This implementation satisfies exactly that structural scope, so no
+   upstream document changed.
+3. **§14 TS-ALERT-001 — new "Status Note" added**, recording the
+   implementation and execution evidence: navigating to `/notifications`
+   (previously 404'd, now renders 11 rows matching the Dashboard's "Expired
+   Warranty: 11" tile exactly); confirming a representative row (AST-0013,
+   Dell OptiPlex 7090) shows Severity "Not yet defined," Description
+   "Warranty expired 2024-03-15," and a clickable Asset link that correctly
+   navigates to Asset Detail; and confirming no Email/Teams/LINE
+   delivery-channel UI exists anywhere on the page. Also records new
+   automated coverage: `frontend/src/pages/Alerts/index.test.tsx` (2 new
+   tests, covering `TC-ALERT-001-01` and `TC-ALERT-001-02`), and the full
+   frontend suite (149 tests, up from 147) passes with no regressions;
+   `tsc --noEmit` and lint both clean.
+4. **`TC-ALERT-001-01`'s Blocked column changed from `BLOCKED (partial)` to
+   `No — PASS on the display mechanism`**, mirroring the precedent set by
+   `TC-EXEC-001-01`/`TC-DASH-01` and `TC-ASSET-002-01`: the AC's
+   testable-now subset (structural display) is confirmed working, while the
+   still-open trigger-rule/severity question (Open Finding F-05) remains
+   explicitly unresolved, and the "authorized user" gate note (PRD §16 Q22)
+   is carried forward unaffected.
+5. **`TC-ALERT-001-02`'s Blocked column changed from `No` (not blocked, not
+   yet executed) to `No` with formal execution evidence appended** —
+   confirmed **PASS**.
+6. **§19 Test Case Summary** updated: TS-ALERT-001 row moves from
+   `2 | 1 | 1 | 0 | 0` to `2 | 2 | 0 | 0 | 0` (Total/Fully Testable/Partially
+   Blocked/Blocked Full/Out of Scope). Grand **Total** row updated from
+   `63 | 34 | 24 | 4 | 1` to `63 | 35 | 23 | 4 | 1`; the narrative "24 of 63
+   test cases are partially blocked" sentence updated to "23 of 63." A new
+   explanatory note was added directly above that sentence.
+7. **No other suite required changes.** `TC-LOGIN-*`, `TC-DASH-*`,
+   `TC-ASSET-001-*`, `TC-ASSET-001-D-*`, `TC-LIFE-001-*`, `TC-ASSET-002-*`,
+   `TC-ASSET-003-*`, `TC-OPS-001-*`, `TC-OPS-002-*`, `TC-MAINT-001-*`,
+   `TC-WARRANTY-001-*`, `TC-ORACLE-001-*`, `TC-AUDIT-001-*`, `TC-EXEC-001-*`,
+   `TC-AI-SEARCH-001-*`, `TC-AI-STATES-*`, and `TC-AI-DOC-001-01`–
+   `TC-AI-DOC-004-01` retain their prior status and wording verbatim.
+8. **Neither `RAISE-TEST-PLAN.md` nor `RAISE-ACCEPTANCE-CRITERIA.md` was
+   touched** — this is real test execution reporting a PASS on the
+   testable-now scope, not a scope/spec correction to an earlier layer.
 
 **Change Log — v0.8 → v0.9 (2026-09-01, formal test case execution — real
 PASS result, not a scope/spec correction):**

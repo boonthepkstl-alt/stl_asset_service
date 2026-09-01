@@ -17,6 +17,7 @@ import { TicketDetailPage } from '@/pages/TicketDetail';
 import { LicensesPage } from '@/pages/Licenses';
 import { LicenseDetailPage } from '@/pages/LicenseDetail';
 import { ReconciliationPage } from '@/pages/modules';
+import { AlertsPage } from '@/pages/Alerts';
 import { AIDecisionCenterPage } from '@/pages/AIDecisionCenter';
 import { AdministrationPage } from '@/pages/Administration';
 import { UserManagementPage } from '@/pages/UserManagement';
@@ -83,6 +84,7 @@ const App: React.FC = () => {
                   </>
                 )}
                 <Route path={ROUTES.RECONCILIATION} element={<ReconciliationPage />} />
+                <Route path={ROUTES.NOTIFICATIONS} element={<AlertsPage />} />
                 <Route path={ROUTES.SETTINGS} element={<SettingsPage />} />
                 <Route path={ROUTES.FORBIDDEN} element={<Forbidden />} />
 

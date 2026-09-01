@@ -4,28 +4,27 @@
 Overwritten in place each time the protocol is re-run — do not treat an
 old copy of this file as still valid; re-run Step 11 (Recalculate) first.
 
-**Run date:** 2026-08-31, immediately after `CHECKPOINT-2026-08-31-002` (F-22's Dashboard spec correction propagated through the full deliverable chain).
+**Run date:** 2026-08-31, immediately after `CHECKPOINT-2026-08-31-003` (`TS-DASH`/`TS-EXEC-001` re-verification — all cases PASS, F-22 Resolved as R-13).
 
 ---
 
 ## Current State
 
-- **Current phase:** Phase 8 — Executive Dashboard & Reporting (documentation correction; no new code). `RAISE-FR-EXEC-001`'s chain now documents the actually shipped dashboard, but this has not yet been re-verified by a fresh formal execution sweep.
-- **Current feature:** None actively in progress. Last work: propagated F-22's business decision through Design → Prototype → Acceptance Criteria → Test Plan → Test Cases → Traceability Matrix via `/run-full-chain`.
-- **Current task:** None in progress. Last task checkpoint: `CHECKPOINT-2026-08-31-002`.
-- **Last completed checkpoint:** `CHECKPOINT-2026-08-31-002` (not yet shipped via PR at the time this file was written — see that checkpoint's Git section).
-- **Current status:** 🟢 Docs-only change, no build/lint/test/type-check impact (no code was touched). Each subagent's output was verified by reading the actual file content, not just its self-report, before proceeding to the next chain stage.
-- **Open blockers:** None directly buildable as new engineering work. One item is now a **validation** task rather than blocked: a formal test-execution sweep against the corrected `TC-DASH-01..03`/`TC-EXEC-001-01..02`.
-- **Open findings:** F-02 through F-33 in `OPEN-FINDINGS.md`. **F-22 has a confirmed business decision and a completed chain correction, but is NOT YET Resolved** — pending a fresh execution sweep to confirm the corrected spec actually passes. F-27, F-30, F-31, F-32, F-33, and `AC-WARRANTY-001-03` remain open, awaiting their own decisions.
-- **Remaining work:** Run a formal test-execution sweep against the corrected `TC-DASH-01..03`/`TC-EXEC-001-01..02` to confirm the real app passes and close F-22 with an R-number. This is expected to PASS on tile/section presence (the app already renders these — this was always a documentation gap, not a code gap), with the NBV/Risk absence sub-item (`TC-DASH-03`) remaining BLOCKED (partial), tied to the separate F-03 question.
+- **Current phase:** Phase 8 — Executive Dashboard & Reporting. `RAISE-FR-EXEC-001` now **PASS** — confirmed by real execution, not just a documentation fix.
+- **Current feature:** None actively in progress. Last work: re-executed `TC-DASH-01..03`/`TC-EXEC-001-01..02` against the real running app to confirm F-22's spec correction (PR #56) actually holds.
+- **Current task:** None in progress. Last task checkpoint: `CHECKPOINT-2026-08-31-003`.
+- **Last completed checkpoint:** `CHECKPOINT-2026-08-31-003` (not yet shipped via PR at the time this file was written — see that checkpoint's Git section).
+- **Current status:** 🟢 Docs-only change, no build/lint/test/type-check impact. Browser-verified live on `/dashboard` — all 8 KPI tiles and all 10 sections confirmed present via real page text.
+- **Open blockers:** None directly buildable — every remaining open item (F-27, F-30, F-31, F-32, F-33, `AC-WARRANTY-001-03`) needs a business/design decision, not an engineering fix.
+- **Open findings:** F-02 through F-33 in `OPEN-FINDINGS.md`, minus **F-22 (now Resolved, R-13)**. Five findings remain open: F-27, F-30, F-31, F-32, F-33.
+- **Remaining work:** No direct-fix findings and no unexecuted validation remain. F-22 was the last item with a confirmed business decision still pending verification — that's now done. Every remaining open item is a genuine decision point for the user.
 - **Dependencies:** N/A.
-- **Plan vs. actual variance:** None — this followed the plan the user set (fix docs to match the shipped app), executed via the standard `/run-full-chain` sequential-subagent workflow with verification at each stage, exactly as done for the Warranty resolution (PR #49) precedent.
+- **Plan vs. actual variance:** None — this was exactly the recommended next step from the prior `NEXT-STEP.md`, and it confirmed the expected outcome (PASS, since the app was already correct — only the documentation was wrong).
 
 ## Incomplete Work Inventory (classified)
 
 | Item | Classification | Note |
 |---|---|---|
-| Re-execute `TC-DASH-01..03`/`TC-EXEC-001-01..02` against the corrected spec | `VALIDATION` | The one item that's directly actionable right now — confirms F-22's fix and closes it with an R-number. Expected to PASS on tiles/sections (app already renders them); `TC-DASH-03` (NBV/Risk absence) stays BLOCKED (partial), tied to F-03 |
 | F-33: AI Assistant (P-015) doesn't answer questions or exhibit response states | `FINDING` (build gap, confirmed by execution) | Distinct from F-06; needs a business/design decision on scope before any code |
 | F-32: Alerts (P-012) not built — route 404s | `FINDING` (build gap, confirmed by execution) | Distinct from F-05 |
 | F-31: Oracle FA / Financial View (P-011) not built | `FINDING` (build gap, confirmed by execution) | Distinct from F-04 |
@@ -33,7 +32,7 @@ old copy of this file as still valid; re-run Step 11 (Recalculate) first.
 | F-30: No mock fallback for Auth | `FINDING` (infra, not a defect) | Would need a decision to add a `MockAuthRepository`-style path |
 | F-06/F-05/F-04: citation format / alert rules / Oracle integration mechanism | Blocked on business decision | Each independent of the corresponding F-33/F-32/F-31 build-gap finding |
 | `AC-WARRANTY-001-03`'s 90-day-window threshold | Blocked on business decision | Separate from F-01 |
-| NBV/Risk/Utilization-mechanics KPIs (`RAISE-FR-EXEC-001` remainder) | Blocked on business decision | PRD §16 Q3/Q4/Q29 — explicitly retained as a documented future enhancement by this session's F-22 correction, not resolved |
+| NBV/Risk/Utilization-mechanics KPIs (`RAISE-FR-EXEC-001` remainder) | Blocked on business decision | PRD §16 Q3/Q4/Q29 — retained as a documented future enhancement by F-22's resolution, not itself resolved |
 | `RAISE-FR-ASSET-003` vs. `RAISE-FR-OPS-002` overlap | `FINDING` (F-10) | Unresolved scope question, unaffected by recent work |
 | Delegated-approver configuration rules (`RAISE-FR-MAINT-001`) | Blocked on business decision | Who may delegate, to whom, how audited — TBD |
 | Auth mechanism / role-permission matrix content | Blocked on business decision | PRD §16 Q21–Q22 |
@@ -44,90 +43,79 @@ old copy of this file as still valid; re-run Step 11 (Recalculate) first.
 
 ## Priority Application
 
-Per `NEXT-STEP-PROTOCOL.md` §Step 3: this is the first time since the
-initial nine test-execution sweeps that a genuinely **buildable-now,
-non-blocked** item exists again — re-executing `TC-DASH-01..03`/
-`TC-EXEC-001-01..02` against the corrected spec. This isn't a business
-decision or a code fix; it's the validation step that actually closes
-F-22, and it's the natural continuation of the work just completed
-(a documentation correction is incomplete until it's confirmed to
-actually match reality). This should be prioritized over the five
-remaining open findings (F-27/F-30/F-31/F-32/F-33), which are genuinely
-blocked on decisions the user hasn't made yet.
+Per `NEXT-STEP-PROTOCOL.md` §Step 3: F-22 is now fully closed — spec
+corrected, re-executed, and confirmed PASS. **Every remaining item in
+the Incomplete Work Inventory is blocked on a business/design decision.**
+There is no direct-fix engineering item and no unexecuted validation
+task left to pick autonomously. This is the same genuine decision point
+reached after the nine test-execution sweeps, minus F-22 (now resolved).
 
 ---
 
 ## Primary Next Step
 
-**Run a formal test-execution sweep against the corrected `TS-DASH`/
-`TS-EXEC-001` suites** (`TC-DASH-01..03`, `TC-EXEC-001-01..02`) via
-browser automation against the real running app, exactly as done for
-the prior nine sweeps this session. Expected outcome: `TC-DASH-01/-02`
-and `TC-EXEC-001-01/-02` PASS (the app already renders the 8-tile
-grid/10-section list — only the documentation was wrong); `TC-DASH-03`
-(NBV/Risk/Utilization absence) remains BLOCKED (partial), tied to F-03.
-If confirmed, update the Traceability Matrix's `RAISE-FR-EXEC-001`/
-"Main Dashboard" rows from `NOT_TESTED` to `PASS (partial)`, close Gap 8,
-and mark F-22 Resolved in `OPEN-FINDINGS.md` with a new R-number.
+**Check in with the user on direction.** Five open findings now need a
+business/design decision, each independent of the others:
 
-If the user prefers to defer this validation step, the fallback is the
-same as before: check in on one of the five remaining open findings
-(F-27/F-30/F-31/F-32/F-33) or `AC-WARRANTY-001-03`.
+1. **F-33** — AI Assistant (P-015) doesn't answer questions or exhibit
+   any response state at all. Worth a scoped interim experience, or
+   leave until real AI backend integration lands?
+2. **F-32** — Alerts (P-012) is entirely unbuilt (404).
+3. **F-31** — Oracle FA Financial View (P-011) is a bare placeholder.
+4. **F-27** — Category sub-taxonomy definition (Prototype P-005).
+5. **F-30** — No Auth mock fallback for local dev/testing.
+6. **`AC-WARRANTY-001-03`** — the Warranty "Expiring" 90-day rule.
+
+(F-22, previously in this list, is now Resolved — R-13.)
+
+Alternatively, reasonable non-decision-dependent work: a `/code-review`
+pass across other recent PR diffs, or drafting `RAISE-COMPLIANCE-REVIEW.md`
+(the one deliverable-chain document that has never been started, per
+`CLAUDE.md`'s deliverable chain diagram).
 
 ## Why This Is Next
 
-A spec correction that hasn't been verified against the real app is an
-incomplete fix — this project's own discipline (never report "Completed"
-until Acceptance Criteria actually pass) requires closing the loop with
-real execution, not assuming the correction is sufficient just because
-it was carefully written.
+Every previously-identified "clearly next" item — nine formal
+test-execution sweeps, F-01's resolution and implementation, a
+`/code-review` fix, and now F-22's full resolution — has been completed.
+The remaining backlog is uniformly blocked on decisions this session
+cannot make unilaterally.
 
 ## Dependencies
 
-None — the corrected spec and the real app both already exist; this is
-pure verification.
+None — this is a question, not a task.
 
 ## Expected Output
 
-Updated `RAISE-TRACEABILITY-MATRIX.md` rows (PASS or FAIL with evidence),
-`OPEN-FINDINGS.md` F-22 marked Resolved (if PASS) or given a new,
-narrower finding (if FAIL — would be surprising, since this only
-requires re-reading what's already been visually confirmed multiple
-times this session).
+Not yet started — pending user direction.
 
 ## Acceptance Criteria
 
-`AC-DASH-01/-02`, `AC-EXEC-001-01/-02` confirmed against the real
-running app with genuine browser evidence.
+N/A.
 
 ## Validation Method
 
-Manual browser execution against `raise-frontend`, same methodology as
-the nine prior sweeps this session.
+N/A until a direction is chosen.
 
 ## Related Checkpoint
 
-`CHECKPOINT-2026-08-31-002` (most recent, F-22 chain correction).
+`CHECKPOINT-2026-08-31-003` (most recent, F-22 re-verification — Resolved).
 
 ## Related Git Branch/Commit
 
-`docs/resolve-f22-dashboard-spec-correction` — pending PR (predicted #56).
+`docs/tc-execution-dash-reverify` — pending PR (predicted #57).
 
 ---
 
 ## Risks / Blockers
 
-None — this is a low-risk verification step; the only open question is
-whether the user wants it done now or wants to move to a different
-finding first.
+None from asking. Risk of *not* asking: guessing at a decision only the
+user can make.
 
 ## Files to Update (after implementation, per Step 10)
 
-`RAISE-TRACEABILITY-MATRIX.md`, `OPEN-FINDINGS.md`, `PROJECT-CHECKPOINTS.md`,
-`DEVELOPMENT-LOG.md`, `CURRENT-STATUS.md`, `PROJECT-TIMELINE.md`,
-`NEXT-STEP.md`.
+N/A until direction is chosen.
 
 ## After Completion
 
-Recalculate once the sweep runs (or once the user picks a different
-direction).
+Recalculate once the user responds.

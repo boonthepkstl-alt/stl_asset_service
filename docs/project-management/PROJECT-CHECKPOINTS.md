@@ -2444,11 +2444,45 @@ Test Case: `TC-ALERT-001-01/-02` — now **PASS**; `RAISE-TRACEABILITY-MATRIX.md
 
 **Git:**
 Branch: `frontend/resolve-f32-alerts-screen`
-Commit: pending — predicted next PR after #60 (verify via `gh pr list` before treating as final).
+Commit: `bbc9808` (implementation), merged via [PR #61](https://github.com/boonthepkstl-alt/stl_asset_service/pull/61).
 
 **Known Issues:** None new. The header bell-icon dropdown across other pages remains hardcoded empty — a separate, smaller-scope item not wired in this change.
 **Remaining Work:** F-33 and `AC-WARRANTY-001-03`'s 90-day threshold remain open items blocked on a business/design decision. F-22, F-27, F-30, and F-32 are all fully resolved; F-31 is explicitly deferred.
-**Next Step:** Recalculate `NEXT-STEP.md`. Check in with the user on direction for the one remaining open finding (F-33) or the Warranty 90-day question.
+**Next Step:** Recalculate `NEXT-STEP.md`. Check in with the user on direction for the one remaining open finding (F-33) or the Warranty 90-day question. User chose F-33 next — see `CHECKPOINT-2026-09-01-005` below.
+
+---
+
+## CHECKPOINT-2026-09-01-005
+
+**Phase:** Phase 9 — AI Document Intelligence & Search
+**Feature:** Record explicit business decision on Open Finding F-33
+**Task:** Present F-33 (AI Assistant, P-015, two non-matching surfaces) and its options to the user; record the decision
+
+**What was implemented:** N/A — this is a decision-recording task, not a build task.
+**What was modified:** `docs/project-management/OPEN-FINDINGS.md` (F-33's row updated to record the explicit deferral decision).
+**What was fixed:** None.
+**What was added:** None.
+**What was removed:** None.
+
+**Decision:** Presented 3 options — (1) build a scoped canned-answer engine matching only the PRD's illustrative example question ("Which notebooks expire within 90 days?") using existing Asset/Warranty/Type data, with the other 4 `AC-AI-STATES` states handled honestly (e.g. "unable to answer" for anything not matching); (2) leave deferred until real AI backend integration lands; (3) ask for more detail first. **User chose option (2): explicitly defer.** Unlike F-27/F-30/F-32, this finding spans 8 test cases across 5 response states (`TS-AI-SEARCH-001` + `TS-AI-STATES`) requiring a genuine natural-language-Q&A simulation, a larger and more speculative undertaking than reusing one existing field — deferral is the sound choice here, not a stalled decision.
+
+**Files changed:** 1 file — `OPEN-FINDINGS.md`. No frontend/backend code touched.
+**Database changes:** None. **API changes:** None. **Frontend changes:** None.
+
+**Tests:** N/A — no code changed.
+**Validation:** N/A — no code changed.
+
+**Requirement Traceability:**
+PRD: `RAISE-AI-SEARCH-001` (unchanged).
+Acceptance Criteria / Test Case: `AC-AI-SEARCH-001-01..03`/`AC-AI-STATES-01..05` / `TC-AI-SEARCH-001-01..03`/`TC-AI-STATES-01..05` — unchanged, still FAIL (unbuilt), unaffected by this decision (no code changed). `RAISE-TRACEABILITY-MATRIX.md` row unchanged — no re-execution needed since nothing was built.
+
+**Git:**
+Branch: `docs/defer-f33-ai-assistant`
+Commit: pending — predicted next PR after #61 (verify via `gh pr list` before treating as final).
+
+**Known Issues:** None new.
+**Remaining Work:** `AC-WARRANTY-001-03`'s 90-day threshold remains the one open item blocked on a business/design decision. F-22, F-27, F-30, and F-32 are fully resolved; F-31 and F-33 are both explicitly deferred.
+**Next Step:** Recalculate `NEXT-STEP.md`. Check in with the user on direction for the Warranty 90-day question, or a non-decision-dependent task (e.g. `/code-review`, `RAISE-COMPLIANCE-REVIEW.md`).
 
 ---
 

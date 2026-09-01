@@ -9,9 +9,9 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-09-01, after `CHECKPOINT-2026-09-01-004` (F-32 resolved,
-implemented, and re-verified — all cases PASS, `RAISE-TRACEABILITY-MATRIX.md`
-now v1.2; not yet shipped via PR, see that checkpoint for status). The
+**As of:** 2026-09-01, after `CHECKPOINT-2026-09-01-005` (F-33 explicitly
+deferred by user decision, not built; not yet shipped via PR, see that
+checkpoint for status). The
 `BASELINE-CHECKPOINT-2026-08-24` scan is still the last
 full live re-verification against `git`/source. F-20 (checkpoint-coverage
 gap) is closed (R-04); F-21 (QR/Barcode invalid-code state) is closed
@@ -150,8 +150,19 @@ links navigate correctly, no delivery-channel UI. 2 new automated
 tests (147→149), full suite passing, `tsc`/lint clean.
 `RAISE-TRACEABILITY-MATRIX.md` (v1.2) updated to PASS (partial),
 Gap 11 closed.
-**F-33** (AI Assistant doesn't answer questions) remains the 1 open
-finding still awaiting a decision.
+**F-33 (AI Assistant doesn't answer questions) has a confirmed business
+decision (2026-09-01): explicitly deferred** — do not build even a
+scoped canned-answer engine for the PRD's illustrative example question
+now; wait until real AI backend integration lands. This finding spans
+8 test cases across 5 response states (`TS-AI-SEARCH-001` +
+`TS-AI-STATES`), a larger and more speculative undertaking than
+F-27/F-30/F-32's fixes (each reused one existing field/pattern).
+`OPEN-FINDINGS.md` F-33 updated to record this — remains **Open**, not
+Resolved (nothing was built; the app's behavior is unchanged).
+**Every open finding now has an explicit decision recorded** — F-22,
+F-27, F-30, F-32 Resolved; F-31, F-33 explicitly deferred. Only
+`AC-WARRANTY-001-03`'s 90-day-window question remains a genuinely
+undecided open item.
 Every
 development session should close out per
 [`SESSION-CLOSEOUT-PROTOCOL.md`](SESSION-CLOSEOUT-PROTOCOL.md), which is
@@ -206,7 +217,7 @@ infrastructure half) or intentionally out of MVP scope (Roadmap).
 | Executive Dashboard KPIs (first cut) | `RAISE-FR-EXEC-001` | ✅ Built, **PASS** per formal test execution 2026-08-31 — [PR #33](https://github.com/boonthepkstl-alt/stl_asset_service/pull/33). `GET /dashboard/stats` computes status counts, expired-warranty count, and department/type distribution from real Asset data. Software License count still comes from the frontend's mock license service (no backend License table exists — Roadmap-only). **F-22 resolved (R-13)**: the full chain (Design/Prototype/AC/Test Plan/Test Cases/Traceability Matrix) was corrected to document the actually shipped 8-tile KPI grid / 10-section dashboard, then re-executed against the real app — all cases **PASS** (`TC-DASH-01..03`/`TC-EXEC-001-01..02`). NBV/Risk/Utilization is retained as a documented, not-yet-scheduled enhancement (PRD §16 Q3/Q4/Q29 TBD), tracked separately as **F-03** — presence-check for its absence passes (`TC-DASH-03`), but building it remains blocked on that formula question |
 | Oracle FA Integration | `RAISE-FR-ORACLE-001` | 🔴 Integration method/mapping/sync/security all TBD (F-04), **and `TC-ORACLE-001-01..04` FAILED formal execution 2026-08-29** — the `/reconciliation` route renders a generic "foundation placeholder" `EmptyState` (`frontend/src/pages/_shared/ModulePage.tsx`), not an actual Financial View screen; no field or state from `AC-ORACLE-001-01..04` exists at all. **Explicitly deferred by user decision 2026-09-01 (F-31)** — no placeholder-vs-real Financial View will be built until real Oracle FA integration lands |
 | Alerts | `RAISE-FR-ALERT-001` | ✅ Built (scoped), **PASS (partial)** per formal test execution 2026-09-01 — the "Notification Center" route (`/notifications`) now renders a real Alerts screen (`frontend/src/pages/Alerts/index.tsx`) instead of the app's generic 404. Scoped to the one alert-triggering condition already confirmed elsewhere (expired warranty); severity rendered honestly as "Not yet defined" since severity/trigger rules for any other condition remain TBD (**F-05**, unaffected — see `OPEN-FINDINGS.md`). The header bell-icon dropdown across other pages remains hardcoded empty, a separate smaller-scope item |
-| Natural Language Search | `RAISE-AI-SEARCH-001` | 🔴 Citation precision/format TBD (F-06), **and `TC-AI-SEARCH-001-01..03`/`TC-AI-STATES-01..05` (all 8) FAILED formal execution 2026-08-29** — the header "AI Assistant" drawer accepts no input (static placeholder only); the Assets page's "Ask AI" box is a hardcoded keyword-to-filter matcher (legacy ESAPS content), not a natural-language answer engine, and exhibits none of the 5 required response states. No field or state from `AC-AI-SEARCH-001-01..03`/`AC-AI-STATES-01..05` exists at all. A distinct build gap from F-06 — see `OPEN-FINDINGS.md` F-33 |
+| Natural Language Search | `RAISE-AI-SEARCH-001` | 🔴 Citation precision/format TBD (F-06), **and `TC-AI-SEARCH-001-01..03`/`TC-AI-STATES-01..05` (all 8) FAILED formal execution 2026-08-29** — the header "AI Assistant" drawer accepts no input (static placeholder only); the Assets page's "Ask AI" box is a hardcoded keyword-to-filter matcher (legacy ESAPS content), not a natural-language answer engine, and exhibits none of the 5 required response states. **Explicitly deferred by user decision 2026-09-01 (F-33)** — no canned-answer engine will be built until real AI backend integration lands |
 | Document Intelligence | `RAISE-AI-DOC-001..004` | Confidence thresholds / field lists / matching rules undefined |
 | Asset Lifecycle Connectivity | `RAISE-FR-LIFE-001` | Partially blocked; Disposal stage confirmed Roadmap |
 | User/Role Management | supports `RAISE-NFR-SEC-RBAC-001` | Backend RBAC enforcement confirmed Roadmap, not MVP |
@@ -223,12 +234,12 @@ all cases PASS. Warranty (F-01) is implemented (Assets Registry column,
 R-12) as of the 2026-08-26 Asset-domain sweep, the 2026-08-28
 TS-OPS-002/TS-MAINT-001 sweep, and the 2026-08-29 TS-LOGIN sweep —
 F-23 through F-29 are all now fixed (R-06 through R-11). F-31 (Oracle
-FA Financial View, **explicitly deferred by user decision 2026-09-01**
-— a "decided not to build yet" item, not an unanswered question),
-F-33 (AI Assistant doesn't answer questions), and `AC-WARRANTY-001-03`'s
-90-day-window question all remain open but aren't directly buildable —
-every remaining open item is either explicitly deferred or blocked on
-a business/design decision, none is a "buildable now" engineering task.
+FA Financial View) and F-33 (AI Assistant) are both **explicitly
+deferred by user decision 2026-09-01** — "decided not to build yet"
+items, not unanswered questions. Only `AC-WARRANTY-001-03`'s
+90-day-window question remains a genuinely undecided open item — every
+finding now has an explicit decision recorded, none is a "buildable
+now" engineering task.
 
 **Needs a scoped-down first cut:** None remaining — Audit Log (PR #31 +
 #35, now covering both Asset and Ticket domains) and Executive Dashboard
@@ -237,12 +248,14 @@ extent possible without inventing TBD content. Nothing further is
 currently drawable on Executive Dashboard's NBV/Risk KPI formulas without
 a business decision (§16 Q3/Q4).
 
-**Blocked on a business decision:** Oracle FA Integration (F-04),
-Natural Language Search (F-33/F-06), Document Intelligence, User/Role
-Management backend (RBAC enforcement itself is Roadmap-confirmed, not
-just TBD). Alerts' trigger-rule/severity question (F-05) remains open,
-but the build gap itself (F-32) is now resolved with a scoped
-implementation. Warranty's field list is resolved (F-01, 2026-08-29,
+**Blocked on a business decision:** Oracle FA Integration mechanism
+(F-04), Natural Language Search citation format (F-06), Document
+Intelligence, User/Role Management backend (RBAC enforcement itself is
+Roadmap-confirmed, not just TBD). Alerts' trigger-rule/severity
+question (F-05) remains open, but the build gap itself (F-32) is now
+resolved with a scoped implementation. F-31 and F-33's build gaps are
+explicitly deferred, not awaiting a decision. Warranty's field list is
+resolved (F-01, 2026-08-29,
 `warrantyExpiry` only) — only `AC-WARRANTY-001-03`'s separate 90-day-
 window rule remains open.
 

@@ -2,20 +2,20 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Requirement Traceability Matrix (RTM)
-**Version:** 1.0 Draft (`RAISE-FR-ASSET-002` Category/Type sub-taxonomy —
-Gap 9, §6, **fully RESOLVED this revision**; Open Finding F-27 propagated
-end-to-end through Prototype P-005 (v0.9) / AC AC-ASSET-002 (v0.8) / Test
-Plan TS-ASSET-002 (v0.8) / Test Cases TC-ASSET-002-01..03 (v0.9), confirming
-"sub-category" = the existing Asset `type` field, a 2-level Category → Type
-→ individual assets hierarchy, and real seeded Category → Type values.
-**All three halves of this gap are now closed** — the spec correction, the
-UI implementation (Type-level nesting shipped in the "By Category" view),
-and the execution sweep (`TC-ASSET-002-01`, `-02`, `-03` all formally
-re-executed against the real running app on 2026-09-01 and confirmed PASS,
-with 3 passing automated tests and no regressions across the full 145-test
-frontend suite))
+**Version:** 1.1 Draft (Open Finding F-30 — no Mock fallback for Auth —
+**RESOLVED this revision, infrastructure scope only.** A `MockAuthRepository`
+was added following the same Mock/Http repository pattern already used by
+every other domain, gated by a new `AUTH_API_ENABLED` flag (default OFF).
+`TC-LOGIN-01`/`-02` move from BLOCKED to **PASS**, verified via live
+browser execution through the real Login page UI. **This resolves only the
+infrastructure gap (F-30) — it explicitly does NOT resolve the separate,
+still-open PRD-content question** (authentication mechanism / role-
+permission matrix content, PRD §16 Q21–Q22), which remains genuinely
+undefined; see the `RAISE-NFR-SEC-RBAC-001` row (§4) and new Gap 10 (§6)
+for the full record. `RAISE-FR-ASSET-002`'s Gap 9 (Category/Type
+sub-taxonomy) remains fully RESOLVED from v1.0, unchanged this revision.)
 **Status:** Draft for Traceability Review
-**Source:** [`RAISE-TEST-CASES.md`](../06-test-cases/RAISE-TEST-CASES.md) v0.9, consolidated against [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.8, [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.8, [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.9, [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.9 (unchanged this revision), and [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.11 (unchanged this revision) — **the actual PRD file on disk was re-read in full for this revision, not assumed from downstream citations**, per this document's own standing practice since v0.4. Confirmed: `RAISE-PRD.md` itself did **not** change for this revision — Open Finding F-27's business decision ("sub-category" = existing `type` field, 2-level hierarchy, no new field/data model) required no PRD-level change, only Prototype/AC/Test Plan/Test Cases correction and, this pass, a real UI code change plus formal execution (see Gap 9, §6).
+**Source:** [`RAISE-TEST-CASES.md`](../06-test-cases/RAISE-TEST-CASES.md) v0.9 (unchanged this revision — this revision's Test Status update is a direct execution-evidence entry in this matrix only, per this document's own established practice, e.g. the `RAISE-FR-ASSET-001`/`RAISE-FR-OPS-001`/`RAISE-FR-OPS-002` rows), consolidated against [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.8, [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.8, [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.9, [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.9 (unchanged this revision), and [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.11 (unchanged this revision) — **the actual PRD file on disk was re-read in full for this revision, not assumed from downstream citations**, per this document's own standing practice since v0.4. Confirmed: `RAISE-PRD.md` itself did **not** change for this revision, nor did it need to — F-30 was an infrastructure/execution gap, not a requirement-content gap; AC-LOGIN's own "NOT TESTABLE YET" note (mechanism/role content, PRD §16 Q21–Q22) is unchanged and still accurate.
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
 
@@ -151,7 +151,7 @@ are carried through the chain and must remain traceable.
 
 | Item | Title | PRD Basis | Design Area | Prototype Screen | AC Group | Suite ID | TC ID(s) | Test Status |
 |---|---|---|---|---|---|---|---|---|
-| `RAISE-NFR-SEC-RBAC-001` | Security & RBAC | PRD §11, §16 Resolved Question 38 (MVP enforcement level: UI-only/client-side, backend deferred to Roadmap — **verified present in `RAISE-PRD.md` v0.9 §11**) | §16 Security Architecture (incl. "MVP Enforcement Level" subsection) | P-001 | AC-LOGIN | TS-LOGIN | TC-LOGIN-01..03 | **FAIL (partial)** — executed 2026-08-29 against the real running app. TC-LOGIN-03 **PASS** — simulated an authenticated non-admin user (`role: 'VIEWER'`) and confirmed navigating to `/administration` shows "403 — Access denied" (`ProtectedRoute`'s `allowedRoles` check); confirmed by contrast that an `ADMIN`-role user reaches the real page. TC-LOGIN-01/-02 **BLOCKED — for a new, distinct reason**: unlike Asset/Employee/Ticket (which have a `MockAssetRepository`-style fallback), `auth-service.ts` has **no mock fallback at all** — `login()` always calls the real `go-template-main` backend (`POST /auth/login`). No Postgres is reachable in this environment (port 5432 closed) and no `docker-compose`/backend `.env.example` exists for a quick local stand-up, so the network request fails with `ERR_CONNECTION_REFUSED` (confirmed via network trace) before ever reaching real auth logic. Login's `catch` block shows the identical "Invalid username or password" message for *any* failure (network-down or genuinely-wrong credentials alike), so even the visible symptom can't be used to infer AC-LOGIN-02 passed — the trigger observed was connectivity, not credential validation. This compounds, but is separate from, the pre-existing PRD-content block (auth mechanism/role-matrix undefined, PRD §16 Q21–Q22) — that question remains open regardless. New infrastructure finding **F-30**. |
+| `RAISE-NFR-SEC-RBAC-001` | Security & RBAC | PRD §11, §16 Resolved Question 38 (MVP enforcement level: UI-only/client-side, backend deferred to Roadmap — **verified present in `RAISE-PRD.md` v0.9 §11**) | §16 Security Architecture (incl. "MVP Enforcement Level" subsection) | P-001 | AC-LOGIN | TS-LOGIN | TC-LOGIN-01..03 | **PASS — F-30 (no Mock fallback for Auth) RESOLVED 2026-09-01, per explicit business decision and now implemented.** `TC-LOGIN-01`/`-02` move from their prior **BLOCKED** status (2026-08-29 — `auth-service.ts` had no mock fallback at all, so `login()` always hit the real, unreachable `go-template-main` backend, `ERR_CONNECTION_REFUSED`) to **PASS**. Fix: a new `frontend/src/services/auth-repository.ts` (`AuthRepository` interface, `MockAuthRepository`, `HttpAuthRepository`) mirrors the existing Mock/Http repository pattern already used by Asset/Employee/Ticket/Audit/Dashboard exactly; `auth-service.ts` was rewritten to select between them via a new `AUTH_API_ENABLED` flag (`config/featureFlags.ts`, default OFF, same convention as the other domains). Four demo accounts were created, one per Role (`types/auth.ts`: `EMPLOYEE`, `IT_STAFF`, `IT_MANAGER`, `ADMIN`) — `admin@raise.dev` / `manager@raise.dev` / `itstaff@raise.dev` / `employee@raise.dev`, all `demo1234`. TC-LOGIN-02 **PASS** — live-verified through the real Login page UI (`frontend/src/pages/Login/index.tsx`, not a localStorage bypass): submitting `wrong@raise.dev`/`wrongpass` showed "Invalid username or password" — this time confirmed as genuine credential rejection (`MockAuthRepository` checked the credential and rejected it), not a network failure masquerading as the same message, which is precisely the ambiguity that made this case BLOCKED before. TC-LOGIN-01 **PASS** — submitting `admin@raise.dev`/`demo1234` through the same real UI successfully logged in and landed on the Executive Dashboard as "Demo Admin" / `ADMIN` role. Also confirmed: new `frontend/src/services/auth-service.test.ts` (2 tests — TC-LOGIN-01 valid credentials across multiple roles, TC-LOGIN-02 invalid credentials rejected) both pass; full frontend suite now 147/147 passing (was 145, +2 for this change), `tsc --noEmit` and lint both clean. TC-LOGIN-03 **unaffected, still PASS** (unchanged from the 2026-08-29 execution — simulated non-admin `role: 'VIEWER'` correctly denied `/administration`, contrasted against an `ADMIN`-role user reaching the real page). **This closes F-30 (infrastructure/execution gap) only.** It explicitly does **not** resolve the separate, still-open PRD-content question — the authentication mechanism and role/permission matrix content (PRD §16 Q21–Q22) remain genuinely undefined; the four demo accounts are a testing convenience enabling dev-sandbox execution, not a confirmed production role/permission matrix. AC-LOGIN's own "NOT TESTABLE YET" note (mechanism/role content) is unchanged and still accurate — see new Gap 10 (§6). |
 | Dashboard / Navigation | Main Dashboard | PRD §8 (KPI concepts only) | §13 Executive Intelligence (rewritten 2026-08-31 — "Logical Dashboard — Current MVP (As Built)") | P-002 (rewritten 2026-08-31 to match as-built) | AC-DASH (rewritten 2026-08-31: AC-DASH-01/-02, new AC-DASH-03) | TS-DASH (corrected 2026-08-31) | TC-DASH-01..03 (rewritten 2026-08-31) | **PASS (partial)** — re-executed 2026-08-31 against the real running app (same single page as `RAISE-FR-EXEC-001`/P-014 above — see that row for evidence). `TC-DASH-01` **PASS** (all 8 KPI tiles present) and `TC-DASH-02` **PASS** (all 10 sections present), both confirmed via real page text — identical evidence to `TC-EXEC-001-01`/`-02` since this is the same built page. This closes Gap 8's re-execution item — see `OPEN-FINDINGS.md` F-22, now Resolved (R-13). `TC-DASH-03` (NBV/Risk/Utilization tiles confirmed absent from the shipped grid) **PASS on the absence-check itself** — the three tiles are indeed absent, as expected — but remains **BLOCKED (partial)** for whether/when they should ever be added and under what formula/threshold (PRD §16 Q3–Q4, Open Finding F-03), unaffected by this re-execution. Utilization's definition remains separately resolved per PRD §16 Resolved Question 27 (unaffected). |
 
 ### 4.1 PRD-Listed Capabilities Previously Without a Traceability ID — Resolved
@@ -182,8 +182,8 @@ has no dedicated Traceability ID and therefore no row of its own in §3:
 
 | PRD §10 NFR Area | Design | Prototype | AC | Suite | TC | Matrix Status |
 |---|---|---|---|---|---|---|
-| Authentication | §16 (mechanism TBD) | Narrative on P-001 only | AC-LOGIN (existence only) | TS-LOGIN | TC-LOGIN-01/-02 | Covered only as a narrow slice of `RAISE-NFR-SEC-RBAC-001` above — no dedicated PRD Traceability ID of its own |
-| Authorization / RBAC | §16 "MVP Enforcement Level" | Narrative on P-001/P-009 | AC-LOGIN, AC-OPS-002, AC-MAINT-001 (dependency notes) | TS-LOGIN, TS-OPS-002, TS-MAINT-001 | TC-LOGIN-03, TC-OPS-002-01, TC-MAINT-001-04..08 | Same row as `RAISE-NFR-SEC-RBAC-001` above (§4) — enforcement location only, role content TBD |
+| Authentication | §16 (mechanism TBD) | Narrative on P-001 only | AC-LOGIN (existence only) | TS-LOGIN | TC-LOGIN-01/-02 | Covered only as a narrow slice of `RAISE-NFR-SEC-RBAC-001` above — no dedicated PRD Traceability ID of its own. `TC-LOGIN-01`/`-02` now execute and **PASS** (F-30 infrastructure gap resolved 2026-09-01 — `MockAuthRepository` + `AUTH_API_ENABLED` flag), but the *mechanism itself* (production auth model, not the demo Mock credentials used to exercise it) remains TBD — this row's "mechanism TBD" status is unchanged |
+| Authorization / RBAC | §16 "MVP Enforcement Level" | Narrative on P-001/P-009 | AC-LOGIN, AC-OPS-002, AC-MAINT-001 (dependency notes) | TS-LOGIN, TS-OPS-002, TS-MAINT-001 | TC-LOGIN-03, TC-OPS-002-01, TC-MAINT-001-04..08 | Same row as `RAISE-NFR-SEC-RBAC-001` above (§4) — enforcement location only, role content TBD; unaffected by F-30's resolution, since `TC-LOGIN-03` was already PASS and does not depend on the Mock/Http auth fallback |
 | Performance | §16A: TBD | §25A: no representation | §19.9: no AC group | §3.3: no suite | §18.5: no test case | **No PRD Traceability ID — not a row in §3/§4. Placeholder only, no test coverage of any kind, by design (nothing to invent).** |
 | Availability | §16A: TBD | §25A: no representation | §19.9: no AC group | §3.3: no suite | §18.5: no test case | Same as Performance |
 | Scalability | §16A: TBD | §25A: no representation | §19.9: no AC group | §3.3: no suite | §18.5: no test case | Same as Performance |
@@ -564,6 +564,66 @@ prior revision has now been completed and evidenced above, closing this gap
 in full. `OPEN-FINDINGS.md` F-27's closure (to Resolved) is tracked and
 handled separately, out of this document's scope.
 
+**Gap 10 (RESOLVED 2026-09-01 — infrastructure gap only; a distinct
+requirement-content question remains open):** `RAISE-NFR-SEC-RBAC-001`'s
+`TC-LOGIN-01`/`-02` were BLOCKED as of the 2026-08-29 execution for an
+infrastructure reason distinct from the requirement's own long-standing
+PRD-content blocker — unlike every other domain (Asset/Employee/Ticket/
+Audit/Dashboard), `auth-service.ts` had **no Mock repository fallback at
+all**, so `login()` always called the real, unreachable `go-template-main`
+backend, making the two test cases genuinely impossible to exercise in this
+dev sandbox (no reachable Postgres, no `docker-compose`/`.env.example` for a
+quick stand-up). Tracked as Open Finding F-30.
+
+**What was done to close it:** per explicit business decision — add a
+`MockAuthRepository` following the same Mock/Http repository pattern already
+used by every other domain, gated by a feature flag defaulting OFF, same as
+the others — the fix was implemented 2026-09-01:
+
+- New `frontend/src/services/auth-repository.ts` — `AuthRepository`
+  interface, `MockAuthRepository`, `HttpAuthRepository` — mirrors
+  `asset-repository.ts`'s structure exactly.
+- `frontend/src/services/auth-service.ts` rewritten to select between them
+  via a new `AUTH_API_ENABLED` flag (`config/featureFlags.ts`, default OFF),
+  mirroring `asset-service.ts`.
+- Four demo accounts, one per Role (`types/auth.ts`: `EMPLOYEE`, `IT_STAFF`,
+  `IT_MANAGER`, `ADMIN`) — `admin@raise.dev` / `manager@raise.dev` /
+  `itstaff@raise.dev` / `employee@raise.dev`, all `demo1234`.
+- New `frontend/src/services/auth-service.test.ts` (2 tests: TC-LOGIN-01
+  valid credentials across multiple roles, TC-LOGIN-02 invalid credentials
+  rejected), both passing. Full frontend suite 147/147 (was 145),
+  `tsc --noEmit` and lint both clean.
+- Live browser verification through the **real** Login page UI
+  (`frontend/src/pages/Login/index.tsx`, not a localStorage bypass):
+  `wrong@raise.dev`/`wrongpass` → "Invalid username or password," confirmed
+  this time as genuine credential rejection, not a network failure
+  masquerading as the same message (the exact ambiguity that made this case
+  BLOCKED before); `admin@raise.dev`/`demo1234` → successful login, landed
+  on the Executive Dashboard as "Demo Admin" / `ADMIN` role.
+
+**What this closes, and what it explicitly does not close:**
+
+1. **Closed:** the infrastructure/execution gap. `TC-LOGIN-01` and
+   `TC-LOGIN-02` (§4, `RAISE-NFR-SEC-RBAC-001` row) move from `BLOCKED` to a
+   real, evidence-based **PASS**. `TC-LOGIN-03` is unaffected, unchanged
+   `PASS`.
+2. **NOT closed — a genuinely separate, still-open question:** the
+   authentication mechanism and role/permission matrix content (PRD §16
+   Q21–Q22) remain undefined. `AC-LOGIN`'s own "NOT TESTABLE YET" note
+   (`RAISE-ACCEPTANCE-CRITERIA.md` §4) is unchanged by this fix and is still
+   accurate — it was never edited, because no source document for that
+   half of the gap has been changed. The four demo accounts are a testing
+   convenience that makes `MockAuthRepository`-backed execution possible;
+   they are explicitly **not** a confirmed production role list or
+   permission matrix, and this matrix does not treat them as one. No new
+   Open Question is proposed here for the Q21/Q22 half — that question
+   already has a documented, still-open vehicle (PRD §16 Q21–Q22, AC-LOGIN
+   §4's own note) and remains correctly tracked there, not silently folded
+   into F-30's closure.
+
+`OPEN-FINDINGS.md` F-30's closure (to Resolved) is tracked and handled
+separately, out of this document's scope.
+
 ---
 
 ## 7. Chain Consistency Check
@@ -698,6 +758,26 @@ downstream document's citation of an upstream document's content:
   frontend suite. Thread confirmed complete end-to-end — the
   spec-correction, UI-implementation, and execution-sweep halves are all
   closed (Gap 9, §6, RESOLVED).
+- **`RAISE-NFR-SEC-RBAC-001` / F-30 Mock-fallback infrastructure gap —
+  thread walked this revision (2026-09-01):** Open Finding F-30 →
+  `frontend/src/services/auth-repository.ts` (new, mirrors
+  `asset-repository.ts`) → `frontend/src/services/auth-service.ts`
+  (rewritten to select Mock/Http via `AUTH_API_ENABLED`, mirrors
+  `asset-service.ts`) → `frontend/src/services/auth-service.test.ts` (new,
+  2 tests, both pass) → live execution against the real Login page UI
+  (`frontend/src/pages/Login/index.tsx`). This is an infrastructure/
+  execution-layer fix, not a spec-content change — `RAISE-PRD.md`,
+  `RAISE-ACCEPTANCE-CRITERIA.md` (`AC-LOGIN`), and `RAISE-TEST-CASES.md`
+  (`TC-LOGIN-01..03`) were **not** edited for this fix, and correctly were
+  not: `AC-LOGIN`'s "NOT TESTABLE YET" note already scoped `AC-LOGIN-01/-02`
+  to *existence* of a success/error path only, not to any specific
+  mechanism — exactly what is now exercisable and PASS. No layer invents a
+  role list, permission matrix, or production auth mechanism; the four demo
+  accounts remain a testing convenience, correctly not elevated to
+  confirmed requirement content anywhere in this thread. Thread confirmed
+  complete — infrastructure half closed (Gap 10, §6, RESOLVED); the
+  requirement-content half (PRD §16 Q21–Q22) is a genuinely separate,
+  still-open thread, unaffected and not claimed closed here.
 - Full re-walk confirmed no other Test Status cell in §3/§4 has drifted from
   the current text of `RAISE-TEST-CASES.md` v0.9 (cross-checked TC-by-TC):
   `RAISE-FR-ASSET-001`, `RAISE-FR-ASSET-003`, `RAISE-FR-OPS-001/002`,
@@ -799,6 +879,17 @@ not touched by this correction.
   Review may treat this requirement's Category/Type hierarchy coverage as a
   confirmed `PASS` — this is a real, evidence-based execution result, not an
   assumption from the spec correction alone. See Gap 9, §6, RESOLVED.
+- **Resolved this revision (2026-09-01), Gap 10:** `RAISE-NFR-SEC-RBAC-001`'s
+  infrastructure blocker (Open Finding F-30 — no Mock fallback for Auth) is
+  now resolved. `TC-LOGIN-01`/`-02` were formally re-executed through the
+  real Login page UI and confirmed **PASS**, alongside 2 new passing
+  automated tests (`auth-service.test.ts`) and a clean 147/147 full frontend
+  suite. Compliance Review may treat this requirement's success/error-state
+  existence coverage as a confirmed `PASS`. **Compliance Review must not**,
+  however, treat this as resolving the authentication mechanism or role/
+  permission matrix content (PRD §16 Q21–Q22) — that remains a genuinely
+  open, separate requirement-content question; `AC-LOGIN`'s "NOT TESTABLE
+  YET" note on mechanism/role content is unchanged. See Gap 10, §6.
 
 ---
 
@@ -839,6 +930,15 @@ not touched by this correction.
       execution sweep (`TC-ASSET-002-01`, `-02`, `-03` all formally executed
       against the real running app and confirmed PASS, corroborated by 3
       passing automated tests and a clean full 145-test frontend suite)
+- [x] **Gap 10 (§6) is RESOLVED this revision** — Open Finding F-30 (no
+      Mock fallback for Auth) is closed: `MockAuthRepository` +
+      `AUTH_API_ENABLED` flag implemented, mirroring every other domain's
+      Mock/Http pattern; `TC-LOGIN-01`/`-02` formally re-executed through
+      the real Login page UI and confirmed PASS, corroborated by 2 new
+      passing automated tests and a clean 147/147 full frontend suite.
+      **Explicitly not resolved by this**, and correctly not claimed as
+      such: the authentication mechanism / role-permission matrix content
+      (PRD §16 Q21–Q22) — remains genuinely open, tracked separately
 - [x] No VERSCAN-only item appears anywhere in this matrix
 
 ---
@@ -865,16 +965,23 @@ Development (Source Code)
 RAISE-COMPLIANCE-REVIEW.md
 ```
 
-Gaps 1–9 are resolved and re-confirmed with no drift this revision. **Gap 8
+Gaps 1–10 are resolved and re-confirmed with no drift this revision. **Gap 8
 is fully resolved** — both the spec-correction half and the formal
 execution-sweep half are done (see Gap 8, §6, and the `RAISE-FR-EXEC-001`/
-Dashboard-Navigation rows in §3/§4). **Gap 9 is now fully resolved this
-revision** — `RAISE-FR-ASSET-002`'s Category/Type sub-taxonomy spec question
+Dashboard-Navigation rows in §3/§4). **Gap 9 is fully resolved** —
+`RAISE-FR-ASSET-002`'s Category/Type sub-taxonomy spec question
 (Open Finding F-27) is closed at the Prototype/AC/Test Plan/Test Cases
 layer, the UI code change (Type-level nesting in the "By Category" view) has
 shipped, and a fresh formal execution sweep against `TC-ASSET-002-01`/`-02`/
 `-03` confirmed PASS (see Gap 9, §6, and the `RAISE-FR-ASSET-002` row in
-§3).
+§3). **Gap 10 is now resolved this revision** —
+`RAISE-NFR-SEC-RBAC-001`'s infrastructure blocker (Open Finding F-30 — no
+Mock fallback for Auth) is closed: a `MockAuthRepository` + `AUTH_API_ENABLED`
+flag now let `TC-LOGIN-01`/`-02` execute against the real Login page UI,
+confirmed PASS (see Gap 10, §6, and the `RAISE-NFR-SEC-RBAC-001` row in §4).
+This closes only the infrastructure half — the requirement-content half
+(auth mechanism / role-permission matrix, PRD §16 Q21–Q22) remains open and
+is carried forward in item 1 below, unchanged in scope.
 
 **Recommended next actions, in order:**
 
@@ -885,10 +992,12 @@ shipped, and a fresh formal execution sweep against `TC-ASSET-002-01`/`-02`/
    expiry-window threshold underlying `AC-WARRANTY-001-03`/
    `TC-WARRANTY-001-03` (Q15's field-list portion is now resolved — see
    Gap 7, §6), Q18–Q20 (AI citation/confidence/conflict), Q21–Q23
-   (authentication mechanism, role list, permission matrix content), Q24–Q25
-   (audit taxonomy/retention), Open Question 10a (`ReconciliationPage`
-   mapping), and Open Question 20a (`RAISE-AI-DOC-004` matching/merge
-   behavior).
+   (authentication mechanism, role list, permission matrix content — **still
+   genuinely open; the four `MockAuthRepository` demo accounts added to
+   close Gap 10 are a testing convenience, not a proposed answer to this
+   question**), Q24–Q25 (audit taxonomy/retention), Open Question 10a
+   (`ReconciliationPage` mapping), and Open Question 20a
+   (`RAISE-AI-DOC-004` matching/merge behavior).
 2. Resolve the `RAISE-FR-ASSET-003` vs. `RAISE-FR-OPS-002` custody-writing-
    events exclusivity question (Gap 4) before any custody-writing code path
    beyond Check-in/Check-out is built.
@@ -905,15 +1014,22 @@ shipped, and a fresh formal execution sweep against `TC-ASSET-002-01`/`-02`/
 
 ## Document Status
 
-**Version:** 1.0 (`RAISE-FR-ASSET-002` Category/Type sub-taxonomy —
-Gap 9, §6, fully RESOLVED this revision: the spec correction, the UI
-implementation (Type-level nesting shipped in the "By Category" view), and
-the execution sweep are all done, with `TC-ASSET-002-01..03` all confirmed
-PASS)
+**Version:** 1.1 (Open Finding F-30 — no Mock fallback for Auth — RESOLVED
+this revision, infrastructure scope only: `MockAuthRepository` +
+`AUTH_API_ENABLED` flag implemented, `TC-LOGIN-01`/`-02` re-executed through
+the real Login page UI and confirmed PASS, `TC-LOGIN-03` unaffected/still
+PASS. The separate, still-open PRD-content question — authentication
+mechanism / role-permission matrix content, PRD §16 Q21–Q22 — remains
+genuinely undefined and is explicitly not resolved by this fix. `Gap 9`
+(`RAISE-FR-ASSET-002` Category/Type sub-taxonomy) unchanged from v1.0.)
 **Status:** Draft for Traceability Review
-**Source:** [`RAISE-TEST-CASES.md`](../06-test-cases/RAISE-TEST-CASES.md) v0.9 and full upstream chain — `RAISE-TEST-PLAN.md` v0.8, `RAISE-ACCEPTANCE-CRITERIA.md` v0.8, `RAISE-PROTOTYPE.md` v0.9, `RAISE-DESIGN.md` v0.9 (unchanged this revision), and `RAISE-PRD.md` v0.11 (unchanged this revision — Open Finding F-27's resolution required no PRD-level change)
+**Source:** [`RAISE-TEST-CASES.md`](../06-test-cases/RAISE-TEST-CASES.md) v0.9 (unchanged this revision) and full upstream chain — `RAISE-TEST-PLAN.md` v0.8, `RAISE-ACCEPTANCE-CRITERIA.md` v0.8 (unchanged this revision — `AC-LOGIN`'s "NOT TESTABLE YET" note is still accurate), `RAISE-PROTOTYPE.md` v0.9, `RAISE-DESIGN.md` v0.9 (unchanged this revision), and `RAISE-PRD.md` v0.11 (unchanged this revision — F-30's resolution is an infrastructure/execution fix, not a requirement-content change)
 **Reference:** VERSCAN only
-**Last Re-Verified:** 2026-09-01 (re-sync and re-execution of
+**Last Re-Verified:** 2026-09-01 (`RAISE-NFR-SEC-RBAC-001` row re-executed
+against the real running app following the F-30 infrastructure fix — see
+Change Log v1.0 → v1.1 below and Gap 10, §6, for the full record. Prior
+re-verification of `RAISE-FR-ASSET-002`, unchanged this revision, retained
+below for history:
 `RAISE-FR-ASSET-002` against Prototype P-005 (v0.9) / AC AC-ASSET-002
 (v0.8) / Test Plan TS-ASSET-002 (v0.8, "RESOLVED and CLOSED") / Test Cases
 TC-ASSET-002-01..03 (v0.9), following the F-27 business decision. A fresh
@@ -937,7 +1053,79 @@ index.test.tsx` all pass, the full frontend suite (145 tests) passes with no
 regressions, and `tsc --noEmit`/lint are both clean. §3 `RAISE-FR-ASSET-002`
 row upgraded from **PASS (scoped)** to a full **PASS** (Gap 9, §6, RESOLVED). No other row required re-verification this pass.
 
-**Change Log — v0.9 → v1.0 (this revision, 2026-09-01):**
+**Change Log — v1.0 → v1.1 (this revision, 2026-09-01):**
+
+1. **Gap 10 opened and RESOLVED in the same revision, infrastructure scope
+   only:** `RAISE-NFR-SEC-RBAC-001`'s `TC-LOGIN-01`/`-02` were `BLOCKED` as
+   of the 2026-08-29 execution because `auth-service.ts` had no Mock
+   repository fallback, unlike every other domain, so `login()` always
+   called the real, unreachable `go-template-main` backend. Per explicit
+   business decision, a `MockAuthRepository` was added (new
+   `frontend/src/services/auth-repository.ts`, mirroring
+   `asset-repository.ts`'s `AuthRepository`/`MockAuthRepository`/
+   `HttpAuthRepository` structure exactly), gated by a new
+   `AUTH_API_ENABLED` flag (`config/featureFlags.ts`, default OFF, same
+   convention as every other domain). Four demo accounts were created, one
+   per Role (`types/auth.ts`: `EMPLOYEE`, `IT_STAFF`, `IT_MANAGER`,
+   `ADMIN`) — `admin@raise.dev` / `manager@raise.dev` / `itstaff@raise.dev`
+   / `employee@raise.dev`, all `demo1234`. **This closes the infrastructure
+   half of the gap in full; the requirement-content half — authentication
+   mechanism / role-permission matrix content, PRD §16 Q21–Q22 — is
+   explicitly not resolved and remains open** — see Gap 10, §6, for the
+   full closure record.
+2. **§4 `RAISE-NFR-SEC-RBAC-001` row updated** from `FAIL (partial)` to
+   real, evidence-based **PASS**: `TC-LOGIN-01`/`-02` re-executed through
+   the real Login page UI (`frontend/src/pages/Login/index.tsx`, not a
+   localStorage bypass) and confirmed PASS (wrong credentials rejected with
+   genuine "Invalid username or password"; `admin@raise.dev`/`demo1234`
+   logged in successfully as `ADMIN`); `TC-LOGIN-03` unaffected, still PASS.
+   Corroborated by 2 new passing automated tests
+   (`frontend/src/services/auth-service.test.ts`) and a clean 147/147 full
+   frontend suite (was 145), with `tsc --noEmit`/lint both clean.
+3. **§4.2 NFR backlog cross-layer table updated** — the Authentication and
+   Authorization/RBAC rows both gained a clarifying note that `TC-LOGIN-01`/
+   `-02`/`-03` now execute and PASS, while the underlying "mechanism TBD" /
+   "role content TBD" status is explicitly unchanged, since F-30 was an
+   infrastructure gap, not a requirement-content resolution.
+4. **§6 Gap 10 added**, following the same "record resolution with
+   evidence, explicitly separate a closed infrastructure half from a still-
+   open content half, do not silently close the content half" discipline as
+   Gaps 7–9.
+5. **§7 Chain Consistency Check** gained a dedicated `RAISE-NFR-SEC-RBAC-001`
+   / F-30 thread-walk bullet confirming the fix is infrastructure/execution-
+   layer only — `RAISE-PRD.md`, `RAISE-ACCEPTANCE-CRITERIA.md` (`AC-LOGIN`),
+   and `RAISE-TEST-CASES.md` (`TC-LOGIN-01..03`) were correctly **not**
+   edited for this fix, since `AC-LOGIN`'s existing "NOT TESTABLE YET" note
+   already scoped `AC-LOGIN-01/-02` to existence-only testing, which is
+   exactly what is now exercisable.
+6. **§8 Compliance Review Readiness** gained a new resolved-item note
+   (mirroring the Gap 8/Gap 9 notes) explicitly warning Compliance Review
+   not to treat this fix as resolving the authentication-mechanism/role-
+   matrix question.
+7. **§9 Checklist** gained a Gap 10 item, marked RESOLVED (infrastructure
+   scope only, content half explicitly still open).
+8. **§10 Next Step** — Gaps 1–9 summary text updated to Gaps 1–10; item 1's
+   Q21–Q23 reference gained a clarifying note that the four
+   `MockAuthRepository` demo accounts are a testing convenience, not a
+   proposed answer to the open role/permission-matrix question.
+9. Version citations unchanged this revision: `RAISE-PRD.md` v0.11,
+   `RAISE-DESIGN.md` v0.9, `RAISE-PROTOTYPE.md` v0.9,
+   `RAISE-ACCEPTANCE-CRITERIA.md` v0.8, `RAISE-TEST-PLAN.md` v0.8,
+   `RAISE-TEST-CASES.md` v0.9 — none of the five upstream documents required
+   an edit for this fix, since it is a code/infrastructure change plus a
+   direct execution-evidence update to this matrix, not a spec correction
+   (per this document's own established practice for pure execution-result
+   updates, e.g. the `RAISE-FR-ASSET-001`/`RAISE-FR-OPS-001`/
+   `RAISE-FR-OPS-002` rows). Document version bumped 1.0 → 1.1. **No other
+   gap in §6 was found open, closed, or newly discovered during this pass**
+   — Gaps 1–9 are unchanged from v1.0 and are not re-litigated here; this
+   revision's reverse-chain re-verification was scoped to
+   `RAISE-NFR-SEC-RBAC-001` specifically, per the instruction that prompted
+   it, not a full re-walk of every requirement. `OPEN-FINDINGS.md` F-30
+   update (to Resolved) is tracked and handled separately, out of this
+   document's scope.
+
+**Change Log — v0.9 → v1.0 (prior revision, 2026-09-01):**
 
 1. **Gap 9 fully RESOLVED** (was partially resolved in v0.9 — spec
    correction only). The UI code change nesting the "By Category" view one
@@ -1248,11 +1436,16 @@ enforcement level noted, and the original Gap 6 finding).
 **Next Action:** With the Dashboard/`RAISE-FR-EXEC-001` spec correction
 propagated end-to-end and the fresh formal execution sweep against the
 corrected `TC-DASH-01..03`/`TC-EXEC-001-01..02` now complete (Gap 8, §6,
-fully resolved), and with `RAISE-FR-ASSET-002`'s Category/Type sub-taxonomy
+fully resolved), with `RAISE-FR-ASSET-002`'s Category/Type sub-taxonomy
 spec correction, UI implementation, and execution sweep now also complete
-(Gap 9, §6, fully resolved), this matrix's own §3/§4 rows have been updated
+(Gap 9, §6, fully resolved), and with `RAISE-NFR-SEC-RBAC-001`'s Mock-
+fallback infrastructure gap now also resolved (Gap 10, §6 — `TC-LOGIN-01`/
+`-02` re-executed through the real Login page UI and confirmed PASS,
+infrastructure scope only), this matrix's own §3/§4 rows have been updated
 to real, evidence-based `PASS`/`PASS (partial)` results. The standing PRD
-Open Questions and Gap 4's custody-writing-events question (§8, §10 above)
-remain the next priority before Development proceeds on the requirements
-they block. No document in the chain requires a further consistency
-correction at this time.
+Open Questions — in particular Q21–Q23 (authentication mechanism, role
+list, permission matrix content), which Gap 10's closure explicitly does
+**not** resolve — and Gap 4's custody-writing-events question (§8, §10
+above) remain the next priority before Development proceeds on the
+requirements they block. No document in the chain requires a further
+consistency correction at this time.

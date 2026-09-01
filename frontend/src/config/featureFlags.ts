@@ -40,3 +40,10 @@ export const AUDIT_API_ENABLED = import.meta.env.VITE_AUDIT_API_ENABLED === 'tru
 // this domain composes over the Asset domain server-side, not the frontend's own
 // assetService, so enabling it doesn't require ASSET_API_ENABLED to also be on.
 export const DASHBOARD_API_ENABLED = import.meta.env.VITE_DASHBOARD_API_ENABLED === 'true';
+
+// Same reasoning as the flags above, for Auth (go-template-main/controller/authController.go).
+// Independent flag since Auth can land/be enabled separately from every other domain.
+// Resolves Open Finding F-30 (OPEN-FINDINGS.md, R-15): unlike every other domain, auth-service.ts
+// previously had no Mock fallback, so TC-LOGIN-01/-02 couldn't be exercised without a real
+// backend + Postgres running. See services/auth-repository.ts's MockAuthRepository.
+export const AUTH_API_ENABLED = import.meta.env.VITE_AUTH_API_ENABLED === 'true';

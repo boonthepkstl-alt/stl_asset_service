@@ -1,18 +1,13 @@
-import apiClient from '@/services/api-client';
-import { API_ENDPOINTS } from '@/config/constants';
+import { AUTH_API_ENABLED } from '@/config/featureFlags';
+import { HttpAuthRepository, MockAuthRepository, type AuthRepository } from '@/services/auth-repository';
 import type { LoginRequest, LoginResponse } from '@/types/auth';
 
-// Maps directly onto go-template-main's authController (POST /auth/login, /auth/logout).
-// go-template's demo AuthService is a hardcoded single-user stub (see AUTH-RBAC.md) — this
-// service already targets the real contract so swapping the backend implementation later
-// requires no frontend change.
-export const authService = {
-  login: async (credentials: LoginRequest): Promise<LoginResponse> => {
-    const response = await apiClient.post<LoginResponse>(API_ENDPOINTS.AUTH.LOGIN, credentials);
-    return response.data;
-  },
+// AUTH_API_ENABLED (config/featureFlags.ts) is off by default -- most dev/test environments
+// have no go-template-main/Postgres instance running. Resolves Open Finding F-30
+// (OPEN-FINDINGS.md, R-15): unlike every other domain, this previously had no Mock fallback.
+const repository: AuthRepository = AUTH_API_ENABLED ? new HttpAuthRepository() : new MockAuthRepository();
 
-  logout: async (): Promise<void> => {
-    await apiClient.post(API_ENDPOINTS.AUTH.LOGOUT);
-  },
+export const authService = {
+  login: (credentials: LoginRequest): Promise<LoginResponse> => repository.login(credentials),
+  logout: (): Promise<void> => repository.logout(),
 };

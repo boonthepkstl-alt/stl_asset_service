@@ -17,6 +17,11 @@ changes user-visible or API-visible behavior. Pure documentation-sync PRs
 ## 2026-09-01
 
 ### Added
+- **Local Docker infrastructure** — `docker compose up --build` now runs
+  the whole stack (frontend, backend, PostgreSQL) as 3 containers for
+  local dev/demo, with the database schema auto-applied on first run.
+  See `DOCKER.md`. This is local tooling only — production hosting is
+  still undecided.
 - **Configurable Warranty "Expiring" threshold** — the Warranty badge on
   the Asset Registry list and Asset Detail page now shows three states
   (Active/Expiring/Expired) instead of two. How many days before expiry

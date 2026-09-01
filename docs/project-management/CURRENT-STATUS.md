@@ -9,10 +9,10 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-09-01, after `CHECKPOINT-2026-09-01-009` (Open Finding F-02
-resolved — Check-in/Check-out workflow shape, permission gate, and Custody
-holder data model, PRD §16 Q11–Q13; not yet shipped via PR, see that
-checkpoint for status). The
+**As of:** 2026-09-01, after `CHECKPOINT-2026-09-01-010` (local 3-container
+Docker infrastructure added — frontend/backend/db — with a real nginx
+routing bug found and fixed during end-to-end verification; not yet
+shipped via PR, see that checkpoint for status). The
 `BASELINE-CHECKPOINT-2026-08-24` scan is still the last
 full live re-verification against `git`/source. F-20 (checkpoint-coverage
 gap) is closed (R-04); F-21 (QR/Barcode invalid-code state) is closed

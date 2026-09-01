@@ -43,8 +43,8 @@ so the history of what was once open stays visible.
 
 | ID | Area | Description | Source | Status |
 |---|---|---|---|---|
-| F-13 | Hosting | No deployment target or infrastructure decision exists | `RAISE-HIGH-LEVEL-ARCHITECTURE.md` §6 | Open — not a PRD-scope item |
-| F-14 | CI/CD | No pipeline configured for either `frontend/` or `go-template-main/` | `RAISE-HIGH-LEVEL-ARCHITECTURE.md` §6 | Open |
+| F-13 | Hosting | No deployment target or infrastructure decision exists | `RAISE-HIGH-LEVEL-ARCHITECTURE.md` §6 | Open — not a PRD-scope item. **Partial progress 2026-09-01**: `docker-compose.yml` + `frontend`/`go-template-main` Dockerfiles now make the app runnable as 3 local containers (`DOCKER.md`) — this makes local dev/demo reproducible, it does **not** decide a production hosting target (cloud provider, orchestration, IaC), which remains genuinely undecided |
+| F-14 | CI/CD | No pipeline configured for either `frontend/` or `go-template-main/` | `RAISE-HIGH-LEVEL-ARCHITECTURE.md` §6 | Open. **Unaffected by the 2026-09-01 Docker work above** — no CI pipeline builds/pushes the new images; `docker compose up --build` is a manual local command only |
 | F-15 | API versioning | `/api` vs `/api/v1` undecided | `COMPANY-FOUNDATION-BASELINE.md` §5.1 | Open |
 | F-16 | DB migration tooling | `sql/pg/V*__*.sql` files are applied manually; no migration tool wired up | `RAISE-HIGH-LEVEL-ARCHITECTURE.md` §6 | Open |
 | F-17 | NFR backlog | Performance, availability, scalability, backup/recovery, encryption, monitoring, logging targets all undefined | PRD §10 | Open — acknowledged at every layer of the chain, not silently omitted |

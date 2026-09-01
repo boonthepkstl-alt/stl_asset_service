@@ -2621,6 +2621,40 @@ Commit: pending — predicted next PR after #66 (verify via `gh pr list` before 
 
 ---
 
+## CHECKPOINT-2026-09-01-010
+
+**Phase:** Infrastructure / Process (F-13 Hosting, F-14 CI/CD — not a PRD-scope item)
+**Feature:** Local 3-container Docker stack (frontend / backend / PostgreSQL)
+**Task:** User requested local Docker infrastructure with one container each for `frontend/`, `go-template-main/`, and the database
+
+**What was implemented:** `docker-compose.yml` (root) orchestrating 3 services (`db`: `postgres:16-alpine` with auto-applied `sql/pg/*.sql` init on first run; `backend`: multi-stage Go 1.23 build; `frontend`: multi-stage Node 20 → nginx build), plus `frontend/Dockerfile`, `frontend/nginx.conf`, `frontend/.dockerignore`, `go-template-main/Dockerfile`, `go-template-main/.dockerignore`, `docker.env.example`, and `DOCKER.md` (usage guide).
+**What was modified:** None (existing app code untouched).
+**What was fixed:** A real bug found during verification, not a pre-existing one — the initial `nginx.conf` used `try_files $uri $uri/ /index.html`, which matched the app's client-side `/assets` route (Asset Registry) against Vite's own build-output `assets/` directory (hashed JS/CSS chunks) and 301-redirected instead of serving the SPA shell. Fixed by dropping the `$uri/` directory-match fallback (`try_files $uri /index.html`) — static chunks still serve correctly via a separate extension-matched `location` block.
+**What was added:** See "What was implemented."
+**What was removed:** None.
+
+**Decision:** N/A — a concrete engineering request (3 named containers), not a PRD/business question. No `AskUserQuestion` needed; reasonable infra defaults (Postgres 16, Node 20, Go 1.23 matching `go.mod`, ports 3000/8080/5432) were chosen and documented in `DOCKER.md` rather than asked about.
+
+**Files changed:** 9 new files (`docker-compose.yml`, `DOCKER.md`, `docker.env.example`, `frontend/Dockerfile`, `frontend/nginx.conf`, `frontend/.dockerignore`, `go-template-main/Dockerfile`, `go-template-main/.dockerignore`) + `OPEN-FINDINGS.md` (F-13/F-14 notes updated, not resolved).
+**Database changes:** None to schema — the existing `sql/pg/V0..V4` files are now auto-applied by the `db` container's first-run init, not newly written.
+**API changes:** None. **Frontend changes:** None to app code; only the new `nginx.conf` serving layer.
+
+**Tests:** No unit/automated test suite applies to Docker infra itself. **Full manual end-to-end verification performed** (see Validation).
+**Validation:** `docker compose up --build` — all 3 containers reached a running/healthy state. Verified live: (1) Postgres init auto-applied all 5 migration files (`\dt` showed `assets`, `audit_logs`, `employees`, `samplemodel`, `technicians`, `tickets`); (2) backend `/api/auth/login` with the existing demo credentials (`admin`/`password`) returned a valid JWT; (3) that token successfully queried `/api/assets` (a DB-backed endpoint, returned `{"data":[],"total":0}` — empty because no seed data, not because the connection failed); (4) CORS preflight from `Origin: http://localhost:3000` to the backend returned `Access-Control-Allow-Origin: http://localhost:3000` correctly; (5) frontend served `index.html` at `/`, and — after the nginx fix — both `/assets` and `/settings` (SPA client-side routes) returned 200 with the app shell, while the real static chunk `/assets/index-*.js` still served correctly with `application/javascript`. All test containers stopped and removed after verification (`docker compose down`).
+
+**Requirement Traceability:**
+No `RAISE-FR-*`/`RAISE-AI-*`/`RAISE-NFR-*` ID — this is Infrastructure/Process work (F-13/F-14), explicitly outside PRD scope, consistent with `OPEN-FINDINGS.md`'s existing categorization.
+
+**Git:**
+Branch: pending (not yet created as of this checkpoint).
+Commit: pending — predicted next PR after #67 (verify via `gh pr list` before treating as final; must not be merged until the user explicitly instructs "merge PR #N").
+
+**Known Issues:** F-13 (production hosting target) and F-14 (CI/CD pipeline) remain genuinely open — this checkpoint makes local dev/demo containerized and reproducible, it does not decide where these containers would run in production or wire up any pipeline to build/push them.
+**Remaining Work:** Git branch/commit/push/PR for this checkpoint's changes.
+**Next Step:** Recalculate `NEXT-STEP.md`. Create git branch, commit, push, open PR, and wait for the user's explicit "merge PR #N" instruction before merging.
+
+---
+
 ## Level 2 — Feature Checkpoints
 
 ### FEATURE-CHECKPOINT-project-tracking-governance

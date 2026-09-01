@@ -2,20 +2,25 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Requirement Traceability Matrix (RTM)
-**Version:** 1.1 Draft (Open Finding F-30 — no Mock fallback for Auth —
-**RESOLVED this revision, infrastructure scope only.** A `MockAuthRepository`
-was added following the same Mock/Http repository pattern already used by
-every other domain, gated by a new `AUTH_API_ENABLED` flag (default OFF).
-`TC-LOGIN-01`/`-02` move from BLOCKED to **PASS**, verified via live
-browser execution through the real Login page UI. **This resolves only the
-infrastructure gap (F-30) — it explicitly does NOT resolve the separate,
-still-open PRD-content question** (authentication mechanism / role-
-permission matrix content, PRD §16 Q21–Q22), which remains genuinely
-undefined; see the `RAISE-NFR-SEC-RBAC-001` row (§4) and new Gap 10 (§6)
-for the full record. `RAISE-FR-ASSET-002`'s Gap 9 (Category/Type
-sub-taxonomy) remains fully RESOLVED from v1.0, unchanged this revision.)
+**Version:** 1.2 Draft (Open Finding F-32 — no P-012 Alerts screen at all,
+route 404'd — **RESOLVED this revision, per explicit business decision and
+now implemented.** A new Alerts screen (`frontend/src/pages/Alerts/
+index.tsx`, registered at `ROUTES.NOTIFICATIONS`/`/notifications`) derives
+its one alert-triggering condition from the one already confirmed elsewhere
+in the app — an asset's `warrantyExpiry` being in the past, the same
+`isWarrantyExpired` check `RAISE-FR-WARRANTY-001`'s Warranty column already
+uses — with no new field/data model, and renders Severity honestly as "Not
+yet defined" rather than an invented High/Medium/Low. `TC-ALERT-001-01`/
+`-02` move from **FAIL** to **PASS**, formally executed 2026-09-01 against
+the real running app per `RAISE-TEST-CASES.md` v0.10. **This resolves only
+the build gap (F-32) — it explicitly does NOT resolve the separate,
+still-open PRD-content question** (severity mapping / trigger rules for any
+condition beyond warranty-expired, PRD §6.9 Open Question, Open Finding
+F-05), which remains genuinely undefined; see the `RAISE-FR-ALERT-001` row
+(§3) and new Gap 11 (§6) for the full record. Gaps 1–10 remain fully
+RESOLVED from v1.1, unchanged this revision.)
 **Status:** Draft for Traceability Review
-**Source:** [`RAISE-TEST-CASES.md`](../06-test-cases/RAISE-TEST-CASES.md) v0.9 (unchanged this revision — this revision's Test Status update is a direct execution-evidence entry in this matrix only, per this document's own established practice, e.g. the `RAISE-FR-ASSET-001`/`RAISE-FR-OPS-001`/`RAISE-FR-OPS-002` rows), consolidated against [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.8, [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.8, [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.9, [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.9 (unchanged this revision), and [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.11 (unchanged this revision) — **the actual PRD file on disk was re-read in full for this revision, not assumed from downstream citations**, per this document's own standing practice since v0.4. Confirmed: `RAISE-PRD.md` itself did **not** change for this revision, nor did it need to — F-30 was an infrastructure/execution gap, not a requirement-content gap; AC-LOGIN's own "NOT TESTABLE YET" note (mechanism/role content, PRD §16 Q21–Q22) is unchanged and still accurate.
+**Source:** [`RAISE-TEST-CASES.md`](../06-test-cases/RAISE-TEST-CASES.md) v0.10 (updated this revision — `TC-ALERT-001-01`/`-02` now record formal 2026-09-01 execution evidence against the newly implemented Alerts screen), consolidated against [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.8 (unchanged this revision), [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.8 (unchanged this revision — `AC-ALERT-001`'s existing structural-display scope already covers this implementation, no spec correction needed), [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.9 (unchanged this revision), [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.9 (unchanged this revision), and [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.11 (unchanged this revision) — **the actual PRD file on disk was re-read in full for this revision, not assumed from downstream citations**, per this document's own standing practice since v0.4. Confirmed: `RAISE-PRD.md` itself did **not** change for this revision, nor did it need to — F-32 was a build/infrastructure gap, not a requirement-content gap; AC-ALERT-001's own scoping note (structural display testable now, specific severity/trigger-rule values NOT TESTABLE YET, PRD §6.9) is unchanged and still accurate.
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
 
@@ -132,7 +137,7 @@ per v0.4 Gap 6's own closure criteria.
 | `RAISE-FR-MAINT-001` | Maintenance (4-stage workflow: User Requisition → Dept Approval (Delegated) → IT Dispatch → Technician Execution) | P0 / MVP | §5.1 Maintenance Domain | P-009 | AC-MAINT-001 (AC-MAINT-001-01..09) | TS-MAINT-001 | TC-MAINT-001-01..09 | **PASS** — executed 2026-08-28 against the real running app, all 9 cases: TC-MAINT-001-03 **PASS** (a new requisition submitted via "New IT Requisition" enters `PENDING_DEPT_APPROVAL`). TC-MAINT-001-04 **PASS** (Dept Sign-off → Approve transitions to `PENDING_IT_DISPATCH`). TC-MAINT-001-05 **PASS** (Reject on a separate `PENDING_DEPT_APPROVAL` ticket resulted in `REJECTED_BY_DEPT`, confirmed **not** `PENDING_IT_DISPATCH` — per this case's own scope, no claim is made about whether that specific resulting state is itself correct). TC-MAINT-001-06 **PASS** (Assign Tech + Dispatch transitions to `IN_PROGRESS`, one of the three allowed states). TC-MAINT-001-07 **PASS** (Update Status to On-Hold with a hold reason correctly reflects "3. On-Hold" and shows the reason banner). TC-MAINT-001-08 **PASS** (Mark Complete transitions to `DONE`/"4. Resolved & Closed" with resolution notes shown). TC-MAINT-001-01 originally **FAIL** — the Maintenance record list showed no date/cost fields (F-28) — **now PASS**, re-executed after the fix: each record now shows created date and cost, verified live on asset `a1`. TC-MAINT-001-09 originally **FAIL** — the 4-stage progress indicator (`GovernanceStep` in `TicketDetail/index.tsx`) only rendered two visual states (done ✓ vs. a plain gray circle with the step number), so the "Current" stage and any not-yet-reached "Pending" stage were visually identical (F-29) — **now PASS**, re-executed after the fix: the current stage is derived from `ticket.status` and rendered with a distinct brand-colored circle, ring, and a "Current" badge; verified live across `PENDING_DEPT_APPROVAL` (stage 2 current), `PENDING_IT_DISPATCH` (stage 3 current), and `DONE` (no stage marked current, all done). TC-MAINT-001-02 **PASS** (2 records for asset `a1` displayed in ascending-chronological order by observed outcome, though the underlying code has no explicit sort — `assetTickets` in `AssetDetail/index.tsx` is unsorted array-filter order — a fragility worth watching, not a current failure since the observed order was correct). **The 4-stage workflow shape and state model remain verified present in `RAISE-PRD.md` v0.9 §6 and §16 Resolved Question 33.** |
 | `RAISE-FR-WARRANTY-001` | Warranty | P0 / MVP | §5.2 Warranty Domain | P-003 (Asset Registry column; no dedicated P-010 screen built — see P-010's own implementation-direction note) | AC-WARRANTY-001 | TS-WARRANTY-001 | TC-WARRANTY-001-01..03 | **PASS (partial)** — field-list blocker resolved 2026-08-29 (`RAISE-PRD.md` §16 Resolved Question 40, resolving Open Question 15: `warrantyExpiry` is the only MVP field; a draft 8-field proposal was explicitly rejected, not deferred), then **implemented and browser-verified same-day**: TC-WARRANTY-001-01 **PASS** (a "Warranty" column on the Assets list — `frontend/src/pages/Assets/index.tsx` — displays each asset's `warrantyExpiry`). TC-WARRANTY-001-02 **PASS** (the same column shows an Active/Expired badge derived from `warrantyExpiry`; verified live — e.g. asset `a1` shows "Active"/"2027-01-15", asset `a13` shows "Expired"/"2024-03-15" — and the column sorts correctly by expiry date). Per explicit user direction, this was built as a column on the existing Asset Registry (P-003), not a standalone P-010 screen. TC-WARRANTY-001-03 remains **BLOCKED (partial)** for a separate, still-open reason unaffected by this resolution — the 90-day expiry window used in the expiring-assets view is the PRD's illustrative business example (PRD §6.7), not a confirmed, generalizable threshold; the "Expiring" state (3rd of 3 in the Warranty Timeline) is therefore not implemented, only Active/Expired. |
 | `RAISE-FR-ORACLE-001` | Oracle FA Integration + NBV/Depreciation | P0 / MVP | §6 Oracle FA Integration (incl. §6.4 "Phase 6" label note) | P-011 | AC-ORACLE-001 | TS-ORACLE-001 | TC-ORACLE-001-01..04 | **FAIL** — executed 2026-08-29 against the real running app, and the result is worse than the pre-existing BLOCKED status: the route the app maps to `RAISE-FR-ORACLE-001` (`/reconciliation`, labeled "Oracle FA Reconcile" in navigation) renders `ModulePage` — a generic, literal "foundation placeholder" `EmptyState` ("Oracle FA Reconciliation — foundation placeholder / Migrates from src/pages/Reconciliation.tsx once Oracle FA is connected in Phase 6."), confirmed via `frontend/src/pages/_shared/ModulePage.tsx` and real page text. TC-ORACLE-001-01 **FAILS even on its testable-now scope** — no "Asset Number", "Acquisition Information", "NBV", "Depreciation", "Oracle Source", or "Synchronization Status" field exists anywhere on this page (the closest analog, Asset Detail's own "Financial" section added for F-24, shows only Purchase Cost/Current Value/Purchase Date — no Oracle-specific fields at all). TC-ORACLE-001-02/-03/-04 **FAIL** — no "data unavailable"/"sync error"/"data conflict" state is rendered anywhere; the placeholder has no state logic at all. This is independent of, and does not wait on, the still-open integration-mechanism question (PRD §16 Q6–Q10, tracked as F-04) or the `ReconciliationPage` mapping question (Open Question 10a) — even presence-only testing of the four UI states fails, since no P-011 screen was actually built (a stub exists in its place). See `OPEN-FINDINGS.md` F-31 for this new build-gap finding (distinct from F-04's integration-mechanism gap). |
-| `RAISE-FR-ALERT-001` | Alerts | P0 / MVP | §14 Alert Architecture | P-012 | AC-ALERT-001 | TS-ALERT-001 | TC-ALERT-001-01..02 | **FAIL** — executed 2026-08-29 against the real running app, and the result is worse than the pre-existing BLOCKED status, and worse than F-31's Oracle FA placeholder: no P-012 Alerts screen exists **at all**, not even a stub. The sidebar nav entry "Notification Center" (`id: notifications`) routes to `/notifications`, which renders the app's generic 404 page ("Page not found — hasn't been migrated yet"), not `ModulePage`'s placeholder pattern used elsewhere (Oracle FA, License Mgmt, etc.). The only related UI, the header bell-icon dropdown (`AppShell.tsx`), is hardcoded to `notifications = []` with a static message ("No notifications yet — this will be wired to the real API in a later phase.") and its own "View all notifications" link points to the same 404 route. TC-ALERT-001-01 **FAILS** — no alert is ever listed with severity/description/asset, structurally or otherwise (the closest analog, Dashboard's "AI Insights" → "Warranty Expiry Approaching" card, is a distinct AI Decision Center feature, not an alert with the required fields). TC-ALERT-001-02 **FAILS to even be exercisable** — there is no in-app alert presentation to verify is on-screen-only, since no alert list renders anywhere. This is independent of the still-open trigger-rule question (PRD §6.9 Open Question, tracked as F-05) — even presence-only testing fails. See `OPEN-FINDINGS.md` F-32 for this new build-gap finding (distinct from F-05's rule-definition gap). |
+| `RAISE-FR-ALERT-001` | Alerts | P0 / MVP | §14 Alert Architecture | P-012 | AC-ALERT-001 | TS-ALERT-001 | TC-ALERT-001-01..02 | **PASS (partial) — Open Finding F-32 (no P-012 screen at all, route 404'd) RESOLVED 2026-09-01, per explicit business decision and now implemented.** Prior execution (2026-08-29) found `/notifications` rendered the app's generic 404 page, worse than the pre-existing BLOCKED status — see the superseded evidence retained in the Change Log (v1.1 → v1.2) for the historical record. **Business decision (2026-09-01):** scope the Alerts screen to derive its one alert-triggering condition from the one already confirmed elsewhere in the app — an asset's `warrantyExpiry` being in the past (the same `isWarrantyExpired` check the Assets list's Warranty column, `RAISE-FR-WARRANTY-001`, already uses) — no new field or data model. Severity is rendered honestly as "Not yet defined" rather than an invented High/Medium/Low, since severity mapping and trigger rules for any other condition remain undefined (PRD §6.9 Open Question, Open Finding F-05, **still genuinely open, not resolved by this fix**). **Implemented:** new `frontend/src/pages/Alerts/index.tsx`, registered at `ROUTES.NOTIFICATIONS` (`/notifications`) in `App.tsx` (previously had no route at all). `RAISE-ACCEPTANCE-CRITERIA.md` `AC-ALERT-001` was **not** modified — it already correctly scoped `AC-ALERT-001-01` as testable only for structural display (severity/description/asset present), separate from which severity/trigger-rule values are correct, so this implementation satisfies that existing scope without a spec correction first (unlike the F-22/F-27 pattern where the spec itself was wrong). **Formally executed 2026-09-01** against the real running app (`RAISE-TEST-CASES.md` v0.10): `/notifications` now renders 11 alert rows, matching the Dashboard's "Expired Warranty: 11" tile exactly. TC-ALERT-001-01 **PASS** — the row for AST-0013 (Dell OptiPlex 7090) displays Severity "Not yet defined," Description "Warranty expired 2024-03-15," and the associated Asset as a clickable link that navigated correctly to Asset Detail. TC-ALERT-001-02 **PASS** — confirmed the screen presents all 11 rows purely as an in-app table, with no Email/Teams/LINE or other delivery-channel UI anywhere on the page. Also covered by 2 new passing automated tests in `frontend/src/pages/Alerts/index.test.tsx`; full frontend suite 149/149 (was 147), `tsc --noEmit`/lint both clean. **What this closes, and what it explicitly does not close:** this resolves only the build-gap half of the finding (a real, evidence-based PASS on the testable-now, single-trigger-condition scope) — it does **not** resolve the separate, still-open severity/trigger-rule definition question (PRD §6.9 Open Question, F-05), and the "authorized user" gate remains untestable (PRD §16 Q22), both unaffected by this fix. See new Gap 11 (§6, RESOLVED — infrastructure/build-gap scope only). |
 | `RAISE-FR-AUDIT-001` | Immutable Audit Log | P0 / MVP | §15 Audit Architecture | P-013 | AC-AUDIT-001 | TS-AUDIT-001 | TC-AUDIT-001-01..03 | **BLOCKED (partial)** — testable subset executed 2026-08-26 against the real running app, all **PASS**: TC-AUDIT-001-01 (checked in a real asset via the UI; confirmed via `auditService.listAuditLogs` that an entry was recorded with actor `"Demo Admin"`, action `"Asset checked in"`, entity `asset/a2`, and a real timestamp); TC-AUDIT-001-02 (no edit/delete control exists anywhere near a rendered audit entry, and neither `AuditRepository`/`MockAuditRepository` nor the backend router expose any update/delete method or route — verified by both UI inspection and code); TC-AUDIT-001-03 (the recorded entry is visible on Asset Detail's "Audit" tab to a logged-in user). Field taxonomy (Design §15) and role-gate correctness (PRD §16 Q22) remain BLOCKED — unchanged by this execution, since those require a PRD/Design answer, not more testing. |
 | `RAISE-FR-EXEC-001` | Executive Dashboard | P0 / MVP | §13 Executive Intelligence (rewritten 2026-08-31 — "Logical Dashboard — Current MVP (As Built)") | P-014 (rewritten 2026-08-31 to match as-built) | AC-EXEC-001 (rewritten 2026-08-31: AC-EXEC-001-01/-02) | TS-EXEC-001 (corrected 2026-08-31) | TC-EXEC-001-01..02 (rewritten 2026-08-31) | **PASS** — re-executed 2026-08-31 against the real running app (`frontend/src/pages/Dashboard/index.tsx`, route `/dashboard`, page title literally "Executive Dashboard" — confirming P-014 and this route are the same entry point) after the F-22 spec correction. `TC-EXEC-001-01` **PASS** — all 8 KPI tiles present and confirmed via real page text: Total Assets (15), Available (4), Assigned (8), In Maintenance (2), Expired Warranty (11), Software Licenses (10), Monthly Depreciation ($42.8K, illustrative), Monthly Cost ($156.2K, illustrative). `TC-EXEC-001-02` **PASS** — all 10 sections present: AI Insights, AI Portfolio Health, Oracle FA Synced (Oracle FA Reconciliation), Asset Lifecycle, Department Distribution, Asset Status, Asset Type, Pending Approvals, Recent Activities, Maintenance Calendar. This closes Gap 8's re-execution item — see `OPEN-FINDINGS.md` F-22, now Resolved (R-13). The NBV/Risk absence sub-item (`AC-EXEC-001`'s narrative note, no numbered `-03` criterion) remains **BLOCKED (partial)**, tied to Open Finding F-03 (PRD §16 Q3–Q4, NBV/Risk formulas undefined) — unaffected by this re-execution, never claimed resolved. |
 | `RAISE-AI-SEARCH-001` | Natural Language Search | P0 / MVP (Current AI) | §9 Natural Language Search, §8.2 AI Flow, §20 Error Handling | P-015 | AC-AI-SEARCH-001, AC-AI-STATES | TS-AI-SEARCH-001, TS-AI-STATES | TC-AI-SEARCH-001-01..03, TC-AI-STATES-01..05 | **`TS-AI-SEARCH-001` FAIL** — executed 2026-08-29 against the real running app, and the result is worse than the pre-existing BLOCKED status. Two distinct "AI" surfaces exist, neither matching P-015's spec: (1) the header "AI Assistant" drawer (`frontend/src/components/AppShell.tsx`) accepts **no input at all** — a static placeholder message only ("AI Assistant will connect to POST /api/v1/ai/chat once the AI module migration phase lands."), confirmed live via screenshot; (2) the Assets page's "Ask AI" box (`frontend/src/pages/Assets/index.tsx`'s `handleAISearch`) is a hardcoded keyword-to-filter matcher (e.g. "laptop"/"notebook" → `Type = Laptop`) ported from legacy ESAPS, predating this PRD/prototype — it narrows the existing Asset list, it does not return a natural-language "answer." TC-AI-SEARCH-001-01 **FAILS** — no genuine answer is ever returned by either surface. TC-AI-SEARCH-001-02 **FAILS** — no "Sources / Data Used" section exists anywhere. TC-AI-SEARCH-001-03 **FAILS** — submitting the PRD's exact illustrative question ("Which notebooks expire within 90 days?") to the Assets "Ask AI" box only interpreted it as `Type = Laptop` (keyword match on "notebook") and filtered the existing table, producing none of the required affected-asset count or Asset/Warranty/Age/Maintenance/Status columns. This is independent of the still-open citation-precision/format question (PRD §16 Q18, tracked as F-06) — even presence-only testing fails. See `OPEN-FINDINGS.md` F-33 for this build-gap finding (distinct from F-06). **`TS-AI-STATES` FAIL** — executed 2026-08-29 against the same two surfaces, same root cause. None of the 5 required literal state messages ("No matching assets were found.", "RAISE could not answer from the available data.", "Some source data is currently unavailable.", "Conflicting information was found. Please review the source records.") exist anywhere in `frontend/src` (confirmed by source grep). Live-verified: submitting a deliberately nonsense query ("asdkjqwiuey zzz nonsense query xyz") to the Assets "Ask AI" box produced "AI interpreted: No specific filters detected — showing all assets." — i.e. it falls back to showing everything rather than a "no match" state, since it is a keyword filter with no concept of "no data found." TC-AI-STATES-01 (Success) **FAILS** for the same reason as `TS-AI-SEARCH-001` (no genuine answer/relevant-data/source-context triple is ever shown together). TC-AI-STATES-02 (No-data) **FAILS** — no "no matching assets" message exists; a non-matching query just shows the unfiltered list. TC-AI-STATES-03 (Unable-to-answer), TC-AI-STATES-04 (Source-unavailable), and TC-AI-STATES-05 (Data-conflict) **FAIL** — none of these states can even be simulated, since there is no backend AI call to fail, no source-availability check, and no conflict-detection logic anywhere in either surface. Since both suites trace to the exact same two built surfaces and the same root cause (no real Q&A engine exists), this **broadens F-33** rather than opening a new finding — the same precedent already established by F-22 (Dashboard, two Prototype screens/one page). |
@@ -624,6 +629,66 @@ the others — the fix was implemented 2026-09-01:
 `OPEN-FINDINGS.md` F-30's closure (to Resolved) is tracked and handled
 separately, out of this document's scope.
 
+**Gap 11 (opened and RESOLVED in the same revision, 2026-09-01 — build-gap
+scope only; a distinct requirement-content question remains open):**
+`RAISE-FR-ALERT-001`'s `TC-ALERT-001-01`/`-02` were **FAIL** as of the
+2026-08-29 execution for a build-gap reason distinct from the requirement's
+own long-standing severity/trigger-rule content blocker (PRD §6.9 Open
+Question, F-05) — no P-012 Alerts screen existed at all, not even a stub;
+the sidebar's "Notification Center" entry routed to `/notifications`, which
+rendered the app's generic 404 page. Tracked as Open Finding F-32 (not
+previously carried as a numbered Gap in this document, the same pattern as
+F-30/Gap 10 before this revision).
+
+**What was done to close it:** per explicit business decision — scope the
+Alerts screen to derive its one alert-triggering condition from the one
+already confirmed elsewhere in the app (an asset's `warrantyExpiry` being in
+the past, the same `isWarrantyExpired` check `RAISE-FR-WARRANTY-001`'s
+Warranty column already uses), with no new field/data model, and render
+Severity honestly as "Not yet defined" rather than inventing a High/Medium/
+Low mapping — the fix was implemented 2026-09-01:
+
+- New `frontend/src/pages/Alerts/index.tsx`, registered at
+  `ROUTES.NOTIFICATIONS` (`/notifications`) in `App.tsx`, replacing the
+  generic-404 fallthrough with a real screen.
+- `RAISE-ACCEPTANCE-CRITERIA.md` `AC-ALERT-001` was **not** modified —
+  `AC-ALERT-001-01` already correctly scoped its criterion to structural
+  display (severity/description/asset present) only, separate from which
+  severity/trigger-rule values are correct, so the existing spec's scope is
+  satisfied by this implementation without needing a prior spec correction
+  (a different situation from Gap 8/F-22 and Gap 9/F-27, where the spec
+  itself had to be corrected first).
+- New `frontend/src/pages/Alerts/index.test.tsx` (2 tests, covering
+  `TC-ALERT-001-01`/`-02`), both passing. Full frontend suite 149/149 (was
+  147), `tsc --noEmit` and lint both clean.
+- Live browser verification against the real running app: `/notifications`
+  now renders 11 alert rows, matching the Dashboard's "Expired Warranty: 11"
+  tile exactly; the row for AST-0013 (Dell OptiPlex 7090) shows Severity
+  "Not yet defined," Description "Warranty expired 2024-03-15," and a
+  clickable Asset link that correctly navigates to that asset's Asset
+  Detail page; confirmed no Email/Teams/LINE delivery-channel UI exists
+  anywhere on the page.
+
+**What this closes, and what it explicitly does not close:**
+
+1. **Closed:** the build-gap. `TC-ALERT-001-01` and `TC-ALERT-001-02` (§3,
+   `RAISE-FR-ALERT-001` row) move from `FAIL` to a real, evidence-based
+   **PASS**, scoped to the single confirmed trigger condition
+   (warranty-expired).
+2. **NOT closed — a genuinely separate, still-open question:** the
+   severity/trigger-rule definition for any other alert condition (PRD §6.9
+   Open Question, Open Finding F-05) remains undefined — "Not yet defined"
+   is rendered honestly rather than an invented value, and this matrix does
+   not treat it as resolved. The "authorized user" gate (PRD §16 Q22)
+   likewise remains testable only structurally, unaffected by this fix. No
+   new Open Question is proposed for the F-05 half — it already has a
+   documented, still-open vehicle (PRD §6.9, AC-ALERT-001's own scoping
+   note) and remains correctly tracked there, not silently folded into
+   F-32's closure.
+
+`OPEN-FINDINGS.md` F-32's closure (to Resolved) is tracked and handled
+separately, out of this document's scope.
+
 ---
 
 ## 7. Chain Consistency Check
@@ -778,18 +843,39 @@ downstream document's citation of an upstream document's content:
   complete — infrastructure half closed (Gap 10, §6, RESOLVED); the
   requirement-content half (PRD §16 Q21–Q22) is a genuinely separate,
   still-open thread, unaffected and not claimed closed here.
+- **`RAISE-FR-ALERT-001` / F-32 build-gap — thread walked this revision
+  (2026-09-01):** Open Finding F-32 → `frontend/src/pages/Alerts/index.tsx`
+  (new) → `App.tsx` (`ROUTES.NOTIFICATIONS` now registered, replacing the
+  generic-404 fallthrough) → `frontend/src/pages/Alerts/index.test.tsx`
+  (new, 2 tests, both pass) → live execution against the real running app
+  (`/notifications`) → `RAISE-TEST-CASES.md` v0.10 (`TC-ALERT-001-01`/`-02`
+  rewritten with formal 2026-09-01 execution evidence, both PASS). This is a
+  build/infrastructure fix scoped to one confirmed trigger condition
+  (warranty-expired, reusing `RAISE-FR-WARRANTY-001`'s existing
+  `isWarrantyExpired` check), not a spec-content change —
+  `RAISE-ACCEPTANCE-CRITERIA.md` (`AC-ALERT-001`) was correctly **not**
+  edited, since `AC-ALERT-001-01`'s existing scope (structural display only,
+  severity/trigger-rule correctness explicitly out of scope) already covers
+  what was implemented. No layer invents a severity taxonomy or
+  general-purpose trigger-rule set; Severity is rendered as "Not yet
+  defined," and PRD §6.9's Open Question / Open Finding F-05 remain
+  correctly tracked as still-open, not folded into this closure. Thread
+  confirmed complete — build-gap half closed (Gap 11, §6, RESOLVED); the
+  severity/trigger-rule content half (F-05) is a genuinely separate,
+  still-open thread, unaffected and not claimed closed here.
 - Full re-walk confirmed no other Test Status cell in §3/§4 has drifted from
-  the current text of `RAISE-TEST-CASES.md` v0.9 (cross-checked TC-by-TC):
+  the current text of `RAISE-TEST-CASES.md` v0.10 (cross-checked TC-by-TC):
   `RAISE-FR-ASSET-001`, `RAISE-FR-ASSET-003`, `RAISE-FR-OPS-001/002`,
-  `RAISE-FR-ORACLE-001`, `RAISE-FR-ALERT-001`, `RAISE-FR-AUDIT-001`,
+  `RAISE-FR-ORACLE-001`, `RAISE-FR-AUDIT-001`,
   `RAISE-AI-SEARCH-001`, `RAISE-FR-LIFE-001`,
   `RAISE-AI-DOC-001..004` all match their respective TC Blocked-column text
   exactly (`RAISE-FR-WARRANTY-001` was checked separately in a prior
   revision, given that revision's substantive change to that row;
   `RAISE-FR-EXEC-001` and the Dashboard/Navigation row were checked
-  separately in the prior revision; `RAISE-FR-ASSET-002` is checked
-  separately immediately above, given this revision's substantive change to
-  it).
+  separately in a prior revision; `RAISE-FR-ASSET-002` and
+  `RAISE-NFR-SEC-RBAC-001` were checked separately in prior revisions;
+  `RAISE-FR-ALERT-001` is checked separately immediately above, given this
+  revision's substantive change to it).
 
 ---
 
@@ -890,6 +976,21 @@ not touched by this correction.
   permission matrix content (PRD §16 Q21–Q22) — that remains a genuinely
   open, separate requirement-content question; `AC-LOGIN`'s "NOT TESTABLE
   YET" note on mechanism/role content is unchanged. See Gap 10, §6.
+- **Resolved this revision (2026-09-01), Gap 11:** `RAISE-FR-ALERT-001`'s
+  build-gap (Open Finding F-32 — no P-012 screen at all, route 404'd) is now
+  resolved. `TC-ALERT-001-01`/`-02` were formally executed against the real
+  running app (new `frontend/src/pages/Alerts/index.tsx`, registered at
+  `/notifications`) and confirmed **PASS**, alongside 2 new passing
+  automated tests and a clean 149/149 full frontend suite. Compliance
+  Review may treat this requirement's structural display and in-app-only
+  presentation coverage as a confirmed `PASS`, scoped to the single
+  confirmed trigger condition (warranty-expired). **Compliance Review must
+  not**, however, treat this as resolving the severity/trigger-rule
+  definition for any other alert condition (PRD §6.9 Open Question, Open
+  Finding F-05) — that remains a genuinely open, separate
+  requirement-content question; `AC-ALERT-001`'s own scoping note (structural
+  display testable, specific severity/trigger-rule values not) is unchanged.
+  See Gap 11, §6.
 
 ---
 
@@ -939,6 +1040,18 @@ not touched by this correction.
       **Explicitly not resolved by this**, and correctly not claimed as
       such: the authentication mechanism / role-permission matrix content
       (PRD §16 Q21–Q22) — remains genuinely open, tracked separately
+- [x] **Gap 11 (§6) is RESOLVED this revision** — Open Finding F-32 (no
+      P-012 Alerts screen at all, route 404'd) is closed: new
+      `frontend/src/pages/Alerts/index.tsx` registered at
+      `ROUTES.NOTIFICATIONS`, scoped to the one confirmed trigger condition
+      (warranty-expired, reusing `RAISE-FR-WARRANTY-001`'s existing
+      `isWarrantyExpired` check); `TC-ALERT-001-01`/`-02` formally executed
+      against the real running app and confirmed PASS, corroborated by 2 new
+      passing automated tests and a clean 149/149 full frontend suite.
+      **Explicitly not resolved by this**, and correctly not claimed as
+      such: the severity/trigger-rule definition for any other alert
+      condition (PRD §6.9 Open Question, Open Finding F-05) — remains
+      genuinely open, tracked separately
 - [x] No VERSCAN-only item appears anywhere in this matrix
 
 ---
@@ -965,7 +1078,7 @@ Development (Source Code)
 RAISE-COMPLIANCE-REVIEW.md
 ```
 
-Gaps 1–10 are resolved and re-confirmed with no drift this revision. **Gap 8
+Gaps 1–11 are resolved and re-confirmed with no drift this revision. **Gap 8
 is fully resolved** — both the spec-correction half and the formal
 execution-sweep half are done (see Gap 8, §6, and the `RAISE-FR-EXEC-001`/
 Dashboard-Navigation rows in §3/§4). **Gap 9 is fully resolved** —
@@ -981,7 +1094,17 @@ flag now let `TC-LOGIN-01`/`-02` execute against the real Login page UI,
 confirmed PASS (see Gap 10, §6, and the `RAISE-NFR-SEC-RBAC-001` row in §4).
 This closes only the infrastructure half — the requirement-content half
 (auth mechanism / role-permission matrix, PRD §16 Q21–Q22) remains open and
-is carried forward in item 1 below, unchanged in scope.
+is carried forward in item 1 below, unchanged in scope. **Gap 11 is now
+resolved this revision** — `RAISE-FR-ALERT-001`'s build-gap (Open Finding
+F-32 — no P-012 screen at all, route 404'd) is closed: a new Alerts screen
+(`frontend/src/pages/Alerts/index.tsx`, registered at `/notifications`)
+scoped to the one confirmed trigger condition (warranty-expired) now lets
+`TC-ALERT-001-01`/`-02` execute against the real running app, confirmed
+PASS (see Gap 11, §6, and the `RAISE-FR-ALERT-001` row in §3). This closes
+only the build-gap half — the requirement-content half (severity/
+trigger-rule definition for any other condition, PRD §6.9 Open Question,
+Open Finding F-05) remains open and is carried forward in item 1 below,
+unchanged in scope.
 
 **Recommended next actions, in order:**
 
@@ -995,8 +1118,12 @@ is carried forward in item 1 below, unchanged in scope.
    (authentication mechanism, role list, permission matrix content — **still
    genuinely open; the four `MockAuthRepository` demo accounts added to
    close Gap 10 are a testing convenience, not a proposed answer to this
-   question**), Q24–Q25 (audit taxonomy/retention), Open Question 10a
-   (`ReconciliationPage` mapping), and Open Question 20a
+   question**), Q24–Q25 (audit taxonomy/retention), the PRD §6.9 Open
+   Question (Alerts severity mapping / trigger rules for any condition
+   beyond warranty-expired — **still genuinely open; the "Not yet defined"
+   Severity rendering added to close Gap 11 is an honest placeholder, not a
+   proposed answer to this question**, tracked as Open Finding F-05), Open
+   Question 10a (`ReconciliationPage` mapping), and Open Question 20a
    (`RAISE-AI-DOC-004` matching/merge behavior).
 2. Resolve the `RAISE-FR-ASSET-003` vs. `RAISE-FR-OPS-002` custody-writing-
    events exclusivity question (Gap 4) before any custody-writing code path
@@ -1014,22 +1141,25 @@ is carried forward in item 1 below, unchanged in scope.
 
 ## Document Status
 
-**Version:** 1.1 (Open Finding F-30 — no Mock fallback for Auth — RESOLVED
-this revision, infrastructure scope only: `MockAuthRepository` +
-`AUTH_API_ENABLED` flag implemented, `TC-LOGIN-01`/`-02` re-executed through
-the real Login page UI and confirmed PASS, `TC-LOGIN-03` unaffected/still
-PASS. The separate, still-open PRD-content question — authentication
-mechanism / role-permission matrix content, PRD §16 Q21–Q22 — remains
-genuinely undefined and is explicitly not resolved by this fix. `Gap 9`
-(`RAISE-FR-ASSET-002` Category/Type sub-taxonomy) unchanged from v1.0.)
+**Version:** 1.2 (Open Finding F-32 — no P-012 Alerts screen at all, route
+404'd — RESOLVED this revision, per explicit business decision and now
+implemented: a new Alerts screen (`frontend/src/pages/Alerts/index.tsx`,
+registered at `/notifications`) scoped to the one confirmed trigger
+condition (warranty-expired, reusing `RAISE-FR-WARRANTY-001`'s existing
+`isWarrantyExpired` check), `TC-ALERT-001-01`/`-02` re-executed against the
+real running app and confirmed PASS. The separate, still-open PRD-content
+question — severity mapping / trigger rules for any condition beyond
+warranty-expired, PRD §6.9 Open Question, Open Finding F-05 — remains
+genuinely undefined and is explicitly not resolved by this fix. Gaps 1–10
+unchanged from v1.1.)
 **Status:** Draft for Traceability Review
-**Source:** [`RAISE-TEST-CASES.md`](../06-test-cases/RAISE-TEST-CASES.md) v0.9 (unchanged this revision) and full upstream chain — `RAISE-TEST-PLAN.md` v0.8, `RAISE-ACCEPTANCE-CRITERIA.md` v0.8 (unchanged this revision — `AC-LOGIN`'s "NOT TESTABLE YET" note is still accurate), `RAISE-PROTOTYPE.md` v0.9, `RAISE-DESIGN.md` v0.9 (unchanged this revision), and `RAISE-PRD.md` v0.11 (unchanged this revision — F-30's resolution is an infrastructure/execution fix, not a requirement-content change)
+**Source:** [`RAISE-TEST-CASES.md`](../06-test-cases/RAISE-TEST-CASES.md) v0.10 (updated this revision — `TC-ALERT-001-01`/`-02` now record formal execution evidence) and full upstream chain — `RAISE-TEST-PLAN.md` v0.8 (unchanged this revision), `RAISE-ACCEPTANCE-CRITERIA.md` v0.8 (unchanged this revision — `AC-ALERT-001`'s existing structural-display scope is still accurate), `RAISE-PROTOTYPE.md` v0.9 (unchanged this revision), `RAISE-DESIGN.md` v0.9 (unchanged this revision), and `RAISE-PRD.md` v0.11 (unchanged this revision — F-32's resolution is a build/infrastructure fix, not a requirement-content change)
 **Reference:** VERSCAN only
-**Last Re-Verified:** 2026-09-01 (`RAISE-NFR-SEC-RBAC-001` row re-executed
-against the real running app following the F-30 infrastructure fix — see
-Change Log v1.0 → v1.1 below and Gap 10, §6, for the full record. Prior
-re-verification of `RAISE-FR-ASSET-002`, unchanged this revision, retained
-below for history:
+**Last Re-Verified:** 2026-09-01 (`RAISE-FR-ALERT-001` row re-executed
+against the real running app following the F-32 build-gap fix — see
+Change Log v1.1 → v1.2 below and Gap 11, §6, for the full record. Prior
+re-verification of `RAISE-NFR-SEC-RBAC-001`/`RAISE-FR-ASSET-002`, unchanged
+this revision, retained below for history:
 `RAISE-FR-ASSET-002` against Prototype P-005 (v0.9) / AC AC-ASSET-002
 (v0.8) / Test Plan TS-ASSET-002 (v0.8, "RESOLVED and CLOSED") / Test Cases
 TC-ASSET-002-01..03 (v0.9), following the F-27 business decision. A fresh
@@ -1053,7 +1183,77 @@ index.test.tsx` all pass, the full frontend suite (145 tests) passes with no
 regressions, and `tsc --noEmit`/lint are both clean. §3 `RAISE-FR-ASSET-002`
 row upgraded from **PASS (scoped)** to a full **PASS** (Gap 9, §6, RESOLVED). No other row required re-verification this pass.
 
-**Change Log — v1.0 → v1.1 (this revision, 2026-09-01):**
+**Change Log — v1.1 → v1.2 (this revision, 2026-09-01):**
+
+1. **Gap 11 opened and RESOLVED in the same revision, build-gap scope
+   only:** `RAISE-FR-ALERT-001`'s `TC-ALERT-001-01`/`-02` were `FAIL` as of
+   the 2026-08-29 execution because no P-012 Alerts screen existed at all —
+   the sidebar's "Notification Center" entry routed to `/notifications`,
+   which rendered the app's generic 404 page. Per explicit business
+   decision, the Alerts screen was scoped to derive its one
+   alert-triggering condition from the one already confirmed elsewhere in
+   the app — an asset's `warrantyExpiry` being in the past, the same
+   `isWarrantyExpired` check `RAISE-FR-WARRANTY-001`'s Warranty column
+   already uses — with no new field/data model, and Severity is rendered
+   honestly as "Not yet defined" rather than an invented High/Medium/Low.
+   New `frontend/src/pages/Alerts/index.tsx`, registered at
+   `ROUTES.NOTIFICATIONS` (`/notifications`) in `App.tsx`. **This closes
+   the build-gap half of the gap in full; the requirement-content half —
+   severity mapping / trigger rules for any condition beyond
+   warranty-expired, PRD §6.9 Open Question, Open Finding F-05 — is
+   explicitly not resolved and remains open** — see Gap 11, §6, for the
+   full closure record.
+2. **§3 `RAISE-FR-ALERT-001` row updated** from `FAIL` to real,
+   evidence-based **PASS (partial)**: `TC-ALERT-001-01`/`-02` formally
+   executed 2026-09-01 against the real running app — `/notifications` now
+   renders 11 alert rows, matching the Dashboard's "Expired Warranty: 11"
+   tile exactly; the row for AST-0013 (Dell OptiPlex 7090) displays
+   Severity "Not yet defined," Description "Warranty expired 2024-03-15,"
+   and a clickable Asset link that correctly navigates to Asset Detail;
+   confirmed no Email/Teams/LINE delivery-channel UI exists anywhere on the
+   page. Corroborated by 2 new passing automated tests
+   (`frontend/src/pages/Alerts/index.test.tsx`) and a clean 149/149 full
+   frontend suite (was 147), with `tsc --noEmit`/lint both clean.
+3. **§6 Gap 11 added**, following the same "record resolution with
+   evidence, explicitly separate a closed build-gap half from a still-open
+   content half, do not silently close the content half" discipline as
+   Gaps 7–10.
+4. **§7 Chain Consistency Check** gained a dedicated `RAISE-FR-ALERT-001` /
+   F-32 thread-walk bullet confirming the fix is a build/infrastructure fix
+   only — `RAISE-ACCEPTANCE-CRITERIA.md` (`AC-ALERT-001`) was correctly
+   **not** edited for this fix, since `AC-ALERT-001-01`'s existing scope
+   (structural display only) already covers what was implemented; the "no
+   other row drifted" re-walk list was updated to reflect
+   `RAISE-TEST-CASES.md` v0.10 and to move `RAISE-FR-ALERT-001` out of the
+   "unchanged" list into its own dedicated bullet.
+5. **§8 Compliance Review Readiness** gained a new resolved-item note
+   (mirroring the Gap 9/Gap 10 notes) explicitly warning Compliance Review
+   not to treat this fix as resolving the severity/trigger-rule definition
+   question (PRD §6.9, Open Finding F-05).
+6. **§9 Checklist** gained a Gap 11 item, marked RESOLVED (build-gap scope
+   only, content half explicitly still open).
+7. **§10 Next Step** — Gaps 1–10 summary text updated to Gaps 1–11; item 1's
+   Open Question list gained an explicit PRD §6.9 / F-05 entry, noting the
+   "Not yet defined" Severity rendering added to close Gap 11 is an honest
+   placeholder, not a proposed answer to that question.
+8. Version citations updated this revision: `RAISE-TEST-CASES.md` v0.9 →
+   v0.10 (the only upstream document that changed — `TC-ALERT-001-01`/`-02`
+   rewritten with formal execution evidence, per its own v0.10 change log).
+   `RAISE-PRD.md` v0.11, `RAISE-DESIGN.md` v0.9, `RAISE-PROTOTYPE.md` v0.9,
+   `RAISE-ACCEPTANCE-CRITERIA.md` v0.8, `RAISE-TEST-PLAN.md` v0.8 unchanged
+   — none required an edit for this fix, since it is a code/infrastructure
+   change plus a direct execution-evidence update, not a spec correction
+   (per this document's own established practice for pure execution-result
+   updates, e.g. the `RAISE-NFR-SEC-RBAC-001`/Gap 10 precedent). Document
+   version bumped 1.1 → 1.2. **No other gap in §6 was found open, closed,
+   or newly discovered during this pass** — Gaps 1–10 are unchanged from
+   v1.1 and are not re-litigated here; this revision's reverse-chain
+   re-verification was scoped to `RAISE-FR-ALERT-001` specifically, per the
+   instruction that prompted it, not a full re-walk of every requirement.
+   `OPEN-FINDINGS.md` F-32 update (to Resolved) is tracked and handled
+   separately, out of this document's scope.
+
+**Change Log — v1.0 → v1.1 (prior revision, 2026-09-01):**
 
 1. **Gap 10 opened and RESOLVED in the same revision, infrastructure scope
    only:** `RAISE-NFR-SEC-RBAC-001`'s `TC-LOGIN-01`/`-02` were `BLOCKED` as

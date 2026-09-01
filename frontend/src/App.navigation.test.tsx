@@ -160,8 +160,9 @@ describe('Sidebar navigation matches registered routes', () => {
     // used directly as route paths via AppShell's onNavigate={(id) => navigate(`/${id}`)}, so an
     // id that doesn't match its ROUTES.* constant is a silent 404 waiting to happen. Un-scaffolded
     // nav items (inventory, procurement, audit, documents, approvals, reports, analytics,
-    // notifications, administration, settings) aren't checked here — they're expected to 404
-    // until their own migration phase; that's not this bug.
+    // administration, settings) aren't checked here — they're expected to 404 until their own
+    // migration phase; that's not this bug. ("notifications" was in this list until F-32's fix
+    // scaffolded a real AlertsPage at ROUTES.NOTIFICATIONS.)
     const { navGroups } = await import('@/config/navigation');
     const idsByLabel = new Map(navGroups.flatMap((g) => g.items).map((i) => [i.label, i.id]));
 

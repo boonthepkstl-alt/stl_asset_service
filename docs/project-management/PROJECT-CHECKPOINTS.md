@@ -2398,11 +2398,57 @@ Acceptance Criteria / Test Case: `AC-ORACLE-001-01..04` / `TC-ORACLE-001-01..04`
 
 **Git:**
 Branch: `docs/defer-f31-oracle-fa`
-Commit: pending — predicted next PR after #59 (verify via `gh pr list` before treating as final).
+Commit: `1b08a3b` (implementation), merged via [PR #60](https://github.com/boonthepkstl-alt/stl_asset_service/pull/60).
 
 **Known Issues:** None new.
 **Remaining Work:** F-32, F-33, and `AC-WARRANTY-001-03`'s 90-day threshold remain open items blocked on a business/design decision. F-31 is now explicitly deferred (not a "buildable now" candidate), distinct from F-22/F-27/F-30 which were fully resolved.
-**Next Step:** Recalculate `NEXT-STEP.md`. Check in with the user on direction for one of the two remaining open findings (F-32, F-33) or the Warranty 90-day question.
+**Next Step:** Recalculate `NEXT-STEP.md`. Check in with the user on direction for one of the two remaining open findings (F-32, F-33) or the Warranty 90-day question. User chose F-32 next — see `CHECKPOINT-2026-09-01-004` below.
+
+---
+
+## CHECKPOINT-2026-09-01-004
+
+**Phase:** Phase 7 — Alerts & Notifications
+**Feature:** Resolve Open Finding F-32's business decision, implement, and re-verify — all in one session
+**Task:** Per explicit user decision (build a scoped Alerts screen using only warranty data that already exists), implement, verify with automated tests and live browser execution, then close the loop in Test Cases, Traceability Matrix, and Open Findings
+
+**What was implemented:** `frontend/src/pages/Alerts/index.tsx` (new) — a real Alerts screen (P-012) registered at a new `ROUTES.NOTIFICATIONS` (`/notifications`) constant, replacing what was previously an unregistered route that fell through to the app's generic 404. Derives its one alert-triggering condition from the asset's existing `warrantyExpiry` field via the shared `isWarrantyExpired` helper (same one `Assets/index.tsx`'s Warranty column and `dashboard-repository.ts`'s expired-warranty count already use) — no new field or data model. Each row shows Severity (rendered honestly as "Not yet defined," not an invented High/Medium/Low, since severity mapping is undefined per F-05), Description ("Warranty expired {date}"), and the associated Asset (clickable, navigates to Asset Detail).
+**What was modified:**
+- `frontend/src/config/constants.ts`: new `ROUTES.NOTIFICATIONS: '/notifications'`.
+- `frontend/src/App.tsx`: registered the new route.
+- `frontend/src/App.navigation.test.tsx`: updated a stale comment that listed "notifications" among un-scaffolded, expected-to-404 nav items.
+- `RAISE-TEST-CASES.md` (v0.9→0.10): `TC-ALERT-001-01/-02` — both move to PASS on the testable-now scope (structural display), with the severity/trigger-rule question (F-05) and the "authorized user" gate (PRD §16 Q22) explicitly noted as unaffected, still unresolved. `RAISE-ACCEPTANCE-CRITERIA.md` AC-ALERT-001 was deliberately **not** touched — it already correctly scoped AC-ALERT-001-01 as testable only for structural display, so no spec correction was needed first (unlike F-22/F-27).
+- `RAISE-TRACEABILITY-MATRIX.md` (v1.1→1.2): `RAISE-FR-ALERT-001` row updated to **PASS (partial)**; new Gap 11 opened and closed same revision (build-gap scope only).
+- `docs/project-management/OPEN-FINDINGS.md`: F-32 moved to **Resolved**, recorded as R-16.
+**What was fixed:** The missing route/screen itself — `/notifications` previously fell through to the app's generic 404, worse than a placeholder stub.
+**What was added:** `frontend/src/pages/Alerts/index.tsx`, `frontend/src/pages/Alerts/index.test.tsx` (2 new tests — `TC-ALERT-001-01`, `TC-ALERT-001-02`).
+**What was removed:** None.
+
+**Files changed:** 8 files — 2 new (`Alerts/index.tsx`, `Alerts/index.test.tsx`), 4 modified (`constants.ts`, `App.tsx`, `App.navigation.test.tsx`, `RAISE-TEST-CASES.md`), 2 docs (`RAISE-TRACEABILITY-MATRIX.md`, `OPEN-FINDINGS.md`).
+**Database changes:** None — deliberately reuses the existing `warrantyExpiry` field. **API changes:** None. **Frontend changes:** The sidebar "Notification Center" entry and header bell's "View all notifications" link now reach a real Alerts screen instead of a 404 (the header bell dropdown's own hardcoded-empty state is a separate, smaller-scope item, not wired here).
+
+**Tests:**
+- Unit Test: `frontend/src/pages/Alerts/index.test.tsx` — 2 new tests, both passing. Full suite: 149/149 passing (was 147, +2 for this change).
+- Integration Test: None. E2E Test: None.
+
+**Validation:**
+- Build: covered by Type Check below. Lint: `npm run lint` ✅ (0 warnings).
+- Test: `npx vitest run` ✅ (149/149).
+- Type Check: `npx tsc --noEmit` ✅.
+- Manual browser verification (Chrome preview, `raise-frontend` dev server): navigated to `/notifications` — confirmed it renders 11 alert rows (matching the Dashboard's "Expired Warranty: 11" tile exactly), each with Severity "Not yet defined," a "Warranty expired {date}" description, and a clickable asset link; clicked "Dell OptiPlex 7090" (AST-0013) and confirmed correct navigation to its Asset Detail page. Confirmed no Email/Teams/LINE delivery-channel UI exists anywhere on the page.
+
+**Requirement Traceability:**
+PRD: `RAISE-FR-ALERT-001` (unchanged — this implements an already-scoped-correctly AC, not a new requirement).
+Acceptance Criteria: `AC-ALERT-001-01/-02` — now PASS on the testable-now structural-display scope.
+Test Case: `TC-ALERT-001-01/-02` — now **PASS**; `RAISE-TRACEABILITY-MATRIX.md` updated accordingly, Gap 11 closed.
+
+**Git:**
+Branch: `frontend/resolve-f32-alerts-screen`
+Commit: pending — predicted next PR after #60 (verify via `gh pr list` before treating as final).
+
+**Known Issues:** None new. The header bell-icon dropdown across other pages remains hardcoded empty — a separate, smaller-scope item not wired in this change.
+**Remaining Work:** F-33 and `AC-WARRANTY-001-03`'s 90-day threshold remain open items blocked on a business/design decision. F-22, F-27, F-30, and F-32 are all fully resolved; F-31 is explicitly deferred.
+**Next Step:** Recalculate `NEXT-STEP.md`. Check in with the user on direction for the one remaining open finding (F-33) or the Warranty 90-day question.
 
 ---
 

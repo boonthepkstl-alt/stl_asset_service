@@ -2,38 +2,38 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Requirement Traceability Matrix (RTM)
-**Version:** 1.4 Draft (`TC-WARRANTY-001-06` — non-admin access/write denial
-to the new P-018 Settings screen — **formally executed 2026-09-01 and now
-PASSES**, per `RAISE-TEST-CASES.md` v0.12. **This closes Gap 13.** Unlike
-Gap 12 (opened and resolved in the same v1.3 revision), Gap 13 was **opened
-in v1.3 and closed in this later revision, v1.4**, once the execution sweep
-actually ran — the pattern this document's own §6 rules anticipated when
-Gap 13 was first opened. **Executing the test caught a real defect, not
-just an unexecuted-but-already-correct behavior**: the Settings route
-(`ROUTES.SETTINGS`) in `frontend/src/App.tsx` was **not actually gated to
-ADMIN** — it sat in the general authenticated-user route block instead of
-the existing `<Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>`
-block that already gates Administration/User Management/Role Management.
-**Root cause found and fixed during execution**, before the PASS was
-recorded: the Settings route was moved into that existing ADMIN-gated
-block. No new RBAC mechanism was invented — this reuses the exact
-mechanism already confirmed elsewhere in the app (PRD §16 Resolved
-Question 38, UI-only/client-side MVP enforcement level, per
-`RAISE-NFR-SEC-RBAC-001`). Evidence: 2 new tests in
-`frontend/src/App.rbac.test.tsx` (a non-ADMIN `EMPLOYEE`-role user is
-redirected to the Forbidden page when navigating to `/settings`; an ADMIN
-user is let through) — both pass; full suite 153/153 (was 151),
-`tsc --noEmit` clean, `npm run lint` clean; live browser verification
-(2026-09-01) confirmed an EMPLOYEE-role user sees the real "403 — Access
-denied" Forbidden page at `/settings` and an ADMIN-role user sees the real
-Settings page render. **`RAISE-FR-WARRANTY-001`'s row moves from `PASS
-(partial)` to a full, unqualified `PASS`** — `TC-WARRANTY-001-01` through
-`-06` all now PASS, no more `NOT_TESTED` entries for this requirement. See
-the `RAISE-FR-WARRANTY-001` row (§3) and Gap 13 (§6, now RESOLVED) for the
-full record. Gaps 1–12 remain fully resolved from v1.3, unchanged this
+**Version:** 1.5 Draft (`RAISE-FR-OPS-002` and `RAISE-FR-ASSET-003` — Open
+Finding F-02, PRD §16 Open Questions 11–13, **RESOLVED 2026-09-01** per
+confirmed business decision, `RAISE-PRD.md` v0.13 §16 Resolved Question 42.
+**This closes new Gap 14** (opened and RESOLVED in this same revision, the
+same "opened and closed same revision" pattern used for Gap 12, not the
+"opened in one revision, closed in a later one" pattern used for Gap 13).
+Unlike Gap 13, **no new code was written and no new test execution was
+performed** — this is a pure requirement-content resolution matching
+already-built, already-tested behavior exactly: (a) Check-in/Check-out
+confirmed as an **immediate state-change operation**, no approval/
+exception-handling step; (b) the permission gate confirmed as **any
+authenticated user, no role restriction**; (c) `RAISE-FR-ASSET-003`'s
+holder data model confirmed as a **direct 1:1 link to an Employee record**.
+The existing `TC-OPS-002-01..03` **PASS** result (executed 2026-08-28)
+already covers the newly-confirmed scope, per the same "resolution can
+retroactively validate an already-PASSing execution without a new test
+run" pattern used for `TC-OPS-002-01`/`-02` in `RAISE-TEST-CASES.md`
+v0.13. **Explicitly NOT resolved by this revision, and not implied to be
+resolved:** Open Finding F-10 (whether Check-in/Check-out is the
+*exclusive* writer of Custody History) remains genuinely open, tracked
+separately at Gap 4 (§6) — a `RAISE-PROTOTYPE.md` v0.11 draft briefly and
+incorrectly over-resolved this related-but-separate question; it was
+caught and corrected in v0.12, restoring F-10 to genuinely open, and this
+matrix does not repeat that error. Also **not** resolved: the general
+`RAISE-NFR-SEC-RBAC-001` role/permission-matrix-content question for other
+domains (PRD §16 Q21–Q22, Open Finding F-08) — only Check-in/Check-out's
+own permission gate is settled here. See the `RAISE-FR-OPS-002` and
+`RAISE-FR-ASSET-003` rows (§3) and Gap 14 (§6, RESOLVED) for the full
+record. Gaps 1–13 remain fully resolved from v1.4, unchanged this
 revision.)
 **Status:** Draft for Traceability Review
-**Source:** [`RAISE-TEST-CASES.md`](../06-test-cases/RAISE-TEST-CASES.md) v0.12 (updated this revision — `TC-WARRANTY-001-06` now records formal 2026-09-01 execution evidence, **PASS**, including the root-cause fix applied first), consolidated against [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.9 (unchanged this revision), [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.9 (unchanged this revision), [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.10 (unchanged this revision), [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.10 (unchanged this revision), and [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.12 (unchanged this revision) — **the actual PRD file on disk was re-read in full for this revision, not assumed from downstream citations**, per this document's own standing practice since v0.4. Confirmed: this is an execution-sweep closure that surfaced and fixed a genuine build/RBAC-gating defect (`frontend/src/App.tsx`), not a requirement-content resolution like Gap 12 and not a no-op re-confirmation either — a real bug was caught and fixed as part of closing this gap.
+**Source:** [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.13 (§16 Resolved Question 42, resolving Open Questions 11–13 / Open Finding F-02 — **the actual PRD file on disk was re-read in full for this revision, not assumed from downstream citations**, per this document's own standing practice since v0.4), [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.11 (§4.2, resolution propagated), [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.12 (P-006/P-008 rewritten; note the v0.11 → v0.12 correction that restored Open Finding F-10 to genuinely open after a briefly-incorrect over-resolution — this matrix does not repeat that error), [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.10 (AC-OPS-002-01/-02 rewritten), [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.10 (TS-OPS-002 fully unblocked), and [`RAISE-TEST-CASES.md`](../06-test-cases/RAISE-TEST-CASES.md) v0.13 (`TC-OPS-002-01..03` status notes updated — **no new execution claimed**, the existing 2026-08-28 PASS already covers the newly-confirmed scope). All six upstream documents were already synced against this resolution in prior steps — this revision updates only `RAISE-TRACEABILITY-MATRIX.md` itself to reflect that sync. Confirmed: this is a requirement-content resolution matching already-built, already-tested behavior, not a new defect find (unlike Gap 13) and not a build-gap fix (unlike Gaps 9–11) — no source code changed, no new test execution was run.
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
 
@@ -144,9 +144,9 @@ per v0.4 Gap 6's own closure criteria.
 |---|---|---|---|---|---|---|---|---|
 | `RAISE-FR-ASSET-001` | Asset Registry | P0 / MVP | §4.1 Asset Management | P-003, P-004 | AC-ASSET-001, AC-ASSET-001-DETAIL | TS-ASSET-001, TS-ASSET-001-DETAIL | TC-ASSET-001-01..04, TC-ASSET-001-D-01..02 | **PASS** — executed 2026-08-26 against the real running app: TC-ASSET-001-01 **PASS** (list displays), TC-ASSET-001-02 **PASS** (search filters), TC-ASSET-001-04 **PASS** (row click opens Detail), TC-ASSET-001-D-02 **PASS** (Detail shows only the selected asset's data, verified across two distinct assets). TC-ASSET-001-03 originally **FAIL** — no Category filter existed anywhere in the Assets page's Filters panel (F-23) — **now PASS**, re-executed after the fix: a Category `Select` narrows the list correctly (verified 15 → 2 assets on "Infrastructure") and "Clear filters" resets it. TC-ASSET-001-D-01 originally **FAIL** — Asset Detail was missing 2 of the 9 required sections entirely (no "Financial" section, no "Lifecycle" section) — **now PASS**, re-executed after the fix (F-24): a "Financial" section (Purchase Cost/Current Value/Purchase Date, sourced from fields the Asset record already carries) and a "Lifecycle" section (a connectivity summary linking to the Custody/Warranty/Maintenance/Audit tabs, per Prototype P-004's "one asset → connected information across its lifecycle" principle and `AC-LIFE-001-01`) were added; all 9 required sections now confirmed present for a seeded asset. All 6 test cases now **PASS** — independent of the pre-existing asset-master-field-list block (PRD §16 Q1), which remains open but no longer blocks this row's Test Status. |
 | `RAISE-FR-ASSET-002` | Category & Hierarchy | P0 / MVP | §4.1 Asset Management | P-005 | AC-ASSET-002 (AC-ASSET-002-01/-02/-03) | TS-ASSET-002 | TC-ASSET-002-01..03 | **PASS — spec corrected and re-execution complete 2026-09-01 (Open Finding F-27, RESOLVED).** Prior formal execution (2026-08-26) confirmed TC-ASSET-002-02 **PASS** (Category is consistent between Asset Registry and Asset Detail for the same asset, e.g. `a1` shows "IT Hardware" in both) and TC-ASSET-002-01 **PASS on the display mechanism** (a "By Category" view inside Asset Management, `frontend/src/pages/Assets/index.tsx`, groups Category → its real assets; verified live: "IT Hardware" expands to 6 real seeded assets, clicking one navigates to Asset Detail). At that time, the *spec itself* (AC-ASSET-002-01, Prototype P-005) still described an illustrative, unconfirmed sub-category tree (Computer > Notebook/Desktop, etc.), so the PASS above was explicitly scoped to the flat category-to-assets grouping only, not to a Category→Type hierarchy — the taxonomy question was open, tracked as F-27. **Spec resolved 2026-09-01 (Open Finding F-27, per explicit business decision):** "sub-category" is confirmed as the existing Asset `type` field (no new field/data model); the hierarchy is exactly 2 levels — Category → Type → individual assets — using the real, currently-seeded Category → Type breakdown (IT Hardware → Laptop/Monitor/Headphones; Mobile → Smartphone/Tablet; Office Equipment → Printer/Projector; Infrastructure → Server/Router; Media Equipment → Camera). Propagated through Prototype P-005 (§11, v0.9), AC-ASSET-002 (§8, v0.8, now includes a new **AC-ASSET-002-03**), Test Plan TS-ASSET-002 (v0.8), and Test Cases `TC-ASSET-002-01..03` (v0.9). **UI code change shipped and formally re-executed, same day (2026-09-01):** the "By Category" view (`frontend/src/pages/Assets/index.tsx`) was extended one level deeper to nest Category → Type → individual assets, closing the previously-BLOCKED `TC-ASSET-002-03`. Formal execution against the real running app: navigated to `/assets`, opened "By Category," expanded "IT Hardware" — confirmed it reveals Type-level sub-groups only (Headphones: 1 asset, Laptop: 3 assets, Monitor: 2 assets), with no individual assets shown at that level; expanded "Laptop" — confirmed it reveals exactly its 3 individual assets (MacBook Pro 16" M3 / AST-0001, MacBook Air M2 / AST-0011, ThinkPad X1 Carbon Gen 11 / AST-0012), none of Monitor's or Headphones' assets. Matches `AC-ASSET-002-01`/`-03` and Prototype P-005 (v0.9) exactly. `TC-ASSET-002-01` **PASS** — the corrected Category → Type hierarchy display is now confirmed by this same execution (the 2026-08-26 PASS is no longer relied on; this is a fresh, direct PASS against the corrected wording). `TC-ASSET-002-03` **PASS** — no longer BLOCKED (pending implementation). `TC-ASSET-002-02` **unaffected, still PASS**. Also confirmed: 3 new/updated automated tests in `frontend/src/pages/Assets/index.test.tsx` all pass, the full frontend suite (145 tests) passes with no regressions, and `tsc --noEmit`/lint are both clean. **All three sub-items of Gap 9 (spec correction, UI implementation, execution sweep) are now closed** — see Gap 9, §6, RESOLVED. Overall row status: **PASS**. |
-| `RAISE-FR-ASSET-003` | Custody History | P0 / MVP | §4.2 Custody & Asset Operations | P-006 | AC-ASSET-003 | TS-ASSET-003 | TC-ASSET-003-01..03 | **PASS** — executed 2026-08-26: TC-ASSET-003-01 **PASS** (current holder "Sarah Chen" displays for asset `a1`). TC-ASSET-003-02/-03 originally **FAIL** — the "Assignment History" panel derived a single "current custody state" row instead of a chronological list, and a Check-in **replaced** the prior entry instead of appending — **now PASS**, re-executed after the fix (F-26): the History tab renders from the same per-asset audit trail `RAISE-FR-AUDIT-001` already builds (append-only by construction — `recordMockAuditEntry` only ever `unshift`s), which `assign`/`checkIn` already fed. Verified live on `a1`: Check-in appended "Asset checked in", then Assign appended "Asset assigned to Sarah Chen" alongside it (not replacing it) — both visible, newest-first. Independent of the still-open Check-in/Check-out-exclusivity question (Gap 4), which only concerns *other* write paths, not this one. |
+| `RAISE-FR-ASSET-003` | Custody History | P0 / MVP | §4.2 Custody & Asset Operations | P-006 | AC-ASSET-003 | TS-ASSET-003 | TC-ASSET-003-01..03 | **PASS** — executed 2026-08-26: TC-ASSET-003-01 **PASS** (current holder "Sarah Chen" displays for asset `a1`). TC-ASSET-003-02/-03 originally **FAIL** — the "Assignment History" panel derived a single "current custody state" row instead of a chronological list, and a Check-in **replaced** the prior entry instead of appending — **now PASS**, re-executed after the fix (F-26): the History tab renders from the same per-asset audit trail `RAISE-FR-AUDIT-001` already builds (append-only by construction — `recordMockAuditEntry` only ever `unshift`s), which `assign`/`checkIn` already fed. Verified live on `a1`: Check-in appended "Asset checked in", then Assign appended "Asset assigned to Sarah Chen" alongside it (not replacing it) — both visible, newest-first. Independent of the still-open Check-in/Check-out-exclusivity question (Gap 4), which only concerns *other* write paths, not this one. **Holder-data-model question resolved 2026-09-01** (`RAISE-PRD.md` §16 Resolved Question 42, resolving Open Question 13, Open Finding F-02): confirmed as a **direct 1:1 link to an Employee record** (`Asset.assignedEmployeeId`/`assignedTo`) — no additional organizational relationship model (department, team, or location-based custody) is needed for MVP. This matches already-built, already-tested behavior exactly (the existing `TC-ASSET-003-01..03` results already exercise this data model); **no new field, model, or test execution was required or performed**. This resolution is independent of, and does **not** touch, the separate custody-writing-events exclusivity question (Gap 4, Open Finding F-10) — whether Check-in/Check-out is the *exclusive* writer of Custody History remains genuinely open, unaffected (`RAISE-PROTOTYPE.md` v0.12 explicitly restored F-10 to open after a v0.11 draft briefly and incorrectly over-resolved it). See Gap 14 (§6, opened and RESOLVED same revision, v1.5) for the full closure record. |
 | `RAISE-FR-OPS-001` | QR / Barcode | P0 / MVP | §4.2 Custody & Asset Operations | P-007 | AC-OPS-001 | TS-OPS-001 | TC-OPS-001-01..03 | **PASS** — re-executed 2026-08-26 (after the F-21 fix) against the real running app (`frontend/src/pages/Assets/index.tsx`'s Scan QR flow): TC-OPS-001-01 **PASS** (valid code `AST-0001` opens Asset Detail); TC-OPS-001-02 **PASS** (unmatched-but-well-formed code `AST-9999` shows "No asset found for..."); TC-OPS-001-03 **PASS** (malformed code `%%$#!!garbage///` now shows a distinct "Invalid code — ... doesn't look like a scannable asset code" message, without attempting a lookup — no longer the same message as TC-OPS-001-02). F-21 resolved (`OPEN-FINDINGS.md`). |
-| `RAISE-FR-OPS-002` | Check-in / Check-out | P0 / MVP | §4.2 Custody & Asset Operations | P-008 | AC-OPS-002 | TS-OPS-002 | TC-OPS-002-01..03 | **PASS** — executed 2026-08-28 against the real running app: TC-OPS-002-01 **PASS** (Assign — the app's actual affordance for identifying a holder and confirming, no distinct "Check-out" label exists but the behavior matches: custody state updated to the new holder on asset `a4`); TC-OPS-002-02 **PASS** (Check-in confirmed the asset's return to Available/Unassigned); TC-OPS-002-03 **PASS** (both operations created a corresponding Audit Log entry, verified visible with actor and timestamp). "Appropriate permission"/role-correctness remains untestable (PRD §16 Q22, unchanged) but does not block re-verifying the state-transition and audit-entry behavior itself. |
+| `RAISE-FR-OPS-002` | Check-in / Check-out | P0 / MVP | §4.2 Custody & Asset Operations | P-008 | AC-OPS-002 | TS-OPS-002 | TC-OPS-002-01..03 | **PASS** — executed 2026-08-28 against the real running app: TC-OPS-002-01 **PASS** (Assign — the app's actual affordance for identifying a holder and confirming, no distinct "Check-out" label exists but the behavior matches: custody state updated to the new holder on asset `a4`); TC-OPS-002-02 **PASS** (Check-in confirmed the asset's return to Available/Unassigned); TC-OPS-002-03 **PASS** (both operations created a corresponding Audit Log entry, verified visible with actor and timestamp). **Permission-gate and workflow-shape questions resolved 2026-09-01** (`RAISE-PRD.md` §16 Resolved Question 42, resolving Open Questions 11 and 12, Open Finding F-02): Check-in/Check-out is confirmed as an **immediate state-change operation**, with no approval step or exception-handling workflow, and the permission gate is confirmed as **any authenticated user, no role restriction** — matching the already-executed behavior exactly (the 2026-08-28 execution above already exercised an authenticated user performing the operation with no role gate blocking it). **No new test execution is required or claimed by this resolution** — the existing `TC-OPS-002-01..03` PASS result already covers the newly-confirmed scope. This resolves only Check-in/Check-out's *own* permission requirement — it does **not** resolve the broader `RAISE-NFR-SEC-RBAC-001` role/permission-matrix-content question for other domains (PRD §16 Q21–Q22, Open Finding F-08), which remains genuinely open and unaffected. It also does **not** touch the separate, still-open question of whether Check-in/Check-out is the *exclusive* writer of Custody History (Gap 4, Open Finding F-10, unaffected). See Gap 14 (§6, opened and RESOLVED same revision, v1.5) for the full closure record. |
 | `RAISE-FR-MAINT-001` | Maintenance (4-stage workflow: User Requisition → Dept Approval (Delegated) → IT Dispatch → Technician Execution) | P0 / MVP | §5.1 Maintenance Domain | P-009 | AC-MAINT-001 (AC-MAINT-001-01..09) | TS-MAINT-001 | TC-MAINT-001-01..09 | **PASS** — executed 2026-08-28 against the real running app, all 9 cases: TC-MAINT-001-03 **PASS** (a new requisition submitted via "New IT Requisition" enters `PENDING_DEPT_APPROVAL`). TC-MAINT-001-04 **PASS** (Dept Sign-off → Approve transitions to `PENDING_IT_DISPATCH`). TC-MAINT-001-05 **PASS** (Reject on a separate `PENDING_DEPT_APPROVAL` ticket resulted in `REJECTED_BY_DEPT`, confirmed **not** `PENDING_IT_DISPATCH` — per this case's own scope, no claim is made about whether that specific resulting state is itself correct). TC-MAINT-001-06 **PASS** (Assign Tech + Dispatch transitions to `IN_PROGRESS`, one of the three allowed states). TC-MAINT-001-07 **PASS** (Update Status to On-Hold with a hold reason correctly reflects "3. On-Hold" and shows the reason banner). TC-MAINT-001-08 **PASS** (Mark Complete transitions to `DONE`/"4. Resolved & Closed" with resolution notes shown). TC-MAINT-001-01 originally **FAIL** — the Maintenance record list showed no date/cost fields (F-28) — **now PASS**, re-executed after the fix: each record now shows created date and cost, verified live on asset `a1`. TC-MAINT-001-09 originally **FAIL** — the 4-stage progress indicator (`GovernanceStep` in `TicketDetail/index.tsx`) only rendered two visual states (done ✓ vs. a plain gray circle with the step number), so the "Current" stage and any not-yet-reached "Pending" stage were visually identical (F-29) — **now PASS**, re-executed after the fix: the current stage is derived from `ticket.status` and rendered with a distinct brand-colored circle, ring, and a "Current" badge; verified live across `PENDING_DEPT_APPROVAL` (stage 2 current), `PENDING_IT_DISPATCH` (stage 3 current), and `DONE` (no stage marked current, all done). TC-MAINT-001-02 **PASS** (2 records for asset `a1` displayed in ascending-chronological order by observed outcome, though the underlying code has no explicit sort — `assetTickets` in `AssetDetail/index.tsx` is unsorted array-filter order — a fragility worth watching, not a current failure since the observed order was correct). **The 4-stage workflow shape and state model remain verified present in `RAISE-PRD.md` v0.9 §6 and §16 Resolved Question 33.** |
 | `RAISE-FR-WARRANTY-001` | Warranty | P0 / MVP | §5.2 Warranty Domain (3-state model); §5.4 Settings Domain | P-003 (Asset Registry column), P-004 (Asset Detail), P-018 (Settings > Warranty, new) | AC-WARRANTY-001 (AC-WARRANTY-001-01..06) | TS-WARRANTY-001 | TC-WARRANTY-001-01..06 | **PASS (partial)** — field-list blocker resolved 2026-08-29 (`RAISE-PRD.md` §16 Resolved Question 40, resolving Open Question 15: `warrantyExpiry` is the only MVP field). **Expiring-threshold blocker resolved 2026-09-01** (`RAISE-PRD.md` §16 Resolved Question 41, resolving follow-on Open Question 15b): the Expiring threshold is confirmed **per-Asset-Category configurable**, not a single global 90-day constant — defaulting to 90 days for all 5 current Asset Categories, admin-adjustable via a new P-018 Settings screen. **Implemented and formally executed 2026-09-01:** `frontend/src/lib/warranty.ts` (`getWarrantyStatus`, 3-state Active/Expiring/Expired), `frontend/src/types/settings.ts` (`WarrantySettings`), `frontend/src/services/settings-service.ts` + `settings-repository.ts` (per-category seed/merge), `frontend/src/pages/Settings/index.tsx` (new Warranty section, P-018), `frontend/src/pages/Assets/index.tsx` + `AssetDetail/index.tsx` (3-state badge). TC-WARRANTY-001-01 **PASS** (Warranty column/field displays `warrantyExpiry`). TC-WARRANTY-001-02 **PASS** (Active/Expiring/Expired badge correctly derived from `warrantyExpiry` + the asset's category's configured threshold, via `getWarrantyStatus()`). TC-WARRANTY-001-03 **PASS** — no longer BLOCKED: a category-specific threshold correctly flags an asset as Expiring, confirmed by automated test and live browser (setting IT Hardware to 5000 days flagged only IT Hardware assets Expiring, with an unrelated Mobile-category expired asset unaffected — no cross-category leakage). TC-WARRANTY-001-04 **PASS** (P-018 Settings > Warranty renders all 5 Asset Categories with a "90" default threshold input each). TC-WARRANTY-001-05 **PASS** (editing/saving one category's threshold recomputes only that category's assets; other categories unaffected). Verified via 151/151 automated tests (`tsc --noEmit`/lint clean) and live browser execution. **TC-WARRANTY-001-06 (non-admin access/write denial to P-018) formally executed 2026-09-01 and now PASS** — but only after a real defect was found and fixed first: the Settings route (`ROUTES.SETTINGS`) in `frontend/src/App.tsx` was **not actually gated to ADMIN**, sitting in the general authenticated-user route block instead of the existing `<Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>` block that already gates Administration/User Management/Role Management. Fixed by moving the Settings route into that existing block — no new RBAC mechanism invented, this reuses the exact mechanism already confirmed elsewhere in the app (PRD §16 Resolved Question 38, UI-only/client-side MVP enforcement level, per `RAISE-NFR-SEC-RBAC-001`). Confirmed by 2 new tests in `frontend/src/App.rbac.test.tsx` (non-ADMIN `EMPLOYEE`-role user redirected to the Forbidden page at `/settings`; ADMIN user let through), full suite 153/153 (was 151), `tsc --noEmit`/lint both clean, and live browser verification (2026-09-01): an EMPLOYEE-role user sees the app's real "403 — Access denied" Forbidden page at `/settings`, an ADMIN-role user sees the real Settings page render. **Both PRD-content blockers this row previously carried (field list, Q15; Expiring-threshold shape, Q15b) are now fully resolved** — see Gap 7 (§6, resolved 2026-08-29) and Gap 12 (§6, opened and RESOLVED same-revision, v1.3, 2026-09-01). **The one remaining coverage gap (TC-WARRANTY-001-06 unexecuted) is now also closed** — see Gap 13 (§6, opened v1.3, RESOLVED this revision v1.4, 2026-09-01). Overall row status: **PASS** — no remaining PRD-content blocker and no remaining unexecuted test case for this requirement. |
 | `RAISE-FR-ORACLE-001` | Oracle FA Integration + NBV/Depreciation | P0 / MVP | §6 Oracle FA Integration (incl. §6.4 "Phase 6" label note) | P-011 | AC-ORACLE-001 | TS-ORACLE-001 | TC-ORACLE-001-01..04 | **FAIL** — executed 2026-08-29 against the real running app, and the result is worse than the pre-existing BLOCKED status: the route the app maps to `RAISE-FR-ORACLE-001` (`/reconciliation`, labeled "Oracle FA Reconcile" in navigation) renders `ModulePage` — a generic, literal "foundation placeholder" `EmptyState` ("Oracle FA Reconciliation — foundation placeholder / Migrates from src/pages/Reconciliation.tsx once Oracle FA is connected in Phase 6."), confirmed via `frontend/src/pages/_shared/ModulePage.tsx` and real page text. TC-ORACLE-001-01 **FAILS even on its testable-now scope** — no "Asset Number", "Acquisition Information", "NBV", "Depreciation", "Oracle Source", or "Synchronization Status" field exists anywhere on this page (the closest analog, Asset Detail's own "Financial" section added for F-24, shows only Purchase Cost/Current Value/Purchase Date — no Oracle-specific fields at all). TC-ORACLE-001-02/-03/-04 **FAIL** — no "data unavailable"/"sync error"/"data conflict" state is rendered anywhere; the placeholder has no state logic at all. This is independent of, and does not wait on, the still-open integration-mechanism question (PRD §16 Q6–Q10, tracked as F-04) or the `ReconciliationPage` mapping question (Open Question 10a) — even presence-only testing of the four UI states fails, since no P-011 screen was actually built (a stub exists in its place). See `OPEN-FINDINGS.md` F-31 for this new build-gap finding (distinct from F-04's integration-mechanism gap). |
@@ -821,6 +821,90 @@ unaffected by this fix. `RAISE-FR-WARRANTY-001`'s row (§3) moves from `PASS
 `OPEN-FINDINGS.md` update (recording this as a newly-found-and-fixed defect,
 if tracked there) is handled separately, out of this document's scope.
 
+**Gap 14 (opened and RESOLVED in the same revision, 2026-09-01, v1.5 — a
+genuine requirement-content resolution, not a build/infrastructure fix like
+Gaps 9–11/13, and not a new-defect find like Gap 13):** `RAISE-FR-OPS-002`'s
+workflow shape and permission gate, and `RAISE-FR-ASSET-003`'s holder data
+model, were previously PRD §16 Open Questions 11, 12, and 13 — the
+underlying questions behind Open Finding F-02 (`OPEN-FINDINGS.md`).
+`RAISE-FR-OPS-002`'s row already carried a real, evidence-based **PASS**
+(executed 2026-08-28), but its Test Status note carried a stale caveat
+("appropriate permission/role-correctness remains untestable, PRD §16 Q22")
+that conflated OPS-002's own now-resolved permission gate with the
+genuinely-still-open general role/permission-matrix-content question for
+other domains. `RAISE-FR-ASSET-003`'s row had no note at all on the holder
+data model, since the question had not been resolved when that row was last
+updated.
+
+**What was done to close it:** per explicit confirmed business decision,
+2026-09-01 — all three recommended options chosen, each matching the app's
+already-built behavior exactly, no new code required — the chain was
+resolved and propagated end-to-end, verified by direct re-read of each
+document this revision:
+
+- `RAISE-PRD.md` v0.13, §16 Resolved Question 42 (resolving Open Questions
+  11, 12, and 13): (a) **Workflow (Q11)** — Check-in/Check-out is an
+  immediate state-change operation, no approval/exception-handling step;
+  (b) **Permission (Q12)** — any authenticated user, no role restriction,
+  matching the already-confirmed MVP RBAC enforcement level (§16 Resolved
+  Question 38) — explicitly scoped to **this one gate only**, not the
+  broader Q21–Q22 role/permission-matrix-content question (Open Finding
+  F-08); (c) **Holder data model (Q13)** — a direct 1:1 link to an Employee
+  record (`Asset.assignedEmployeeId`/`assignedTo`), no additional
+  organizational relationship model needed for MVP.
+- `RAISE-DESIGN.md` v0.11, §4.2 — resolution recorded, matching PRD §16
+  Resolved Question 42 exactly.
+- `RAISE-PROTOTYPE.md` v0.12, P-008 (§14) and P-006 (§10 area) — rewritten
+  to state the confirmed workflow/permission/holder-model rules. **Note:** a
+  v0.11 draft of this document briefly and incorrectly over-resolved a
+  related-but-separate question — whether Check-in/Check-out is the
+  *exclusive* writer of Custody History — as if PRD §16 Resolved Question 42
+  had settled it too. This was caught and corrected in v0.12, which
+  explicitly restores that question to open, tracked as **Open Finding
+  F-10** (distinct from F-02, and distinct from Gap 4's own record of the
+  same underlying question below). This matrix does not repeat that error:
+  F-10/Gap 4 are treated as genuinely open throughout this revision.
+- `RAISE-ACCEPTANCE-CRITERIA.md` v0.10, §11 — `AC-OPS-002-01`/`-02`
+  rewritten to test the confirmed rule directly (any authenticated user;
+  immediate state change, no approval step); `AC-OPS-002` moved from
+  "Partially testable" to fully testable in the AC index (§3).
+- `RAISE-TEST-PLAN.md` v0.10, §7/§8/§9 — `TS-OPS-002` fully unblocked, no
+  remaining blocked item for the workflow/permission questions.
+- `RAISE-TEST-CASES.md` v0.13, §10 — `TC-OPS-002-01`/`-02`'s Blocked-column
+  wording updated to cite the resolution; `TC-OPS-002-03` unaffected (was
+  already fully testable). **Explicitly, no new test execution was run**:
+  the existing 2026-08-28 formal execution (an authenticated user performed
+  Assign/Check-in with no role gate blocking them, because none was ever
+  implemented or tested against) already exercised exactly the
+  now-confirmed rule — this is a scope/spec correction to the Blocked-column
+  wording only, not a report of a new PASS/FAIL result.
+
+**What this closes, and what it explicitly does not close:**
+
+1. **Closed:** the workflow-shape and permission-gate questions for
+   `RAISE-FR-OPS-002` (PRD Open Questions 11, 12) and the holder-data-model
+   question for `RAISE-FR-ASSET-003` (PRD Open Question 13). Both rows' Test
+   Status notes (§3) are updated to record this resolution; **neither row's
+   PASS verdict itself changes** — both were already `PASS` (executed
+   2026-08-28), and this resolution retroactively confirms that execution
+   already covered the newly-settled scope, rather than producing a new
+   execution result.
+2. **NOT closed — a genuinely separate, still-open question:** whether
+   Check-in/Check-out is the *exclusive* writer of Custody History (Open
+   Finding F-10, tracked at Gap 4, §6). PRD §16 Resolved Question 42 covers
+   only workflow shape, permission gate, and holder data model — it does
+   **not** decide which operations may write to Custody History. `Gap 4`
+   above is unchanged by this closure and remains open exactly as before.
+3. **NOT closed — a genuinely separate, still-open question:** the general
+   `RAISE-NFR-SEC-RBAC-001` role list / permission-matrix content for other
+   domains (PRD §16 Q21–Q22, Open Finding F-08). Resolved Question 42
+   explicitly scopes its permission-gate answer to Check-in/Check-out's own
+   gate only — it is not read anywhere in this chain as answering Q21–Q22
+   generally, and this matrix does not treat it as such.
+
+`OPEN-FINDINGS.md` F-02's closure (to Resolved) is tracked and handled
+separately, out of this document's scope.
+
 ---
 
 ## 7. Chain Consistency Check
@@ -1023,18 +1107,43 @@ downstream document's citation of an upstream document's content:
   confirmed complete — build-gap half closed (Gap 11, §6, RESOLVED); the
   severity/trigger-rule content half (F-05) is a genuinely separate,
   still-open thread, unaffected and not claimed closed here.
+- **`RAISE-FR-OPS-002` / `RAISE-FR-ASSET-003` — Open Finding F-02 (PRD §16
+  Open Questions 11–13) — thread walked this revision (2026-09-01, v1.5):**
+  `RAISE-PRD.md` v0.13 §16 Resolved Question 42 → `RAISE-DESIGN.md` v0.11
+  §4.2 → `RAISE-PROTOTYPE.md` v0.12 P-008/P-006 (v0.11's brief, incorrect
+  over-resolution of the separate Custody-History-exclusivity question,
+  Open Finding F-10, caught and corrected in v0.12, restoring F-10 to
+  genuinely open) → `RAISE-ACCEPTANCE-CRITERIA.md` v0.10 §11
+  (`AC-OPS-002-01`/`-02` rewritten, `AC-OPS-002` fully testable) →
+  `RAISE-TEST-PLAN.md` v0.10 §7/§8/§9 (`TS-OPS-002` fully unblocked) →
+  `RAISE-TEST-CASES.md` v0.13 §10 (`TC-OPS-002-01`/`-02` Blocked-column
+  wording updated, no new execution claimed; `TC-OPS-002-03` unaffected).
+  Every layer agrees: (a) Check-in/Check-out is an immediate state-change
+  operation with no approval/exception-handling step; (b) the permission
+  gate is any authenticated user, no role restriction, scoped explicitly to
+  this one gate and not PRD §16 Q21–Q22 (Open Finding F-08); (c)
+  `RAISE-FR-ASSET-003`'s holder data model is a direct 1:1 link to an
+  Employee record. No layer treats this as resolving Open Finding F-10
+  (Custody-History write-path exclusivity, tracked separately at Gap 4) or
+  F-08 (general RBAC role/permission-matrix content) — both remain
+  genuinely open and are carried forward unchanged. The existing
+  `TC-OPS-002-01..03` PASS result (2026-08-28) already covers the
+  newly-confirmed scope; no new code was written and no new test execution
+  was performed. Thread confirmed complete (Gap 14, §6, opened and RESOLVED
+  same revision, v1.5).
 - Full re-walk confirmed no other Test Status cell in §3/§4 has drifted from
-  the current text of `RAISE-TEST-CASES.md` v0.11 (cross-checked TC-by-TC):
-  `RAISE-FR-ASSET-001`, `RAISE-FR-ASSET-003`, `RAISE-FR-OPS-001/002`,
-  `RAISE-FR-ORACLE-001`, `RAISE-FR-AUDIT-001`,
+  the current text of `RAISE-TEST-CASES.md` v0.13 (cross-checked TC-by-TC):
+  `RAISE-FR-ASSET-001`, `RAISE-FR-ORACLE-001`, `RAISE-FR-AUDIT-001`,
   `RAISE-AI-SEARCH-001`, `RAISE-FR-LIFE-001`,
   `RAISE-AI-DOC-001..004` all match their respective TC Blocked-column text
-  exactly (`RAISE-FR-WARRANTY-001` is checked separately immediately above,
-  given this revision's substantive change to that row; `RAISE-FR-EXEC-001`
-  and the Dashboard/Navigation row were checked separately in a prior
-  revision; `RAISE-FR-ASSET-002` and `RAISE-NFR-SEC-RBAC-001` were checked
-  separately in prior revisions; `RAISE-FR-ALERT-001` was checked separately
-  in the prior revision, unchanged this pass).
+  exactly (`RAISE-FR-OPS-002`/`RAISE-FR-ASSET-003` are checked separately
+  immediately above, given this revision's substantive change to those
+  rows; `RAISE-FR-WARRANTY-001` was checked separately in the v1.4 revision,
+  unchanged this pass; `RAISE-FR-EXEC-001` and the Dashboard/Navigation row
+  were checked separately in a prior revision; `RAISE-FR-ASSET-002` and
+  `RAISE-NFR-SEC-RBAC-001` were checked separately in prior revisions;
+  `RAISE-FR-ALERT-001` was checked separately in a prior revision, unchanged
+  this pass).
 
 ---
 
@@ -1173,6 +1282,19 @@ not touched by this correction.
   this defect existed in the shipped app until this execution sweep caught
   it — a concrete example of why unexecuted-but-specified test cases must
   not be treated as equivalent to a passing result. See Gap 13, §6.
+- **Resolved this revision (2026-09-01), Gap 14:** `RAISE-FR-OPS-002`'s
+  workflow shape and permission gate, and `RAISE-FR-ASSET-003`'s holder data
+  model (PRD §16 Open Questions 11–13, Open Finding F-02) are now resolved:
+  immediate state-change operation, no role restriction beyond
+  authentication, direct 1:1 Employee link. **No new code was written and no
+  new test execution was performed** — the existing `TC-OPS-002-01..03`
+  PASS result (2026-08-28) already covers the newly-confirmed scope.
+  Compliance Review may treat both rows' Test Status notes as accurate and
+  current. **Compliance Review must not**, however, treat this as resolving
+  the separate, still-open Custody-History write-path exclusivity question
+  (Open Finding F-10, Gap 4) or the general RBAC role/permission-matrix
+  content question for other domains (PRD §16 Q21–Q22, Open Finding F-08) —
+  both remain genuinely open and unaffected. See Gap 14, §6.
 
 ---
 
@@ -1251,6 +1373,19 @@ not touched by this correction.
       this fix — reusing the existing ADMIN-gating mechanism, not inventing
       a new one. `RAISE-FR-WARRANTY-001`'s row (§3) is now a full,
       unqualified `PASS`.
+- [x] **Gap 14 (§6) is opened and RESOLVED in this same revision (v1.5)** —
+      PRD §16 Open Questions 11–13 (`RAISE-FR-OPS-002` workflow shape and
+      permission gate; `RAISE-FR-ASSET-003` holder data model), the
+      underlying questions behind Open Finding F-02, are closed via PRD §16
+      Resolved Question 42: immediate state-change operation, any
+      authenticated user, direct 1:1 Employee link — matching already-built,
+      already-tested behavior. No new code was written and no new test
+      execution was performed; the existing `TC-OPS-002-01..03` PASS result
+      (2026-08-28) already covers the newly-confirmed scope. **Explicitly
+      not resolved**, and correctly not claimed as such: Open Finding F-10
+      (Custody-History write-path exclusivity, Gap 4) and Open Finding F-08
+      (general RBAC role/permission-matrix content, PRD §16 Q21–Q22) —
+      both remain genuinely open, tracked separately
 - [x] No VERSCAN-only item appears anywhere in this matrix
 
 ---
@@ -1277,10 +1412,11 @@ Development (Source Code)
 RAISE-COMPLIANCE-REVIEW.md
 ```
 
-Gaps 1–13 are now all resolved — Gaps 1–11 are re-confirmed with no drift
-this revision, and **Gap 13 (opened v1.3, RESOLVED this revision, v1.4)**
-— see below for the closure record, distinct from Gap 12, which was opened
-and closed within the same revision (v1.3).
+Gaps 1–14 are now all resolved — Gaps 1–13 are re-confirmed with no drift
+this revision except where noted, and **Gap 14 (opened and RESOLVED this
+revision, v1.5)** — see below for the closure record, the same
+"opened-and-closed-same-revision" pattern used for Gap 12, distinct from
+Gap 13's "opened in one revision, closed in a later one" pattern.
 **Gap 8
 is fully resolved** — both the spec-correction half and the formal
 execution-sweep half are done (see Gap 8, §6, and the `RAISE-FR-EXEC-001`/
@@ -1321,20 +1457,37 @@ PASS; the execution sweep found and fixed a real RBAC-gating defect first
 reusing the existing ADMIN-gating mechanism rather than inventing a new one
 (see Gap 13, §6, and the `RAISE-FR-WARRANTY-001` row in §3). This closes the
 last open item for `RAISE-FR-WARRANTY-001`; the row now carries a full,
-unqualified PASS.
+unqualified PASS. **Gap 14 is opened and resolved in this same revision
+(v1.5)** — `RAISE-FR-OPS-002`'s workflow shape and permission gate, and
+`RAISE-FR-ASSET-003`'s holder data model (PRD §16 Open Questions 11–13,
+Open Finding F-02) are closed via PRD §16 Resolved Question 42: immediate
+state-change operation, any authenticated user (no role restriction),
+direct 1:1 Employee link — all matching already-built, already-tested
+behavior. **No new code was written and no new test execution was
+performed**; the existing `TC-OPS-002-01..03` PASS result (2026-08-28)
+already covers the newly-confirmed scope (see Gap 14, §6, and the
+`RAISE-FR-OPS-002`/`RAISE-FR-ASSET-003` rows in §3). This closes only the
+workflow/permission/holder-model half — the separate Custody-History
+write-path exclusivity question (Open Finding F-10, Gap 4) and the general
+RBAC role/permission-matrix content question for other domains (PRD §16
+Q21–Q22, Open Finding F-08) remain open and are carried forward in item 1
+below, unchanged in scope.
 
 **Recommended next actions, in order:**
 
 1. Resolve the remaining PRD Open Questions that block full testability of
    P0/MVP requirements (§3/§4 above) — in particular Q1 (asset master
-   fields), Q3/Q4 residual KPI formulas, Q6–Q10 (Oracle integration design),
-   Q11–Q13 (Check-in/Check-out and custody model) (Q15's field-list portion
-   is resolved — see Gap 7, §6 — and Q15b's threshold-configurability
-   portion is now also resolved — see Gap 12, §6), Q18–Q20 (AI
-   citation/confidence/conflict), Q21–Q23
+   fields), Q3/Q4 residual KPI formulas, Q6–Q10 (Oracle integration design)
+   (Q11–Q13's Check-in/Check-out workflow shape, permission gate, and
+   holder-data-model questions are now resolved — see Gap 14, §6; Q15's
+   field-list portion is resolved — see Gap 7, §6 — and Q15b's
+   threshold-configurability portion is now also resolved — see Gap 12, §6),
+   Q18–Q20 (AI citation/confidence/conflict), Q21–Q23
    (authentication mechanism, role list, permission matrix content — **still
    genuinely open; the four `MockAuthRepository` demo accounts added to
-   close Gap 10 are a testing convenience, not a proposed answer to this
+   close Gap 10 are a testing convenience, and the Check-in/Check-out
+   permission-gate answer resolved by Gap 14 is a narrow exception scoped
+   to that one gate only — neither is a proposed answer to this broader
    question**), Q24–Q25 (audit taxonomy/retention), the PRD §6.9 Open
    Question (Alerts severity mapping / trigger rules for any condition
    beyond warranty-expired — **still genuinely open; the "Not yet defined"
@@ -1343,8 +1496,10 @@ unqualified PASS.
    Question 10a (`ReconciliationPage` mapping), and Open Question 20a
    (`RAISE-AI-DOC-004` matching/merge behavior).
 2. Resolve the `RAISE-FR-ASSET-003` vs. `RAISE-FR-OPS-002` custody-writing-
-   events exclusivity question (Gap 4) before any custody-writing code path
-   beyond Check-in/Check-out is built.
+   events exclusivity question (Gap 4, Open Finding F-10 — **explicitly not
+   resolved by Gap 14's closure of the workflow/permission/holder-model
+   questions**) before any custody-writing code path beyond Check-in/
+   Check-out is built.
 3. If and when any PRD §10 NFR backlog area (§4.2 above) receives a defined
    value/target, add the corresponding Traceability ID to `RAISE-PRD.md`
    first, then propagate a real AC group / Suite / Test Case down the chain
@@ -1358,30 +1513,38 @@ unqualified PASS.
 
 ## Document Status
 
-**Version:** 1.4 (`TC-WARRANTY-001-06` — non-admin access/write denial to
-the new P-018 Settings screen — formally executed this revision,
-2026-09-01, and confirmed **PASS**, per `RAISE-TEST-CASES.md` v0.12. The
-execution sweep found and fixed a real defect first: the Settings route
-(`ROUTES.SETTINGS`) in `frontend/src/App.tsx` was not actually gated to
-ADMIN — it was moved into the existing `<ProtectedRoute
-allowedRoles={['ADMIN']} />` block that already gates
-Administration/User Management/Role Management, reusing the exact
-mechanism already confirmed elsewhere in the app (PRD §16 Resolved Question
-38), not inventing a new one. `RAISE-FR-WARRANTY-001`'s row moves from
-`PASS (partial)` to a full, unqualified **PASS** — `TC-WARRANTY-001-01`
-through `-06` all PASS. **This closes Gap 13** (opened v1.3, resolved this
-revision, v1.4 — distinct from Gap 12, which was opened and closed within
-the same revision, v1.3). Gaps 1–12 unchanged from v1.3.)
+**Version:** 1.5 (`RAISE-FR-OPS-002` and `RAISE-FR-ASSET-003` — Open Finding
+F-02, PRD §16 Open Questions 11–13 — **RESOLVED 2026-09-01** per confirmed
+business decision, `RAISE-PRD.md` v0.13 §16 Resolved Question 42. **This
+closes new Gap 14** (opened and RESOLVED in this same revision, the same
+pattern used for Gap 12, not the "opened in one revision, closed in a later
+one" pattern used for Gap 13). Check-in/Check-out confirmed as an immediate
+state-change operation, no approval/exception-handling step; permission
+gate confirmed as any authenticated user, no role restriction;
+`RAISE-FR-ASSET-003`'s holder data model confirmed as a direct 1:1 link to
+an Employee record. **No new code was written and no new test execution was
+performed** — the existing `TC-OPS-002-01..03` PASS result (executed
+2026-08-28) already covers the newly-confirmed scope. **This does NOT
+close** Open Finding F-10 (Custody-History write-path exclusivity, Gap 4,
+still genuinely open — a `RAISE-PROTOTYPE.md` v0.11 draft briefly and
+incorrectly over-resolved this related-but-separate question; it was caught
+and corrected in v0.12, restoring F-10 to open) or Open Finding F-08 (general
+RBAC role/permission-matrix content for other domains, PRD §16 Q21–Q22,
+still genuinely open — only Check-in/Check-out's own permission gate is
+settled here). Gaps 1–13 unchanged from v1.4.)
 **Status:** Draft for Traceability Review
-**Source:** [`RAISE-TEST-CASES.md`](../06-test-cases/RAISE-TEST-CASES.md) v0.12 (updated this revision — `TC-WARRANTY-001-06` now records formal 2026-09-01 execution evidence, **PASS**, including the root-cause-fix record) and full upstream chain — `RAISE-TEST-PLAN.md` v0.9 (unchanged this revision), `RAISE-ACCEPTANCE-CRITERIA.md` v0.9 (unchanged this revision), `RAISE-PROTOTYPE.md` v0.10 (unchanged this revision), `RAISE-DESIGN.md` v0.10 (unchanged this revision), and `RAISE-PRD.md` v0.12 (unchanged this revision)
+**Source:** [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.13 (§16 Resolved Question 42), [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.11 (§4.2), [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.12 (P-006/P-008), [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.10 (§11 AC-OPS-002), [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.10 (TS-OPS-002), and [`RAISE-TEST-CASES.md`](../06-test-cases/RAISE-TEST-CASES.md) v0.13 (§10 TC-OPS-002-01..03) — all six were already synced against this resolution in prior steps; this revision updates only `RAISE-TRACEABILITY-MATRIX.md` itself
 **Reference:** VERSCAN only
-**Last Re-Verified:** 2026-09-01 (`RAISE-FR-WARRANTY-001` row re-executed
-against the real running app following `TC-WARRANTY-001-06`'s formal
-execution and the Settings-route ADMIN-gating fix — see Change Log v1.3 →
-v1.4 below and Gap 13, §6, for the full record. Prior re-verification of
-the threshold-configurability half, unchanged this revision, retained
-below for history: `TC-WARRANTY-001-01` through `-05` executed against the
-real running app and confirmed PASS (Gap 12, §6, RESOLVED, v1.3).
+**Last Re-Verified:** 2026-09-01 (`RAISE-FR-OPS-002` and `RAISE-FR-ASSET-003`
+rows updated to record PRD §16 Resolved Question 42's resolution — see
+Change Log v1.4 → v1.5 below and Gap 14, §6, for the full record. **No new
+test execution was performed this revision** — the existing
+`TC-OPS-002-01..03` PASS result (2026-08-28) already covers the
+newly-confirmed scope, so no new pass/fail evidence is reported below. Prior
+re-verification work on `RAISE-FR-WARRANTY-001` (unaffected this revision)
+is retained below for history: `TC-WARRANTY-001-01` through `-06` executed
+against the real running app and confirmed PASS (Gap 12/13, §6, RESOLVED,
+v1.3/v1.4).
 
 **This revision's execution evidence (2026-09-01, v1.4):** 153/153
 automated tests pass (`tsc --noEmit`/lint clean, up from 151/151 in v1.3 —
@@ -1415,7 +1578,74 @@ Pro showed "Expiring" consistently in both its Lifecycle row and Warranty &
 Coverage section badge. `TC-WARRANTY-001-06` was **not** executed that
 pass — this is exactly the gap v1.4 closes above.
 
-**Change Log — v1.3 → v1.4 (this revision, 2026-09-01):**
+**Change Log — v1.4 → v1.5 (this revision, 2026-09-01):**
+
+1. **Gap 14 opened and RESOLVED in the same revision, requirement-content
+   scope (matching the Gap 12 pattern, not the Gap 13 pattern):**
+   `RAISE-FR-OPS-002`'s workflow shape and permission gate, and
+   `RAISE-FR-ASSET-003`'s holder data model, were previously PRD §16 Open
+   Questions 11, 12, and 13 — the underlying questions behind Open Finding
+   F-02. Per explicit confirmed business decision (2026-09-01, PRD §16
+   Resolved Question 42), all three are resolved: (a) immediate
+   state-change operation, no approval/exception-handling step; (b) any
+   authenticated user, no role restriction, scoped to this one gate only,
+   not the general RAISE-NFR-SEC-RBAC-001 role/permission-matrix-content
+   question (PRD §16 Q21–Q22, Open Finding F-08); (c) a direct 1:1 link to
+   an Employee record. Propagated through `RAISE-DESIGN.md` v0.11 (§4.2),
+   `RAISE-PROTOTYPE.md` v0.12 (P-008/P-006 — a v0.11 draft briefly and
+   incorrectly over-resolved the separate Custody-History-exclusivity
+   question, Open Finding F-10; caught and corrected in v0.12, restoring
+   F-10 to open), `RAISE-ACCEPTANCE-CRITERIA.md` v0.10 (AC-OPS-002-01/-02
+   rewritten), `RAISE-TEST-PLAN.md` v0.10 (TS-OPS-002 fully unblocked), and
+   `RAISE-TEST-CASES.md` v0.13 (`TC-OPS-002-01..03` status notes updated).
+   **No new code was written and no new test execution was performed** —
+   the existing `TC-OPS-002-01..03` PASS result (2026-08-28) already covers
+   the newly-confirmed scope; this is a scope/spec-correction closure only,
+   the same discipline used for Gap 12.
+2. **§3 `RAISE-FR-OPS-002` and `RAISE-FR-ASSET-003` rows updated**: both
+   rows' Test Status notes now record this resolution and explicitly
+   distinguish it from the still-open F-10 (Gap 4) and F-08 questions.
+   **Neither row's PASS verdict itself changes** — both remain the same
+   `PASS` recorded 2026-08-28, now with an accurate, non-stale note.
+3. **§6 new Gap 14 added**, opened and RESOLVED in this same revision, with
+   full closure record (what was resolved, what remains explicitly open).
+4. **§7 Chain Consistency Check** gained a dedicated `RAISE-FR-OPS-002` /
+   `RAISE-FR-ASSET-003` / Open Finding F-02 thread-walk bullet for this
+   revision; the "full re-walk" closing bullet's TC-Cases version citation
+   updated from v0.11 to v0.13 and its requirement list adjusted to exclude
+   the two rows now checked separately.
+5. **§8 Compliance Review Readiness** gained a new Gap 14 resolved-item
+   bullet, with an explicit "must not" caveat for F-10/F-08.
+6. **§9 Checklist** gained a new Gap 14 item, checked (`[x]`), opened and
+   resolved within this revision (the same pattern as Gap 12's checklist
+   entry, not Gap 13's "moved from unchecked to checked across revisions"
+   pattern).
+7. **§10 Next Step** — the Gaps 1–13/"Gaps 1-13 now all resolved" summary
+   text is updated to "Gaps 1–14 are now all resolved," with a new Gap 14
+   summary paragraph; recommended next-action item 1's Q11–Q13 citation is
+   updated to note resolution (mirroring how Q15/Q15b were previously
+   updated for Gap 7/Gap 12), and item 2 (Gap 4 / F-10) gained an explicit
+   note that Gap 14's closure does not touch it.
+8. Version citations updated this revision: `RAISE-PRD.md` v0.12 → v0.13,
+   `RAISE-DESIGN.md` v0.10 → v0.11, `RAISE-PROTOTYPE.md` v0.10 → v0.12,
+   `RAISE-ACCEPTANCE-CRITERIA.md` v0.9 → v0.10, `RAISE-TEST-PLAN.md` v0.9 →
+   v0.10, `RAISE-TEST-CASES.md` v0.12 → v0.13 (all six were already synced
+   against this resolution in prior steps, not by this revision — this
+   revision only updates `RAISE-TRACEABILITY-MATRIX.md` itself to reflect
+   that prior sync). Document version bumped 1.4 → 1.5. **No other gap in
+   §6 was found open, closed, or newly discovered during this pass** — Gaps
+   1–13 are unchanged from v1.4 and are not re-litigated here; this
+   revision's reverse-chain re-verification was scoped to `RAISE-FR-OPS-002`
+   / `RAISE-FR-ASSET-003` / Open Finding F-02 specifically, per the
+   instruction that prompted it, not a full re-walk of every requirement.
+   `OPEN-FINDINGS.md` F-02's closure (to Resolved), if tracked there, is
+   handled separately, out of this document's scope. **Explicitly
+   unaffected and not touched by this revision:** Open Finding F-10
+   (Custody-History write-path exclusivity, Gap 4) and Open Finding F-08
+   (general RBAC role/permission-matrix content, PRD §16 Q21–Q22) — both
+   remain genuinely open, per the instruction that prompted this revision.
+
+**Change Log — v1.3 → v1.4 (prior revision, 2026-09-01):**
 
 1. **Gap 13 (opened v1.3) RESOLVED this revision, execution-sweep closure
    that surfaced a real defect:** `TC-WARRANTY-001-06` (non-admin

@@ -2,9 +2,9 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Acceptance Criteria
-**Version:** 0.9 Draft
+**Version:** 0.10 Draft
 **Status:** Draft for Acceptance Review
-**Source:** [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.10 §27 (Prototype Traceability Matrix) + §5, §7–§23, §23A, §25A (per-screen specs / P-018 Settings / AI Scope Boundary / NFR Backlog Prototype Note), cross-checked against [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.12 and [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.10
+**Source:** [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.12 §27 (Prototype Traceability Matrix) + §5, §7–§23, §23A, §25A (per-screen specs / P-018 Settings / AI Scope Boundary / NFR Backlog Prototype Note), cross-checked against [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.13 and [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.11
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
 
@@ -56,7 +56,7 @@ detail is "TBD" or "conceptual," the corresponding criterion is marked
 | [AC-ASSET-002](#8-ac-asset-002--p-005-category--hierarchy) | P-005 | RAISE-FR-ASSET-002 | Testable (resolved 2026-09-01, Open Finding F-27) |
 | [AC-ASSET-003](#9-ac-asset-003--p-006-custody-history) | P-006 | RAISE-FR-ASSET-003 | Partially testable |
 | [AC-OPS-001](#10-ac-ops-001--p-007-qr--barcode-scan) | P-007 | RAISE-FR-OPS-001 | Testable |
-| [AC-OPS-002](#11-ac-ops-002--p-008-check-in--check-out) | P-008 | RAISE-FR-OPS-002 | Partially testable |
+| [AC-OPS-002](#11-ac-ops-002--p-008-check-in--check-out) | P-008 | RAISE-FR-OPS-002 | Testable (resolved 2026-09-01, PRD §16 Resolved Question 42 — workflow shape and permission gate confirmed; general RBAC role/permission content for other domains remains NOT TESTABLE YET, PRD §16 Q22) |
 | [AC-MAINT-001](#12-ac-maint-001--p-009-maintenance) | P-009 | RAISE-FR-MAINT-001 | Partially testable (workflow shape testable; SLA/vendor/cost NOT TESTABLE YET) |
 | [AC-WARRANTY-001](#13-ac-warranty-001--p-010-warranty--p-018-settings) | P-010, P-018 | RAISE-FR-WARRANTY-001 | Testable (field list resolved 2026-08-29; per-category configurable threshold resolved 2026-09-01) |
 | [AC-ORACLE-001](#14-ac-oracle-001--p-011-oracle-fa--financial-view) | P-011 | RAISE-FR-ORACLE-001 | Partially testable |
@@ -384,25 +384,45 @@ feature added.
 
 **Requirement:** `RAISE-FR-OPS-002` · **Screen:** P-008
 
-- **AC-OPS-002-01** — Given an asset is available, when a user with
-  appropriate permission selects Check-out and identifies a holder and
-  confirms, then the asset's custody state updates to reflect the new
-  holder.
-- **AC-OPS-002-02** — Given an asset is checked out, when a user
-  confirms Check-in / return, then the asset's custody state updates to
-  reflect the return.
+**Workflow shape, permission gate, and holder data model resolved 2026-09-01**
+(`RAISE-PRD.md` §16 Resolved Question 42, resolving Open Questions 11, 12, and 13;
+`RAISE-PROTOTYPE.md` §14 P-008 and §12 P-006, v0.12): Check-in/Check-out is an
+**immediate state-change operation** — there is no approval step and no
+exception-handling workflow (deliberately simpler than `RAISE-FR-MAINT-001`'s 4-stage
+workflow). "A user with appropriate permission" means simply **any authenticated user
+("is logged in"), no role restriction** — matching the already-confirmed MVP RBAC
+enforcement level (UI-only/client-side, PRD §16 Resolved Question 38). The criteria
+below are updated to test this confirmed rule directly, rather than treating the
+permission gate and the approval/exception-handling question as open.
+
+- **AC-OPS-002-01** — Given an asset is available, when **any authenticated user**
+  (no role restriction) selects Check-out and identifies a holder and confirms, then
+  the asset's custody state updates immediately to reflect the new holder — with no
+  approval step or intermediate pending state.
+- **AC-OPS-002-02** — Given an asset is checked out, when any authenticated user
+  confirms Check-in / return, then the asset's custody state updates immediately to
+  reflect the return — with no approval step or intermediate pending state.
 - **AC-OPS-002-03** — Given a Check-in or Check-out completes
   successfully, when the operation finishes, then a corresponding Audit
   Log entry (AC-AUDIT-001) is created.
 
-**NOT TESTABLE YET:** "appropriate permission" is undefined (no role
-model exists — PRD §16 Q12, Q22); approval requirements and exception
-handling for Check-in/Check-out are explicitly TBD (Prototype §14; PRD
-§16 Q11). **RBAC MVP enforcement level is confirmed** as UI-only/client-side,
-backend deferred to Roadmap (PRD §16 Resolved Question 38; Design §16) — this fixes
-only *where* a future permission check runs, not *what* the roles/permissions are, so
-AC-OPS-002-01's "appropriate permission" gate remains untestable for role correctness
-until the role list/permission matrix (PRD §16 Q22) is defined.
+**RESOLVED (was: NOT TESTABLE YET — "appropriate permission" undefined; approval/
+exception-handling TBD):** both prior blockers on this AC group are closed by PRD §16
+Resolved Question 42. AC-OPS-002-01/-02 above test the confirmed rule directly: any
+authenticated user may Check-out/Check-in (no role restriction), and the operation is
+an immediate state change with no approval step or exception-handling workflow. This
+resolution is scoped **narrowly to this one permission gate** (Check-in/Check-out's
+own "appropriate permission" language) — it does **not** resolve the general
+role-model/permission-matrix content question for other domains (Audit, Alerts,
+Warranty admin access, etc.), which remains **NOT TESTABLE YET** per PRD §16 Q21–Q22
+(tracked in Open Finding F-08; see AC-LOGIN, AC-ALERT-001, AC-AUDIT-001,
+AC-WARRANTY-001-06, and AC-MAINT-001's own RBAC-dependency notes).
+
+**Not resolved by this change:** whether Check-in/Check-out is the *exclusive*
+mechanism that writes Custody History (AC-ASSET-003), or whether other events (e.g.,
+direct reassignment) also do, is a separate, still-open question — tracked as [Open
+Finding F-10](../project-management/OPEN-FINDINGS.md) — and is unaffected by this
+resolution.
 
 ---
 
@@ -915,7 +935,7 @@ Prototype spec already describes a concrete element, state, or flow, and Prototy
 | PRD §10 NFR Area | Acceptance Criteria Status |
 |---|---|
 | Authentication | Already covered narrowly by AC-LOGIN (§4) — existence of success/error/access-denied states only; mechanism NOT TESTABLE YET (PRD §16 Q21) |
-| Authorization / RBAC | Already covered narrowly by AC-LOGIN, AC-OPS-002, AC-MAINT-001 RBAC-dependency notes (MVP enforcement level only, per `RAISE-NFR-SEC-RBAC-001`); role list/permission matrix content NOT TESTABLE YET (PRD §16 Q22) |
+| Authorization / RBAC | Already covered narrowly by AC-LOGIN and AC-MAINT-001 RBAC-dependency notes (MVP enforcement level only, per `RAISE-NFR-SEC-RBAC-001`); role list/permission matrix content NOT TESTABLE YET (PRD §16 Q22). AC-OPS-002's own permission gate is a narrow exception, fully resolved 2026-09-01 (PRD §16 Resolved Question 42 — any authenticated user, no role restriction) — this does not extend to the general role/permission-matrix content question for other domains. |
 | Performance | No AC group — no target defined in PRD/Design/Prototype |
 | Availability | No AC group — no target defined in PRD/Design/Prototype |
 | Scalability | No AC group — no target defined in PRD/Design/Prototype |
@@ -928,8 +948,9 @@ Prototype spec already describes a concrete element, state, or flow, and Prototy
 | Logging | No AC group — distinct from the business-facing Audit Log AC group (AC-AUDIT-001), which is an application-domain acceptance criterion, not an operational logging NFR |
 
 Only `RAISE-NFR-SEC-RBAC-001` (Authorization/RBAC) has PRD-confirmed, criterion-relevant
-content today (the MVP enforcement-level decision, already reflected in AC-LOGIN,
-AC-OPS-002, and AC-MAINT-001's dependency notes) — the other ten areas remain fully TBD
+content today (the MVP enforcement-level decision, already reflected in AC-LOGIN and
+AC-MAINT-001's dependency notes, plus AC-OPS-002's now-fully-resolved permission gate) —
+the other ten areas remain fully TBD
 at every layer (PRD → Design → Prototype → Acceptance Criteria) and are recorded here for
 traceability completeness only, not as a commitment to future criteria.
 
@@ -947,9 +968,7 @@ them as final:
 | Q3 NBV/Risk KPI formulas (Utilization definition itself resolved — Resolved Question 27) | AC-DASH-03, AC-EXEC-001 NBV/Risk note (§17) — tracked further as Open Finding F-03 |
 | Q4 Definition of Risk | AC-DASH-03, AC-EXEC-001 NBV/Risk note (§17) — tracked further as Open Finding F-03 |
 | Q6–Q10 Oracle integration design | AC-ORACLE-001-01..04 |
-| Q11 Check-in/Check-out workflow | AC-OPS-002-01..02 |
-| Q12 Who can assign/transfer an asset | AC-OPS-002-01 |
-| Q22 Roles and permissions required | AC-LOGIN-01..03, AC-OPS-002-01, AC-ALERT-001-01, AC-AUDIT-001-03, AC-MAINT-001-04..08 |
+| Q22 Roles and permissions required (Check-in/Check-out's own permission gate resolved — Resolved Question 42; general role/permission-matrix content for other domains remains open) | AC-LOGIN-01..03, AC-ALERT-001-01, AC-AUDIT-001-03, AC-MAINT-001-04..08 |
 | Q13 Holder data model | AC-ASSET-003-01..03 |
 | Custody-writing-events ambiguity (RAISE-FR-ASSET-003 vs. RAISE-FR-OPS-002 — PRD Pre-Finalization Quality Pass, "Duplicated / Overlapping Requirements," needs business confirmation) | AC-ASSET-003-03 (scope note only) |
 | Q14 Maintenance fields / SLA / vendor model / cost model (workflow shape and state model now confirmed — Resolved Question 33; only SLA, vendor model, cost model, and delegated-approver configuration remain open) | AC-MAINT-001-01, -02 (fields); AC-MAINT-001-05 (Reject/Request Info resulting state); delegated-approver rule note under AC-MAINT-001 |
@@ -1024,9 +1043,23 @@ confirmed that a UI-only/client-side permission check is acceptable for MVP, bac
 enforcement deferred to Enterprise Roadmap. This is a narrow decision about *where*
 enforcement happens, not *what* the roles/permissions are — it does not resolve Q22
 (roles and permissions required), which continues to block AC-LOGIN-01..03,
-AC-OPS-002-01, AC-ALERT-001-01, AC-AUDIT-001-03, and (newly) AC-MAINT-001-04..08 as
+AC-ALERT-001-01, AC-AUDIT-001-03, and (newly) AC-MAINT-001-04..08 as
 listed in the table above. No role list, permission matrix, or authentication
 mechanism is assumed anywhere in this document as a result of this confirmation.
+
+**Resolved since last revision (2026-09-01):** Q11 (Check-in/Check-out workflow) and Q12
+(who can assign/transfer an asset) — `RAISE-PRD.md` §16 Resolved Question 42 confirmed
+Check-in/Check-out is an **immediate state-change operation** with no approval step or
+exception-handling workflow, and that its permission gate is **any authenticated user,
+no role restriction** (`RAISE-PROTOTYPE.md` §14 P-008, v0.12). AC-OPS-002-01/-02 (§11
+above) are rewritten to test this confirmed rule directly; AC-OPS-002 is now **fully
+testable**, and the AC Index (§3) status is updated accordingly. This resolution is
+narrowly scoped to Check-in/Check-out's own permission gate — it does **not** resolve
+the general role list/permission-matrix content question (Q21–Q22) for other domains
+(Audit, Alerts, Warranty admin access, etc.), which remains open per the note above and
+Open Finding F-08. Separately, whether Check-in/Check-out is the *exclusive* writer of
+Custody History (AC-ASSET-003-03) was **not** part of this confirmation and remains open
+— see Open Finding F-10 in `OPEN-FINDINGS.md`.
 
 **Resolved since last revision:** Q26 (Disposal MVP scope for `RAISE-FR-LIFE-001`) —
 confirmed Enterprise Roadmap, not MVP, on 2026-08-21. See §7.5 above and
@@ -1084,9 +1117,11 @@ Before moving to Test Plan:
       Approval (Delegated) → IT Dispatch → Technician Execution) has stage-transition
       criteria (§12 AC-MAINT-001-03..09); SLA/vendor/cost model remain NOT TESTABLE YET
 - [x] `RAISE-NFR-SEC-RBAC-001`'s confirmed MVP enforcement level (UI-only/client-side,
-      backend deferred to Roadmap) is reflected in AC-LOGIN, AC-OPS-002, and
-      AC-MAINT-001's RBAC-dependency notes without inventing a role list, permission
-      matrix, or authentication mechanism (all remain TBD per PRD §16 Q22)
+      backend deferred to Roadmap) is reflected in AC-LOGIN and AC-MAINT-001's
+      RBAC-dependency notes without inventing a role list, permission matrix, or
+      authentication mechanism (all remain TBD per PRD §16 Q22); AC-OPS-002's own
+      permission gate is a narrow, separately-resolved exception (PRD §16 Resolved
+      Question 42, 2026-09-01) that does not extend to the general role model
 - [x] AC-ORACLE-001 does not reference the stale "Phase 6" code-comment label or assume
       `ReconciliationPage` satisfies `RAISE-FR-ORACLE-001` (PRD Open Question 10a remains
       open and unresolved here)
@@ -1134,9 +1169,53 @@ as blocked pending business confirmation.
 
 ## Document Status
 
-**Version:** 0.9 (re-synced against `RAISE-PROTOTYPE.md` v0.10, `RAISE-PRD.md` v0.12, and
-`RAISE-DESIGN.md` v0.10, 2026-09-01 — PRD §16 Resolved Question 41 / Warranty
-per-Asset-Category threshold + P-018 Settings scope/spec correction)
+**Version:** 0.10 (re-synced against `RAISE-PROTOTYPE.md` v0.12, `RAISE-PRD.md` v0.13, and
+`RAISE-DESIGN.md` v0.11, 2026-09-01 — PRD §16 Resolved Question 42 / `RAISE-FR-OPS-002`
+Check-in/Check-out workflow shape and permission gate resolved)
+
+**Change Log — v0.9 → v0.10 (2026-09-01, PRD §16 Resolved Question 42, per confirmed
+business decision):**
+
+1. **Root cause.** `RAISE-PRD.md` §16 Resolved Question 42 (resolving Open Questions
+   11, 12, and 13) confirmed that Check-in/Check-out is an **immediate state-change
+   operation** with no approval step or exception-handling workflow, that its
+   permission gate is **any authenticated user, no role restriction**, and that the
+   holder data model is a direct 1:1 link to an Employee record. `RAISE-PROTOTYPE.md`
+   v0.12 §14 (P-008) and §12 (P-006) were corrected first (explicitly correcting an
+   earlier overreach that had conflated this resolution with the separate, still-open
+   Custody-History-write-path-exclusivity question); this document is corrected to
+   match.
+2. **AC-OPS-002 (§11) rewritten.** AC-OPS-002-01/-02 now state the confirmed rule
+   directly: any authenticated user (no role restriction) may Check-out/Check-in, and
+   each operation is an immediate state change with no approval step or intermediate
+   pending state. The prior "NOT TESTABLE YET" note ("'appropriate permission' is
+   undefined... approval requirements and exception handling... are explicitly TBD")
+   is replaced with a **RESOLVED** note citing Resolved Question 42, plus an explicit
+   scope boundary: this resolution does **not** extend to the general role/
+   permission-matrix content question for other domains (PRD §16 Q21–Q22, Open Finding
+   F-08), and does **not** resolve whether Check-in/Check-out is the *exclusive* writer
+   of Custody History (a separate, still-open question tracked as Open Finding F-10 —
+   left untouched in AC-ASSET-003-03, §9).
+3. **AC Index (§3)** — AC-OPS-002 row's Status updated from "Partially testable" to
+   "Testable (resolved 2026-09-01, PRD §16 Resolved Question 42...)."
+4. **Not-Yet-Testable Summary (§20)** — the Q11/Q12 rows are removed from the blocking
+   table (folded into the Q22 row's clarifying note, since Q22's own general-RBAC
+   blocker for other domains is unaffected); a new "Resolved since last revision
+   (2026-09-01): Q11 and Q12" note explains the resolution and its scope boundary
+   (F-08, F-10 both explicitly called out as unaffected). §19.9's RBAC summary table
+   and its accompanying paragraph are updated to reflect that AC-OPS-002's own
+   permission gate is now a resolved exception, not covered by the general MVP
+   enforcement-level note.
+5. No other AC group required a correction — this revision touches only the document
+   header, §3 (index row), §11 (AC-OPS-002), §19.9 (RBAC summary table row/paragraph),
+   and §20 (Not-Yet-Testable Summary). AC-ASSET-003 (§9) was deliberately left
+   unchanged, since its NOT TESTABLE YET note's holder-data-model bullet and its
+   Custody-History-exclusivity scope note are outside the boundary of this resolution
+   (the latter is explicitly the still-open Open Finding F-10). The Login/Asset/
+   Maintenance/Warranty/Oracle/Alert/Audit/Executive/AI-Search/AI-Doc groups were
+   checked against the corresponding Prototype v0.12 sections and found unchanged in
+   substance — Prototype v0.11 → v0.12's only content change was the Check-in/
+   Check-out resolution itself.
 
 **Change Log — v0.8 → v0.9 (2026-09-01, PRD §16 Resolved Question 41, per confirmed
 business decision):**

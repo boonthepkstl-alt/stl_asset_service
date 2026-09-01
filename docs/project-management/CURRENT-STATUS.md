@@ -9,9 +9,10 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-09-01, after `CHECKPOINT-2026-09-01-007` (`TC-WARRANTY-001-06`
-executed — found and fixed a real RBAC gap: Settings wasn't actually
-admin-gated; not yet shipped via PR, see that checkpoint for status). The
+**As of:** 2026-09-01, after `CHECKPOINT-2026-09-01-009` (Open Finding F-02
+resolved — Check-in/Check-out workflow shape, permission gate, and Custody
+holder data model, PRD §16 Q11–Q13; not yet shipped via PR, see that
+checkpoint for status). The
 `BASELINE-CHECKPOINT-2026-08-24` scan is still the last
 full live re-verification against `git`/source. F-20 (checkpoint-coverage
 gap) is closed (R-04); F-21 (QR/Barcode invalid-code state) is closed
@@ -214,6 +215,24 @@ verdict table: of 17 MVP requirements, 8 full `PASS`, 1 `PASS (partial)`,
 defects), 1 `BLOCKED (partial)`, 1 `BLOCKED`, 4 `BLOCKED (full)` — no
 new test execution was performed, this is a consolidation/verdict layer
 only.
+**F-02 (Check-in/Check-out workflow shape, permission gate, Custody
+holder data model) is now Resolved (R-19, 2026-09-01)** — all three
+confirmed answers matched already-built, already-tested behavior
+exactly, so **no code change was required**: (1) immediate state-change,
+no approval workflow; (2) any authenticated user, no role restriction;
+(3) direct 1:1 Employee link for the holder model. Recorded as PRD §16
+Resolved Question 42, propagated through the full chain (`RAISE-DESIGN.md`
+v0.11, `RAISE-PROTOTYPE.md` v0.12 — a mid-session drafting overreach on
+a separate, unconfirmed question was caught and corrected same-session,
+see R-19's full record — `RAISE-ACCEPTANCE-CRITERIA.md` v0.10,
+`RAISE-TEST-PLAN.md` v0.10, `RAISE-TEST-CASES.md` v0.13). `TC-OPS-002-01..03`
+reclassified from partially-blocked to fully PASS, reusing the existing
+2026-08-28 execution evidence — no new test run was needed or claimed.
+`RAISE-TRACEABILITY-MATRIX.md` reached **v1.5** — Gap 14 opened and
+closed same revision. **Explicitly unaffected:** Open Finding F-10
+(Custody History write-path exclusivity) and Open Finding F-08 (general
+RBAC role/permission-matrix content for other domains) both remain
+genuinely open — neither was touched by this resolution.
 Every
 development session should close out per
 [`SESSION-CLOSEOUT-PROTOCOL.md`](SESSION-CLOSEOUT-PROTOCOL.md), which is
@@ -225,27 +244,29 @@ what keeps this section current.
 
 The documentation chain (`docs/01-requirements/` … `docs/07-traceability-matrix/`)
 is internally consistent and current — **`RAISE-TRACEABILITY-MATRIX.md` is
-at v1.1: all 10 traceability gaps identified across this project's
+at v1.5: all 14 traceability gaps identified across this project's
 history are closed** and re-verified against real file content, not just
-re-asserted. The gap between "documented" and "built" is real but honestly
-tracked: several of the platform's MVP domains have a full
-backend-to-frontend implementation, verified by formal test execution;
-the rest is either genuinely blocked on an open PRD/business question
-(F-31/F-32/F-33, `AC-WARRANTY-001-03`, and the still-separate auth
-mechanism/role-matrix question underlying F-30's now-resolved
-infrastructure half) or intentionally out of MVP scope (Roadmap).
+re-asserted. `docs/11-compliance-review/RAISE-COMPLIANCE-REVIEW.md` v1.0
+(2026-09-01) consolidates the whole chain into a per-requirement verdict:
+8 of 17 MVP requirements a full unqualified `PASS`, 1 `PASS (partial)`,
+2 `FAIL` (both explicitly deferred by business decision — F-31/F-33), and
+6 `BLOCKED`/`BLOCKED (partial)` — each waiting on a specific, already-
+identified Blocking finding (F-03–F-09; F-02 resolved 2026-09-01, R-19)
+rather than an engineering task. This is the single most current, evidence-
+linked answer to "what's left" — see it directly rather than this
+paragraph, which is a summary of a summary and can drift.
 
 ## 2. Deliverable Chain Document Versions
 
 | Document | Version | Notes |
 |---|---|---|
-| [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) | 0.12 | Warranty field list resolved (Resolved Question 40); Expiring-threshold per-Category configurability resolved (Resolved Question 41, 2026-09-01) |
-| [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) | 0.10 | §5.2 Warranty 3-state model + new §5.4 Settings Domain (Resolved Question 41, 2026-09-01) |
-| [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) | 0.10 | P-010 rewritten + new §23A P-018 Settings screen (Resolved Question 41, 2026-09-01) |
-| [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) | 0.9 | AC-WARRANTY-001-03 rewritten, new AC-WARRANTY-001-04/-05/-06 (R-17, 2026-09-01) |
-| [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) | 0.9 | TS-WARRANTY-001 fully unblocked (R-17, 2026-09-01) |
-| [`RAISE-TEST-CASES.md`](../06-test-cases/RAISE-TEST-CASES.md) | 0.12 | 66 test cases; TC-WARRANTY-001-01..06 all PASS (R-18, 2026-09-01) |
-| [`RAISE-TRACEABILITY-MATRIX.md`](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md) | 1.4 | Gap 13 closed (R-18) — `RAISE-FR-WARRANTY-001` now full unqualified PASS |
+| [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) | 0.13 | Check-in/Check-out workflow/permission/holder-model resolved (Resolved Question 42, 2026-09-01) |
+| [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) | 0.11 | §4.2 Custody & Asset Operations resolved (Resolved Question 42, 2026-09-01) |
+| [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) | 0.12 | P-008/P-006 resolved (Resolved Question 42); a v0.11 overreach on F-10 was caught and corrected same-session |
+| [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) | 0.10 | AC-OPS-002-01/-02 rewritten to state the confirmed rule directly (R-19, 2026-09-01) |
+| [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) | 0.10 | TS-OPS-002 fully unblocked, no new execution needed (R-19, 2026-09-01) |
+| [`RAISE-TEST-CASES.md`](../06-test-cases/RAISE-TEST-CASES.md) | 0.13 | 66 test cases; TC-OPS-002-01..03 reclassified fully PASS, no new execution (R-19, 2026-09-01) |
+| [`RAISE-TRACEABILITY-MATRIX.md`](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md) | 1.5 | Gap 14 opened and closed same revision (R-19) — F-10/F-08 explicitly unaffected |
 | [`RAISE-HIGH-LEVEL-ARCHITECTURE.md`](../08-architecture/RAISE-HIGH-LEVEL-ARCHITECTURE.md) | — | As-built, not versioned against PRD chain |
 | [`RAISE-API-DB-SPEC.md`](../09-api-db-spec/RAISE-API-DB-SPEC.md) | — | As-built |
 | [`RAISE-DETAILED-DESIGN.md`](../10-detailed-design/RAISE-DETAILED-DESIGN.md) | — | As-built |
@@ -258,7 +279,7 @@ infrastructure half) or intentionally out of MVP scope (Roadmap).
 |---|---|---|
 | Asset Registry | `RAISE-FR-ASSET-001` | ✅ Built, **PASS on all 6 test cases** per formal test execution 2026-08-26/-27 — list/search/row-click/detail-isolation, the Category filter (F-23), and Asset Detail's Financial/Lifecycle sections (F-24) all fixed and verified |
 | Category & Hierarchy | `RAISE-FR-ASSET-002` | ✅ Built, **PASS** per formal test execution 2026-08-26 and 2026-09-01 — category *display* is consistent across screens, and the "By Category" tab inside Asset Management (`/assets`) now nests 2 levels deep: Category → Type → individual assets (**F-27 resolved, R-14**: sub-category = the existing `type` field, no new field/data model). Expanding a category reveals its real Type sub-groups (e.g. "IT Hardware" → Laptop/Monitor/Headphones); expanding a Type reveals its individual assets |
-| Asset Assign / Check-in | `RAISE-FR-ASSET-003` / `RAISE-FR-OPS-002` | ✅ Built, **PASS on all test cases for both requirements** — `RAISE-FR-ASSET-003` (3/3, 2026-08-26/-27, F-26 fixed: History tab renders from the same audit trail `RAISE-FR-AUDIT-001` builds, append-only) and `RAISE-FR-OPS-002` (3/3, 2026-08-28: Assign functions as the app's Check-out affordance, Check-in restores Available, both create Audit Log entries) |
+| Asset Assign / Check-in | `RAISE-FR-ASSET-003` / `RAISE-FR-OPS-002` | ✅ Built, **PASS on all test cases for both requirements** — `RAISE-FR-ASSET-003` (3/3, 2026-08-26/-27, F-26 fixed: History tab renders from the same audit trail `RAISE-FR-AUDIT-001` builds, append-only) and `RAISE-FR-OPS-002` (3/3, 2026-08-28: Assign functions as the app's Check-out affordance, Check-in restores Available, both create Audit Log entries). **F-02 resolved (R-19, 2026-09-01)**: workflow shape (immediate state-change, no approval step), permission gate (any authenticated user), and holder data model (direct Employee link) all confirmed — matched already-built behavior exactly, no code change. Custody History write-path exclusivity (F-10) and general RBAC role content (F-08) remain separately open |
 | Employee | supports `RAISE-FR-ASSET-003` | ✅ Built |
 | Warranty | `RAISE-FR-WARRANTY-001` | ✅ Built, **full unqualified PASS** per formal test execution 2026-09-01 — field list resolved (F-01), Expiring-threshold configurability resolved (R-17), and the Settings admin-only access gate resolved (R-18, a real defect found and fixed on execution). 3-state Active/Expiring/Expired badge on Assets Registry/Asset Detail, per-Asset-Category configurable threshold (default 90 days) via Settings (P-018), now correctly ADMIN-gated. `TC-WARRANTY-001-01..06` all **PASS** |
 | Maintenance / Ticket | `RAISE-FR-MAINT-001` | ✅ Built, **PASS on all 9 test cases** per formal test execution 2026-08-28 — all 4 stage transitions (submit/approve/reject/dispatch/status-update/complete) work correctly, the record list shows date/cost per record (F-28 fixed), and the stage-progress indicator now visually distinguishes Current from Pending (F-29 fixed). SLA/vendor/cost model remain separately TBD |
@@ -300,16 +321,19 @@ extent possible without inventing TBD content. Nothing further is
 currently drawable on Executive Dashboard's NBV/Risk KPI formulas without
 a business decision (§16 Q3/Q4).
 
-**Blocked on a business decision:** Oracle FA Integration mechanism
-(F-04), Natural Language Search citation format (F-06), Document
-Intelligence, User/Role Management backend (RBAC enforcement itself is
-Roadmap-confirmed, not just TBD). Alerts' trigger-rule/severity
-question (F-05) remains open, but the build gap itself (F-32) is now
-resolved with a scoped implementation. F-31 and F-33's build gaps are
-explicitly deferred, not awaiting a decision. Warranty's field list
-(F-01), Expiring-threshold configurability (R-17), and the Settings
-access gate (R-18) are all resolved — no Warranty-domain question or
-coverage gap remains open.
+**Blocked on a business decision:** Executive Dashboard NBV/Risk formulas
+(F-03), Oracle FA Integration mechanism (F-04), Alert trigger rules
+beyond warranty (F-05), Natural Language Search citation format (F-06),
+Document Intelligence (F-07), Auth mechanism / role-permission matrix
+content (F-08), full asset master field list (F-09). Alerts' build gap
+(F-32) and Warranty's threshold/access-gate items (R-17/R-18) are
+resolved with scoped implementations — F-05 and F-08's broader content
+questions remain separately open, unaffected. F-31 and F-33's build gaps
+are explicitly deferred, not awaiting a decision. **F-02 (Check-in/
+Check-out workflow/permission/holder-model) is now resolved (R-19,
+2026-09-01)** — matched already-built behavior, no code change; the
+adjacent, still-genuinely-open **F-10** (Custody History write-path
+exclusivity) is explicitly unaffected.
 
 **Explicitly out of scope (Roadmap/Pilot):** License Management, AI
 Decision Center, Risk Scoring, Lifecycle Prediction, Asset Disposal,

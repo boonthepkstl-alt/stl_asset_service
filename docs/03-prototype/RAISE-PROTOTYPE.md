@@ -2,11 +2,46 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Prototype Specification
-**Version:** 0.10 Draft
+**Version:** 0.12 Draft
 **Status:** Draft for Prototype Review
-**Source:** [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.12 + [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.10 (§23 Prototype Preparation, §9A Document Intelligence Capabilities, §5.1 Maintenance Domain, §5.2 Warranty Domain — 3-state status model + per-Asset-Category Expiring threshold resolved, §5.3 License Domain, §5.4 Settings Domain, §4.1B Settings / Platform Configuration, §6.4 ReconciliationPage / "Phase 6" Label, §13 Executive Intelligence — corrected to as-built, §16 Security Architecture — MVP Enforcement Level, §16A Other Non-Functional Requirements — Design Backlog, §15/§22 Out of Scope)
+**Source:** [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.13 + [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.11 (§23 Prototype Preparation, §9A Document Intelligence Capabilities, §4.2 Custody & Asset Operations — Check-in/Check-out workflow/permission/holder-model resolved, §5.1 Maintenance Domain, §5.2 Warranty Domain — 3-state status model + per-Asset-Category Expiring threshold resolved, §5.3 License Domain, §5.4 Settings Domain, §4.1B Settings / Platform Configuration, §6.4 ReconciliationPage / "Phase 6" Label, §13 Executive Intelligence — corrected to as-built, §16 Security Architecture — MVP Enforcement Level, §16A Other Non-Functional Requirements — Design Backlog, §15/§22 Out of Scope)
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
+
+**Version note (2026-09-01 re-sync, v0.10 → v0.11, PRD §16 Resolved Question 42 /
+Design §4.2):** `RAISE-PRD.md` §16 Resolved Question 42 and `RAISE-DESIGN.md` v0.11
+§4.2 "Check-in/Check-out Workflow, Permission Gate, and Holder Model" jointly confirm
+three previously-TBD items for `RAISE-FR-OPS-002` (Check-in/Check-out) and
+`RAISE-FR-ASSET-003` (Custody History): (a) Check-in/Check-out is an **immediate
+state-change operation** — select a holder and confirm (Check-out/Assign), or confirm
+return (Check-in) — with **no approval step, no exception-handling workflow, and no
+multi-stage process**, deliberately simpler than `RAISE-FR-MAINT-001`'s 4-stage
+workflow; (b) the permission gate is **any authenticated user, no role restriction**
+("appropriate permission" means simply "is logged in"), matching the already-confirmed
+MVP UI-only/client-side RBAC enforcement level (PRD §16 Resolved Question 38); (c) the
+Custody History holder data model is a **direct 1:1 link to an Employee record**
+(`Asset.assignedEmployeeId`/`assignedTo`), with **no additional organizational
+relationship model** (department, team, or location-based custody) needed for MVP.
+This matches already-built, already-tested behavior in
+`frontend/src/pages/AssetDetail/index.tsx`'s Assign/Check-in flow — **no code change
+accompanies this sync**, only resolving a previously-TBD spec question. **[§14 P-008
+Check-in / Check-out](#14-p-008-check-in--check-out)** is updated to remove the stale
+"exact approval rules and exception handling remain TBD" line and to state the
+confirmed immediate-state-change flow and any-authenticated-user permission gate.
+**[§12 P-006 Custody History](#12-p-006-custody-history)**'s Traceability note is
+updated to reflect that the holder data model is now confirmed (direct Employee link).
+The narrower "does Check-in/Check-out exclusively write Custody History" question is
+**not** settled by this resolution — it remains a separate, still-open question,
+tracked as Open Finding F-10 in
+[`OPEN-FINDINGS.md`](../project-management/OPEN-FINDINGS.md) (unaffected by this
+resolution). This does **not** reopen or expand the general RBAC role/permission-matrix
+content question for other domains (PRD §16 Q21–Q22), which remains TBD. `RAISE-PRD.md`
+and `RAISE-DESIGN.md` are not modified by this pass; no `## NEEDS_PRD_CONFIRMATION`
+signal is raised (the holder-data-model business decision is already confirmed). **A
+correction to this note was made in v0.12** (2026-09-01) — an earlier draft of this pass
+incorrectly claimed the exclusivity question was "also settled"; that claim was an
+unconfirmed scope expansion and has been reverted. See the "Document Status" section's
+Change Log for full detail.
 
 **Version note (2026-09-01 re-sync, v0.9 → v0.10, PRD §16 Resolved Question 41 /
 Design §5.2, §5.4, §4.1B):** `RAISE-PRD.md` §16 Resolved Question 41 (resolving new
@@ -780,12 +815,28 @@ Date C     Holder C     Assigned
 
 `RAISE-FR-ASSET-003`
 
-**Open ambiguity (carried from PRD Pre-Finalization Quality Pass / Design §4.2):** it is
-not defined whether this history table records only Check-in/Check-out events
-(`RAISE-FR-OPS-002`, see P-008) or also other custody-changing events (e.g., direct
-reassignment). The prototype shows a generic "Action" column (Assigned/Transferred) to
-stay neutral pending that business confirmation — it must not be read as confirming that
-only Check-in/Check-out writes custody history. See
+**Holder data model — resolved 2026-09-01 (PRD §16 Resolved Question 42; Design
+§4.2):** the "Holder" shown in this screen (Current Holder and each History row) is a
+**direct 1:1 link to an Employee record** (`Asset.assignedEmployeeId`/`assignedTo`).
+No additional organizational relationship model (department, team, or location-based
+custody) is part of MVP — the prototype's "Holder" column should be read as an Employee
+name/identifier only, not a department/team/location value.
+
+**Custody-history write path — still open (Open Finding F-10, not resolved by PRD §16
+Resolved Question 42):** whether this history table records only Check-in/Check-out
+events (`RAISE-FR-OPS-002`, see P-008) or also other custody-changing events (e.g., a
+separate direct-reassignment path) remains a genuinely open question. PRD §16 Resolved
+Question 42 confirmed that Check-in/Check-out itself is a single **immediate
+state-change operation** with **no approval step and no exception-handling workflow**
+— but it was never asked, and the user never confirmed, whether Check-in/Check-out is
+the *exclusive* writer of Custody History. The fact that no other code path currently
+exists to write Custody History is a fact about the current build, not a confirmed
+business rule about what mechanisms are allowed. This overlap between
+`RAISE-FR-ASSET-003` (Custody History) and `RAISE-FR-OPS-002` (Check-in/Check-out) is
+tracked as **Open Finding F-10** in
+[`OPEN-FINDINGS.md`](../project-management/OPEN-FINDINGS.md) — Status: Open. The generic
+"Action" column (Assigned/Transferred) is retained as-is pending that resolution — no
+new Action value is invented. See
 [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md#duplicated--overlapping-requirements)
 and [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md#42-custody--asset-operations).
 
@@ -835,6 +886,21 @@ feature is included here beyond what RAISE-FR-OPS-001 requires.
 
 Support asset custody operations.
 
+## Workflow, Permission, and Holder Model — Resolved 2026-09-01 (PRD §16 Resolved Question 42; Design §4.2)
+
+Check-in/Check-out is confirmed as an **immediate state-change operation** — there is
+**no approval step, no exception-handling workflow, and no multi-stage process** — this
+is **deliberately simpler** than `RAISE-FR-MAINT-001`'s 4-stage workflow (see P-009),
+not an inconsistency to reconcile. The permission gate is **any authenticated user, no
+role restriction**: "a user with appropriate permission" means simply "is logged in,"
+matching the already-confirmed MVP UI-only/client-side RBAC enforcement level (no
+backend enforcement in MVP — see P-001's Traceability note). The Holder selected in
+Check-out and confirmed in Check-in is a **direct 1:1 link to an Employee record**
+(`Asset.assignedEmployeeId`/`assignedTo`) — no department/team/location selection is
+part of this screen. This matches already-built, already-tested behavior in
+`frontend/src/pages/AssetDetail/index.tsx`'s Assign/Check-in flow; no new field,
+workflow step, or role is invented here.
+
 ## Check-out
 
 ```text
@@ -861,11 +927,17 @@ Update Custody
 Audit Event
 ```
 
-Exact approval rules and exception handling remain TBD.
+No approval step or exception-handling workflow exists for this operation — resolved
+2026-09-01 (PRD §16 Resolved Question 42; Design §4.2); see the Workflow, Permission,
+and Holder Model note above.
 
 ## Traceability
 
-`RAISE-FR-OPS-002`
+`RAISE-FR-OPS-002` — workflow shape (immediate state-change, no approval/exception
+handling), permission gate (any authenticated user), and holder data model (direct
+Employee link) all confirmed 2026-09-01, PRD §16 Resolved Question 42; Design §4.2.
+Not resolved by this confirmation: the general RBAC role/permission-matrix content for
+other domains (PRD §16 Q21–Q22), which remains TBD.
 
 ---
 
@@ -1968,9 +2040,9 @@ not be treated as approved MVP functionality.
 | P-003 Asset Registry | RAISE-FR-ASSET-001 | Planned |
 | P-004 Asset Detail | RAISE-FR-LIFE-001 | Planned |
 | P-005 Category | RAISE-FR-ASSET-002 | Planned — sub-category taxonomy resolved 2026-09-01 (Open Finding F-27): sub-category = existing Asset `type` field, 2-level hierarchy (Category → Type), real 2026-09-01 seeded example shown, not a closed enumerated list |
-| P-006 Custody | RAISE-FR-ASSET-003 | Planned |
+| P-006 Custody | RAISE-FR-ASSET-003 | Planned — holder data model resolved 2026-09-01 (PRD §16 Resolved Question 42; Design §4.2): direct 1:1 link to Employee record, no additional organizational relationship model |
 | P-007 QR / Barcode | RAISE-FR-OPS-001 | Planned |
-| P-008 Check-in / Check-out | RAISE-FR-OPS-002 | Planned |
+| P-008 Check-in / Check-out | RAISE-FR-OPS-002 | Planned — workflow shape and permission gate resolved 2026-09-01 (PRD §16 Resolved Question 42; Design §4.2): immediate state-change operation, no approval/exception-handling workflow, any authenticated user |
 | P-009 Maintenance | RAISE-FR-MAINT-001 | Planned — 4-stage workflow shape reflected (confirmed 2026-08-21); SLA/vendor/cost model TBD |
 | P-010 Warranty | RAISE-FR-WARRANTY-001 | Planned — field list resolved 2026-08-29 (PRD §16 Resolved Question 40; Design §5.2): `warrantyExpiry` only for MVP; 7-field draft explicitly rejected. Expiring-threshold shape resolved 2026-09-01 (PRD §16 Resolved Question 41; Design §5.2/§5.4): 3-state Active/Expiring/Expired status, per-Asset-Category configurable threshold (default 90 days, admin-adjustable via P-018 Settings) — implemented end-to-end |
 | P-011 Oracle FA | RAISE-FR-ORACLE-001 | Planned |
@@ -2177,12 +2249,105 @@ The next artifact should be **Acceptance Criteria**, not source code.
 
 ## Document Status
 
-**Version:** 0.10 (sync pass against `RAISE-PRD.md` §16 Resolved Question 41 and
-`RAISE-DESIGN.md` v0.10 §5.2/§5.4/§4.1B, 2026-09-01, re-synced against RAISE-PRD.md
-v0.12 [advanced from v0.10] and RAISE-DESIGN.md v0.10 [advanced from v0.9] — one screen
-added (P-018 Settings); P-010 rewritten to describe the resolved 3-state
-Active/Expiring/Expired warranty status and its per-Asset-Category, Settings-sourced
-Expiring threshold; no `## NEEDS_PRD_CONFIRMATION` signal raised)
+**Version:** 0.12 (correction pass, 2026-09-01, no PRD/Design version change — see
+Change Log below for what was corrected and why; supersedes the v0.11 wording on
+Custody History write-path exclusivity)
+
+**Change Log — v0.11 → v0.12 (2026-09-01, correction — reverting an unconfirmed scope
+expansion introduced in v0.11):**
+
+1. **What was wrong.** The v0.11 pass (below) stated that, in addition to the
+   confirmed holder-data-model resolution, "the narrower 'does Check-in/Check-out
+   exclusively write Custody History' question is now also settled (yes — there is no
+   separate reassignment/exception path)," and described Check-in/Check-out as
+   "effectively the only mechanism that writes Custody History for MVP." This was
+   incorrect.
+2. **Why it was wrong.** PRD §16 Resolved Question 42 (recorded via AskUserQuestion)
+   confirmed exactly three items: (a) Check-in/Check-out is an immediate state-change
+   operation with no approval step, (b) the permission gate is any authenticated user,
+   and (c) the holder data model is a direct Employee link. The user was never asked
+   about, and never confirmed, whether Check-in/Check-out is the *exclusive* writer of
+   Custody History. That is a separate, still-open question, already tracked as
+   **Open Finding F-10** in
+   [`OPEN-FINDINGS.md`](../project-management/OPEN-FINDINGS.md) ("`RAISE-FR-ASSET-003`
+   (Custody History) and `RAISE-FR-OPS-002` (Check-in/Check-out) cover adjacent
+   ground; overlap flagged twice in the PRD's own Pre-Finalization Quality Pass
+   without resolution" — Status: Open). Inferring an answer to F-10 from the
+   observation that no other code path currently writes Custody History is a fact
+   about the current build, not a confirmed business rule about what's allowed — this
+   is exactly the kind of unconfirmed-scope-expansion `RAISE-PRD.md` forbids.
+3. **What changed.** The top-of-doc v0.10 → v0.11 version note (§ above) and
+   [§12 P-006 Custody History](#12-p-006-custody-history)'s "Custody-history write
+   path" note are both reverted to state only that the holder data model is resolved
+   (direct Employee link, PRD §16 Resolved Question 42), and to explicitly flag the
+   exclusivity question as open and tracked under Open Finding F-10 — not settled.
+   The Change Log entry for v0.10 → v0.11 (below) is corrected in place (item 3) with
+   a note pointing to this correction, per this document's convention of never
+   silently fixing a mistake.
+4. **Unaffected.** The holder-data-model resolution (direct 1:1 Employee link) and
+   the Check-in/Check-out workflow/permission-gate resolutions (items (a) and (b)
+   above) are unaffected by this correction — those were genuinely confirmed via
+   AskUserQuestion and remain resolved.
+5. **`RAISE-PRD.md` and `RAISE-DESIGN.md` are not modified by this pass** — this is a
+   correction to this document's own prior (incorrect) synthesis, not a change to
+   either source document. No `## NEEDS_PRD_CONFIRMATION` signal is raised — F-10
+   remains tracked as an existing Open Finding, not a newly discovered gap.
+6. Header metadata updated: Version bumped to 0.12; PRD Source and Design Source
+   citations unchanged (still v0.13 / v0.11 respectively — this pass changes no
+   requirement or design content, only corrects this document's prior wording).
+
+**Change Log — v0.10 → v0.11 (2026-09-01, PRD §16 Resolved Question 42 / Design §4.2,
+per explicit business confirmation already implemented and verified end-to-end in
+`frontend/src/`):**
+
+1. **Root confirmation.** PRD §16 Resolved Question 42 (resolving PRD Open Questions
+   11–13) and Design v0.11 §4.2 "Check-in/Check-out Workflow, Permission Gate, and
+   Holder Model" jointly confirm: (a) **Workflow (Q11)** — `RAISE-FR-OPS-002`
+   (Check-in/Check-out) is an **immediate state-change operation** — select a holder
+   and confirm (Check-out/Assign), or confirm return (Check-in) — with **no approval
+   step, no exception-handling workflow, and no multi-stage process**, deliberately
+   simpler than `RAISE-FR-MAINT-001`'s 4-stage workflow (the two are confirmed as
+   intentionally different shapes, not an oversight); (b) **Permission (Q12)** — **any
+   authenticated user, no role restriction**, matching the already-confirmed MVP
+   UI-only/client-side RBAC enforcement level; "appropriate permission" in
+   `RAISE-FR-OPS-002` means simply "is logged in"; does not reopen the broader RBAC
+   role/permission-matrix content question for other domains; (c) **Holder data model
+   (Q13, `RAISE-FR-ASSET-003`)** — a **direct 1:1 link to an Employee record**
+   (`Asset.assignedEmployeeId`/`assignedTo`); no additional organizational
+   relationship model (department, team, or location-based custody) is needed for
+   MVP.
+2. **[§14 P-008 Check-in / Check-out](#14-p-008-check-in--check-out)** updated: a new
+   "Workflow, Permission, and Holder Model — Resolved 2026-09-01" note added under
+   Purpose; the stale "Exact approval rules and exception handling remain TBD." line
+   removed and replaced with a statement that no approval step or exception-handling
+   workflow exists; the Traceability line expanded to record the three confirmed items
+   and to note that the general RBAC role/permission-matrix content for other domains
+   remains TBD (not resolved by this confirmation).
+3. **[§12 P-006 Custody History](#12-p-006-custody-history)** updated: the prior "Open
+   ambiguity" note (holder data model undefined; unclear whether Check-in/Check-out
+   exclusively writes Custody History) is replaced with a resolved note for the
+   holder data model (direct Employee link). ~~and Check-in/Check-out is effectively
+   the only mechanism that writes Custody History for MVP (since there is no separate
+   reassignment/exception path)~~ **— CORRECTED in v0.12 (2026-09-01): this claim was
+   wrong.** The exclusivity question was never asked of, or confirmed by, the user
+   (PRD §16 Resolved Question 42 covers only workflow shape, permission gate, and
+   holder data model — not write-path exclusivity); it remains open, tracked as Open
+   Finding F-10 in [`OPEN-FINDINGS.md`](../project-management/OPEN-FINDINGS.md). See
+   the v0.11 → v0.12 Change Log entry above for full detail. The generic "Action"
+   column (Assigned/Transferred) is kept unchanged pending that resolution — no new
+   Action value is invented.
+4. **§27 Prototype Traceability Matrix** — P-006 and P-008 rows updated with the
+   resolved status notes above.
+5. **No new screen, field, workflow step, or role invented.** This pass matches
+   already-built, already-tested behavior (`frontend/src/pages/AssetDetail/index.tsx`'s
+   Assign/Check-in flow) — no code change accompanies this sync, only a spec
+   correction resolving previously-TBD language.
+6. **`RAISE-PRD.md` and `RAISE-DESIGN.md` are not modified by this pass.** No
+   `## NEEDS_PRD_CONFIRMATION` signal is raised — the business decision (PRD §16
+   Resolved Question 42) is already confirmed and matches as-built behavior.
+7. Header metadata updated: Version bumped to 0.11; PRD Source updated to v0.13
+   (advanced from v0.12); Design Source updated to v0.11 (advanced from v0.10), with
+   §4.2 added to the cited section list.
 
 **Change Log — v0.9 → v0.10 (2026-09-01, PRD §16 Resolved Question 41 / Design
 §5.2/§5.4/§4.1B, per explicit business confirmation already implemented and verified

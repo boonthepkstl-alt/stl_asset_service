@@ -2,9 +2,9 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** System / Product Design
-**Version:** 0.10 Draft
+**Version:** 0.11 Draft
 **Status:** Draft for Design Review
-**Design Source:** [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.12
+**Design Source:** [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.13
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
 
@@ -371,15 +371,54 @@ Requirement traceability:
                        Disposal
 ```
 
-**Important:** Exact asset statuses and transition rules remain TBD in
-the PRD.
+**Important:** the diagram above (`REGISTERED → ASSIGNED → IN USE →
+CHECK-IN → Maintenance/Audit → Disposal`) remains a conceptual illustration
+only — the PRD does not define an exhaustive, named asset-status enumeration
+or transition-rule table beyond what is confirmed below for Check-in/
+Check-out specifically. General asset status naming/transition rules outside
+that one operation remain TBD in the PRD.
 
-**Open ambiguity (from PRD Pre-Finalization Quality Pass):** the PRD does not
-clarify whether Check-in/Check-out (`RAISE-FR-OPS-002`) is the *only* mechanism
-that writes Custody History (`RAISE-FR-ASSET-003`), or whether other events
-(e.g., direct reassignment) also do. This design groups both under one domain
-component (Custody & Asset Operations) pending that business confirmation — see
-[`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md#duplicated--overlapping-requirements).
+### Check-in/Check-out Workflow, Permission Gate, and Holder Model — Resolved 2026-09-01 (PRD v0.13, §16 Resolved Question 42)
+
+Business confirmed all three of the following, resolving PRD Open Questions
+11–13 (Open Finding F-02) — matching already-built, already-tested
+`frontend/src/services/asset-repository.ts` `assign()`/`checkIn()` behavior
+exactly, so no new code accompanies this design sync:
+
+- **Workflow shape (resolves Q11):** Check-in/Check-out (`RAISE-FR-OPS-002`)
+  is an **immediate state-change operation** — select a holder and confirm
+  (Check-out/Assign), or confirm return (Check-in). There is **no approval
+  step, no exception-handling workflow, and no multi-stage process.** This is
+  **deliberately simpler** than `RAISE-FR-MAINT-001`'s 4-stage workflow (see
+  [§5.1 Maintenance Domain](#51-maintenance-domain)) — the two are confirmed
+  as intentionally different shapes, not an inconsistency to reconcile.
+- **Permission gate (resolves Q12):** "appropriate permission" in
+  `RAISE-FR-OPS-002`'s Acceptance Criteria means **any authenticated user —
+  is logged in, not a specific role or permission check.** This matches the
+  already-confirmed MVP RBAC enforcement level (UI-only/client-side, backend
+  deferred to Roadmap — see [§16 Security Architecture, "MVP Enforcement
+  Level"](#16-security-architecture)). It does **not** reopen or answer the
+  broader `RAISE-NFR-SEC-RBAC-001` role/permission-matrix content question
+  (PRD Open Questions 21–22) for other domains — this resolves this one gate
+  only.
+- **Holder data model (resolves Q13):** the holder is a **direct 1:1 link to
+  an Employee record** (`Asset.assignedEmployeeId`/`assignedTo`). **No
+  additional organizational relationship model** (department, team, or
+  location-based custody) is needed for MVP. This design does not invent any
+  such additional relationship model.
+
+This resolution also settles, narrowly, the previously-open question of
+whether Check-in/Check-out is the *only* mechanism that writes Custody
+History (`RAISE-FR-ASSET-003`): the confirmed behavior is a single immediate
+state-change operation with no separate reassignment/exception path, so this
+design continues to group both requirements under one domain component
+(Custody & Asset Operations) — consistent with, not a new decision beyond,
+the grouping already used in this section.
+
+**Still TBD, not resolved by this confirmation:** the role list and
+permission-matrix contents for other domains (`RAISE-NFR-SEC-RBAC-001`, PRD
+Open Questions 21–22), and general asset-status naming/transition rules
+outside the Check-in/Check-out operation itself.
 
 **Disposal is Enterprise Roadmap, not MVP** (resolved 2026-08-21, see
 `RAISE-PRD.md` §14 item 7 and §16 Resolved Questions). It remains in this diagram as the
@@ -1548,6 +1587,14 @@ administrator controls) continues to depend on `RAISE-NFR-SEC-RBAC-001` as
 **TBD** for role content — only the client-side-vs-backend enforcement
 question is now answered, and only for MVP.
 
+**Exception — one specific gate is fully resolved, not just its enforcement
+level:** `RAISE-FR-OPS-002` (Check-in/Check-out) in [§4.2](#42-custody--asset-operations)
+is confirmed (PRD §16 Resolved Question 42, 2026-09-01) to require **any
+authenticated user, no role check at all** — "appropriate permission" means
+simply "is logged in." This is narrower than, and does not answer, the
+general role/permission-matrix content question above for any other
+component in this list.
+
 ---
 
 # 16A. Other Non-Functional Requirements — Design Backlog
@@ -1689,7 +1736,11 @@ The following require detailed design:
 
 - Asset master fields
 - Category hierarchy
-- Holder model
+- Holder model — **resolved for MVP** (direct 1:1 link to an Employee record,
+  `Asset.assignedEmployeeId`/`assignedTo`; no department/team/location-based
+  custody model; PRD §16 Resolved Question 42, resolving PRD Open Question
+  13; see [§4.2 Custody & Asset Operations](#42-custody--asset-operations)),
+  retained here only because the other data model TBD items are still open.
 - Maintenance fields
 - Warranty fields — **resolved for MVP** (`warrantyExpiry` only; PRD §16
   Resolved Question 40; see [§5.2 Warranty Domain](#52-warranty-domain)),
@@ -1920,9 +1971,9 @@ treated as mandatory.
 |---|---|
 | RAISE-FR-ASSET-001 | Asset Management |
 | RAISE-FR-ASSET-002 | Category / Hierarchy |
-| RAISE-FR-ASSET-003 | Custody |
+| RAISE-FR-ASSET-003 | Custody (§4.2 — holder model resolved 2026-09-01: direct 1:1 link to Employee record) |
 | RAISE-FR-OPS-001 | QR / Barcode |
-| RAISE-FR-OPS-002 | Check-in / Check-out |
+| RAISE-FR-OPS-002 | Check-in / Check-out (§4.2 — workflow shape and permission gate resolved 2026-09-01: immediate state-change, any authenticated user) |
 | RAISE-FR-MAINT-001 | Maintenance (§5.1 — 4-stage workflow shape confirmed) |
 | RAISE-FR-WARRANTY-001 | Warranty (§5.2 — field list resolved 2026-08-29: `warrantyExpiry` only; 3-state status + per-Asset-Category Expiring threshold, default 90 days, resolved 2026-09-01) / Settings (§5.4 — threshold configuration home) |
 | RAISE-FR-LICENSE-001 | License Management — **Roadmap, not MVP** (§4.1A, §5.3; corrected 2026-08-21) |
@@ -2004,7 +2055,11 @@ design-relevant grouping — not a new set of questions.)
 
 6. What is the asset master schema?
 7. What is the category hierarchy?
-8. What is the holder model?
+8. What is the holder model? — **Resolved 2026-09-01** (PRD v0.13, §16
+   Resolved Question 42, resolving PRD Open Question 13): a direct 1:1 link
+   to an Employee record (`Asset.assignedEmployeeId`/`assignedTo`); no
+   additional department/team/location-based custody model — see
+   [§4.2 Custody & Asset Operations](#42-custody--asset-operations).
 9. What fields are required for maintenance? — workflow **shape** confirmed
    2026-08-21 (PRD v0.5 §16 Resolved Question 33, see
    [§5.1 Maintenance Domain](#51-maintenance-domain)); SLA per stage, vendor
@@ -2074,7 +2129,12 @@ design-relevant grouping — not a new set of questions.)
     enforcement is acceptable for MVP; backend enforcement is deferred to
     Roadmap. The role list and permission matrix **contents** themselves
     remain fully open — see [§16 Security Architecture, "MVP Enforcement
-    Level"](#16-security-architecture).
+    Level"](#16-security-architecture). **One specific gate additionally
+    resolved 2026-09-01** (PRD v0.13, §16 Resolved Question 42): the
+    `RAISE-FR-OPS-002` Check-in/Check-out permission check is "any
+    authenticated user, no role restriction" — see [§4.2 Custody & Asset
+    Operations](#42-custody--asset-operations). This does not extend to any
+    other domain's role/permission content.
 23. Sensitive data?
 24. Immutable audit event definition?
 25. Retention period?
@@ -2155,9 +2215,54 @@ RAISE-COMPLIANCE-REVIEW.md
 
 ## Document Status
 
-**Version:** 0.10 (sync with PRD v0.12, §16 Resolved Question 41: warranty
-"Expiring" threshold is per-Asset-Category configurable, default 90 days,
-admin-adjustable — new Settings design area added)
+**Version:** 0.11 (sync with PRD v0.13, §16 Resolved Question 42: Check-in/
+Check-out (`RAISE-FR-OPS-002`) confirmed as an immediate state-change
+operation with no approval/exception-handling workflow; permission gate
+confirmed as any authenticated user, no role restriction; Custody History
+(`RAISE-FR-ASSET-003`) holder data model confirmed as a direct 1:1 link to an
+Employee record — no additional org-relationship model. Documentation-only
+sync; no code change.)
+
+**Change Log — v0.10 → v0.11 (sync with PRD v0.12 → v0.13: Check-in/Check-out
+workflow shape, permission gate, and holder data model resolved; PRD §16
+Resolved Question 42, resolving PRD Open Questions 11–13 / Open Finding
+F-02):**
+
+1. **`RAISE-FR-OPS-002` / `RAISE-FR-ASSET-003` resolved in [§4.2 Custody &
+   Asset Operations](#42-custody--asset-operations).** New subsection
+   "Check-in/Check-out Workflow, Permission Gate, and Holder Model — Resolved
+   2026-09-01" replaces the prior "Open ambiguity" paragraph, confirming: (a)
+   an immediate state-change operation, no approval/exception-handling
+   workflow, deliberately simpler than `RAISE-FR-MAINT-001`'s 4-stage
+   workflow; (b) permission = any authenticated user, no role restriction,
+   matching the already-confirmed MVP UI-only RBAC enforcement level (§16
+   Resolved Question 38); (c) holder = direct 1:1 link to an Employee record,
+   no department/team/location-based custody model. This also narrowly
+   resolves the prior open question of whether Check-in/Check-out is the only
+   mechanism writing Custody History. No new field, workflow step, or role
+   was invented — this matches already-built, already-tested
+   `frontend/src/services/asset-repository.ts` `assign()`/`checkIn()`
+   behavior exactly; **no code change accompanies this sync.**
+2. **§16 Security Architecture** — new "Exception" note added after the
+   "Every MVP component elsewhere..." cross-reference list, recording that
+   the `RAISE-FR-OPS-002` permission gate (unlike every other RBAC-gated
+   component listed) is now fully resolved, not just its enforcement level.
+3. **§18 Logical Data Model** — "Holder model" TBD item marked resolved,
+   pointing to §4.2, retained in the list only because sibling data-model TBD
+   items remain open.
+4. **§24 Design Traceability** — `RAISE-FR-ASSET-003` and `RAISE-FR-OPS-002`
+   row text updated to record the 2026-09-01 resolution.
+5. **§25 Design Open Questions** — Data item 8 (holder model) marked
+   resolved; Security item 22 annotated with the one specific
+   `RAISE-FR-OPS-002` gate now resolved, without extending resolution to any
+   other domain's role/permission content.
+6. **No `## NEEDS_PRD_CONFIRMATION` signal raised.** Every change in this
+   pass traces to an already-resolved PRD decision (§16 Resolved Question 42)
+   and already-implemented, already-verified code
+   (`frontend/src/services/asset-repository.ts`). No field, workflow step, or
+   role was invented beyond this confirmation.
+7. Header metadata updated: Version bumped to 0.11; Design Source updated to
+   reference PRD v0.13.
 
 **Change Log — v0.9 → v0.10 (sync with PRD v0.9 → v0.12: Warranty Expiring
 threshold resolved as per-Asset-Category configurable; new Settings design

@@ -2,7 +2,7 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document Type:** Product Requirements Document
-**Version:** 0.12 Draft — `RAISE-FR-WARRANTY-001`'s "Expiring" warranty threshold confirmed **per-Asset-Category configurable** (default 90 days for all 5 current categories, admin-adjustable via Settings UI), not a single global constant (§16 Resolved Question 41) — already implemented and verified end-to-end. Prior: warranty field list confirmed **`warrantyExpiry` only for MVP** (§16 Resolved Question 40); target organization confirmed: **RAISE is developed for direct use by Singer (Thailand)** (§16 Resolved Question 39), not a generic platform — a branding/identity fact, no functional scope change. All six `## NEEDS_PRD_CONFIRMATION` items from `docs/template-analysis/FRONTEND-FOUNDATION-BASELINE.md` §4 remain closed out (RAISE-FR-MAINT-001 4-stage workflow business-confirmed; License Management confirmed **Roadmap-only** — `RAISE-FR-LICENSE-001` added; six ESAPS-reference-only pages confirmed **out of scope**; RAISE-AI-RECOMMEND-001 re-confirmed **Roadmap-only, no MVP subset**; Oracle FA Reconciliation "Phase 6" code-comment label confirmed **not a PRD phase** (the separate `ReconciliationPage`↔`RAISE-FR-ORACLE-001` mapping question remains **unanswered** — carried forward as Open Question 10a); `RAISE-NFR-SEC-RBAC-001` MVP enforcement level confirmed **UI-only/client-side, backend deferred to Roadmap**). See Document Status change log at the bottom of this file for full history, including a correction to an earlier inaccurate draft of License Management's scope.
+**Version:** 0.13 Draft — `RAISE-FR-OPS-002` (Check-in/Check-out) and `RAISE-FR-ASSET-003` (Custody History) resolved: Check-in/Check-out confirmed as an **immediate state-change operation** with **no approval/exception-handling workflow** (deliberately simpler than `RAISE-FR-MAINT-001`'s 4-stage workflow); permission gate confirmed as **any authenticated user, no role restriction**; holder data model confirmed as a **direct 1:1 link to an Employee record** — resolving §16 Open Questions 11–13 / Open Finding F-02 (§16 Resolved Question 42), matching already-built/already-tested `frontend/` behavior. Prior: `RAISE-FR-WARRANTY-001`'s "Expiring" warranty threshold confirmed **per-Asset-Category configurable** (default 90 days for all 5 current categories, admin-adjustable via Settings UI), not a single global constant (§16 Resolved Question 41) — already implemented and verified end-to-end. Prior: warranty field list confirmed **`warrantyExpiry` only for MVP** (§16 Resolved Question 40); target organization confirmed: **RAISE is developed for direct use by Singer (Thailand)** (§16 Resolved Question 39), not a generic platform — a branding/identity fact, no functional scope change. All six `## NEEDS_PRD_CONFIRMATION` items from `docs/template-analysis/FRONTEND-FOUNDATION-BASELINE.md` §4 remain closed out (RAISE-FR-MAINT-001 4-stage workflow business-confirmed; License Management confirmed **Roadmap-only** — `RAISE-FR-LICENSE-001` added; six ESAPS-reference-only pages confirmed **out of scope**; RAISE-AI-RECOMMEND-001 re-confirmed **Roadmap-only, no MVP subset**; Oracle FA Reconciliation "Phase 6" code-comment label confirmed **not a PRD phase** (the separate `ReconciliationPage`↔`RAISE-FR-ORACLE-001` mapping question remains **unanswered** — carried forward as Open Question 10a); `RAISE-NFR-SEC-RBAC-001` MVP enforcement level confirmed **UI-only/client-side, backend deferred to Roadmap**). See Document Status change log at the bottom of this file for full history, including a correction to an earlier inaccurate draft of License Management's scope.
 **Status:** Draft for Requirement Review
 **Primary Source:** RAISE — Enterprise Asset Intelligence Platform — Final(1).pdf, ADT-RAISE Hackathon Pitch Day, 26 July 2026 (via `RAISE-PRD.md` v0.1 draft supplied 2026-08-20)
 **Source of Truth:** RAISE Hackathon Proposal / RAISE business objectives and MVP scope
@@ -161,7 +161,7 @@ determinable from the source are marked **TBD** rather than invented.
 | Dependencies | RAISE-FR-ASSET-001 |
 | Source Reference | v0.1 draft §6.3 |
 | Traceability ID | RAISE-FR-ASSET-003 |
-| Open Question | Holder data model and organizational relationship model not defined — see [§16 Q13](#16-open-questions). |
+| Open Question | **Resolved 2026-09-01** (business confirmation via direct chat session — see [§16 Resolved Question 42](#16-open-questions)): the holder data model is a **direct 1:1 link to an Employee record** (already implemented: `Asset.assignedEmployeeId`/`assignedTo`). No additional organizational relationship model (department, team, or location-based custody) is needed for MVP — this resolves [§16 Q13](#16-open-questions). |
 
 ### RAISE-FR-OPS-001 — QR / Barcode
 
@@ -189,11 +189,11 @@ determinable from the source are marked **TBD** rather than invented.
 | User/Actor | IT Asset |
 | Priority | P0 |
 | Scope | MVP |
-| Acceptance Criteria | A user with appropriate permission can initiate an asset check-in or check-out process; the operation updates the relevant asset custody state; the operation is traceable. |
+| Acceptance Criteria | **Resolved 2026-09-01** (business confirmation via direct chat session — see [§16 Resolved Question 42](#16-open-questions)): Check-in/Check-out is an **immediate state-change operation**, not a multi-stage approval/exception-handling workflow — deliberately simpler in shape than `RAISE-FR-MAINT-001`'s 4-stage workflow (confirmed as an intentional difference, not an oversight). **Check-out (Assign):** any authenticated user selects a holder (an Employee record) and confirms; the operation immediately updates the asset's custody state to assigned and links the asset directly to that Employee record (`assignedEmployeeId`/`assignedTo`). **Check-in:** any authenticated user confirms the asset's return; the operation immediately updates the asset's custody state to unassigned. Neither operation requires a separate approval step; there is no exception-handling sub-workflow. **Permission gate:** "appropriate permission" means **any authenticated user, no role restriction** — consistent with the already-confirmed MVP RBAC enforcement level (UI-only/client-side, backend deferred to Roadmap; see [§16 Resolved Question 38](#16-open-questions)). This resolves this specific gate only — it does **not** reopen or answer the broader role/permission-matrix content question (`RAISE-NFR-SEC-RBAC-001`, [§16 Q21–Q22](#16-open-questions)) for other domains. The operation remains traceable (custody-history/audit implications per `RAISE-FR-ASSET-003`/`RAISE-FR-AUDIT-001`). |
 | Dependencies | RAISE-FR-ASSET-003, RAISE-NFR-SEC-RBAC-001 |
-| Source Reference | v0.1 draft §6.5 |
+| Source Reference | v0.1 draft §6.5; workflow shape, permission gate, and holder data model confirmed via direct chat session, 2026-09-01, see [§16 Resolved Question 42](#16-open-questions) |
 | Traceability ID | RAISE-FR-OPS-002 |
-| Open Question | Detailed workflow, approval requirements, exception handling, and user roles are TBD — see [§16 Q11–Q12](#16-open-questions). |
+| Open Question | **Resolved 2026-09-01** — the exact workflow (immediate state-change, no approval/exception-handling stage) and the permission gate (any authenticated user, no role restriction) are now confirmed; see Acceptance Criteria above and [§16 Resolved Question 42](#16-open-questions), resolving [§16 Q11–Q12](#16-open-questions). This does not resolve the broader RBAC role/permission-matrix content question (`RAISE-NFR-SEC-RBAC-001`, [§16 Q21–Q22](#16-open-questions)) for other domains. |
 
 ### RAISE-FR-MAINT-001 — Maintenance
 
@@ -498,6 +498,10 @@ Security requirements are **not sufficiently specified** in the Hackathon propos
 define detailed implementation requirements. The source only establishes that
 role/permission-gated actions exist implicitly (e.g., "a user with appropriate
 permission" in Check-in/Check-out, RAISE-FR-OPS-002) without defining the role model.
+**Note (2026-09-01):** for `RAISE-FR-OPS-002` specifically, "appropriate permission" has
+since been resolved to mean "any authenticated user, no role restriction" (see
+[§16 Resolved Question 42](#16-open-questions)) — this settles that one gate only; the
+general role model for other domains (Audit, Alerts, etc.) remains undefined below.
 
 A later Security Design must cover, at minimum:
 
@@ -744,9 +748,20 @@ this PRD.
     answered, not to be inferred from Resolved Question 37.
 
 **Asset Operations**
-11. What is the exact Check-in / Check-out workflow?
-12. Who can assign or transfer an asset?
-13. What is the holder data model?
+11. What is the exact Check-in / Check-out workflow? — **Resolved 2026-09-01, see
+    [Resolved Question 42](#16-open-questions)**: an immediate state-change operation
+    (select holder and confirm for Check-out/Assign; confirm return for Check-in), with
+    no approval step or exception-handling workflow — deliberately simpler than
+    `RAISE-FR-MAINT-001`'s 4-stage workflow.
+12. Who can assign or transfer an asset? — **Resolved 2026-09-01, see
+    [Resolved Question 42](#16-open-questions)**: any authenticated user, no role
+    restriction — matching the confirmed MVP RBAC enforcement level (UI-only/client-side,
+    see [Resolved Question 38](#16-open-questions)). Does not resolve the broader RBAC
+    role/permission-matrix content question (Q21–Q22) for other domains.
+13. What is the holder data model? — **Resolved 2026-09-01, see
+    [Resolved Question 42](#16-open-questions)**: a direct 1:1 link to an Employee record
+    (`Asset.assignedEmployeeId`/`assignedTo`); no additional organizational relationship
+    model (department, team, or location-based custody) is needed for MVP.
 14. What maintenance information is required? — **Partially resolved 2026-08-21, see
     [Resolved Question 33](#16-open-questions)**: the 4-stage workflow *shape* (User
     Requisition → Dept Approval (Delegated) → IT Dispatch → Technician Execution) is now
@@ -1017,6 +1032,37 @@ recorded here explicitly so it is not mistaken for a resolved item alongside 29�
     and the [§17 Requirement Traceability Matrix](#17-requirement-traceability-matrix) row
     for the corresponding status update.
 
+42. **What is the exact Check-in/Check-out workflow shape (`RAISE-FR-OPS-002`), who may
+    assign or transfer an asset (`RAISE-FR-OPS-002`), and what is the holder data model
+    (`RAISE-FR-ASSET-003`)?** — Raised as [Open Questions 11, 12, and 13]
+    (#16-open-questions), the underlying questions behind Open Finding F-02 in
+    `OPEN-FINDINGS.md`. Business confirmed, **2026-09-01, via direct chat confirmation**
+    (all three recommended options chosen, matching the app's already-built behavior
+    exactly — no new code required): (a) **Workflow (Q11)** — Check-in/Check-out is an
+    **immediate state-change operation**: select a holder and confirm (Check-out/Assign),
+    or confirm return (Check-in) — with **no additional approval step, exception-handling
+    workflow, or multi-stage process**. This is deliberately simpler than
+    `RAISE-FR-MAINT-001`'s 4-stage workflow; the two are confirmed as **intentionally
+    different shapes, not an oversight**. (b) **Permission (Q12)** — **any authenticated
+    user, no role restriction**, matching the already-confirmed MVP RBAC enforcement
+    level (UI-only/client-side, backend deferred to Roadmap — see
+    [Resolved Question 38](#16-open-questions)). "Appropriate permission" in
+    `RAISE-FR-OPS-002`'s Acceptance Criteria means simply "is logged in," not a specific
+    role or permission check. **This does not reopen or answer the broader
+    `RAISE-NFR-SEC-RBAC-001` role/permission-matrix content question (F-08,
+    [Q21–Q22](#16-open-questions)) for other domains** — it resolves this one specific
+    gate only. (c) **Holder data model (Q13)** — a **direct 1:1 link to an Employee
+    record** (already implemented: `Asset.assignedEmployeeId`/`assignedTo`); no
+    additional organizational relationship model (department, team, or location-based
+    custody) is needed for MVP. This resolution matches already-built, already-tested
+    behavior (`frontend/src/services/asset-repository.ts`'s `assign()`/`checkIn()`
+    methods: immediate state change, no role gate beyond authentication, direct Employee
+    link via `assignedEmployeeId`/`assignedTo`) — no new field, workflow step, or role
+    was invented beyond this confirmation. See `RAISE-FR-OPS-002` and `RAISE-FR-ASSET-003`
+    in [§6 Functional Requirements](#6-functional-requirements) and the
+    [§17 Requirement Traceability Matrix](#17-requirement-traceability-matrix) rows for
+    the corresponding status update.
+
 ---
 
 ## 17. Requirement Traceability Matrix
@@ -1025,9 +1071,9 @@ recorded here explicitly so it is not mistaken for a resolved item alongside 29�
 |---|---|---|---|---|---|
 | RAISE-FR-ASSET-001 | Asset Registry | MVP | P0 | APPROVED | v0.1 §6.1 |
 | RAISE-FR-ASSET-002 | Category & Hierarchy | MVP | P0 | APPROVED | v0.1 §6.2 |
-| RAISE-FR-ASSET-003 | Custody History | MVP | P0 | APPROVED | v0.1 §6.3 |
+| RAISE-FR-ASSET-003 | Custody History | MVP | P0 | APPROVED — holder data model confirmed 2026-09-01: direct 1:1 link to Employee record | v0.1 §6.3; holder data model confirmed 2026-09-01 (§16 Resolved Question 42) |
 | RAISE-FR-OPS-001 | QR / Barcode | MVP | P0 | APPROVED | v0.1 §6.4 |
-| RAISE-FR-OPS-002 | Check-in / Check-out | MVP | P0 | TBD (workflow detail) | v0.1 §6.5 |
+| RAISE-FR-OPS-002 | Check-in / Check-out | MVP | P0 | APPROVED — workflow shape and permission gate confirmed 2026-09-01: immediate state-change, any authenticated user | v0.1 §6.5; workflow/permission confirmed 2026-09-01 (§16 Resolved Question 42) |
 | RAISE-FR-MAINT-001 | Maintenance | MVP | P0 | Workflow shape confirmed; SLA/vendor/cost model still TBD | v0.1 §6.6; workflow shape confirmed 2026-08-21 |
 | RAISE-FR-WARRANTY-001 | Warranty | MVP | P0 | APPROVED — field list confirmed 2026-08-29: `warrantyExpiry` only; Expiring-threshold per-Asset-Category configurability (default 90 days, admin Settings UI) confirmed 2026-09-01 and implemented | v0.1 §6.7; field list confirmed 2026-08-29 (§16 Resolved Question 40); Expiring-threshold configurability confirmed 2026-09-01 (§16 Resolved Question 41) |
 | RAISE-FR-LICENSE-001 | Software / SaaS License Management | Roadmap | Not MVP-confirmed | ROADMAP — identity/scope confirmed 2026-08-21; field model/alert rules/vendor-cost tracking TBD | New requirement, not in v0.1 draft; added 2026-08-21, confirmed Roadmap-only |
@@ -1099,6 +1145,10 @@ Per instructions, ambiguity and gaps are surfaced here, not silently resolved.
   both describe changes to custody state. The source does not clarify whether
   Check-in/Check-out is the *only* mechanism that writes Custody History, or whether
   other events (e.g., direct reassignment) also do. **Needs business confirmation.**
+  **Note (2026-09-01):** [Resolved Question 42](#16-open-questions) confirmed
+  Check-in/Check-out's own workflow shape (immediate state-change), the permission gate,
+  and the holder data model — it did **not** address this separate question of whether
+  other events beyond Check-in/Check-out also write Custody History; that remains open.
 - **RAISE-FR-ALERT-001 (Alerts)** overlaps conceptually with the warranty-expiry example
   used to illustrate both Alerts (§6.9 in v0.1) and AI Recommendation (§7.6 in v0.1 — the
   "which notebooks expire in 90 days" example). The source uses one business scenario to
@@ -1179,9 +1229,11 @@ Per instructions, ambiguity and gaps are surfaced here, not silently resolved.
 - The **actor list** (§5) — whether any actor beyond IT Asset/Finance/Executive/Auditor
   (e.g., a general employee/asset holder role for check-out requests) is needed for
   Check-in/Check-out to function.
-- The **RBAC role model** underlying "a user with appropriate permission"
-  (RAISE-FR-OPS-002) and "an authorized user" (RAISE-FR-AUDIT-001, RAISE-FR-ALERT-001) —
-  no roles are named anywhere in the source. **Note:** the *enforcement level* question
+- The **RBAC role model** underlying "an authorized user" (RAISE-FR-AUDIT-001,
+  RAISE-FR-ALERT-001) — no roles are named anywhere in the source. **Note:**
+  `RAISE-FR-OPS-002`'s "a user with appropriate permission" gate is now specifically
+  resolved (any authenticated user, no role restriction — see
+  [§16 Resolved Question 42](#16-open-questions)); the *enforcement level* question
   (backend vs. UI-only for MVP) is now resolved — see `RAISE-NFR-SEC-RBAC-001` above and
   [§16 Resolved Question 38](#16-open-questions) — but the actual role/permission
   *content* is still fully open and belongs here.
@@ -1251,9 +1303,52 @@ implements the requirement; Test Case passes; Requirement Compliance Review pass
 
 ## Document Status
 
-**Version:** 0.12 (Draft for Requirement Review)
+**Version:** 0.13 (Draft for Requirement Review)
 **Status:** Draft for Requirement Review
 **Primary Source:** RAISE — Enterprise Asset Intelligence Platform — Final(1).pdf, ADT-RAISE Hackathon Pitch Day, 26 July 2026
+
+**Change Log — v0.12 → v0.13 (2026-09-01, business confirmation via direct chat
+conversation):**
+
+1. **`RAISE-FR-OPS-002` (Check-in/Check-out) workflow, permission gate, and
+   `RAISE-FR-ASSET-003` (Custody History) holder data model confirmed** (new
+   [§16 Resolved Question 42](#16-open-questions), resolving
+   [§16 Open Questions 11, 12, and 13](#16-open-questions) — the underlying questions
+   behind Open Finding F-02 in `OPEN-FINDINGS.md`): (a) **Workflow (Q11)** —
+   Check-in/Check-out is an **immediate state-change operation**: select a holder and
+   confirm (Check-out/Assign), or confirm return (Check-in) — with **no additional
+   approval step, exception-handling workflow, or multi-stage process**. This is
+   deliberately simpler than `RAISE-FR-MAINT-001`'s 4-stage workflow; the two are
+   confirmed as intentionally different shapes, not an oversight. (b) **Permission
+   (Q12)** — **any authenticated user, no role restriction**, matching the
+   already-confirmed MVP RBAC enforcement level (UI-only/client-side, backend deferred
+   to Roadmap, [§16 Resolved Question 38](#16-open-questions)). "Appropriate permission"
+   in `RAISE-FR-OPS-002`'s Acceptance Criteria means simply "is logged in." Does **not**
+   reopen or answer the broader `RAISE-NFR-SEC-RBAC-001` role/permission-matrix content
+   question (F-08, [§16 Q21–Q22](#16-open-questions)) for other domains — resolves this
+   one gate only. (c) **Holder data model (Q13)** — a **direct 1:1 link to an Employee
+   record** (already implemented: `Asset.assignedEmployeeId`/`assignedTo`); no
+   additional organizational relationship model (department, team, or location-based
+   custody) needed for MVP. This resolution matches already-built, already-tested
+   behavior (`frontend/src/services/asset-repository.ts`'s `assign()`/`checkIn()`
+   methods) — no new field, workflow step, or role was invented. Updated in §6
+   (`RAISE-FR-OPS-002` Acceptance Criteria/Open Question/Dependencies/Source Reference;
+   `RAISE-FR-ASSET-003` Open Question), §11 (Security & RBAC intro note), §16 (Open
+   Questions 11–13 marked resolved; new Resolved Question 42), §17 (Traceability Matrix
+   rows for `RAISE-FR-OPS-002` and `RAISE-FR-ASSET-003`), and the Pre-Finalization
+   Quality Pass (Duplicated/Overlapping Requirements and Requirements Needing Business
+   Confirmation notes updated to reflect the resolution without silently dropping the
+   still-open "does Check-in/Check-out write Custody History exclusively?" sub-question).
+2. **Impact on downstream documents:** `RAISE-DESIGN.md`, `RAISE-PROTOTYPE.md`,
+   `RAISE-ACCEPTANCE-CRITERIA.md`, `RAISE-TEST-PLAN.md`, `RAISE-TEST-CASES.md`, and
+   `RAISE-TRACEABILITY-MATRIX.md` should be checked for any Check-in/Check-out workflow,
+   permission, or holder-data-model assumptions and corrected to match this resolution.
+   `OPEN-FINDINGS.md` Open Finding F-02 should also be updated/closed to reference this
+   resolution. **This PRD update was scoped to `RAISE-PRD.md` only** per this task's
+   explicit boundary — the downstream documents above were not edited by this change.
+   Downstream synchronization (`/sync-design`, `/sync-prototype`,
+   `/sync-acceptance-criteria`, `/sync-test-plan`, `/sync-test-cases`,
+   `/sync-traceability-matrix`) should be run in a subsequent pass.
 
 **Change Log — v0.11 → v0.12 (2026-09-01, business confirmation via direct chat
 conversation):**

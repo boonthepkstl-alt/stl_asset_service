@@ -14,6 +14,15 @@ changes user-visible or API-visible behavior. Pure documentation-sync PRs
 
 ---
 
+## 2026-09-01
+
+### Added
+- **Configurable Warranty "Expiring" threshold** — the Warranty badge on
+  the Asset Registry list and Asset Detail page now shows three states
+  (Active/Expiring/Expired) instead of two. How many days before expiry
+  an asset is flagged "Expiring" is configurable per Asset Category
+  (default 90 days) via a new "Warranty" section in System Settings.
+
 ## 2026-08-29
 
 ### Added

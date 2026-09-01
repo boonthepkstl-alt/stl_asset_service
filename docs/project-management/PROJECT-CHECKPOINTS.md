@@ -2486,6 +2486,40 @@ Commit: pending — predicted next PR after #61 (verify via `gh pr list` before 
 
 ---
 
+## CHECKPOINT-2026-09-01-006
+
+**Phase:** Phase 3 — Asset Management (Warranty sub-domain)
+**Feature:** Resolve `AC-WARRANTY-001-03`'s Expiring-threshold open question (R-17) and implement it end-to-end
+**Task:** Present the Warranty "Expiring" threshold question to the user, record the confirmed decision, implement it, verify it, and propagate the decision through the full deliverable chain
+
+**What was implemented:** A per-Asset-Category configurable "Expiring" warranty threshold, defaulting to 90 days for all 5 current categories, admin-adjustable via a new Settings screen.
+**What was modified:** `frontend/src/lib/warranty.ts` (new `getWarrantyStatus` 3-state function, `isWarrantyExpired` kept unchanged), `frontend/src/types/settings.ts` (new `WarrantySettings`), `frontend/src/services/settings-service.ts`/`settings-repository.ts` (seed + per-category merge), `frontend/src/pages/Assets/index.tsx` and `frontend/src/pages/AssetDetail/index.tsx` (3-state Warranty badge), `frontend/src/pages/Settings/index.tsx` (new "Warranty" section).
+**What was fixed:** N/A.
+**What was added:** New Settings "Warranty" section/tab (5 editable per-category threshold inputs); `frontend/src/services/settings-service.test.ts` warranty test; `frontend/src/pages/Assets/index.test.tsx` `TC-WARRANTY-001-03` test.
+**What was removed:** None.
+
+**Decision:** Presented the 90-day threshold as the PRD's illustrative-only Business Example and asked how to resolve it. User rejected a plain fixed-number answer ("ระบุจำนวนวันอื่น" then clarified further), then explicitly directed a **per-Asset-Category configurable** field ("กำหนดเป็นช่องให้สามารถระบุได้ เพราะคิดว่าแต่ละอุปกรณ์ warranty ไม่เท่ากัน" — different equipment categories have different warranty periods, so a single global number doesn't fit), confirmed scope as **per Category** (not per-asset, not a single global constant), and confirmed **all categories default to 90 days, admin-adjustable later via Settings**.
+
+**Files changed:** 8 frontend files (listed above) + 7 documentation files (`RAISE-PRD.md` v0.12, `RAISE-DESIGN.md` v0.10, `RAISE-PROTOTYPE.md` v0.10, `RAISE-ACCEPTANCE-CRITERIA.md` v0.9, `RAISE-TEST-PLAN.md` v0.9, `RAISE-TEST-CASES.md` v0.11, `RAISE-TRACEABILITY-MATRIX.md` v1.3) + `OPEN-FINDINGS.md` (R-17 added, F-34 added for the one still-open coverage gap).
+**Database changes:** None (frontend-only, mock repository layer). **API changes:** None. **Frontend changes:** See above.
+
+**Tests:** Full suite **151/151 passing** (was 149 before this task — `settings-service.test.ts` +1, `Assets/index.test.tsx` +1). `npx tsc --noEmit` → clean. `npm run lint` → clean, 0 warnings.
+**Validation:** Live browser execution (this session): Settings > Warranty renders all 5 categories at default 90; set IT Hardware to 5000, saved ("Settings saved" toast confirmed); Assets list then showed MacBook Pro and Dell UltraSharp Monitor (both IT Hardware) as "Expiring", while iPhone 15 Pro (Mobile, already-expired) correctly stayed "Expired" — confirming no cross-category leakage; MacBook Pro's Asset Detail page confirmed both the Lifecycle row and Warranty & Coverage section badge show "Expiring".
+
+**Requirement Traceability:**
+PRD: `RAISE-FR-WARRANTY-001` — Open Question 15b raised and resolved same session as `§16 Resolved Question 41`.
+Acceptance Criteria / Test Case: `AC-WARRANTY-001-03` rewritten; new `AC-WARRANTY-001-04/-05/-06` added. `TC-WARRANTY-001-01` through `-05` **PASS**; `TC-WARRANTY-001-06` (non-admin denial to the new Settings screen) written but **not yet executed** — tracked as **F-34** / Traceability Matrix **Gap 13** (still open, a coverage gap, not a business question). `RAISE-TRACEABILITY-MATRIX.md` reached **v1.3** — Gap 12 (the threshold-configurability question itself) opened and closed same revision.
+
+**Git:**
+Branch: pending (not yet created as of this checkpoint).
+Commit: pending — predicted next PR after #61/#62 (verify via `gh pr list` before treating as final; per this project's strict governance, this PR must not be merged until the user explicitly instructs "merge PR #N").
+
+**Known Issues:** `TC-WARRANTY-001-06` unexecuted (F-34, Gap 13) — real coverage gap, not a blocker on this task's own scope.
+**Remaining Work:** With this resolved, every previously-open finding now has an explicit decision (Resolved or explicitly deferred) except F-34 (a coverage gap, not a business question) and the pre-existing standing Blocking/Unresolved/Infrastructure findings (F-02 through F-19 minus what's since been resolved). Git branch/commit/push/PR still pending as of this checkpoint.
+**Next Step:** Recalculate `NEXT-STEP.md`. Create git branch, commit, push, open PR, and wait for the user's explicit "merge PR #N" instruction before merging.
+
+---
+
 ## Level 2 — Feature Checkpoints
 
 ### FEATURE-CHECKPOINT-project-tracking-governance

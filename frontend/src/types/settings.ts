@@ -45,6 +45,16 @@ export interface DataSettings {
   exportScheduleEnabled: boolean;
 }
 
+// AC-WARRANTY-001-03 (resolved 2026-09-01, per confirmed business decision): the "Expiring"
+// threshold is configurable per Asset Category, not a single fixed number -- PRD Section 6.7's
+// "90 days" was an illustrative business example, not a confirmed generalizable rule, and
+// different equipment types carry different real-world warranty terms. Keyed by the Asset
+// `category` field (data/fixtures/mockData.ts's `categories` list); defaults to 90 for every
+// category, adjustable by an admin via Settings.
+export interface WarrantySettings {
+  expiringThresholdDaysByCategory: Record<string, number>;
+}
+
 export interface PlatformSettings {
   organizationName: string;
   supportEmail: string;
@@ -57,12 +67,14 @@ export interface PlatformSettings {
   appearance: AppearanceSettings;
   email: EmailSettings;
   data: DataSettings;
+  warranty: WarrantySettings;
 }
 
-export type UpdateSettingsInput = Partial<Omit<PlatformSettings, 'notifications' | 'security' | 'appearance' | 'email' | 'data'>> & {
+export type UpdateSettingsInput = Partial<Omit<PlatformSettings, 'notifications' | 'security' | 'appearance' | 'email' | 'data' | 'warranty'>> & {
   notifications?: Partial<NotificationPreferences>;
   security?: Partial<SecuritySettings>;
   appearance?: Partial<AppearanceSettings>;
   email?: Partial<EmailSettings>;
   data?: Partial<DataSettings>;
+  warranty?: Partial<WarrantySettings>;
 };

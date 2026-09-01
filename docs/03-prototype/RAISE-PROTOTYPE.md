@@ -2,11 +2,36 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Prototype Specification
-**Version:** 0.9 Draft
+**Version:** 0.10 Draft
 **Status:** Draft for Prototype Review
-**Source:** [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.10 + [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.9 (§23 Prototype Preparation, §9A Document Intelligence Capabilities, §5.1 Maintenance Domain, §5.2 Warranty Domain — field list resolved, §5.3 License Domain, §6.4 ReconciliationPage / "Phase 6" Label, §13 Executive Intelligence — corrected to as-built, §16 Security Architecture — MVP Enforcement Level, §16A Other Non-Functional Requirements — Design Backlog, §15/§22 Out of Scope)
+**Source:** [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.12 + [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.10 (§23 Prototype Preparation, §9A Document Intelligence Capabilities, §5.1 Maintenance Domain, §5.2 Warranty Domain — 3-state status model + per-Asset-Category Expiring threshold resolved, §5.3 License Domain, §5.4 Settings Domain, §4.1B Settings / Platform Configuration, §6.4 ReconciliationPage / "Phase 6" Label, §13 Executive Intelligence — corrected to as-built, §16 Security Architecture — MVP Enforcement Level, §16A Other Non-Functional Requirements — Design Backlog, §15/§22 Out of Scope)
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
+
+**Version note (2026-09-01 re-sync, v0.9 → v0.10, PRD §16 Resolved Question 41 /
+Design §5.2, §5.4, §4.1B):** `RAISE-PRD.md` §16 Resolved Question 41 (resolving new
+Open Question 15b, a follow-on to Resolved Question 40, not a reopening of it) and
+`RAISE-DESIGN.md` v0.10 §5.2/§5.4/§4.1B confirm the `RAISE-FR-WARRANTY-001` "Expiring"
+threshold is **per-Asset-Category configurable**, defaulting to **90 days** for all 5
+current Asset Categories (IT Hardware, Mobile, Office Equipment, Infrastructure, Media
+Equipment), admin-adjustable via a new Settings domain — not a single fixed global
+number. This has already been implemented and verified end-to-end in `frontend/src/`:
+a 3-state Active/Expiring/Expired warranty status (computed at read time from
+`warrantyExpiry` and the asset's category's configured threshold — not a stored field),
+shown as a badge on both `P-003 Asset Registry` and `P-004 Asset Detail`, plus a new
+**`P-018 Settings`** screen with a "Warranty" section (one editable threshold per Asset
+Category, default 90, Save Changes / Reset, admin-only). **[§16 P-010
+Warranty](#16-p-010-warranty)** is rewritten to describe the 3-state model and its
+category-scoped, Settings-sourced threshold (replacing the prior 2-of-3-states note,
+which described the threshold as still unconfirmed). A new **[§23A P-018
+Settings](#23a-p-018-settings)** screen entry is added — no Settings screen existed in
+this document before this pass. This does **not** reopen or expand the Warranty field
+list settled by Resolved Question 40 (`warrantyExpiry` remains the only Warranty field
+on the Asset record; the threshold lives on a separate Settings-domain configuration
+record) — see P-010's Traceability note. `RAISE-PRD.md` and `RAISE-DESIGN.md` are not
+modified by this pass; no `## NEEDS_PRD_CONFIRMATION` signal is raised (the business
+decision is already confirmed). See the "Document Status" section's Change Log for
+full detail.
 
 **Version note (2026-09-01 re-sync, v0.8 → v0.9, Open Finding F-27):**
 [§11 P-005 Category & Hierarchy](#11-p-005-category--hierarchy) previously
@@ -233,6 +258,10 @@ RAISE
 ├── AI Assistant
 │   └── Natural Language Search
 │
+├── Administration (admin-only, P-018)
+│   └── Settings
+│       └── Warranty (per-Asset-Category "Expiring" threshold, default 90 days)
+│
 └── Roadmap (not MVP — exploratory, kept visually separated per §2.3)
     └── License Management
         ├── License Inventory (P-016)
@@ -244,7 +273,11 @@ requires design review. **License Management is placed under a separate
 "Roadmap" branch, not under the main MVP navigation tree**, because
 `RAISE-FR-LICENSE-001` is confirmed Enterprise Roadmap, not MVP (PRD v0.9
 §6/§13/§17; `RAISE-DESIGN.md` v0.7 §4.1A/§5.3/§22 agree) — see P-016/P-017
-for detail.
+for detail. **Administration / Settings (P-018)** was added 2026-09-01 (PRD
+§16 Resolved Question 41; Design §4.1B/§5.4) — per Design §4.1B/§5.4's
+explicit "not a general Settings framework" boundary, this is scoped
+narrowly to Warranty threshold configuration only, not a general
+application-settings area.
 
 ---
 
@@ -292,6 +325,15 @@ not from a permission matrix).
 | P-015 | AI Assistant | P0 / Current AI | RAISE-AI-SEARCH-001 |
 | P-016 | License Inventory | **Roadmap (not MVP)** | RAISE-FR-LICENSE-001 |
 | P-017 | License Detail | **Roadmap (not MVP)** | RAISE-FR-LICENSE-001 |
+| P-018 | Settings (Warranty Thresholds) | P0, admin-only | RAISE-FR-WARRANTY-001 (Design §4.1B / §5.4 Settings Domain) |
+
+**P-018 note:** added 2026-09-01 (PRD §16 Resolved Question 41; Design v0.10 §4.1B/§5.4).
+Not itself a separate PRD Traceability ID — Design §5.4 records the Settings Domain as a
+design-layer addition, not a standalone PRD requirement — but it is the admin-facing home
+for `RAISE-FR-WARRANTY-001`'s per-Asset-Category "Expiring" threshold, so it is listed
+here as P0 (the same priority as the Warranty requirement it configures) and marked
+admin-only per `RAISE-NFR-SEC-RBAC-001`. See [§23A P-018 Settings](#23a-p-018-settings)
+for the full screen spec.
 
 Risk Scoring, Lifecycle Prediction and AI Recommendation should be
 treated as Pilot / Roadmap prototype areas unless separately approved
@@ -539,7 +581,9 @@ Provide the central asset list.
 - Asset name
 - Status
 - Holder
-- Warranty status
+- Warranty status (3-state Active/Expiring/Expired badge — see P-010 Warranty for the
+  computed-status model and its per-Asset-Category threshold, sourced from P-018
+  Settings)
 - Maintenance status
 
 ## User Flow
@@ -608,7 +652,11 @@ together represent the lifecycle stages per Design §4.2's conceptual state diag
 **Warranty section field list:** the "Warranty" section above surfaces the single
 `warrantyExpiry` field resolved for `RAISE-FR-WARRANTY-001` (PRD §16 Resolved Question 40;
 Design §5.2) — see P-010 Warranty for the full field-list detail and the rejected
-8-field draft. No additional warranty fields are assumed on this screen.
+8-field draft. No additional warranty fields are assumed on this screen. The section
+also shows the derived 3-state Active/Expiring/Expired warranty status badge, computed
+against the asset's category's configured Expiring threshold (default 90 days,
+admin-adjustable via **P-018 Settings** — PRD §16 Resolved Question 41; Design §5.2/§5.4)
+— see P-010 Warranty for the full status-model detail.
 
 **Disposal explicitly excluded:** Design §4.2's conceptual state diagram keeps Disposal as
 the terminal lifecycle stage, but PRD §14 (Enterprise Roadmap, item 7) and PRD §16
@@ -1000,7 +1048,11 @@ one Warranty field — `warrantyExpiry` (already implemented). A draft 8-field p
 (start date, provider/vendor, type, coverage details, cost, claim contact, document
 reference) was presented to the business as a candidate list and was **explicitly
 rejected for MVP**, not deferred — none of those fields is shown below or assumed
-elsewhere in this prototype.
+elsewhere in this prototype. **Expiring-threshold shape resolved 2026-09-01** (PRD §16
+Resolved Question 41, resolving Open Question 15b — a follow-on to Resolved Question 40,
+not a reopening of it): this does **not** add a new Warranty field to the Asset
+record — the threshold lives on a separate Settings-domain configuration record, see
+below.
 
 ```text
 Warranty
@@ -1008,25 +1060,42 @@ Warranty
 Asset
 warrantyExpiry
 
-Warranty Timeline (derived, not a stored field)
+Warranty Status (derived, not a stored field) — 3-state
 ────────────────────────────
 Active / Expiring / Expired
 ```
 
-The "Warranty Timeline" state (Active / Expiring / Expired) is a UI-computed display
-derived from `warrantyExpiry` (e.g., relative to today's date and the 90-day window in
-the business example below) — it is not a separate stored field.
+**Warranty Status — 3-state, computed (resolved 2026-09-01, Design §5.2):** status is
+computed at read time from `warrantyExpiry`, a threshold (in days), and the evaluation
+date ("now") — it is not a stored field:
 
-**Implementation direction confirmed 2026-08-29:** per explicit user decision, the
-Warranty field is **not** built as a dedicated P-010 screen — it is surfaced on the
-relevant existing asset page instead. A "Warranty" column was added to `P-003 Asset
-Registry` (the Assets list) showing `warrantyExpiry` and an Active/Expired badge (2 of
-the 3 Warranty Timeline states — "Expiring" is not implemented, since its threshold
-depends on the still-unconfirmed 90-day-style rule, AC-WARRANTY-001-03). Asset Detail
-(`P-004`) already had a "Warranty & Coverage" section showing the same Active/Expired
-state. This section of the Prototype is retained for historical/traceability purposes
-(it's what the field-list decision resolved against) but should **not** be read as a
-pending build target — no standalone Warranty screen is planned.
+- **Active** — `warrantyExpiry` is further away than the threshold.
+- **Expiring** — `warrantyExpiry` falls within the threshold window from today.
+- **Expired** — `warrantyExpiry` has already passed.
+
+**Expiring threshold — per-Asset-Category configurable, default 90 days (resolved
+2026-09-01, PRD §16 Resolved Question 41; Design §5.2/§5.4):** the threshold used to
+compute the "Expiring" boundary is **not** a single fixed global number — it is looked
+up per the asset's Asset Category (`RAISE-FR-ASSET-002`) from a Settings-domain
+configuration record (`WarrantySettings: Record<AssetCategory, thresholdDays>`), not
+stored on the Asset or Warranty record itself. All 5 current Asset Categories (IT
+Hardware, Mobile, Office Equipment, Infrastructure, Media Equipment) default to **90
+days**; an admin may adjust each category's threshold independently via **[P-018
+Settings](#23a-p-018-settings)** (new screen, see below). This resolves the previously
+open threshold question referenced in the prior draft of this section (which had
+described "Expiring" as not implemented pending confirmation).
+
+**Implementation direction confirmed 2026-08-29, threshold model confirmed 2026-09-01:**
+per explicit user decision, the Warranty field is **not** built as a dedicated P-010
+screen — it is surfaced on the relevant existing asset page instead. A "Warranty" column
+on `P-003 Asset Registry` (the Assets list) and the "Warranty & Coverage" section on
+`P-004 Asset Detail` both show `warrantyExpiry` and the full 3-state Active/Expiring/
+Expired badge, computed against the asset's category's configured threshold (sourced
+from Settings, default 90 days). This section of the Prototype is retained for
+historical/traceability purposes (it's what the field-list and threshold decisions
+resolved against) but should **not** be read as a pending build target — no standalone
+Warranty screen is planned; the threshold's admin-editable home is P-018 Settings, not a
+new Warranty screen.
 
 ## Example RAISE Use Case
 
@@ -1036,7 +1105,7 @@ approaching warranty expiry.
 Example:
 
 ```text
-Warranty expires within 90 days
+Warranty expires within category threshold (default 90 days)
         ↓
 List affected assets
         ↓
@@ -1044,12 +1113,19 @@ Open Asset Detail
 ```
 
 This reflects the RAISE business example without implementing AI
-Recommendation.
+Recommendation. **Note:** the "90 days" figure in this example is illustrative and is
+now the confirmed **default** for all 5 current Asset Categories, not a single fixed
+global number — see the Expiring-threshold subsection above and PRD §16 Resolved
+Question 41.
 
 ## Traceability
 
 `RAISE-FR-WARRANTY-001` — field list resolved 2026-08-29 (`warrantyExpiry` only for
-MVP; see PRD §16 Resolved Question 40 and Design §5.2).
+MVP; see PRD §16 Resolved Question 40 and Design §5.2). Expiring-threshold shape
+resolved 2026-09-01: per-Asset-Category configurable, default 90 days, admin-adjustable
+via **P-018 Settings** (see PRD §16 Resolved Question 41 and Design §5.2/§5.4). Also
+depends on `RAISE-FR-ASSET-002` (Category, as the threshold key) and
+`RAISE-NFR-SEC-RBAC-001` (admin-only access to edit thresholds, via P-018).
 
 ---
 
@@ -1460,6 +1536,107 @@ seat/utilization tracking, vendor/cost tracking, relationship to
 
 ---
 
+# 23A. P-018 Settings
+
+**New screen, added 2026-09-01** (PRD §16 Resolved Question 41, resolving Open
+Question 15b; Design v0.10 §4.1B "Settings / Platform Configuration" and §5.4
+"Settings Domain"). Not itself a separate PRD Traceability ID — Design §5.4 explicitly
+records the Settings Domain as a design-layer addition, not a standalone PRD
+requirement — but it is the confirmed, already-implemented admin-facing home for
+`RAISE-FR-WARRANTY-001`'s per-Asset-Category "Expiring" threshold. Lettered `23A`
+(rather than renumbered `24`) to avoid renumbering every subsequent section and its
+cross-reference anchors, matching this document's existing precedent for §25A NFR
+Backlog — Prototype Note.
+
+## Status Banner
+
+**Implemented, not exploratory.** Unlike P-016/P-017 (Roadmap, not MVP), P-018 is P0/MVP
+and already implemented end-to-end: `frontend/src/types/settings.ts` (`WarrantySettings`
+type), `frontend/src/services/settings-service.ts` and
+`frontend/src/services/settings-repository.ts` (seed/read/update), and
+`frontend/src/pages/Settings/index.tsx` (the "Warranty" section/tab).
+
+## Purpose
+
+Provide an admin-facing UI to view and edit platform configuration values. For MVP,
+scoped to exactly one section: the Warranty "Expiring" threshold, per Asset Category.
+**Not a general Settings framework** — see "Scope Boundary" below.
+
+## Prototype Elements
+
+```text
+Settings
+──────────────────────────────────────────────────────────
+[ Warranty ]   ← section/tab (only section for MVP)
+
+Warranty — "Days before expiry to flag as Expiring"
+──────────────────────────────────────────────────────────
+Asset Category            Threshold (days)
+IT Hardware                [ 90 ]
+Mobile                     [ 90 ]
+Office Equipment           [ 90 ]
+Infrastructure             [ 90 ]
+Media Equipment            [ 90 ]
+
+Actions: [ Save Changes ]   [ Reset ]
+```
+
+- One row per current Asset Category (`RAISE-FR-ASSET-002`) — exactly the 5 categories
+  seeded in the app: IT Hardware, Mobile, Office Equipment, Infrastructure, Media
+  Equipment. Not a closed enumerated list at the design level (Design §5.4), but the
+  prototype shows the real, currently-seeded set, matching this document's existing
+  convention for category lists (see P-005 Category & Hierarchy).
+- Each row's threshold is an editable number input, defaulting to **90** (days) for
+  every category at first setup.
+- **Save Changes** persists edits to the `WarrantySettings` configuration record.
+  **Reset** reverts unsaved edits (the exact reset semantics — revert to last-saved vs.
+  revert to default 90 — mirror the as-built `frontend/src/pages/Settings/index.tsx`
+  behavior and are not independently re-specified here).
+- **Admin-only access.** Per `RAISE-NFR-SEC-RBAC-001` and Design §5.4 "Access Control,"
+  write access (editing a threshold) is admin-only. Consistent with this document's
+  existing MVP enforcement-level note (§4 User Roles; PRD §16 Resolved Question 38;
+  Design §16 Security Architecture), MVP enforcement is UI-only/client-side — the same
+  accepted MVP risk (server-side bypass not blocked) applies here and is not restated as
+  a new risk. The role list, permission matrix, and authentication mechanism remain
+  **TBD**, same as every other admin-gated area in this document.
+
+## Scope Boundary
+
+Per Design §4.1B/§5.4, this is explicitly **not** a general Settings/platform
+configuration framework — it is scoped narrowly to exactly one confirmed need
+(Warranty per-category thresholds). No other configuration area (e.g., alert rules,
+maintenance SLA, license terms) is added here; adding one would require a separate,
+future business confirmation, matching Design §5.4's own scope-creep boundary.
+
+## User Flow
+
+```text
+Settings
+      │
+      └── Warranty section
+               │
+               ├── Edit a category's threshold (number input)
+               ├── Save Changes → WarrantySettings updated
+               │        │
+               │        ▼
+               │   Consumed by Warranty status computation
+               │   on P-003 Asset Registry / P-004 Asset Detail
+               │   (Active / Expiring / Expired badge)
+               │
+               └── Reset → discard unsaved edits
+```
+
+## Traceability
+
+`RAISE-FR-WARRANTY-001` (sole current driver of this screen, per Design §4.1B) — Design
+§4.1B/§5.4 explicitly frame this screen as design-layer only (not its own PRD
+Traceability ID). Also depends on `RAISE-FR-ASSET-002` (Category, as the configuration
+key) and `RAISE-NFR-SEC-RBAC-001` (admin-only access, MVP enforcement level UI-only per
+PRD §16 Resolved Question 38). See PRD §16 Resolved Question 41 and Design §4.1B/§5.4 for
+the full requirement/design basis.
+
+---
+
 # 24. AI Response States
 
 The prototype should include:
@@ -1660,9 +1837,10 @@ Requirements:
 ```text
 Dashboard
  ↓
-Warranty
+Warranty (P-003 Asset Registry Warranty column / P-004 Asset Detail Warranty section)
  ↓
-Expiring Assets
+Expiring Assets (3-state badge — threshold sourced from the asset's category's
+                  P-018 Settings entry, default 90 days)
  ↓
 Asset Detail
  ↓
@@ -1671,7 +1849,8 @@ Maintenance / Financial Context
 
 Requirement:
 
-`RAISE-FR-WARRANTY-001`
+`RAISE-FR-WARRANTY-001` (Expiring threshold: per-Asset-Category configurable, admin
+edits via P-018 Settings — PRD §16 Resolved Question 41; Design §5.2/§5.4)
 
 ---
 
@@ -1793,7 +1972,7 @@ not be treated as approved MVP functionality.
 | P-007 QR / Barcode | RAISE-FR-OPS-001 | Planned |
 | P-008 Check-in / Check-out | RAISE-FR-OPS-002 | Planned |
 | P-009 Maintenance | RAISE-FR-MAINT-001 | Planned — 4-stage workflow shape reflected (confirmed 2026-08-21); SLA/vendor/cost model TBD |
-| P-010 Warranty | RAISE-FR-WARRANTY-001 | Planned — field list resolved 2026-08-29 (PRD §16 Resolved Question 40; Design §5.2): `warrantyExpiry` only for MVP; 7-field draft explicitly rejected |
+| P-010 Warranty | RAISE-FR-WARRANTY-001 | Planned — field list resolved 2026-08-29 (PRD §16 Resolved Question 40; Design §5.2): `warrantyExpiry` only for MVP; 7-field draft explicitly rejected. Expiring-threshold shape resolved 2026-09-01 (PRD §16 Resolved Question 41; Design §5.2/§5.4): 3-state Active/Expiring/Expired status, per-Asset-Category configurable threshold (default 90 days, admin-adjustable via P-018 Settings) — implemented end-to-end |
 | P-011 Oracle FA | RAISE-FR-ORACLE-001 | Planned |
 | P-012 Alerts | RAISE-FR-ALERT-001 | Planned |
 | P-013 Audit | RAISE-FR-AUDIT-001 | Planned |
@@ -1805,6 +1984,7 @@ not be treated as approved MVP functionality.
 | P-003 Asset Registry (incidental) | RAISE-AI-DOC-004 (Duplicate Detection) | Planned — no dedicated screen; TBD acceptance behavior |
 | P-016 License Inventory | RAISE-FR-LICENSE-001 | **Roadmap, not MVP** — exploratory prototype screen mirroring already-built `frontend/src/pages/Licenses/`; field model/alert rule/seat tracking/vendor-cost tracking all TBD |
 | P-017 License Detail | RAISE-FR-LICENSE-001 | **Roadmap, not MVP** — exploratory prototype screen mirroring already-built `frontend/src/pages/LicenseDetail/`; same TBD items as P-016 |
+| P-018 Settings | RAISE-FR-WARRANTY-001 (Design §4.1B/§5.4 — not itself a separate PRD Traceability ID) | Implemented — new 2026-09-01 (PRD §16 Resolved Question 41; Design §4.1B/§5.4): admin-only Warranty section, one editable per-Asset-Category threshold, default 90 days, Save Changes / Reset |
 
 **Cross-check against [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) §17 (PRD v0.9):**
 every row's requirement ID exists in the PRD's Requirement Traceability Matrix, and every
@@ -1872,6 +2052,19 @@ deferred. P-010 Warranty's field list and P-004 Asset Detail's Warranty section 
 both updated accordingly (see their respective sections). No screen, requirement ID, or
 row was added or removed — this is a field-list correction only.
 
+**v0.10 re-sync (2026-09-01, against PRD v0.12 / Design v0.10 §5.2/§5.4/§4.1B, PRD §16
+Resolved Question 41):** `RAISE-FR-WARRANTY-001`'s P-010 row is updated (not added) to
+record the resolved Expiring-threshold shape: 3-state Active/Expiring/Expired warranty
+status, computed against a per-Asset-Category threshold (default 90 days,
+admin-adjustable) rather than a single global constant. A new **P-018 Settings** row is
+added — the admin-facing home for this threshold (Design §4.1B/§5.4; not itself a
+separate PRD Traceability ID, so its Requirement column cites `RAISE-FR-WARRANTY-001` as
+the driving requirement, matching how this table already handles other design-layer-only
+areas). P-003 Asset Registry and P-004 Asset Detail's entries in this table are
+unchanged — the 3-state badge is a spec detail within their existing
+`RAISE-FR-ASSET-001`/`RAISE-FR-LIFE-001` rows, not a new requirement mapping. No other
+row is affected.
+
 ---
 
 # 28. Prototype Review Checklist
@@ -1916,6 +2109,13 @@ Before moving to Acceptance Criteria:
       Audit Retention, Monitoring, Logging) is explicitly acknowledged (§25A)
       rather than silently absent from this document — no screen or UI value
       is invented for any of these areas (checked during v0.6 re-sync)
+- [x] `RAISE-FR-WARRANTY-001`'s Expiring threshold is represented as
+      per-Asset-Category configurable (default 90 days), not a single fixed
+      global number — P-010 Warranty's 3-state Active/Expiring/Expired model
+      and the new P-018 Settings screen (admin-only, one threshold per Asset
+      Category) match PRD §16 Resolved Question 41 and Design §5.2/§5.4/§4.1B
+      (checked during v0.10 re-sync, 2026-09-01); no additional Warranty
+      field beyond `warrantyExpiry` was added
 
 ---
 
@@ -1977,11 +2177,55 @@ The next artifact should be **Acceptance Criteria**, not source code.
 
 ## Document Status
 
-**Version:** 0.9 (scope/spec correction pass against Open Finding F-27,
-2026-09-01, re-synced against RAISE-PRD.md v0.10 [unchanged] and
-RAISE-DESIGN.md v0.9 [unchanged] — no screens added or removed; P-005
-rewritten to resolve the previously-TBD sub-category taxonomy question; no
-`## NEEDS_PRD_CONFIRMATION` signal raised)
+**Version:** 0.10 (sync pass against `RAISE-PRD.md` §16 Resolved Question 41 and
+`RAISE-DESIGN.md` v0.10 §5.2/§5.4/§4.1B, 2026-09-01, re-synced against RAISE-PRD.md
+v0.12 [advanced from v0.10] and RAISE-DESIGN.md v0.10 [advanced from v0.9] — one screen
+added (P-018 Settings); P-010 rewritten to describe the resolved 3-state
+Active/Expiring/Expired warranty status and its per-Asset-Category, Settings-sourced
+Expiring threshold; no `## NEEDS_PRD_CONFIRMATION` signal raised)
+
+**Change Log — v0.9 → v0.10 (2026-09-01, PRD §16 Resolved Question 41 / Design
+§5.2/§5.4/§4.1B, per explicit business confirmation already implemented and verified
+end-to-end in `frontend/src/`):**
+
+1. **Root confirmation.** PRD §16 Resolved Question 41 (resolving new Open Question
+   15b, a follow-on to Resolved Question 40 — not a reopening of it) and Design v0.10
+   §5.2/§5.4/§4.1B confirm the `RAISE-FR-WARRANTY-001` "Expiring" threshold is
+   **per-Asset-Category configurable**, defaulting to **90 days** for all 5 current
+   Asset Categories (IT Hardware, Mobile, Office Equipment, Infrastructure, Media
+   Equipment), admin-adjustable via a new Settings domain — not a single fixed global
+   number as the illustrative source Business Example alone might suggest.
+2. **Warranty status is now formally a 3-state model** (Active / Expiring / Expired),
+   computed at read time from `warrantyExpiry`, the category's threshold, and the
+   evaluation date — not a stored field. [§16 P-010
+   Warranty](#16-p-010-warranty) is rewritten to state this explicitly, replacing the
+   prior "2 of 3 states implemented, Expiring pending" note (which described the
+   threshold as still unconfirmed — now resolved).
+3. **New [§23A P-018 Settings](#23a-p-018-settings) screen added** — admin-only,
+   documents the already-built `frontend/src/pages/Settings/index.tsx` "Warranty"
+   section: one editable threshold (default 90) per Asset Category, Save Changes /
+   Reset actions. Cross-references Design §4.1B "Settings / Platform Configuration"
+   and §5.4 "Settings Domain." Explicitly scoped narrowly (not a general Settings
+   framework), matching Design's own scope-creep boundary.
+4. **P-003 Asset Registry and P-004 Asset Detail** updated to note their existing
+   Warranty status displays now show the full 3-state badge (not 2-of-3), sourced from
+   the asset's category's P-018-configured threshold. No new field is added to either
+   screen — this is a status/threshold-model clarification only.
+5. **§5 Screen Inventory** table gets a new P-018 row; **§3 Information Architecture**
+   gets a new "Administration" branch (Settings → Warranty); **§26 Flow D — Warranty**
+   updated to show the threshold source; **§27 Prototype Traceability Matrix** gets an
+   updated P-010 row and a new P-018 row; **§28 Prototype Review Checklist** gets a new
+   confirmation item.
+6. **Field list unchanged.** This pass does **not** reopen or expand the Warranty
+   field list settled by Resolved Question 40 — `warrantyExpiry` remains the only
+   Warranty field on the Asset record; the threshold lives on a separate
+   Settings-domain configuration record, not on the Asset or Warranty record.
+7. **`RAISE-PRD.md` and `RAISE-DESIGN.md` are not modified by this pass.** No
+   `## NEEDS_PRD_CONFIRMATION` signal is raised — the business decision (PRD §16
+   Resolved Question 41) is already confirmed and implemented.
+8. Header metadata updated: Version bumped to 0.10; PRD Source updated to v0.12
+   (advanced from v0.10); Design Source updated to v0.10 (advanced from v0.9), with
+   §5.2/§5.4/§4.1B added to the cited section list.
 
 **Change Log — v0.8 → v0.9 (2026-09-01, Open Finding F-27 sub-category
 taxonomy resolution, per explicit business decision):**

@@ -2,25 +2,38 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Requirement Traceability Matrix (RTM)
-**Version:** 1.2 Draft (Open Finding F-32 — no P-012 Alerts screen at all,
-route 404'd — **RESOLVED this revision, per explicit business decision and
-now implemented.** A new Alerts screen (`frontend/src/pages/Alerts/
-index.tsx`, registered at `ROUTES.NOTIFICATIONS`/`/notifications`) derives
-its one alert-triggering condition from the one already confirmed elsewhere
-in the app — an asset's `warrantyExpiry` being in the past, the same
-`isWarrantyExpired` check `RAISE-FR-WARRANTY-001`'s Warranty column already
-uses — with no new field/data model, and renders Severity honestly as "Not
-yet defined" rather than an invented High/Medium/Low. `TC-ALERT-001-01`/
-`-02` move from **FAIL** to **PASS**, formally executed 2026-09-01 against
-the real running app per `RAISE-TEST-CASES.md` v0.10. **This resolves only
-the build gap (F-32) — it explicitly does NOT resolve the separate,
-still-open PRD-content question** (severity mapping / trigger rules for any
-condition beyond warranty-expired, PRD §6.9 Open Question, Open Finding
-F-05), which remains genuinely undefined; see the `RAISE-FR-ALERT-001` row
-(§3) and new Gap 11 (§6) for the full record. Gaps 1–10 remain fully
-RESOLVED from v1.1, unchanged this revision.)
+**Version:** 1.3 Draft (`RAISE-FR-WARRANTY-001`'s "Expiring" threshold
+open question (PRD §16 Open Question 15b) — **RESOLVED this revision, per
+explicit confirmed business decision (Resolved Question 41, 2026-09-01) and
+now implemented.** The Expiring threshold is confirmed as
+**per-Asset-Category configurable**, not a single global 90-day constant —
+defaulting to 90 days for all 5 current Asset Categories (IT Hardware,
+Mobile, Office Equipment, Infrastructure, Media Equipment), admin-adjustable
+via a new **P-018 Settings** screen. Propagated through the full chain:
+`RAISE-PRD.md` v0.12 (§16 Resolved Question 41), `RAISE-DESIGN.md` v0.10
+(§5.2 Warranty Domain 3-state model + new §5.4 Settings Domain),
+`RAISE-PROTOTYPE.md` v0.10 (P-010 rewritten + new §23A P-018 Settings),
+`RAISE-ACCEPTANCE-CRITERIA.md` v0.9 (AC-WARRANTY-001-03 rewritten + new
+AC-WARRANTY-001-04/-05/-06), `RAISE-TEST-PLAN.md` v0.9 (TS-WARRANTY-001
+fully unblocked), and `RAISE-TEST-CASES.md` v0.11 (6 test cases:
+`TC-WARRANTY-001-01` through `-05` formally executed and **PASS**;
+`TC-WARRANTY-001-06`, the non-admin-denial case for the new P-018 screen,
+is written and fully specified but **not yet executed** — a distinct
+"testable, not yet exercised" status, not a business-open-question and not
+a FAIL/BLOCKED). **This closes Gap 7's previously-still-open residual item
+in full** (the separate, unrelated 90-day-window blocker Gap 7 explicitly
+carved out in v0.4) — tracked here as **new Gap 12, opened and RESOLVED in
+the same revision**, following the same convention as Gaps 9/10/11. A
+second, genuinely still-open item is newly tracked as **Gap 13**:
+`TC-WARRANTY-001-06` has not yet been formally executed against the real
+running app — this is a real coverage gap (distinct from a business-open
+question, since the underlying UI-only RBAC denial mechanism is already
+confirmed elsewhere in the app per `RAISE-NFR-SEC-RBAC-001`), and remains
+**open** pending a formal execution sweep. See the `RAISE-FR-WARRANTY-001`
+row (§3) and Gaps 12/13 (§6) for the full record. Gaps 1–11 remain fully
+RESOLVED from v1.2, unchanged this revision.)
 **Status:** Draft for Traceability Review
-**Source:** [`RAISE-TEST-CASES.md`](../06-test-cases/RAISE-TEST-CASES.md) v0.10 (updated this revision — `TC-ALERT-001-01`/`-02` now record formal 2026-09-01 execution evidence against the newly implemented Alerts screen), consolidated against [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.8 (unchanged this revision), [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.8 (unchanged this revision — `AC-ALERT-001`'s existing structural-display scope already covers this implementation, no spec correction needed), [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.9 (unchanged this revision), [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.9 (unchanged this revision), and [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.11 (unchanged this revision) — **the actual PRD file on disk was re-read in full for this revision, not assumed from downstream citations**, per this document's own standing practice since v0.4. Confirmed: `RAISE-PRD.md` itself did **not** change for this revision, nor did it need to — F-32 was a build/infrastructure gap, not a requirement-content gap; AC-ALERT-001's own scoping note (structural display testable now, specific severity/trigger-rule values NOT TESTABLE YET, PRD §6.9) is unchanged and still accurate.
+**Source:** [`RAISE-TEST-CASES.md`](../06-test-cases/RAISE-TEST-CASES.md) v0.11 (updated this revision — `TC-WARRANTY-001-01` through `-05` now record formal 2026-09-01 execution evidence; new `TC-WARRANTY-001-04`/`-05`/`-06` added for the P-018 Settings criteria), consolidated against [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.9 (updated this revision — TS-WARRANTY-001 fully unblocked), [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.9 (updated this revision — AC-WARRANTY-001-03 rewritten, new AC-WARRANTY-001-04/-05/-06), [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.10 (updated this revision — P-010 rewritten, new §23A P-018 Settings screen), [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.10 (updated this revision — §5.2 Warranty Domain 3-state model, new §5.4 Settings Domain), and [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.12 (updated this revision — §16 Resolved Question 41) — **the actual PRD file on disk was re-read in full for this revision, not assumed from downstream citations**, per this document's own standing practice since v0.4. Confirmed: this is a genuine requirement-content resolution (a real business decision closing PRD Open Question 15b), propagated through every layer of the chain, not a build/infrastructure-only fix like Gaps 9–11.
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
 
@@ -135,7 +148,7 @@ per v0.4 Gap 6's own closure criteria.
 | `RAISE-FR-OPS-001` | QR / Barcode | P0 / MVP | §4.2 Custody & Asset Operations | P-007 | AC-OPS-001 | TS-OPS-001 | TC-OPS-001-01..03 | **PASS** — re-executed 2026-08-26 (after the F-21 fix) against the real running app (`frontend/src/pages/Assets/index.tsx`'s Scan QR flow): TC-OPS-001-01 **PASS** (valid code `AST-0001` opens Asset Detail); TC-OPS-001-02 **PASS** (unmatched-but-well-formed code `AST-9999` shows "No asset found for..."); TC-OPS-001-03 **PASS** (malformed code `%%$#!!garbage///` now shows a distinct "Invalid code — ... doesn't look like a scannable asset code" message, without attempting a lookup — no longer the same message as TC-OPS-001-02). F-21 resolved (`OPEN-FINDINGS.md`). |
 | `RAISE-FR-OPS-002` | Check-in / Check-out | P0 / MVP | §4.2 Custody & Asset Operations | P-008 | AC-OPS-002 | TS-OPS-002 | TC-OPS-002-01..03 | **PASS** — executed 2026-08-28 against the real running app: TC-OPS-002-01 **PASS** (Assign — the app's actual affordance for identifying a holder and confirming, no distinct "Check-out" label exists but the behavior matches: custody state updated to the new holder on asset `a4`); TC-OPS-002-02 **PASS** (Check-in confirmed the asset's return to Available/Unassigned); TC-OPS-002-03 **PASS** (both operations created a corresponding Audit Log entry, verified visible with actor and timestamp). "Appropriate permission"/role-correctness remains untestable (PRD §16 Q22, unchanged) but does not block re-verifying the state-transition and audit-entry behavior itself. |
 | `RAISE-FR-MAINT-001` | Maintenance (4-stage workflow: User Requisition → Dept Approval (Delegated) → IT Dispatch → Technician Execution) | P0 / MVP | §5.1 Maintenance Domain | P-009 | AC-MAINT-001 (AC-MAINT-001-01..09) | TS-MAINT-001 | TC-MAINT-001-01..09 | **PASS** — executed 2026-08-28 against the real running app, all 9 cases: TC-MAINT-001-03 **PASS** (a new requisition submitted via "New IT Requisition" enters `PENDING_DEPT_APPROVAL`). TC-MAINT-001-04 **PASS** (Dept Sign-off → Approve transitions to `PENDING_IT_DISPATCH`). TC-MAINT-001-05 **PASS** (Reject on a separate `PENDING_DEPT_APPROVAL` ticket resulted in `REJECTED_BY_DEPT`, confirmed **not** `PENDING_IT_DISPATCH` — per this case's own scope, no claim is made about whether that specific resulting state is itself correct). TC-MAINT-001-06 **PASS** (Assign Tech + Dispatch transitions to `IN_PROGRESS`, one of the three allowed states). TC-MAINT-001-07 **PASS** (Update Status to On-Hold with a hold reason correctly reflects "3. On-Hold" and shows the reason banner). TC-MAINT-001-08 **PASS** (Mark Complete transitions to `DONE`/"4. Resolved & Closed" with resolution notes shown). TC-MAINT-001-01 originally **FAIL** — the Maintenance record list showed no date/cost fields (F-28) — **now PASS**, re-executed after the fix: each record now shows created date and cost, verified live on asset `a1`. TC-MAINT-001-09 originally **FAIL** — the 4-stage progress indicator (`GovernanceStep` in `TicketDetail/index.tsx`) only rendered two visual states (done ✓ vs. a plain gray circle with the step number), so the "Current" stage and any not-yet-reached "Pending" stage were visually identical (F-29) — **now PASS**, re-executed after the fix: the current stage is derived from `ticket.status` and rendered with a distinct brand-colored circle, ring, and a "Current" badge; verified live across `PENDING_DEPT_APPROVAL` (stage 2 current), `PENDING_IT_DISPATCH` (stage 3 current), and `DONE` (no stage marked current, all done). TC-MAINT-001-02 **PASS** (2 records for asset `a1` displayed in ascending-chronological order by observed outcome, though the underlying code has no explicit sort — `assetTickets` in `AssetDetail/index.tsx` is unsorted array-filter order — a fragility worth watching, not a current failure since the observed order was correct). **The 4-stage workflow shape and state model remain verified present in `RAISE-PRD.md` v0.9 §6 and §16 Resolved Question 33.** |
-| `RAISE-FR-WARRANTY-001` | Warranty | P0 / MVP | §5.2 Warranty Domain | P-003 (Asset Registry column; no dedicated P-010 screen built — see P-010's own implementation-direction note) | AC-WARRANTY-001 | TS-WARRANTY-001 | TC-WARRANTY-001-01..03 | **PASS (partial)** — field-list blocker resolved 2026-08-29 (`RAISE-PRD.md` §16 Resolved Question 40, resolving Open Question 15: `warrantyExpiry` is the only MVP field; a draft 8-field proposal was explicitly rejected, not deferred), then **implemented and browser-verified same-day**: TC-WARRANTY-001-01 **PASS** (a "Warranty" column on the Assets list — `frontend/src/pages/Assets/index.tsx` — displays each asset's `warrantyExpiry`). TC-WARRANTY-001-02 **PASS** (the same column shows an Active/Expired badge derived from `warrantyExpiry`; verified live — e.g. asset `a1` shows "Active"/"2027-01-15", asset `a13` shows "Expired"/"2024-03-15" — and the column sorts correctly by expiry date). Per explicit user direction, this was built as a column on the existing Asset Registry (P-003), not a standalone P-010 screen. TC-WARRANTY-001-03 remains **BLOCKED (partial)** for a separate, still-open reason unaffected by this resolution — the 90-day expiry window used in the expiring-assets view is the PRD's illustrative business example (PRD §6.7), not a confirmed, generalizable threshold; the "Expiring" state (3rd of 3 in the Warranty Timeline) is therefore not implemented, only Active/Expired. |
+| `RAISE-FR-WARRANTY-001` | Warranty | P0 / MVP | §5.2 Warranty Domain (3-state model); §5.4 Settings Domain | P-003 (Asset Registry column), P-004 (Asset Detail), P-018 (Settings > Warranty, new) | AC-WARRANTY-001 (AC-WARRANTY-001-01..06) | TS-WARRANTY-001 | TC-WARRANTY-001-01..06 | **PASS (partial)** — field-list blocker resolved 2026-08-29 (`RAISE-PRD.md` §16 Resolved Question 40, resolving Open Question 15: `warrantyExpiry` is the only MVP field). **Expiring-threshold blocker resolved 2026-09-01** (`RAISE-PRD.md` §16 Resolved Question 41, resolving follow-on Open Question 15b): the Expiring threshold is confirmed **per-Asset-Category configurable**, not a single global 90-day constant — defaulting to 90 days for all 5 current Asset Categories, admin-adjustable via a new P-018 Settings screen. **Implemented and formally executed 2026-09-01:** `frontend/src/lib/warranty.ts` (`getWarrantyStatus`, 3-state Active/Expiring/Expired), `frontend/src/types/settings.ts` (`WarrantySettings`), `frontend/src/services/settings-service.ts` + `settings-repository.ts` (per-category seed/merge), `frontend/src/pages/Settings/index.tsx` (new Warranty section, P-018), `frontend/src/pages/Assets/index.tsx` + `AssetDetail/index.tsx` (3-state badge). TC-WARRANTY-001-01 **PASS** (Warranty column/field displays `warrantyExpiry`). TC-WARRANTY-001-02 **PASS** (Active/Expiring/Expired badge correctly derived from `warrantyExpiry` + the asset's category's configured threshold, via `getWarrantyStatus()`). TC-WARRANTY-001-03 **PASS** — no longer BLOCKED: a category-specific threshold correctly flags an asset as Expiring, confirmed by automated test and live browser (setting IT Hardware to 5000 days flagged only IT Hardware assets Expiring, with an unrelated Mobile-category expired asset unaffected — no cross-category leakage). TC-WARRANTY-001-04 **PASS** (P-018 Settings > Warranty renders all 5 Asset Categories with a "90" default threshold input each). TC-WARRANTY-001-05 **PASS** (editing/saving one category's threshold recomputes only that category's assets; other categories unaffected). Verified via 151/151 automated tests (`tsc --noEmit`/lint clean) and live browser execution. TC-WARRANTY-001-06 (non-admin access/write denial to P-018) is **NOT_TESTED** — the AC criterion is fully specified and testable (the UI-only RBAC denial mechanism already exists and is exercised elsewhere in the app, per `RAISE-NFR-SEC-RBAC-001`), but it has not yet been formally executed against the P-018 screen specifically; this is a real, distinct coverage gap, not a business-open question — see Gap 13 (§6). **Both PRD-content blockers this row previously carried (field list, Q15; Expiring-threshold shape, Q15b) are now fully resolved** — see Gap 7 (§6, resolved 2026-08-29) and new Gap 12 (§6, opened and RESOLVED this revision, 2026-09-01). Overall row status: **PASS (partial)** — partial solely because of the still-open TC-WARRANTY-001-06 execution gap (Gap 13), not because of any remaining PRD-content blocker. |
 | `RAISE-FR-ORACLE-001` | Oracle FA Integration + NBV/Depreciation | P0 / MVP | §6 Oracle FA Integration (incl. §6.4 "Phase 6" label note) | P-011 | AC-ORACLE-001 | TS-ORACLE-001 | TC-ORACLE-001-01..04 | **FAIL** — executed 2026-08-29 against the real running app, and the result is worse than the pre-existing BLOCKED status: the route the app maps to `RAISE-FR-ORACLE-001` (`/reconciliation`, labeled "Oracle FA Reconcile" in navigation) renders `ModulePage` — a generic, literal "foundation placeholder" `EmptyState` ("Oracle FA Reconciliation — foundation placeholder / Migrates from src/pages/Reconciliation.tsx once Oracle FA is connected in Phase 6."), confirmed via `frontend/src/pages/_shared/ModulePage.tsx` and real page text. TC-ORACLE-001-01 **FAILS even on its testable-now scope** — no "Asset Number", "Acquisition Information", "NBV", "Depreciation", "Oracle Source", or "Synchronization Status" field exists anywhere on this page (the closest analog, Asset Detail's own "Financial" section added for F-24, shows only Purchase Cost/Current Value/Purchase Date — no Oracle-specific fields at all). TC-ORACLE-001-02/-03/-04 **FAIL** — no "data unavailable"/"sync error"/"data conflict" state is rendered anywhere; the placeholder has no state logic at all. This is independent of, and does not wait on, the still-open integration-mechanism question (PRD §16 Q6–Q10, tracked as F-04) or the `ReconciliationPage` mapping question (Open Question 10a) — even presence-only testing of the four UI states fails, since no P-011 screen was actually built (a stub exists in its place). See `OPEN-FINDINGS.md` F-31 for this new build-gap finding (distinct from F-04's integration-mechanism gap). |
 | `RAISE-FR-ALERT-001` | Alerts | P0 / MVP | §14 Alert Architecture | P-012 | AC-ALERT-001 | TS-ALERT-001 | TC-ALERT-001-01..02 | **PASS (partial) — Open Finding F-32 (no P-012 screen at all, route 404'd) RESOLVED 2026-09-01, per explicit business decision and now implemented.** Prior execution (2026-08-29) found `/notifications` rendered the app's generic 404 page, worse than the pre-existing BLOCKED status — see the superseded evidence retained in the Change Log (v1.1 → v1.2) for the historical record. **Business decision (2026-09-01):** scope the Alerts screen to derive its one alert-triggering condition from the one already confirmed elsewhere in the app — an asset's `warrantyExpiry` being in the past (the same `isWarrantyExpired` check the Assets list's Warranty column, `RAISE-FR-WARRANTY-001`, already uses) — no new field or data model. Severity is rendered honestly as "Not yet defined" rather than an invented High/Medium/Low, since severity mapping and trigger rules for any other condition remain undefined (PRD §6.9 Open Question, Open Finding F-05, **still genuinely open, not resolved by this fix**). **Implemented:** new `frontend/src/pages/Alerts/index.tsx`, registered at `ROUTES.NOTIFICATIONS` (`/notifications`) in `App.tsx` (previously had no route at all). `RAISE-ACCEPTANCE-CRITERIA.md` `AC-ALERT-001` was **not** modified — it already correctly scoped `AC-ALERT-001-01` as testable only for structural display (severity/description/asset present), separate from which severity/trigger-rule values are correct, so this implementation satisfies that existing scope without a spec correction first (unlike the F-22/F-27 pattern where the spec itself was wrong). **Formally executed 2026-09-01** against the real running app (`RAISE-TEST-CASES.md` v0.10): `/notifications` now renders 11 alert rows, matching the Dashboard's "Expired Warranty: 11" tile exactly. TC-ALERT-001-01 **PASS** — the row for AST-0013 (Dell OptiPlex 7090) displays Severity "Not yet defined," Description "Warranty expired 2024-03-15," and the associated Asset as a clickable link that navigated correctly to Asset Detail. TC-ALERT-001-02 **PASS** — confirmed the screen presents all 11 rows purely as an in-app table, with no Email/Teams/LINE or other delivery-channel UI anywhere on the page. Also covered by 2 new passing automated tests in `frontend/src/pages/Alerts/index.test.tsx`; full frontend suite 149/149 (was 147), `tsc --noEmit`/lint both clean. **What this closes, and what it explicitly does not close:** this resolves only the build-gap half of the finding (a real, evidence-based PASS on the testable-now, single-trigger-condition scope) — it does **not** resolve the separate, still-open severity/trigger-rule definition question (PRD §6.9 Open Question, F-05), and the "authorized user" gate remains untestable (PRD §16 Q22), both unaffected by this fix. See new Gap 11 (§6, RESOLVED — infrastructure/build-gap scope only). |
 | `RAISE-FR-AUDIT-001` | Immutable Audit Log | P0 / MVP | §15 Audit Architecture | P-013 | AC-AUDIT-001 | TS-AUDIT-001 | TC-AUDIT-001-01..03 | **BLOCKED (partial)** — testable subset executed 2026-08-26 against the real running app, all **PASS**: TC-AUDIT-001-01 (checked in a real asset via the UI; confirmed via `auditService.listAuditLogs` that an entry was recorded with actor `"Demo Admin"`, action `"Asset checked in"`, entity `asset/a2`, and a real timestamp); TC-AUDIT-001-02 (no edit/delete control exists anywhere near a rendered audit entry, and neither `AuditRepository`/`MockAuditRepository` nor the backend router expose any update/delete method or route — verified by both UI inspection and code); TC-AUDIT-001-03 (the recorded entry is visible on Asset Detail's "Audit" tab to a logged-in user). Field taxonomy (Design §15) and role-gate correctness (PRD §16 Q22) remain BLOCKED — unchanged by this execution, since those require a PRD/Design answer, not more testing. |
@@ -381,16 +394,17 @@ revision:
 - `RAISE-TEST-CASES.md` §12 (`TC-WARRANTY-001-01`/`-02`) — rewritten to test
   only `warrantyExpiry` and its derived timeline state; no longer BLOCKED.
 
-**Still open, not part of Gap 7's closure:** `AC-WARRANTY-001-03` /
-`TC-WARRANTY-001-03`'s 90-day expiry-window threshold remains **BLOCKED
-(partial)** as a separate, unrelated question — the PRD §6.7 figure is an
-illustrative business example, not a confirmed, generalizable rule for the
-expiring-assets view. This distinction is called out explicitly at every
-layer above (AC §13, Test Plan §8, Test Cases §12) precisely so the two
-blockers are not conflated; this matrix preserves that distinction rather
-than treating the whole requirement as resolved. No new Open Question is
-proposed here — the existing 90-day-threshold question is already the
-correct vehicle for this residual item.
+**Originally left open, not part of Gap 7's closure (now resolved — see Gap
+12 below):** `AC-WARRANTY-001-03` / `TC-WARRANTY-001-03`'s 90-day
+expiry-window threshold remained **BLOCKED (partial)** as a separate,
+unrelated question at the time Gap 7 closed — the PRD §6.7 figure was an
+illustrative business example, not yet a confirmed, generalizable rule for
+the expiring-assets view. This distinction was called out explicitly at
+every layer above (AC §13, Test Plan §8, Test Cases §12) precisely so the
+two blockers were not conflated. **This residual item is now closed as of
+2026-09-01** — see new **Gap 12** below for the resolution record and
+`RAISE-PRD.md` §16 Resolved Question 41 (resolving follow-on Open Question
+15b) for the underlying business decision.
 
 **Gap 8 (RESOLVED 2026-08-31 — spec corrected and re-execution now complete):**
 the Dashboard/Navigation row (§4) and
@@ -689,6 +703,90 @@ Low mapping — the fix was implemented 2026-09-01:
 `OPEN-FINDINGS.md` F-32's closure (to Resolved) is tracked and handled
 separately, out of this document's scope.
 
+**Gap 12 (opened and RESOLVED in the same revision, 2026-09-01 — a genuine
+requirement-content resolution, not a build/infrastructure-only fix like
+Gaps 9–11):** `RAISE-FR-WARRANTY-001`'s Expiring-threshold question, left
+explicitly open at Gap 7's closure (2026-08-29) as PRD §16 Open Question
+15b (follow-on from Resolved Question 40, which settled the field list but
+not the threshold value/shape), is now resolved. `TC-WARRANTY-001-03` had
+carried **BLOCKED (partial)** status since the 90-day figure in PRD §6.7 was
+only an illustrative business example, not a confirmed generalizable rule.
+
+**What was done to close it:** per explicit confirmed business decision,
+2026-09-01 — the Expiring threshold is **per-Asset-Category configurable**,
+not a single global constant, defaulting to 90 days for all 5 current Asset
+Categories (IT Hardware, Mobile, Office Equipment, Infrastructure, Media
+Equipment), admin-adjustable via a new **P-018 Settings** screen. Verified
+propagated end-to-end at every layer this revision:
+
+- `RAISE-PRD.md` v0.12, §16 Resolved Question 41 (resolving Open Question
+  15b).
+- `RAISE-DESIGN.md` v0.10, §5.2 (Warranty Domain, rewritten to a 3-state
+  Active/Expiring/Expired model driven by the configurable threshold) and
+  new §5.4 (Settings Domain) / §4.1B (Settings component).
+- `RAISE-PROTOTYPE.md` v0.10, P-010 (rewritten) and new §23A (P-018 Settings
+  screen).
+- `RAISE-ACCEPTANCE-CRITERIA.md` v0.9, §13 — `AC-WARRANTY-001-03` rewritten
+  to test the category-specific threshold directly; new
+  `AC-WARRANTY-001-04` (P-018 shows all 5 categories, defaulting to 90) and
+  `AC-WARRANTY-001-05` (per-category edits do not leak across categories).
+- `RAISE-TEST-PLAN.md` v0.9, §7/§8 — TS-WARRANTY-001 fully unblocked, no
+  remaining blocked item for the threshold question.
+- `RAISE-TEST-CASES.md` v0.11, §12 — `TC-WARRANTY-001-03` rewritten and
+  formally executed, **PASS**; new `TC-WARRANTY-001-04`/`-05` added and
+  formally executed, both **PASS**.
+- Implementation and live verification: `frontend/src/lib/warranty.ts`
+  (`getWarrantyStatus`), `frontend/src/types/settings.ts`
+  (`WarrantySettings`), `frontend/src/services/settings-service.ts` +
+  `settings-repository.ts`, `frontend/src/pages/Settings/index.tsx`,
+  `frontend/src/pages/Assets/index.tsx` + `AssetDetail/index.tsx`. 151/151
+  automated tests pass, `tsc --noEmit`/lint clean. Live browser: Settings >
+  Warranty renders all 5 categories at default 90; editing IT Hardware to
+  5000 and saving correctly flags only IT Hardware assets as Expiring on
+  both Assets list and Asset Detail, while an unrelated Mobile-category
+  expired asset stays Expired (no cross-category leakage).
+
+**What this closes, and what it explicitly does not close:**
+
+1. **Closed:** the Expiring-threshold shape/value question (PRD Open
+   Question 15b / Resolved Question 41). `TC-WARRANTY-001-03` moves from
+   `BLOCKED (partial)` to a real, evidence-based **PASS**.
+2. **Closed as a side effect, tracked separately for clarity:** the new
+   P-018 Settings screen introduces a new admin-only access-control
+   criterion, `AC-WARRANTY-001-06` / `TC-WARRANTY-001-06`. This is **not**
+   part of Gap 12's resolution — it is a newly *introduced* test case (not a
+   pre-existing blocker being resolved), and it has not yet been formally
+   executed. Tracked as its own, still-open item — see **Gap 13** below.
+   Conflating the two would overstate this row's coverage.
+
+`OPEN-FINDINGS.md` update (closing the underlying finding, if one was
+tracked for PRD Open Question 15b) is handled separately, out of this
+document's scope.
+
+**Gap 13 (opened this revision, 2026-09-01 — still OPEN, a real coverage
+gap, not a business-open question):** `TC-WARRANTY-001-06` (non-admin
+access/write to the new P-018 Settings screen is denied) is written and
+fully specified in `RAISE-TEST-CASES.md` v0.11 §12, but has **not yet been
+formally executed** against the real running app or in an automated test
+targeting P-018 specifically. This is distinct from every other BLOCKED/
+NOT TESTABLE YET item in this matrix: the underlying UI-only RBAC denial
+mechanism is already confirmed and exercised elsewhere in the app
+(`frontend/src/pages/Forbidden/index.tsx`, `frontend/src/pages/
+RoleManagement/index.tsx`, `frontend/src/services/role-service.test.ts`,
+per `RAISE-NFR-SEC-RBAC-001`, PRD §16 Resolved Question 38) — there is no
+missing business decision or undefined mechanism blocking this case, only a
+missing execution pass. Test Status for this criterion is recorded as
+**NOT_TESTED** (per `RAISE-PRD.md` §17's recommended status values), not
+PASS/FAIL/BLOCKED, to avoid overclaiming or underclaiming.
+
+**This gap remains open** — per this document's own rule, it is not closed
+without a real execution record (automated test or live-browser pass)
+against P-018 specifically. **Recommended next action:** run a formal
+execution sweep of `TC-WARRANTY-001-06` (e.g., log in as a non-admin demo
+account — `employee@raise.dev`/`demo1234` — attempt to navigate to
+`/settings` and/or edit a Warranty threshold, confirm denial) and update
+`RAISE-TEST-CASES.md` §12 with the result, then re-sync this row.
+
 ---
 
 ## 7. Chain Consistency Check
@@ -759,8 +857,8 @@ downstream document's citation of an upstream document's content:
   value, ten of the eleven have no dedicated Traceability ID" framing at
   every layer. ✅ No layer silently omits the backlog; no layer invents a
   value, mechanism, or Traceability ID that the PRD does not define.
-- **`RAISE-FR-WARRANTY-001` field list — thread walked end-to-end this
-  revision (2026-08-29):** PRD §16 Resolved Question 40 (resolving Open
+- **`RAISE-FR-WARRANTY-001` field list — thread walked end-to-end 2026-08-29
+  (retained for history):** PRD §16 Resolved Question 40 (resolving Open
   Question 15) → Design §5.2 → Prototype §14 (P-010) → AC §13
   (AC-WARRANTY-001-01/-02, now Testable) → Test Plan §7/§8 (TS-WARRANTY-001,
   field-list blocker resolved) → Test Cases §12 (`TC-WARRANTY-001-01`/`-02`,
@@ -768,11 +866,28 @@ downstream document's citation of an upstream document's content:
   the Warranty domain has exactly one MVP field, `warrantyExpiry`, and that
   the draft 8-field proposal was rejected, not deferred — no stale reference
   to the old three-field ("Start Date, End Date, Status") shape remains
-  anywhere in the chain. `AC-WARRANTY-001-03`/`TC-WARRANTY-001-03`'s
-  separate 90-day-window blocker is consistently still BLOCKED (partial) at
-  every layer, correctly not conflated with the resolved field-list
-  question. Thread confirmed complete. See Gap 7 (§6) for the full closure
-  record.
+  anywhere in the chain. Thread confirmed complete. See Gap 7 (§6) for the
+  full closure record.
+- **`RAISE-FR-WARRANTY-001` Expiring-threshold configurability — thread
+  walked end-to-end this revision (2026-09-01):** PRD §16 Resolved Question
+  41 (resolving follow-on Open Question 15b) → Design §5.2 (rewritten to a
+  3-state Active/Expiring/Expired model driven by a configurable threshold)
+  and new §5.4 (Settings Domain) → Prototype P-010 (rewritten) and new §23A
+  (P-018 Settings screen) → AC §13 (`AC-WARRANTY-001-03` rewritten;
+  new `AC-WARRANTY-001-04`/`-05`/`-06`) → Test Plan §7/§8 (TS-WARRANTY-001
+  fully unblocked, no remaining blocked item) → Test Cases §12
+  (`TC-WARRANTY-001-03` rewritten; new `TC-WARRANTY-001-04`/`-05`/`-06`).
+  Every layer agrees the threshold is per-Asset-Category configurable,
+  defaulting to 90 days for all 5 current categories, admin-adjustable via
+  P-018 — no layer still asserts a single global constant. A formal
+  execution sweep against the real running app and 151/151 passing
+  automated tests confirm `TC-WARRANTY-001-01` through `-05`
+  **PASS**; `TC-WARRANTY-001-06` is written and testable but **not yet
+  executed** (`NOT_TESTED`), correctly not claimed PASS anywhere in the
+  chain. Thread confirmed complete — the threshold-configurability half is
+  closed (Gap 12, §6, RESOLVED); the P-018 access-gate execution half is a
+  genuinely separate, still-open coverage gap (Gap 13, §6, OPEN), not
+  claimed closed here.
 - **`RAISE-FR-EXEC-001` / Dashboard-Navigation spec correction — thread
   walked end-to-end this revision (2026-08-31):** Open Finding F-22 →
   `RAISE-DESIGN.md` §13 (v0.9, "Logical Dashboard — Current MVP (As Built)")
@@ -864,18 +979,17 @@ downstream document's citation of an upstream document's content:
   severity/trigger-rule content half (F-05) is a genuinely separate,
   still-open thread, unaffected and not claimed closed here.
 - Full re-walk confirmed no other Test Status cell in §3/§4 has drifted from
-  the current text of `RAISE-TEST-CASES.md` v0.10 (cross-checked TC-by-TC):
+  the current text of `RAISE-TEST-CASES.md` v0.11 (cross-checked TC-by-TC):
   `RAISE-FR-ASSET-001`, `RAISE-FR-ASSET-003`, `RAISE-FR-OPS-001/002`,
   `RAISE-FR-ORACLE-001`, `RAISE-FR-AUDIT-001`,
   `RAISE-AI-SEARCH-001`, `RAISE-FR-LIFE-001`,
   `RAISE-AI-DOC-001..004` all match their respective TC Blocked-column text
-  exactly (`RAISE-FR-WARRANTY-001` was checked separately in a prior
-  revision, given that revision's substantive change to that row;
-  `RAISE-FR-EXEC-001` and the Dashboard/Navigation row were checked
-  separately in a prior revision; `RAISE-FR-ASSET-002` and
-  `RAISE-NFR-SEC-RBAC-001` were checked separately in prior revisions;
-  `RAISE-FR-ALERT-001` is checked separately immediately above, given this
-  revision's substantive change to it).
+  exactly (`RAISE-FR-WARRANTY-001` is checked separately immediately above,
+  given this revision's substantive change to that row; `RAISE-FR-EXEC-001`
+  and the Dashboard/Navigation row were checked separately in a prior
+  revision; `RAISE-FR-ASSET-002` and `RAISE-NFR-SEC-RBAC-001` were checked
+  separately in prior revisions; `RAISE-FR-ALERT-001` was checked separately
+  in the prior revision, unchanged this pass).
 
 ---
 
@@ -991,6 +1105,24 @@ not touched by this correction.
   requirement-content question; `AC-ALERT-001`'s own scoping note (structural
   display testable, specific severity/trigger-rule values not) is unchanged.
   See Gap 11, §6.
+- **Resolved this revision (2026-09-01), Gap 12:** `RAISE-FR-WARRANTY-001`'s
+  Expiring-threshold shape/value question (PRD §16 Open Question 15b) is now
+  resolved — the threshold is per-Asset-Category configurable, defaulting to
+  90 days for all 5 categories, admin-adjustable via new P-018 Settings.
+  `TC-WARRANTY-001-03/-04/-05` were formally executed and confirmed **PASS**,
+  corroborated by 151/151 passing automated tests and a live browser sweep
+  confirming no cross-category leakage. Compliance Review may treat this
+  requirement's Warranty-state and P-018 threshold-configuration coverage as
+  a confirmed `PASS`. See Gap 12, §6.
+- **Opened this revision (2026-09-01), Gap 13 — still OPEN, real coverage
+  gap:** `TC-WARRANTY-001-06` (non-admin access/write denial to the new
+  P-018 Settings screen) is written and fully specified but **has not been
+  formally executed**. **Compliance Review must not** treat
+  `RAISE-FR-WARRANTY-001`'s row as a full, unqualified `PASS` — it is
+  `PASS (partial)` until a formal execution sweep of `TC-WARRANTY-001-06` is
+  run and recorded in `RAISE-TEST-CASES.md`. This is a coverage gap, not an
+  open business question — the underlying UI-only RBAC denial mechanism is
+  already confirmed elsewhere in the app. See Gap 13, §6.
 
 ---
 
@@ -1052,6 +1184,21 @@ not touched by this correction.
       such: the severity/trigger-rule definition for any other alert
       condition (PRD §6.9 Open Question, Open Finding F-05) — remains
       genuinely open, tracked separately
+- [x] **Gap 12 (§6) is RESOLVED this revision** — PRD §16 Open Question 15b
+      (`RAISE-FR-WARRANTY-001`'s Expiring-threshold shape/value) is closed:
+      per-Asset-Category configurable threshold, defaulting to 90 days,
+      admin-adjustable via new P-018 Settings; `TC-WARRANTY-001-03/-04/-05`
+      formally executed against the real running app and confirmed PASS,
+      corroborated by 151/151 passing automated tests and a live
+      cross-category-leakage check. **Explicitly not part of this
+      closure** and correctly not claimed as such: `TC-WARRANTY-001-06`'s
+      execution status — see Gap 13.
+- [ ] **Gap 13 (§6) is OPEN, opened this revision** — `TC-WARRANTY-001-06`
+      (non-admin denial to P-018 Settings) is written and testable but has
+      not been formally executed. This is a coverage gap, not a business-
+      open question. Must not be closed until a real execution record
+      (automated or live-browser) against P-018 specifically is added to
+      `RAISE-TEST-CASES.md` and re-synced into this row.
 - [x] No VERSCAN-only item appears anywhere in this matrix
 
 ---
@@ -1078,7 +1225,9 @@ Development (Source Code)
 RAISE-COMPLIANCE-REVIEW.md
 ```
 
-Gaps 1–11 are resolved and re-confirmed with no drift this revision. **Gap 8
+Gaps 1–12 are resolved and re-confirmed with no drift this revision (Gap 12
+newly opened and closed this revision). **Gap 13 remains OPEN** — see below.
+**Gap 8
 is fully resolved** — both the spec-correction half and the formal
 execution-sweep half are done (see Gap 8, §6, and the `RAISE-FR-EXEC-001`/
 Dashboard-Navigation rows in §3/§4). **Gap 9 is fully resolved** —
@@ -1104,17 +1253,34 @@ PASS (see Gap 11, §6, and the `RAISE-FR-ALERT-001` row in §3). This closes
 only the build-gap half — the requirement-content half (severity/
 trigger-rule definition for any other condition, PRD §6.9 Open Question,
 Open Finding F-05) remains open and is carried forward in item 1 below,
-unchanged in scope.
+unchanged in scope. **Gap 12 is opened and resolved in this same
+revision** — `RAISE-FR-WARRANTY-001`'s Expiring-threshold shape/value
+question (PRD §16 Open Question 15b) is closed: the threshold is confirmed
+per-Asset-Category configurable, defaulting to 90 days for all 5 categories,
+admin-adjustable via new P-018 Settings; `TC-WARRANTY-001-03/-04/-05`
+execute against the real running app and confirmed PASS (see Gap 12, §6,
+and the `RAISE-FR-WARRANTY-001` row in §3). **Gap 13 is newly opened this
+revision and remains OPEN** — `TC-WARRANTY-001-06` (non-admin denial to the
+new P-018 Settings screen) is written and fully specified but has not been
+formally executed; this is a real coverage gap, not an open business
+question, and is carried forward as the first recommended next action
+below.
 
 **Recommended next actions, in order:**
 
-1. Resolve the remaining PRD Open Questions that block full testability of
+1. **Run a formal execution sweep of `TC-WARRANTY-001-06`** (Gap 13, §6,
+   OPEN) — log in as a non-admin demo account, attempt to navigate to
+   Settings (P-018) and/or edit a Warranty threshold, confirm denial at the
+   UI-only RBAC enforcement level, and record the result in
+   `RAISE-TEST-CASES.md` §12; then re-sync the `RAISE-FR-WARRANTY-001` row
+   (§3) from `PASS (partial)` to a full `PASS` once done.
+2. Resolve the remaining PRD Open Questions that block full testability of
    P0/MVP requirements (§3/§4 above) — in particular Q1 (asset master
    fields), Q3/Q4 residual KPI formulas, Q6–Q10 (Oracle integration design),
-   Q11–Q13 (Check-in/Check-out and custody model), the still-open 90-day
-   expiry-window threshold underlying `AC-WARRANTY-001-03`/
-   `TC-WARRANTY-001-03` (Q15's field-list portion is now resolved — see
-   Gap 7, §6), Q18–Q20 (AI citation/confidence/conflict), Q21–Q23
+   Q11–Q13 (Check-in/Check-out and custody model) (Q15's field-list portion
+   is resolved — see Gap 7, §6 — and Q15b's threshold-configurability
+   portion is now also resolved — see Gap 12, §6), Q18–Q20 (AI
+   citation/confidence/conflict), Q21–Q23
    (authentication mechanism, role list, permission matrix content — **still
    genuinely open; the four `MockAuthRepository` demo accounts added to
    close Gap 10 are a testing convenience, not a proposed answer to this
@@ -1125,15 +1291,15 @@ unchanged in scope.
    proposed answer to this question**, tracked as Open Finding F-05), Open
    Question 10a (`ReconciliationPage` mapping), and Open Question 20a
    (`RAISE-AI-DOC-004` matching/merge behavior).
-2. Resolve the `RAISE-FR-ASSET-003` vs. `RAISE-FR-OPS-002` custody-writing-
+3. Resolve the `RAISE-FR-ASSET-003` vs. `RAISE-FR-OPS-002` custody-writing-
    events exclusivity question (Gap 4) before any custody-writing code path
    beyond Check-in/Check-out is built.
-3. If and when any PRD §10 NFR backlog area (§4.2 above) receives a defined
+4. If and when any PRD §10 NFR backlog area (§4.2 above) receives a defined
    value/target, add the corresponding Traceability ID to `RAISE-PRD.md`
    first, then propagate a real AC group / Suite / Test Case down the chain
    — do not add test coverage for these areas ahead of a PRD-level
    definition.
-4. Proceed to Development for requirements with no open blocker (e.g.,
+5. Proceed to Development for requirements with no open blocker (e.g.,
    `RAISE-FR-OPS-001`, `TS-AI-STATES`), while tracking the BLOCKED items
    above for the remaining requirements.
 
@@ -1141,49 +1307,126 @@ unchanged in scope.
 
 ## Document Status
 
-**Version:** 1.2 (Open Finding F-32 — no P-012 Alerts screen at all, route
-404'd — RESOLVED this revision, per explicit business decision and now
-implemented: a new Alerts screen (`frontend/src/pages/Alerts/index.tsx`,
-registered at `/notifications`) scoped to the one confirmed trigger
-condition (warranty-expired, reusing `RAISE-FR-WARRANTY-001`'s existing
-`isWarrantyExpired` check), `TC-ALERT-001-01`/`-02` re-executed against the
-real running app and confirmed PASS. The separate, still-open PRD-content
-question — severity mapping / trigger rules for any condition beyond
-warranty-expired, PRD §6.9 Open Question, Open Finding F-05 — remains
-genuinely undefined and is explicitly not resolved by this fix. Gaps 1–10
-unchanged from v1.1.)
+**Version:** 1.3 (PRD §16 Open Question 15b — `RAISE-FR-WARRANTY-001`'s
+Expiring-threshold shape/value — RESOLVED this revision, per explicit
+confirmed business decision (Resolved Question 41, 2026-09-01) and now
+implemented: the Expiring threshold is per-Asset-Category configurable,
+defaulting to 90 days for all 5 current Asset Categories, admin-adjustable
+via a new P-018 Settings screen. `TC-WARRANTY-001-01` through `-05`
+formally executed against the real running app and confirmed PASS. A new
+test case, `TC-WARRANTY-001-06` (non-admin denial to P-018), is written and
+testable but has **not** yet been executed — tracked as new, still-**OPEN**
+Gap 13, distinct from the newly-opened-and-closed Gap 12 covering the
+threshold-configurability question itself. Gaps 1–11 unchanged from v1.2.)
 **Status:** Draft for Traceability Review
-**Source:** [`RAISE-TEST-CASES.md`](../06-test-cases/RAISE-TEST-CASES.md) v0.10 (updated this revision — `TC-ALERT-001-01`/`-02` now record formal execution evidence) and full upstream chain — `RAISE-TEST-PLAN.md` v0.8 (unchanged this revision), `RAISE-ACCEPTANCE-CRITERIA.md` v0.8 (unchanged this revision — `AC-ALERT-001`'s existing structural-display scope is still accurate), `RAISE-PROTOTYPE.md` v0.9 (unchanged this revision), `RAISE-DESIGN.md` v0.9 (unchanged this revision), and `RAISE-PRD.md` v0.11 (unchanged this revision — F-32's resolution is a build/infrastructure fix, not a requirement-content change)
+**Source:** [`RAISE-TEST-CASES.md`](../06-test-cases/RAISE-TEST-CASES.md) v0.11 (updated this revision — `TC-WARRANTY-001-01` through `-05` now record formal execution evidence; new `TC-WARRANTY-001-04`/`-05`/`-06`) and full upstream chain — `RAISE-TEST-PLAN.md` v0.9 (updated this revision — TS-WARRANTY-001 fully unblocked), `RAISE-ACCEPTANCE-CRITERIA.md` v0.9 (updated this revision — AC-WARRANTY-001-03 rewritten, new AC-WARRANTY-001-04/-05/-06), `RAISE-PROTOTYPE.md` v0.10 (updated this revision — P-010 rewritten, new §23A P-018 Settings), `RAISE-DESIGN.md` v0.10 (updated this revision — §5.2 Warranty Domain 3-state model, new §5.4 Settings Domain), and `RAISE-PRD.md` v0.12 (updated this revision — §16 Resolved Question 41)
 **Reference:** VERSCAN only
-**Last Re-Verified:** 2026-09-01 (`RAISE-FR-ALERT-001` row re-executed
-against the real running app following the F-32 build-gap fix — see
-Change Log v1.1 → v1.2 below and Gap 11, §6, for the full record. Prior
-re-verification of `RAISE-NFR-SEC-RBAC-001`/`RAISE-FR-ASSET-002`, unchanged
-this revision, retained below for history:
-`RAISE-FR-ASSET-002` against Prototype P-005 (v0.9) / AC AC-ASSET-002
-(v0.8) / Test Plan TS-ASSET-002 (v0.8, "RESOLVED and CLOSED") / Test Cases
-TC-ASSET-002-01..03 (v0.9), following the F-27 business decision. A fresh
-formal execution sweep **was** run against the real running app this pass,
-after the document-chain re-sync: navigated to `/assets`, opened "By
-Category," expanded "IT Hardware" — confirmed it reveals Type-level
-sub-groups only (Headphones: 1 asset, Laptop: 3 assets, Monitor: 2 assets),
-no individual assets shown at that level; expanded "Laptop" — confirmed it
-reveals exactly its 3 individual assets (MacBook Pro 16" M3 / AST-0001,
-MacBook Air M2 / AST-0011, ThinkPad X1 Carbon Gen 11 / AST-0012), none of
-Monitor's or Headphones' assets. Matches `AC-ASSET-002-01`/`-03` and
-Prototype P-005 (v0.9) exactly. Result: `TC-ASSET-002-02` unchanged
-(**PASS**, from the 2026-08-26 execution, unaffected by the taxonomy
-question); `TC-ASSET-002-01` **PASS** — re-executed directly against the
-corrected Category → Type wording (the prior 2026-08-26 PASS, earned
-against the narrower flat-grouping spec, is not relied on as evidence — this
-is a fresh, direct result); `TC-ASSET-002-03` **PASS** — no longer BLOCKED,
-the UI code change (Type-level nesting) has shipped and was formally
-verified. 3 new/updated automated tests in `frontend/src/pages/Assets/
-index.test.tsx` all pass, the full frontend suite (145 tests) passes with no
-regressions, and `tsc --noEmit`/lint are both clean. §3 `RAISE-FR-ASSET-002`
-row upgraded from **PASS (scoped)** to a full **PASS** (Gap 9, §6, RESOLVED). No other row required re-verification this pass.
+**Last Re-Verified:** 2026-09-01 (`RAISE-FR-WARRANTY-001` row re-executed
+against the real running app following the Q15b threshold-configurability
+resolution — see Change Log v1.2 → v1.3 below and Gaps 12/13, §6, for the
+full record. Prior re-verification of `RAISE-FR-ALERT-001`, unchanged this
+revision, retained below for history: `/notifications` renders 11 alert
+rows, matching the Dashboard's "Expired Warranty: 11" tile exactly;
+`TC-ALERT-001-01`/`-02` re-executed against the real running app and
+confirmed PASS (Gap 11, §6, RESOLVED, v1.2).
 
-**Change Log — v1.1 → v1.2 (this revision, 2026-09-01):**
+**This revision's execution evidence (2026-09-01):** 151/151 automated
+tests pass (`tsc --noEmit`/lint clean, up from 149/149 in v1.2 — 2 new
+tests: `frontend/src/pages/Assets/index.test.tsx`'s
+`TC-WARRANTY-001-03` case, `frontend/src/services/settings-service.test.ts`'s
+per-category-seed/merge case). Live browser: Settings > Warranty renders
+all 5 Asset Categories (IT Hardware, Mobile, Office Equipment,
+Infrastructure, Media Equipment), each with a "90" default threshold input;
+editing IT Hardware to 5000 and saving correctly flagged MacBook Pro and
+Dell UltraSharp Monitor (both IT Hardware) as "Expiring" on Asset Registry,
+while iPhone 15 Pro (Mobile, already-expired) still correctly showed
+"Expired" — confirming no cross-category leakage; Asset Detail for MacBook
+Pro showed "Expiring" consistently in both its Lifecycle row and Warranty &
+Coverage section badge. `TC-WARRANTY-001-06` was **not** executed this
+pass — see Gap 13, §6.
+
+**Change Log — v1.2 → v1.3 (this revision, 2026-09-01):**
+
+1. **Gap 12 opened and RESOLVED in the same revision, requirement-content
+   scope (not a build-gap fix like Gaps 9–11):** `RAISE-FR-WARRANTY-001`'s
+   `TC-WARRANTY-001-03` was `BLOCKED (partial)` because the 90-day Expiring
+   window was only the PRD's illustrative business example, not a confirmed
+   generalizable rule. Per explicit confirmed business decision (2026-09-01,
+   PRD §16 Resolved Question 41, resolving follow-on Open Question 15b), the
+   threshold is now **per-Asset-Category configurable**, defaulting to 90
+   days for all 5 current Asset Categories, admin-adjustable via a new
+   **P-018 Settings** screen. Propagated through `RAISE-DESIGN.md` v0.10
+   (§5.2 rewritten to a 3-state Active/Expiring/Expired model, new §5.4
+   Settings Domain), `RAISE-PROTOTYPE.md` v0.10 (P-010 rewritten, new §23A
+   P-018), `RAISE-ACCEPTANCE-CRITERIA.md` v0.9 (`AC-WARRANTY-001-03`
+   rewritten, new `AC-WARRANTY-001-04`/`-05`), `RAISE-TEST-PLAN.md` v0.9
+   (TS-WARRANTY-001 fully unblocked), and `RAISE-TEST-CASES.md` v0.11
+   (`TC-WARRANTY-001-03` rewritten, new `TC-WARRANTY-001-04`/`-05`, all
+   formally executed and confirmed **PASS**). **This closes the
+   threshold-configurability half of the gap in full; a newly-introduced
+   access-control test case for the new P-018 screen —
+   `TC-WARRANTY-001-06` — is explicitly not part of this closure** — see
+   Gap 13, §6, for the full closure record.
+2. **Gap 13 opened this revision — still OPEN, real coverage gap, not a
+   business-open question:** `TC-WARRANTY-001-06` (non-admin access/write
+   denial to the new P-018 Settings screen) is written and fully specified
+   in `RAISE-TEST-CASES.md` v0.11 §12, but has not been formally executed.
+   The underlying UI-only RBAC denial mechanism is already confirmed and
+   exercised elsewhere in the app (`RAISE-NFR-SEC-RBAC-001`), so this is
+   purely a missing execution pass, not an undefined mechanism or missing
+   business decision. Test Status recorded as `NOT_TESTED` (per
+   `RAISE-PRD.md` §17), distinct from PASS/FAIL/BLOCKED. See Gap 13, §6.
+3. **§3 `RAISE-FR-WARRANTY-001` row rewritten**: Design Area, Prototype
+   Screen(s), AC Group(s), and TC ID(s) columns updated to include P-018 and
+   `AC-WARRANTY-001-04/-05/-06` / `TC-WARRANTY-001-04..06`. Test Status
+   updated from `PASS (partial)` (field-list-only resolution) to `PASS
+   (partial)` on updated grounds — `TC-WARRANTY-001-01` through `-05` now
+   all **PASS**, with the row's only remaining "partial" qualifier being the
+   still-unexecuted `TC-WARRANTY-001-06` (Gap 13), not any remaining
+   PRD-content blocker.
+4. **§6 Gap 7's "still open" residual-item paragraph updated** to record
+   that its previously-carved-out 90-day-threshold item is now resolved,
+   pointing to new Gap 12 rather than describing it as still BLOCKED.
+5. **§6 Gaps 12 and 13 added**, following the same "record resolution with
+   evidence, explicitly separate a closed half from a still-open half, do
+   not silently close the open half" discipline as Gaps 7–11 — with Gap 12
+   marked RESOLVED and Gap 13 marked OPEN (this document's first Gap opened
+   this revision that is *not* also closed in the same revision, since
+   v0.4's Gap 1).
+6. **§7 Chain Consistency Check** gained a dedicated
+   `RAISE-FR-WARRANTY-001` / Expiring-threshold thread-walk bullet for this
+   revision (the pre-existing 2026-08-29 field-list bullet is retained,
+   relabeled "for history," and no longer asserted as covering the
+   threshold question); the "no other row drifted" re-walk list updated to
+   reflect `RAISE-TEST-CASES.md` v0.11 and to move `RAISE-FR-WARRANTY-001`
+   into its own dedicated bullet.
+7. **§8 Compliance Review Readiness** gained a Gap 12 resolved-item note and
+   a Gap 13 open-item note, the latter explicitly warning Compliance Review
+   not to treat this row as a full unqualified PASS.
+8. **§9 Checklist** gained a Gap 12 item (marked RESOLVED) and a Gap 13 item
+   (marked OPEN — the checklist's first unchecked `[ ]` item since Gap 1).
+9. **§10 Next Step** — Gaps 1–11 summary text updated to Gaps 1–12, with an
+   explicit note that Gap 13 remains OPEN; item 1's Q15 threshold-window
+   reference updated to reflect Q15b's resolution; a new recommended-action
+   item 1 added ahead of the existing list, directing a formal execution
+   sweep of `TC-WARRANTY-001-06`; subsequent items renumbered 2–5.
+10. Version citations updated this revision: `RAISE-PRD.md` v0.11 → v0.12,
+    `RAISE-DESIGN.md` v0.9 → v0.10, `RAISE-PROTOTYPE.md` v0.9 → v0.10,
+    `RAISE-ACCEPTANCE-CRITERIA.md` v0.8 → v0.9, `RAISE-TEST-PLAN.md` v0.8 →
+    v0.9, `RAISE-TEST-CASES.md` v0.10 → v0.11 (every upstream document in
+    the chain changed this revision, since this was a genuine
+    requirement-content resolution propagated top-to-bottom, unlike the
+    build/infrastructure-only fixes behind Gaps 9–11). Document version
+    bumped 1.2 → 1.3. **No other gap in §6 was found open, closed, or newly
+    discovered during this pass** — Gaps 1–11 are unchanged from v1.2 and
+    are not re-litigated here; this revision's reverse-chain
+    re-verification was scoped to `RAISE-FR-WARRANTY-001` specifically, per
+    the instruction that prompted it, not a full re-walk of every
+    requirement. `OPEN-FINDINGS.md` updates, if any are tracked for PRD
+    Open Question 15b, are handled separately, out of this document's
+    scope.
+
+**Change Log — v1.1 → v1.2 (prior revision, 2026-09-01):**
 
 1. **Gap 11 opened and RESOLVED in the same revision, build-gap scope
    only:** `RAISE-FR-ALERT-001`'s `TC-ALERT-001-01`/`-02` were `FAIL` as of

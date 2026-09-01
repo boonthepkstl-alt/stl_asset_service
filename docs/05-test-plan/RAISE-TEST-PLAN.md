@@ -2,9 +2,9 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Test Plan
-**Version:** 0.8 Draft
+**Version:** 0.9 Draft
 **Status:** Draft for Test Plan Review
-**Source:** [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.8, cross-checked against [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.11, [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.9, [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.9
+**Source:** [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.9, cross-checked against [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.12, [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.10, [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.10
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
 
@@ -173,7 +173,7 @@ Each suite ID mirrors its AC group for direct traceability.
 | TS-OPS-001 | AC-OPS-001 | P-007 | L1, L2 | P0 | No |
 | TS-OPS-002 | AC-OPS-002 | P-008 | L1, L3 | P0 | Yes — workflow/roles TBD; RBAC MVP enforcement level confirmed as UI-only/client-side (role list/permission matrix still TBD) |
 | TS-MAINT-001 | AC-MAINT-001 | P-009 | L1, L3 | P0 | Yes — field model (date/event/status/cost), SLA/vendor/cost model, and delegated-approver rules TBD; stage-transition criteria (AC-MAINT-001-03..09) testable for state-transition behavior; AC-MAINT-001-04..08 depend on `RAISE-NFR-SEC-RBAC-001` (enforcement level confirmed UI-only/client-side, role list/permission matrix still TBD) |
-| TS-WARRANTY-001 | AC-WARRANTY-001 | P-010 | L1 | P0 | Yes — field list resolved (2026-08-29); only AC-WARRANTY-001-03's 90-day-window threshold remains NOT TESTABLE YET (separate, still-open question) |
+| TS-WARRANTY-001 | AC-WARRANTY-001 | P-010, P-018 | L1, L2 | P0 | No — resolved 2026-09-01 (PRD §16 Resolved Question 41); AC-WARRANTY-001 is now fully testable, including new AC-WARRANTY-001-04/-05/-06 (P-018 Settings threshold configuration and admin-only access gate) |
 | TS-ORACLE-001 | AC-ORACLE-001 | P-011 | L1, L2, L4 | P0 | Yes — integration design TBD |
 | TS-ALERT-001 | AC-ALERT-001 | P-012 | L1 | P0 | Yes — trigger rules TBD; role gate (Q22) TBD |
 | TS-AUDIT-001 | AC-AUDIT-001 | P-013 | L1, L3 | P0 | Yes — taxonomy/retention TBD; role gate (Q22) TBD |
@@ -185,14 +185,20 @@ Each suite ID mirrors its AC group for direct traceability.
 | TS-AI-DOC-003 | AC-AI-DOC-003 | P-005 (incidental) | L5 | P0 | Yes — entire suite blocked; sole criterion NOT TESTABLE YET (assign-vs-suggest classification behavior TBD) |
 | TS-AI-DOC-004 | AC-AI-DOC-004 | P-003 (incidental) | L5 | P0 | Yes — entire suite blocked; sole criterion NOT TESTABLE YET (matching threshold / merge-or-flag workflow TBD) |
 
-Four suites (TS-ASSET-001-DETAIL, TS-OPS-001, TS-AI-STATES, TS-ASSET-002)
-have no blocked items and can be executed as soon as the corresponding
-screen is implemented, without waiting on any Open Question. TS-ASSET-002
-was added to this group 2026-09-01 (Open Finding F-27, per confirmed
-business decision) — see §8's TS-ASSET-002 row for the resolution detail;
-no test case for AC-ASSET-002 has been executed or has passed as of this
-update, since the corresponding Test Case (`RAISE-TEST-CASES.md`) and the
+Five suites (TS-ASSET-001-DETAIL, TS-OPS-001, TS-AI-STATES, TS-ASSET-002,
+TS-WARRANTY-001) have no blocked items and can be executed as soon as the
+corresponding screen is implemented, without waiting on any Open Question.
+TS-ASSET-002 was added to this group 2026-09-01 (Open Finding F-27, per
+confirmed business decision) — see §8's TS-ASSET-002 row for the resolution
+detail; no test case for AC-ASSET-002 has been executed or has passed as of
+this update, since the corresponding Test Case (`RAISE-TEST-CASES.md`) and the
 UI's expand/drill-down behavior (AC-ASSET-002-03) are still pending.
+TS-WARRANTY-001 was added to this group the same date (per confirmed business
+decision resolving PRD §16 Resolved Question 41) — see §8's TS-WARRANTY-001
+row for the resolution detail; no test case for AC-WARRANTY-001 has been
+executed or has passed as of this update, since the corresponding Test Case
+(`RAISE-TEST-CASES.md`) update for AC-WARRANTY-001-04/-05/-06 (P-018 Settings)
+is a separate, already-underway follow-up.
 
 TS-AI-DOC-001 through TS-AI-DOC-004 are fully blocked, not partially blocked
 like the other "Yes" rows above — each AC group (§19.5–§19.8 of the AC
@@ -220,7 +226,7 @@ introduced here.
 | TS-LIFE-001 | Design §4.2's exact lifecycle state/transition model is TBD. (Resolved: Disposal MVP scope — confirmed Out of Scope for MVP on 2026-08-21, `RAISE-PRD.md` §14 item 7; the former disposal test case is now excluded rather than blocked, see `RAISE-TEST-CASES.md` §6.5.) | Whether cross-domain lifecycle data displays and stays consistent across stage changes |
 | TS-OPS-002 | Q11 Check-in/Check-out workflow, Q12/Q22 Roles | Whether approval/exception rules are enforced, only that the basic state transition + audit trigger occurs. **RBAC MVP enforcement level confirmed (2026-08-21, PRD §16 Resolved Question 38; Design §16):** same narrow decision as TS-LOGIN — UI-only/client-side check accepted for MVP, backend deferred to Roadmap. This fixes only *where* a permission check runs, not *what* the roles/permissions are, so AC-OPS-002-01's "appropriate permission" gate remains untestable for role correctness until the role list/permission matrix (Q22) is defined. |
 | TS-MAINT-001 | Q14 Maintenance fields / SLA / vendor model / cost model (workflow shape and state model now confirmed — Resolved Question 33; only SLA, vendor model, cost model, and delegated-approver configuration remain open); Q22 Roles/permissions | Whether the full field set (beyond date/event/status/cost) is complete, only that records/history render (AC-MAINT-001-01/-02). **Stage-transition criteria now testable (2026-08-21):** the 4-stage workflow (User Requisition → Dept Approval (Delegated) → IT Dispatch → Technician Execution) and its state model (`PENDING_DEPT_APPROVAL → PENDING_IT_DISPATCH → PLANNING/IN_PROGRESS/ON_HOLD → DONE`) are business-confirmed (PRD §16 Resolved Question 33; Design §5.1), so AC-MAINT-001-03, -06, -07, -08, -09 are executable for the confirmed state transitions and stage-progress indicator. Remaining NOT TESTABLE YET items: (a) AC-MAINT-001-05's Reject/Request Info resulting state/downstream flow — Prototype §15 shows these as UI actions only with no defined resulting state; (b) delegated-approver configuration rules (*who* may delegate, *to whom*, how delegation is audited) — AC-MAINT-001-04 tests only that an Approve action advances the state, not any delegation authorization rule; (c) SLA per stage, the vendor model (internal technician vs. external vendor dispatch), and the cost model/tracking — the "Priority," "Vendor model," and "Cost incurred" fields shown in the Prototype are placeholders only. **RBAC dependency (AC-MAINT-001-04 through -08):** MVP enforcement level is confirmed as UI-only/client-side (PRD §16 Resolved Question 38; Design §16), backend deferred to Roadmap — this fixes only *where* a permission check would run, not *what* the roles/permissions are; the role list, permission matrix contents, and authentication/delegation mechanism remain TBD (Q22), so these five criteria are executable only for the state-transition behavior itself, not for whether the acting user's role (Dept Approver, IT Dispatcher, Technician) is correctly gated or verified. No behavior is defined for Mark Complete attempted from an invalid state, or for skipped/reversed stages — no test case exists for those cases. |
-| TS-WARRANTY-001 | Q15 Warranty fields (**RESOLVED 2026-08-29** — PRD §16 Resolved Question 40; Design §5.2; Prototype §14 P-010: the Warranty domain has exactly one MVP field, `warrantyExpiry`; a draft 8-field proposal was explicitly rejected for MVP, not deferred). AC-WARRANTY-001-01/-02 are now fully testable and unblocked. **Separate, still-open blocker (unaffected by the above):** the 90-day expiry-window figure used in AC-WARRANTY-001-03 is the PRD §6.7 illustrative business example, not a confirmed, generalizable rule for the expiring-assets view's window(s) | AC-WARRANTY-001-01/-02: no remaining gap — `warrantyExpiry` display and Active/Expiring/Expired state derivation are fully verifiable. AC-WARRANTY-001-03 only: whether the 90-day window (vs. some other window) is the correct one for the expiring-assets view |
+| TS-WARRANTY-001 | **RESOLVED and CLOSED 2026-09-01** (PRD §16 Resolved Question 41, resolving Open Question 15b). Q15 Warranty fields was already resolved 2026-08-29 (PRD §16 Resolved Question 40; Design §5.2; Prototype §14 P-010 — the Warranty domain has exactly one MVP field, `warrantyExpiry`; a draft 8-field proposal was explicitly rejected for MVP, not deferred), closing AC-WARRANTY-001-01/-02. The formerly-open, separate blocker on AC-WARRANTY-001-03 — that the 90-day expiry-window figure was only the PRD §6.7 illustrative business example, not a confirmed generalizable rule — is now closed: the "Expiring" threshold is confirmed as **per-Asset-Category configurable**, defaulting to 90 days, admin-adjustable via the new **P-018 Settings** screen (Design §5.2/§5.4; Prototype §14 P-010, §23A P-018 Settings). AC-WARRANTY-001-03 is rewritten to test this resolved rule directly (no standalone "expiring-assets view" screen is asserted, since none exists). Three new criteria were added and are covered by this suite: **AC-WARRANTY-001-04** (P-018 Warranty section shows all 5 Asset Categories with an editable threshold input defaulting to 90), **AC-WARRANTY-001-05** (editing and saving one category's threshold affects only that category's assets, no cross-category leakage), and **AC-WARRANTY-001-06** (non-admin access/write to P-018 is denied, at the confirmed MVP UI-only/client-side RBAC enforcement level per PRD §16 Resolved Question 38 — no new role list/permission matrix is asserted; role name/backend enforcement remain TBD per Q22, same narrow scope already applied to TS-LOGIN/TS-OPS-002/TS-MAINT-001). | None — AC-WARRANTY-001-01 through -06 are all fully testable. No test case has been executed or has passed as of this Test Plan update; writing/updating the corresponding test cases in `RAISE-TEST-CASES.md` for AC-WARRANTY-001-04/-05/-06 and re-executing the suite is a separate, already-underway follow-up. |
 | TS-ORACLE-001 | Q6–Q10 Integration method, sync, mapping, error handling, ownership, source-of-truth, security | Whether the integration itself is correct, only that the four UI states (available/unavailable/error/conflict) render appropriately |
 | TS-ALERT-001 | (RAISE-FR-ALERT-001 Open Question) Alert trigger rules; Q22 Roles/permissions | Whether the correct conditions trigger alerts, only that triggered alerts display severity/description/asset; separately, whether the "authorized user" gate on AC-ALERT-001-01 is correctly enforced, only that the alert lists severity/description/asset when opened |
 | TS-AUDIT-001 | Q24–Q25 Event taxonomy, retention; Q22 Roles/permissions | Whether all required audit fields are captured, only that Actor/Timestamp/Action/Entity are recorded and immutable; separately, whether the "audit-review access" gate on AC-AUDIT-001-03 is correctly enforced, only that entries are viewable
@@ -300,7 +306,7 @@ respectively — not a concrete UI element or business rule). Consequently:
 | TS-OPS-001 | AC-OPS-001 | RAISE-FR-OPS-001 | §4.2 Custody & Asset Operations | P-007 |
 | TS-OPS-002 | AC-OPS-002 | RAISE-FR-OPS-002 | §4.2 Custody & Asset Operations | P-008 |
 | TS-MAINT-001 | AC-MAINT-001 | RAISE-FR-MAINT-001 | §5.1 Maintenance Domain | P-009 |
-| TS-WARRANTY-001 | AC-WARRANTY-001 | RAISE-FR-WARRANTY-001 | §5.2 Warranty Domain | P-010 |
+| TS-WARRANTY-001 | AC-WARRANTY-001 | RAISE-FR-WARRANTY-001 | §5.2 Warranty Domain (threshold display/state); §5.4 (per-category configuration, resolved 2026-09-01, PRD §16 Resolved Question 41) | P-010, P-018 |
 | TS-ORACLE-001 | AC-ORACLE-001 | RAISE-FR-ORACLE-001 | §6 Oracle FA Integration | P-011 |
 | TS-ALERT-001 | AC-ALERT-001 | RAISE-FR-ALERT-001 | §14 Alert Architecture | P-012 |
 | TS-AUDIT-001 | AC-AUDIT-001 | RAISE-FR-AUDIT-001 | §15 Audit Architecture | P-013 |
@@ -333,19 +339,27 @@ traceable, remain fully blocked pending further design/business input.
 Because the PRD does not define final schemas for several domains (asset
 master fields, holder model, maintenance fields — see §8 Blocked Items),
 test data requirements below are conceptual placeholders, not a finalized
-data spec. **Exceptions:** the Warranty field list is resolved
-(2026-08-29, see §8 TS-WARRANTY-001 row) — the `warrantyExpiry` bullet
-below is a concrete data requirement, not a placeholder; only the 90-day
-expiry-window figure it exercises remains illustrative/unconfirmed. The
-Category → Type hierarchy is also resolved (2026-09-01, Open Finding F-27,
-see §8 TS-ASSET-002 row) — the real, currently-seeded `category`/`type`
-breakdown from `frontend/src/data/fixtures/mockData.ts` is a concrete data
-requirement, not a placeholder:
+data spec. **Exceptions:** the Warranty field list and expiring threshold are
+both resolved (2026-08-29 and 2026-09-01 respectively, see §8 TS-WARRANTY-001
+row) — the `warrantyExpiry` and per-category-threshold bullets below are
+concrete data requirements, not placeholders. The Category → Type hierarchy
+is also resolved (2026-09-01, Open Finding F-27, see §8 TS-ASSET-002 row) —
+the real, currently-seeded `category`/`type` breakdown from
+`frontend/src/data/fixtures/mockData.ts` is a concrete data requirement, not
+a placeholder:
 
 - At least one asset per lifecycle state shown in Design §4.2 (Registered,
   Assigned, In Use, Check-in, Maintenance/Audit, Disposal)
-- At least one asset with warranty expiring within 90 days (to exercise
-  the PRD's illustrative example, AC-WARRANTY-001-03 / AC-AI-SEARCH-001-03)
+- At least one asset per Asset Category with `warrantyExpiry` inside that
+  category's configured "Expiring" threshold (default 90 days), one with
+  `warrantyExpiry` already past (Expired), and one well beyond the threshold
+  (Active), to exercise AC-WARRANTY-001-02/-03's 3-state derivation per
+  category, plus AC-AI-SEARCH-001-03
+- One `WarrantySettings` configuration record covering all 5 current Asset
+  Categories (IT Hardware, Mobile, Office Equipment, Infrastructure, Media
+  Equipment), each defaulting to a 90-day threshold, to exercise
+  AC-WARRANTY-001-04 (P-018 default display) and AC-WARRANTY-001-05 (editing
+  one category's threshold without cross-category leakage)
 - At least one asset with Oracle FA data available, one with data
   unavailable, one with a simulated sync error, and one with a simulated
   conflicting value (to exercise all four AC-ORACLE-001 states)
@@ -446,8 +460,49 @@ the BLOCKED distinctions in §8.
 
 ## Document Status
 
-**Version:** 0.8 (re-synced against `RAISE-ACCEPTANCE-CRITERIA.md` v0.8, 2026-09-01 —
-Open Finding F-27 scope/spec correction)
+**Version:** 0.9 (re-synced against `RAISE-ACCEPTANCE-CRITERIA.md` v0.9, 2026-09-01 —
+Warranty threshold scope/spec correction, per confirmed business decision)
+
+**Change Log — v0.8 → v0.9 (2026-09-01, per confirmed business decision
+resolving PRD §16 Resolved Question 41):**
+
+1. **Root cause.** `RAISE-ACCEPTANCE-CRITERIA.md` v0.9 §13 resolved the previously-open
+   "AC-WARRANTY-001-03's 90-day threshold is illustrative only" blocker: the "Expiring"
+   boundary is now confirmed as per-Asset-Category configurable (default 90 days),
+   admin-adjustable via a new **P-018 Settings** screen ("Warranty" section). This is a
+   scope/spec correction resolving a previously-open question, not a new requirement.
+2. **TS-WARRANTY-001 fully unblocked (§7, §8, §9).** The prior "Yes — ... AC-WARRANTY-001-03's
+   90-day-window threshold remains NOT TESTABLE YET" blocked-item note is removed. §7's
+   Screen column expanded from P-010 to "P-010, P-018"; Level(s) expanded from L1 to
+   "L1, L2" (AC-WARRANTY-001-06's admin-only access-denial criterion is a negative/denied
+   state); Blocked Items column changed from "Yes" to "No." TS-WARRANTY-001 moves into the
+   "no blocked items" group in §7 alongside TS-ASSET-001-DETAIL, TS-OPS-001, TS-AI-STATES,
+   and TS-ASSET-002. §8's TS-WARRANTY-001 row is rewritten to record the resolution and to
+   carry forward coverage expectations for the three new criteria: AC-WARRANTY-001-04
+   (P-018 shows all 5 Asset Categories with an editable threshold input defaulting to 90),
+   AC-WARRANTY-001-05 (editing/saving one category's threshold affects only that category,
+   no cross-category leakage), and AC-WARRANTY-001-06 (non-admin access/write to P-018 is
+   denied, at the already-confirmed MVP UI-only/client-side RBAC enforcement level per PRD
+   §16 Resolved Question 38 — no new role model is introduced). §9's Design Area column for
+   TS-WARRANTY-001 updated to cite Design §5.4 alongside §5.2.
+3. **§10 Test Data Requirements** updated: the warranty bullet is expanded to require
+   per-category Expiring/Expired/Active coverage (rather than a single illustrative 90-day
+   asset) and a new bullet added for a `WarrantySettings` record covering all 5 categories
+   at their 90-day default, to exercise AC-WARRANTY-001-04/-05. The prior "only the 90-day
+   figure remains illustrative/unconfirmed" caveat is removed, since that figure is now
+   confirmed as the per-category default.
+4. **No test case claimed as passed.** This update resolves the entry-criteria/blocked
+   status only. Updating the corresponding test cases in `RAISE-TEST-CASES.md` for
+   AC-WARRANTY-001-04/-05/-06 (P-018 Settings) and re-executing the suite are separate,
+   already-underway follow-up steps — no PASS/FAIL execution result is reported by this
+   Test Plan update.
+5. Version citations in the document header updated: AC v0.8 → v0.9, PRD v0.11 → v0.12,
+   Design v0.9 → v0.10, Prototype v0.9 → v0.10.
+6. No other suite required changes; TS-LOGIN, TS-DASH, TS-ASSET-001,
+   TS-ASSET-001-DETAIL, TS-LIFE-001, TS-ASSET-002, TS-ASSET-003, TS-OPS-001, TS-OPS-002,
+   TS-MAINT-001, TS-ORACLE-001, TS-ALERT-001, TS-AUDIT-001, TS-EXEC-001,
+   TS-AI-SEARCH-001, TS-AI-STATES, and TS-AI-DOC-001..004 are unaffected by AC v0.9's
+   changes.
 
 **Change Log — v0.7 → v0.8 (2026-09-01, Open Finding F-27 scope/spec
 correction, per confirmed business decision):**
@@ -649,10 +704,10 @@ TS-WARRANTY-001, TS-ORACLE-001, TS-ALERT-001, TS-AUDIT-001, TS-AI-SEARCH-001, an
 TS-AI-STATES are unaffected by AC v0.3's changes.
 
 **Status:** Draft for Test Plan Review
-**Source:** [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.6
+**Source:** [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.9
 **Reference:** VERSCAN only
-**Next Action:** Review the v0.6 update (AC-WARRANTY-001 field-list resolution) before
-Test Cases. `RAISE-TEST-CASES.md` should be checked next for the same drift, in
-particular whether its warranty-related test cases still assert a stale "Start Date, End
-Date, Status" field shape and need updating to `warrantyExpiry`-only, while continuing to
-treat the 90-day-window threshold as NOT TESTABLE YET.
+**Next Action:** Review the v0.9 update (AC-WARRANTY-001 threshold resolution, P-018
+Settings criteria) before Test Cases. `RAISE-TEST-CASES.md` needs a corresponding update
+for AC-WARRANTY-001-03 (rewritten) and new cases for AC-WARRANTY-001-04/-05/-06 (P-018
+Settings) — a separate, already-underway follow-up. No PASS/FAIL execution result is
+claimed by this Test Plan update.

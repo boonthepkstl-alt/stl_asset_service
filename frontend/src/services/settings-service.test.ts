@@ -41,4 +41,17 @@ describe('settingsService', () => {
     expect(updated.security.twoFactor).toBe('required');
     expect(updated.security.sessionTimeoutMinutes).toBe(30);
   });
+
+  // AC-WARRANTY-001-03 (resolved 2026-09-01): the Expiring threshold defaults to 90 for every
+  // Asset Category, and updating one category's threshold must not clobber the others.
+  it('seeds a 90-day warranty Expiring threshold for every category, and updateSettings merges per-category changes', async () => {
+    const settingsService = await freshSettingsService();
+    const before = await settingsService.getSettings();
+    expect(before.warranty.expiringThresholdDaysByCategory['IT Hardware']).toBe(90);
+    expect(before.warranty.expiringThresholdDaysByCategory['Mobile']).toBe(90);
+
+    const updated = await settingsService.updateSettings({ warranty: { expiringThresholdDaysByCategory: { 'IT Hardware': 60 } } });
+    expect(updated.warranty.expiringThresholdDaysByCategory['IT Hardware']).toBe(60);
+    expect(updated.warranty.expiringThresholdDaysByCategory['Mobile']).toBe(90);
+  });
 });

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, Globe, Shield, Palette, Mail, Database, Save } from 'lucide-react';
+import { Bell, Globe, Shield, Palette, Mail, Database, Save, ShieldCheck } from 'lucide-react';
 import { AppShell } from '@/components/AppShell';
 import { Button, Input, Select, Textarea, Checkbox, useToast, SectionCard } from '@/components/ui';
 import { useSettings } from '@/hooks/useSettings';
@@ -10,6 +10,7 @@ import { cn } from '@/lib/cn';
 const sections = [
   { id: 'general', label: 'General', icon: Globe },
   { id: 'notifications', label: 'Notifications', icon: Bell },
+  { id: 'warranty', label: 'Warranty', icon: ShieldCheck },
   { id: 'security', label: 'Security', icon: Shield },
   { id: 'appearance', label: 'Appearance', icon: Palette },
   { id: 'email', label: 'Email', icon: Mail },
@@ -130,6 +131,38 @@ export function SettingsPage() {
                       />
                       <div className="w-10 h-6 bg-surface-200 peer-focus:ring-2 peer-focus:ring-brand-500/20 rounded-full peer peer-checked:after:translate-x-4 after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-600" />
                     </label>
+                  </div>
+                ))}
+              </div>
+            </SectionCard>
+          )}
+
+          {section === 'warranty' && (
+            // AC-WARRANTY-001-03 (resolved 2026-09-01, per confirmed business decision): the
+            // "Expiring" threshold is configurable per Asset Category, not a single fixed
+            // number -- different equipment types carry different real-world warranty terms.
+            <SectionCard title="Warranty Expiring Threshold" description="Days before warrantyExpiry an asset is flagged as 'Expiring,' per Asset Category">
+              <div className="flex flex-col gap-4">
+                {Object.keys(draft.warranty.expiringThresholdDaysByCategory).map((category) => (
+                  <div key={category} className="flex items-center justify-between py-2 border-b border-surface-100 last:border-0">
+                    <div>
+                      <p className="text-body font-medium text-surface-900">{category}</p>
+                      <p className="text-caption text-surface-500">Days before expiry to flag as Expiring</p>
+                    </div>
+                    <Input
+                      type="number"
+                      className="w-24"
+                      value={draft.warranty.expiringThresholdDaysByCategory[category]}
+                      onChange={(e) =>
+                        setDraft({
+                          ...draft,
+                          warranty: {
+                            ...draft.warranty,
+                            expiringThresholdDaysByCategory: { ...draft.warranty.expiringThresholdDaysByCategory, [category]: Number(e.target.value) || 0 },
+                          },
+                        })
+                      }
+                    />
                   </div>
                 ))}
               </div>

@@ -1,6 +1,7 @@
 import { screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { renderWithProviders } from '@/test/test-utils';
+import { settingsService } from '@/services/settings-service';
 import { AssetsPage } from './index';
 
 describe('AssetsPage', () => {
@@ -36,6 +37,24 @@ describe('AssetsPage', () => {
       expect(screen.getByText('2024-03-15')).toBeInTheDocument();
     });
     expect(screen.getByText('Expired')).toBeInTheDocument();
+  });
+
+  // AC-WARRANTY-001-03 (resolved 2026-09-01, per confirmed business decision): the Expiring
+  // threshold is configurable per Asset Category via Settings -- set it far above a1's real
+  // remaining warranty window so this case is deterministic regardless of when the test runs.
+  it('TC-WARRANTY-001-03: a category-specific Expiring threshold flags an asset as Expiring', async () => {
+    await settingsService.updateSettings({ warranty: { expiringThresholdDaysByCategory: { 'IT Hardware': 5000 } } });
+    try {
+      renderWithProviders(<AssetsPage />, { route: '/assets', path: '/assets' });
+      await waitFor(() => screen.getByText('MacBook Pro 16" M3'));
+
+      // a1: category IT Hardware, warrantyExpiry 2027-01-15 -- well within a 5000-day threshold.
+      expect(screen.getAllByText('Expiring').length).toBeGreaterThan(0);
+    } finally {
+      // settingsService is a module-level singleton -- restore the default so later tests in
+      // this file that render the Warranty column aren't affected by this test's override.
+      await settingsService.updateSettings({ warranty: { expiringThresholdDaysByCategory: { 'IT Hardware': 90 } } });
+    }
   });
 
   // RAISE-FR-OPS-001 / AC-OPS-001-01..03, formally executed as TC-OPS-001-01..03

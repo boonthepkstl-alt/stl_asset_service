@@ -1,8 +1,11 @@
 import { MockSettingsRepository, type SettingsRepository } from '@/services/settings-repository';
+import { categories } from '@/data/fixtures/mockData';
 import type { PlatformSettings, UpdateSettingsInput } from '@/types/settings';
 
 // Seed values match the legacy defaultValue literals in src/pages/Settings.tsx exactly — see
-// SYSTEM-SETTINGS-MIGRATION.md for the field-by-field trace back to the original page.
+// SYSTEM-SETTINGS-MIGRATION.md for the field-by-field trace back to the original page. The
+// `warranty` section is new (AC-WARRANTY-001-03, resolved 2026-09-01) -- not part of the legacy
+// page, since the Expiring-threshold concept didn't exist until this business decision.
 const SEED: PlatformSettings = {
   organizationName: 'RAISE Corporation',
   supportEmail: 'support@raise.co',
@@ -15,6 +18,7 @@ const SEED: PlatformSettings = {
   appearance: { theme: 'light', primaryColor: 'bg-brand-600' },
   email: { smtpServer: 'smtp.raise.co', smtpPort: 587, smtpUsername: 'noreply@raise.co', encryption: 'tls', fromEmail: 'noreply@raise.co' },
   data: { autoBackupEnabled: true, dataRetentionDays: 365, exportScheduleEnabled: false },
+  warranty: { expiringThresholdDaysByCategory: Object.fromEntries(categories.map((c) => [c, 90])) },
 };
 
 const repository: SettingsRepository = new MockSettingsRepository(SEED);

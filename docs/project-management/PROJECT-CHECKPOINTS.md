@@ -2320,11 +2320,55 @@ Test Case: `TC-ASSET-002-01..03` — all **PASS**; `RAISE-TRACEABILITY-MATRIX.md
 
 **Git:**
 Branch: `frontend/resolve-f27-category-type-hierarchy`
-Commit: pending — predicted next PR after #57 (verify via `gh pr list` before treating as final).
+Commit: `8066e1f` (implementation), merged via [PR #58](https://github.com/boonthepkstl-alt/stl_asset_service/pull/58).
 
 **Known Issues:** None new.
 **Remaining Work:** F-30, F-31, F-32, F-33, and `AC-WARRANTY-001-03`'s 90-day threshold remain open items blocked on a business/design decision. F-22 and F-27 are both fully closed.
-**Next Step:** Recalculate `NEXT-STEP.md`. Check in with the user on direction for one of the four remaining open findings.
+**Next Step:** Recalculate `NEXT-STEP.md`. Check in with the user on direction for one of the four remaining open findings. User chose F-30 next — see `CHECKPOINT-2026-09-01-002` below.
+
+---
+
+## CHECKPOINT-2026-09-01-002
+
+**Phase:** Cross-cutting (dev infrastructure, not tied to one product phase)
+**Feature:** Resolve Open Finding F-30's business decision, implement, and re-verify — all in one session
+**Task:** Per explicit user decision (add a `MockAuthRepository` following the established Mock/Http pattern; 4 demo accounts, one per Role), implement, verify with automated tests and live browser execution through the real Login UI, then close the loop in the Traceability Matrix and Open Findings
+
+**What was implemented:** `frontend/src/services/auth-repository.ts` (`AuthRepository` interface, `MockAuthRepository`, `HttpAuthRepository`) mirroring `asset-repository.ts`'s structure exactly. `auth-service.ts` rewritten to select between them via a new `AUTH_API_ENABLED` flag (`config/featureFlags.ts`, default OFF, same convention as every other domain). Four demo accounts seeded, one per `Role` (`types/auth.ts`): `admin@raise.dev`/`manager@raise.dev`/`itstaff@raise.dev`/`employee@raise.dev`, all password `demo1234`.
+**What was modified:**
+- `frontend/src/config/featureFlags.ts`: new `AUTH_API_ENABLED` flag.
+- `frontend/src/services/auth-service.ts`: rewritten to pick `HttpAuthRepository`/`MockAuthRepository` via the flag (mirrors `asset-service.ts`).
+- `RAISE-TRACEABILITY-MATRIX.md` (v1.0→1.1): `RAISE-NFR-SEC-RBAC-001` row — `TC-LOGIN-01`/`-02` move from BLOCKED to **PASS**; explicitly notes this resolves the infrastructure gap only, not the separate PRD-content question (auth mechanism/role-matrix, PRD §16 Q21–Q22); new Gap 10 opened and closed (infrastructure half).
+- `docs/project-management/OPEN-FINDINGS.md`: F-30 moved to **Resolved**, recorded as R-15.
+**What was fixed:** The missing Mock fallback itself — `login()` previously always hit the real (unreachable in this dev environment) backend.
+**What was added:** `frontend/src/services/auth-repository.ts` (new file); `frontend/src/services/auth-service.test.ts` (new file, 2 tests — `TC-LOGIN-01` valid credentials across roles, `TC-LOGIN-02` invalid credentials rejected).
+**What was removed:** None.
+
+**Files changed:** 6 files — `featureFlags.ts`, `auth-service.ts` (modified), `auth-repository.ts`, `auth-service.test.ts` (new), `RAISE-TRACEABILITY-MATRIX.md`, `OPEN-FINDINGS.md`.
+**Database changes:** None. **API changes:** None. **Frontend changes:** Login now works end-to-end against 4 demo accounts without a real backend.
+
+**Tests:**
+- Unit Test: `frontend/src/services/auth-service.test.ts` — 2 new tests, both passing. Full suite: 147/147 passing (was 145, +2 for this change).
+- Integration Test: None. E2E Test: None.
+
+**Validation:**
+- Build: covered by Type Check below. Lint: `npm run lint` ✅ (0 warnings).
+- Test: `npx vitest run` ✅ (147/147).
+- Type Check: `npx tsc --noEmit` ✅.
+- Manual browser verification (Chrome preview, `raise-frontend` dev server) through the **real Login page UI**, not a `localStorage` bypass: submitted `wrong@raise.dev`/`wrongpass` — confirmed "Invalid username or password" shown (genuine credential rejection this time, not a network-failure false positive). Submitted `admin@raise.dev`/`demo1234` — confirmed successful login, landed on the Executive Dashboard as "Demo Admin"/ADMIN.
+
+**Requirement Traceability:**
+PRD: `RAISE-NFR-SEC-RBAC-001` (unchanged — this is an infrastructure fix, not a requirement change).
+Acceptance Criteria: `AC-LOGIN`'s own "NOT TESTABLE YET" note (mechanism/role content) is unchanged and still accurate.
+Test Case: `TC-LOGIN-01`/`-02` — now **PASS** (up from BLOCKED); `TC-LOGIN-03` unaffected, still PASS. `RAISE-TRACEABILITY-MATRIX.md` updated accordingly, Gap 10 closed (infrastructure half).
+
+**Git:**
+Branch: `frontend/resolve-f30-mock-auth`
+Commit: pending — predicted next PR after #58 (verify via `gh pr list` before treating as final).
+
+**Known Issues:** None new.
+**Remaining Work:** F-31, F-32, F-33, and `AC-WARRANTY-001-03`'s 90-day threshold remain open items blocked on a business/design decision. F-22, F-27, and F-30 are all fully closed.
+**Next Step:** Recalculate `NEXT-STEP.md`. Check in with the user on direction for one of the three remaining open findings.
 
 ---
 

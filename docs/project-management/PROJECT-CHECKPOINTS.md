@@ -2364,11 +2364,45 @@ Test Case: `TC-LOGIN-01`/`-02` — now **PASS** (up from BLOCKED); `TC-LOGIN-03`
 
 **Git:**
 Branch: `frontend/resolve-f30-mock-auth`
-Commit: pending — predicted next PR after #58 (verify via `gh pr list` before treating as final).
+Commit: `5b291d0` (implementation), merged via [PR #59](https://github.com/boonthepkstl-alt/stl_asset_service/pull/59).
 
 **Known Issues:** None new.
 **Remaining Work:** F-31, F-32, F-33, and `AC-WARRANTY-001-03`'s 90-day threshold remain open items blocked on a business/design decision. F-22, F-27, and F-30 are all fully closed.
-**Next Step:** Recalculate `NEXT-STEP.md`. Check in with the user on direction for one of the three remaining open findings.
+**Next Step:** Recalculate `NEXT-STEP.md`. Check in with the user on direction for one of the three remaining open findings. User chose F-31 next — see `CHECKPOINT-2026-09-01-003` below.
+
+---
+
+## CHECKPOINT-2026-09-01-003
+
+**Phase:** Phase 6 — Oracle FA Integration & Reconciliation
+**Feature:** Record explicit business decision on Open Finding F-31
+**Task:** Present F-31 (Oracle FA Financial View, P-011, unbuilt placeholder) and its options to the user; record the decision
+
+**What was implemented:** N/A — this is a decision-recording task, not a build task.
+**What was modified:** `docs/project-management/OPEN-FINDINGS.md` (F-31's row updated to record the explicit deferral decision).
+**What was fixed:** None.
+**What was added:** None.
+**What was removed:** None.
+
+**Decision:** Presented 3 options — (1) build a scoped interim Financial View using only fields that already exist on the Asset record (Asset Number/Acquisition Info), with an honest "Data Unavailable" state for the Oracle-specific fields (NBV/Depreciation/Oracle Source/Sync Status) that don't require answering F-04's formula question; (2) leave deferred until real Oracle FA integration lands; (3) ask for more detail first. **User chose option (2): explicitly defer** — do not build anything for F-31 until the real Oracle FA integration is in place. Unlike F-22/F-27/F-30, there is no existing field/data in the app to reuse for a "match reality" fix — building anything now for Oracle-specific fields would either fabricate data or pre-empt the still-open F-04 formula question, so deferral is the sound choice here, not a stalled decision.
+
+**Files changed:** 1 file — `OPEN-FINDINGS.md`. No frontend/backend code touched.
+**Database changes:** None. **API changes:** None. **Frontend changes:** None.
+
+**Tests:** N/A — no code changed.
+**Validation:** N/A — no code changed.
+
+**Requirement Traceability:**
+PRD: `RAISE-FR-ORACLE-001` (unchanged).
+Acceptance Criteria / Test Case: `AC-ORACLE-001-01..04` / `TC-ORACLE-001-01..04` — unchanged, still FAIL (unbuilt), unaffected by this decision (no code changed). `RAISE-TRACEABILITY-MATRIX.md` row unchanged — no re-execution needed since nothing was built.
+
+**Git:**
+Branch: `docs/defer-f31-oracle-fa`
+Commit: pending — predicted next PR after #59 (verify via `gh pr list` before treating as final).
+
+**Known Issues:** None new.
+**Remaining Work:** F-32, F-33, and `AC-WARRANTY-001-03`'s 90-day threshold remain open items blocked on a business/design decision. F-31 is now explicitly deferred (not a "buildable now" candidate), distinct from F-22/F-27/F-30 which were fully resolved.
+**Next Step:** Recalculate `NEXT-STEP.md`. Check in with the user on direction for one of the two remaining open findings (F-32, F-33) or the Warranty 90-day question.
 
 ---
 

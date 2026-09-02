@@ -2,9 +2,9 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Test Cases
-**Version:** 0.13 Draft
+**Version:** 0.15 Draft
 **Status:** Draft for Test Case Review
-**Source:** [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.10 §7 (Test Suites) + §8 (Blocked Items) + §8.1 (Fully-Blocked Suites — AI Document Intelligence Capabilities) + §3.3 (PRD §10 NFR Backlog — No Suite), expanding [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.10
+**Source:** [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.11 §7 (Test Suites) + §8 (Blocked Items) + §8.1 (Fully-Blocked Suites — AI Document Intelligence Capabilities) + §3.3 (PRD §10 NFR Backlog — No Suite), expanding [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.11
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
 
@@ -41,22 +41,47 @@ Two distinct BLOCKED markings are used, matching Test Plan §7/§8/§8.1:
 - **BLOCKED (pending implementation)** — a distinct third marking, first
   used for `TC-ASSET-002-03` (§7, added 2026-09-01, Open Finding F-27) and
   **closed the same day** once the blocking UI code change shipped and a
-  formal execution sweep confirmed the built behavior (§7) — it currently
-  has zero active occurrences in this document, but the marking itself is
-  retained here for any future case in the same situation. Unlike the two
+  formal execution sweep confirmed the built behavior (§7). Unlike the two
   markings above, it is **not** driven by an unresolved PRD Open Question
   or an AC criterion marked NOT TESTABLE YET — the underlying AC criterion
   is fully specified and testable as written. The block exists solely
-  because the UI behavior it describes has not yet been built. Test steps
-  are still written in full (the behavior to verify is well-defined), but
-  the case cannot be executed until the corresponding code change ships;
+  because the UI/backend behavior it describes has not yet been built. Test
+  steps are still written in full (the behavior to verify is well-defined),
+  but the case cannot be executed until the corresponding code change ships;
   no PASS/FAIL claim may be made until a subsequent formal execution sweep
   confirms the built behavior against those steps — exactly what happened
   for `TC-ASSET-002-03` (§7): the shipped "By Category" view was extended
   to nest one level deeper (Category → Type → individual assets), and
   formal execution against the real running app confirmed the described
   behavior, so the case is now closed with a **PASS** result and is no
-  longer BLOCKED.
+  longer BLOCKED. **Re-opened 2026-09-02 with six active occurrences**
+  (`TC-OPS-002-04` through `TC-OPS-002-09`, §10) for the IT Hardware
+  Assignment Approval Workflow confirmed by PRD §16 Resolved Question 43
+  (`RAISE-ACCEPTANCE-CRITERIA.md` v0.11 §11, `AC-OPS-002-04`..`-09`), **and
+  closed again the same day**: the 4-stage workflow's backend was
+  implemented in `go-template-main` (new `assetHandover*` model/repository/
+  service/controller files, `sql/pg/V5__AssetHandovers_Table.sql`, new
+  `/handovers*` and `/assets/:id/handover` routes) and formally re-executed
+  end-to-end against the real running Docker stack (backend + Postgres),
+  plus covered by 18 new Go unit tests
+  (`service/assetHandoverService_test.go`, all passing). All six cases are
+  now **PASS** on the testable-now scope — the 4-stage state machine, the
+  category-scoped exception, the regression guard for non-IT-Hardware
+  assets, and the terminal-rejection behavior (§10) — with two important
+  caveats that keep this from being a full closure: (1) this execution was
+  performed directly against the backend API (no frontend UI for this
+  workflow exists yet — a separate, not-yet-started follow-up, so the
+  literal UI-surface steps written in each case below, e.g. "My Pending
+  Assignments," "IT Processing Queue," "IT Supervisor Approval Queue," were
+  not exercised as UI, only as their equivalent API calls); and (2) the
+  `IT_STAFF`/`IT_MANAGER` role gates at Stages 3–4 were not verified as
+  *enforced*, consistent with this codebase's existing project-wide MVP
+  decision that RBAC is UI-only/client-side and not backend-enforced
+  anywhere else in the app either (not a gap specific to this feature). The
+  two genuinely open Stage 2 sub-points (e-signature/acknowledgment-text
+  capture, recipient-decline path) remain untouched and NOT TESTABLE YET
+  (§10) — neither is implemented, and both remain blocked on a still-open
+  business decision, not on implementation.
 
 ---
 
@@ -284,6 +309,71 @@ execution).
 | TC-OPS-002-01 | Check-out updates custody | 1. Select an available asset. 2. As any authenticated user, choose Check-out. 3. Identify a holder. 4. Confirm. | 1 available asset, 1 holder identity | Custody state updates immediately to the new holder — no approval step or intermediate pending state, and no role restriction on who may perform it | No — resolved 2026-09-01 (PRD §16 Resolved Question 42): any authenticated user may perform Check-out, and the operation is an immediate state change with no approval/exception-handling step. **Already PASS**, formally executed 2026-08-28 against the real running app (`RAISE-TRACEABILITY-MATRIX.md` §3): Assign — the app's actual affordance for identifying a holder and confirming, no distinct "Check-out" label exists but the behavior matches — updated custody state to the new holder on asset `a4`, performed by an authenticated user with no role gate blocking the action. This existing execution already covers the newly-confirmed "any authenticated user" scope; no new execution is claimed by this update. General role-list/permission-matrix content for other domains remains a separate, still-open question (PRD §16 Q21–Q22, Open Finding F-08), unaffected here. |
 | TC-OPS-002-02 | Check-in updates custody | 1. Select a checked-out asset. 2. As any authenticated user, confirm return. | 1 checked-out asset | Custody state updates immediately to reflect the return — no approval step or intermediate pending state, and no role restriction on who may perform it | No — resolved 2026-09-01 (PRD §16 Resolved Question 42): any authenticated user may perform Check-in, and the operation is an immediate state change with no approval/exception-handling step (the prior "approval/exception rules TBD, PRD §16 Q11" block is closed). **Already PASS**, formally executed 2026-08-28 against the real running app (`RAISE-TRACEABILITY-MATRIX.md` §3): Check-in confirmed the asset's return to Available/Unassigned, with no approval step or intermediate pending state observed, and no role gate blocking the action. This existing execution already covers the newly-confirmed scope; no new execution is claimed by this update. This case does not test, and must not be read as confirming, whether Check-in/Check-out is the *exclusive* writer of Custody History (Open Finding F-10, Status: Open, unaffected — see `TC-ASSET-003-03`). |
 | TC-OPS-002-03 | Check-in/Check-out triggers audit entry | 1. Perform Check-out. 2. Open Audit Log. | 1 asset | New Audit Log entry created for the operation | No — unaffected by this resolution (was already fully testable). **Already PASS**, formally executed 2026-08-28 against the real running app (`RAISE-TRACEABILITY-MATRIX.md` §3): both operations created a corresponding Audit Log entry, verified visible with actor and timestamp. |
+
+**Status Note — Added 2026-09-02 (`RAISE-TEST-PLAN.md` v0.11 / `RAISE-ACCEPTANCE-CRITERIA.md`
+v0.11, PRD §16 Resolved Question 43 — IT Hardware Assignment Approval Workflow, category-scoped
+exception):** `AC-OPS-002` gained six new criteria, `AC-OPS-002-04` through `-09`, covering a new
+4-stage approval workflow (Initiation → Recipient Confirmation → IT Processing → IT Supervisor
+Approval) that applies only to Check-out of an asset whose Asset Category is **IT Hardware**
+(every other category, and Check-in for every category including IT Hardware, continue to follow
+the general immediate-state-change rule tested by `TC-OPS-002-01`/`-02`/`-03` above, unchanged).
+The 4-stage shape, its state model
+(`PENDING_RECIPIENT_CONFIRMATION` → `PENDING_IT_PROCESSING` → `PENDING_IT_SUPERVISOR_APPROVAL` →
+`ASSIGNED`), its role gates at Stages 3–4 (`IT_STAFF`/`IT_MANAGER`, no new Role), and its
+terminal-rejection rule are all **confirmed by business decision** — this is not an open PRD
+question. `TC-OPS-002-04` through `TC-OPS-002-09` below are added 1:1 against
+`AC-OPS-002-04`..`-09`.
+
+**Status Note — Formally executed 2026-09-02, backend implemented and closed the same day it was
+opened (Open Finding on this workflow's implementation status, resolved):** the 4-stage workflow
+has now been implemented in `go-template-main` (backend only — new files
+`model/assetHandoverModel.go`, `repository/assetHandoverPGRepository.go`,
+`repository/assetHandoverRepository.go`, `service/assetHandoverService.go`,
+`controller/assetHandoverController.go`, `sql/pg/V5__AssetHandovers_Table.sql`; new routes `GET
+/handovers`, `GET /handovers/:code`, `POST /assets/:id/handover`, `POST
+/handovers/:code/confirm`, `POST /handovers/:code/process`, `POST /handovers/:code/decision`).
+`AssetService.AssignAsset` now returns HTTP 409 with a `nextStep` hint for IT Hardware-category
+assets, redirecting the caller to the new `/handover` endpoint; non-IT-Hardware assets continue to
+assign immediately via the old endpoint, unchanged. All six cases below were formally re-executed
+end-to-end against the real running Docker stack (backend + Postgres) and are marked **PASS** on
+the testable-now scope (§1): the 4-stage state machine, the category-scoped exception, the
+regression guard for non-IT-Hardware assets, and the terminal-rejection behavior. This is also
+covered by 18 new Go unit tests (`service/assetHandoverService_test.go`, all passing).
+
+**Two scope boundaries apply to every PASS below, so as not to overclaim (§1):**
+
+1. **Backend/API-level execution only.** No frontend UI for this workflow exists yet — that
+   remains a separate, not-yet-started follow-up. The literal UI-surface language in each case's
+   Steps column below ("My Pending Assignments," "IT Processing Queue," "IT Supervisor Approval
+   Queue," "Click Assign") describes the AC-specified UI affordance; execution against it was
+   performed as the equivalent direct API call against the real running backend, not as a UI
+   interaction. The Steps/Test Data/Expected Result columns are left as originally written (they
+   remain the correct AC-derived spec for whenever the UI is built); each row's Blocked/Evidence
+   column below records precisely what was executed.
+2. **Role gates not verified as *enforced*.** The `IT_STAFF`/`IT_MANAGER` role gates at Stages
+   3–4 are confirmed by business decision as the intended actors, but this execution did not (and
+   could not) verify backend role enforcement — consistent with this codebase's existing
+   project-wide MVP decision that RBAC is UI-only/client-side and not backend-enforced anywhere
+   else in the app either (PRD §16 Resolved Question 38; not a gap specific to this feature).
+
+Once a frontend UI for this workflow ships, each case should be re-executed against it and this
+note updated, exactly as was done for other domains (e.g. `TC-WARRANTY-001-06`, §12).
+
+**Not covered by any new test case, per the AC document's own framing:** the two Stage 2
+sub-points that remain genuinely open — the recipient-decline path, and e-signature/
+acknowledgment-text capture on Confirm Receipt (`RAISE-ACCEPTANCE-CRITERIA.md` §11 "NOT TESTABLE
+YET" note, PRD's `## NEEDS_PRD_CONFIRMATION`, raised 2026-09-02) — are **not** blocked on
+implementation; they are blocked on a still-open business decision, so no test case is written
+for either. `TC-OPS-002-05` below tests only the plain "Confirm Receipt" state transition
+described in `AC-OPS-002-05`, with no decline action and no signature/acknowledgment-text
+assertion.
+
+| TC-OPS-002-04 | IT Hardware Check-out enters pending state, not immediate Assigned | 1. Select an Available asset whose Asset Category is IT Hardware. 2. As an IT/Admin user, select an employee. 3. Click Assign (the same trigger used for the general rule). | 1 Available IT Hardware-category asset, 1 employee | The asset does **not** immediately become Assigned. It enters state `PENDING_RECIPIENT_CONFIRMATION` and its displayed status badge shows a pending-approval indicator (e.g., "Assignment Pending — Awaiting Recipient Confirmation"), not "Assigned." | No — **PASS**, formally executed 2026-09-02 against the real running Docker stack (backend + Postgres), API-level (§10 scope note 1; no frontend UI yet). Confirmed: `POST /assets/:id/assign` on an IT Hardware asset now returns HTTP 409 with a `nextStep` hint directing to `POST /assets/:id/handover`; calling `POST /assets/:id/handover` (Stage 1 Initiate) creates a handover in `PENDING_RECIPIENT_CONFIRMATION` and the asset stays "Available" — confirmed it does **not** flip early during the entire pending workflow, only Stage 4 approval flips it to "Assigned." Also covered by unit tests in `service/assetHandoverService_test.go`. Handover codes confirmed sequential per year (`AHO-2026-001` etc.), year-scoped (a code-review finding caught and fixed a bug where the sequence was not year-scoped). `InitiateHandover` also validates `employeeId`/`employeeName` are non-empty (HTTP 400 if missing). |
+| TC-OPS-002-05 | Recipient confirms receipt, advances to IT Processing | 1. Start from an IT Hardware-category asset in state `PENDING_RECIPIENT_CONFIRMATION` for a given recipient employee. 2. As that recipient employee, open the "My Pending Assignments" UI surface. 3. Select Confirm Receipt. | 1 asset in `PENDING_RECIPIENT_CONFIRMATION`, 1 recipient employee | The asset transitions to state `PENDING_IT_PROCESSING`. No decline action and no e-signature/acknowledgment-text capture is asserted — neither exists in the Prototype. | No — **PASS**, formally executed 2026-09-02 against the real running Docker stack, API-level via `POST /handovers/:code/confirm` (§10 scope note 1; no "My Pending Assignments" UI exists yet). Confirmed: a matching recipient's confirm transitions the handover to `PENDING_IT_PROCESSING`; confirming with a mismatched or empty `recipientId` is correctly rejected (`ErrHandoverWrongRecipient`) — this identity check closes a gap a code review found where an empty recipient could otherwise bypass Stage 2. This case does not test, and must not be read as confirming, a recipient-decline path or a signature/acknowledgment-text element — both remain genuinely NOT TESTABLE YET per `RAISE-ACCEPTANCE-CRITERIA.md` §11's own note and are out of scope for any test case until PRD §16's `## NEEDS_PRD_CONFIRMATION` note is resolved (untouched by this update). |
+| TC-OPS-002-06 | IT_STAFF processes and forwards for approval | 1. Start from an IT Hardware-category asset in state `PENDING_IT_PROCESSING`. 2. As a user with the `IT_STAFF` role, open the IT Processing Queue. 3. Select Process / Forward for Approval. | 1 asset in `PENDING_IT_PROCESSING`, 1 `IT_STAFF` user | The asset transitions to state `PENDING_IT_SUPERVISOR_APPROVAL`. | No — **PASS** on the state-transition scope, formally executed 2026-09-02 against the real running Docker stack, API-level via `POST /handovers/:code/process` (§10 scope note 1; no IT Processing Queue UI exists yet). Confirmed the handover transitions `PENDING_IT_PROCESSING` → `PENDING_IT_SUPERVISOR_APPROVAL`. The `IT_STAFF` role gate itself was **not** verified as backend-enforced (§10 scope note 2) — consistent with this codebase's existing project-wide MVP decision that RBAC is UI-only/client-side, not a gap specific to this feature. |
+| TC-OPS-002-07 | IT_MANAGER approval is the only action that flips status to Assigned | 1. Start from an IT Hardware-category asset in state `PENDING_IT_SUPERVISOR_APPROVAL`. 2. As a user with the `IT_MANAGER` role, open the IT Supervisor Approval Queue. 3. Select Approve. 4. Separately, confirm no earlier stage transition (Stage 1 Initiation, Stage 2 Recipient Confirmation, or Stage 3 IT Processing) ever set status to Assigned. | 1 asset in `PENDING_IT_SUPERVISOR_APPROVAL`, 1 `IT_MANAGER` user | The asset transitions to state `ASSIGNED` and its status becomes **Assigned** — confirmed as the **only** action in the 4-stage workflow that does so; no earlier stage transition sets status to Assigned. | No — **PASS** on the state-transition scope, formally executed 2026-09-02 against the real running Docker stack, API-level via `POST /handovers/:code/decision` (§10 scope note 1; no IT Supervisor Approval Queue UI exists yet). Confirmed: Approve from `PENDING_IT_SUPERVISOR_APPROVAL` flips the asset's status to "Assigned," and only that action does so — the asset stayed "Available" through Stages 1–3 (`TC-OPS-002-04`/`-05`/`-06`), confirming no earlier stage sets status to Assigned. Also confirmed Approve attempted before reaching Stage 4 (`PENDING_IT_SUPERVISOR_APPROVAL`) is correctly rejected. The `IT_MANAGER` role gate itself was **not** verified as backend-enforced (§10 scope note 2), same caveat as `TC-OPS-002-06`. |
+| TC-OPS-002-08 | Rejection at Stage 3 or 4 is terminal and returns the asset to Available | 1. Start from an IT Hardware-category asset in state `PENDING_IT_PROCESSING` (Stage 3). 2. As the acting `IT_STAFF` user, select Reject instead of Process. 3. Repeat separately starting from state `PENDING_IT_SUPERVISOR_APPROVAL` (Stage 4), with the acting `IT_MANAGER` user selecting Reject instead of Approve. 4. Confirm no path reopens either rejected Assignment Approval Request. | 1 asset in `PENDING_IT_PROCESSING`, 1 asset in `PENDING_IT_SUPERVISOR_APPROVAL`, 1 `IT_STAFF` user, 1 `IT_MANAGER` user | In both cases, the asset's status returns **immediately to Available**, the flow ends, and no path reopens the rejected Assignment Approval Request — matching the existing P-009 Maintenance `REJECTED_BY_DEPT` terminal-state precedent (`TC-MAINT-001`, §11). | No — **PASS**, formally executed 2026-09-02 against the real running Docker stack, API-level via `POST /handovers/:code/decision` with a Reject decision (§10 scope note 1). Confirmed both cases: reject from Stage 3 (`PENDING_IT_PROCESSING`) and reject from Stage 4 (`PENDING_IT_SUPERVISOR_APPROVAL`) both move the handover to `REJECTED` and the asset returns to/stays "Available"; confirmed terminal — a second decision attempted on an already-rejected handover is correctly rejected with `ErrHandoverWrongStage`, so no path reopens it. Role-gate caveat same as `TC-OPS-002-06`/`-07` (§10 scope note 2). |
+| TC-OPS-002-09 | Non-IT-Hardware Check-out remains the unaffected general rule (regression guard) | 1. Select an Available asset whose Asset Category is **not** IT Hardware (Mobile, Office Equipment, Infrastructure, or Media Equipment). 2. As any authenticated user (no role restriction), select Check-out. 3. Identify a holder. 4. Confirm. | 1 Available non-IT-Hardware asset (e.g., Mobile), 1 holder identity | The asset's custody state updates **immediately** to reflect the new holder exactly as in `TC-OPS-002-01` — no pending state, no 4-stage approval workflow, and no `IT_STAFF`/`IT_MANAGER` role requirement is introduced for any category other than IT Hardware. | No — **PASS**, formally executed 2026-09-02 against the real running Docker stack, API-level (§10 scope note 1). Confirmed: `POST /assets/:id/assign` on an Office Equipment asset (non-IT-Hardware) still assigns immediately, with no 409 and no pending/handover state introduced — regression-safe against the new IT Hardware-only branching added in `AssetService.AssignAsset`. This is a new execution result distinct from `TC-OPS-002-01`'s 2026-08-28 execution (that one predates the IT Hardware branching entirely); this row is the first execution to specifically confirm the regression guard now that the branching code exists. |
 
 ---
 
@@ -677,14 +767,20 @@ below.
 
 ## 19. Test Case Summary
 
-**Note on columns:** the "Partially Blocked" column includes the
-AC-Open-Question-driven BLOCKED (partial) marking (§1). A third marking,
-BLOCKED (pending implementation) (§1), was introduced 2026-09-01 for
-`TC-ASSET-002-03` but closed the same day, once the underlying UI code
-change shipped and formal execution confirmed the built behavior against it
-(§7) — it currently has **zero active occurrences** in this document, though
-the marking itself is retained in §1 for any future case in the same
-situation.
+**Note on columns:** the "Partially Blocked" column includes both the
+AC-Open-Question-driven BLOCKED (partial) marking and the BLOCKED (pending
+implementation) marking (§1) — the latter is not driven by an open PRD
+question, but is grouped in this column rather than given its own, since it
+is neither fully testable nor BLOCKED (full). BLOCKED (pending
+implementation) was introduced 2026-09-01 for `TC-ASSET-002-03` and closed
+the same day, once the underlying UI code change shipped and formal
+execution confirmed the built behavior against it (§7). It was re-opened
+2026-09-02 with six active occurrences — `TC-OPS-002-04` through
+`TC-OPS-002-09` (§10) — for the IT Hardware Assignment Approval Workflow
+(PRD §16 Resolved Question 43), and **closed again the same day** once the
+backend was implemented and formally re-executed against the real running
+Docker stack (§10 Status Note). As of this document's current version, the
+BLOCKED (pending implementation) marking has **zero active occurrences**.
 
 | Suite | Total TCs | Fully Testable | Partially Blocked | Blocked (Full) | Out of Scope |
 |---|---|---|---|---|---|
@@ -696,7 +792,7 @@ situation.
 | TS-ASSET-002 | 3 | 3 | 0 | 0 | 0 |
 | TS-ASSET-003 | 3 | 1 | 2 | 0 | 0 |
 | TS-OPS-001 | 3 | 3 | 0 | 0 | 0 |
-| TS-OPS-002 | 3 | 3 | 0 | 0 | 0 |
+| TS-OPS-002 | 9 | 9 | 0 | 0 | 0 |
 | TS-MAINT-001 | 9 | 3 | 6 | 0 | 0 |
 | TS-WARRANTY-001 | 6 | 6 | 0 | 0 | 0 |
 | TS-ORACLE-001 | 4 | 3 | 1 | 0 | 0 |
@@ -709,7 +805,42 @@ situation.
 | TS-AI-DOC-002 | 1 | 0 | 0 | 1 | 0 |
 | TS-AI-DOC-003 | 1 | 0 | 0 | 1 | 0 |
 | TS-AI-DOC-004 | 1 | 0 | 0 | 1 | 0 |
-| **Total** | **66** | **41** | **20** | **4** | **1** |
+| **Total** | **72** | **47** | **20** | **4** | **1** |
+
+**TS-OPS-002 updated a third time 2026-09-02 (backend implemented and formally re-executed the
+same day the six cases were added — real PASS execution, not a scope/spec correction):** row
+moves from `9 | 3 | 6 | 0 | 0` to `9 | 9 | 0 | 0 | 0`. `TC-OPS-002-04` through `TC-OPS-002-09`
+move from **BLOCKED (pending implementation)** to fully testable, each now formally executed
+against the real running Docker stack (backend + Postgres) with a confirmed **PASS** on the
+testable-now scope: the 4-stage state machine, the category-scoped exception, the regression
+guard for non-IT-Hardware assets, and the terminal-rejection behavior. Also covered by 18 new Go
+unit tests (`service/assetHandoverService_test.go`, all passing). Two scope boundaries apply and
+are recorded on every affected row (§10 Status Note): this execution was backend/API-level only
+(no frontend UI for this workflow exists yet — a separate, not-yet-started follow-up), and the
+`IT_STAFF`/`IT_MANAGER` role gates were not verified as backend-enforced (consistent with this
+codebase's existing project-wide MVP decision that RBAC is UI-only/client-side, not a gap
+specific to this feature). The two genuinely open Stage 2 sub-points (e-signature/
+acknowledgment-text capture; recipient-decline path) remain untouched, with no test case written
+for either, exactly as before this update. Grand **Total** row moves from `72 | 41 | 26 | 4 | 1`
+to `72 | 47 | 20 | 4 | 1` (no test case added or removed; six cases reclassified from partially
+blocked to fully testable and passing).
+
+**TS-OPS-002 updated again 2026-09-02 (`RAISE-TEST-PLAN.md` v0.11 / `RAISE-ACCEPTANCE-CRITERIA.md`
+v0.11, PRD §16 Resolved Question 43 — IT Hardware Assignment Approval Workflow, category-scoped
+exception; six new test cases added, none executed):** row grows from `3 | 3 | 0 | 0 | 0` to
+`9 | 3 | 6 | 0 | 0`. `TC-OPS-002-01..03` are unaffected (unchanged, still fully testable and
+already PASS). Six new cases — `TC-OPS-002-04` through `TC-OPS-002-09` — are added 1:1 against
+the six new criteria `AC-OPS-002-04`..`-09` and are each entered marked **BLOCKED (pending
+implementation)** (§1, §10): the 4-stage workflow, its state model, its `IT_STAFF`/`IT_MANAGER`
+role gates, and its terminal-rejection rule are all confirmed by business decision, but none of
+the workflow exists in the app yet, so **no PASS is claimed for any of the six new cases**. Grand
+**Total** row moves from `66 | 41 | 20 | 4 | 1` to `72 | 41 | 26 | 4 | 1` (six test cases added,
+all entering in the Partially Blocked column via the BLOCKED (pending implementation) sub-marking
+— see the §19 header note above; zero cases removed or reclassified out of Fully Testable).
+No test case is added for the two genuinely still-open Stage 2 sub-points (recipient-decline
+path; e-signature/acknowledgment-text capture) — those remain NOT TESTABLE YET per
+`RAISE-ACCEPTANCE-CRITERIA.md` §11's own framing, blocked on a still-open business decision, not
+on implementation, and are out of this update's scope.
 
 **TS-OPS-002 updated 2026-09-01 (`RAISE-TEST-PLAN.md` v0.10 / `RAISE-ACCEPTANCE-CRITERIA.md`
 v0.10 resolution, PRD §16 Resolved Question 42 — no new test execution reported):** row moves
@@ -918,12 +1049,100 @@ Suite ID → TC ID) into one master table for compliance review.
 
 ## Document Status
 
-**Version:** 0.13 (2026-09-01 — `RAISE-TEST-PLAN.md` v0.10 / `RAISE-ACCEPTANCE-CRITERIA.md`
-v0.10 sync: `TS-OPS-002` fully unblocked, PRD §16 Resolved Question 42. `TC-OPS-002-01`/`-02`
-move from BLOCKED (partial) to fully testable — no new test execution reported; the existing
-2026-08-28 PASS result already covers the newly-confirmed "any authenticated user, no role
-restriction, immediate state change" scope. See the Change Log entry below and §10's Status
-Note for full detail)
+**Version:** 0.15 (2026-09-02 — formal execution update, no earlier-layer document touched: the
+IT Hardware Assignment Approval Workflow backend was implemented in `go-template-main` and
+formally re-executed end-to-end against the real running Docker stack (backend + Postgres), plus
+18 new Go unit tests, all passing. `TC-OPS-002-04` through `TC-OPS-002-09` move from BLOCKED
+(pending implementation) to **PASS** on the testable-now scope: the 4-stage state machine, the
+category-scoped exception, the regression guard for non-IT-Hardware assets, and the
+terminal-rejection behavior. Frontend UI for this workflow remains a separate, not-yet-started
+follow-up, and role-gate backend enforcement remains unverified, consistent with this codebase's
+project-wide UI-only RBAC MVP decision. The two genuinely open Stage 2 sub-points (e-signature/
+acknowledgment-text capture; recipient-decline path) remain untouched and NOT TESTABLE YET. See
+the Change Log entry below and §10's Status Note for full detail)
+
+**Change Log — v0.14 → v0.15 (2026-09-02, real test execution reporting PASS on the
+testable-now scope, not a scope/spec correction — no earlier layer touched):**
+
+1. **Root cause / trigger.** The IT Hardware Assignment Approval Workflow's backend was
+   implemented in `go-template-main` this session: new files `model/assetHandoverModel.go`,
+   `repository/assetHandoverPGRepository.go`, `repository/assetHandoverRepository.go`,
+   `service/assetHandoverService.go`, `controller/assetHandoverController.go`,
+   `sql/pg/V5__AssetHandovers_Table.sql`; new routes `GET /handovers`, `GET /handovers/:code`,
+   `POST /assets/:id/handover`, `POST /handovers/:code/confirm`, `POST /handovers/:code/process`,
+   `POST /handovers/:code/decision`. `AssetService.AssignAsset` now returns HTTP 409 with a
+   `nextStep` hint for IT Hardware-category assets, redirecting to the new `/handover` endpoint;
+   non-IT-Hardware assets continue to assign immediately, unchanged (regression-verified). The
+   full 4-stage state machine, its category-scoped exception, and its terminal-rejection rule
+   were formally re-executed end-to-end against the real running Docker stack (backend +
+   Postgres), and covered by 18 new Go unit tests (`service/assetHandoverService_test.go`, all
+   passing).
+2. **§1 BLOCKED (pending implementation) definition updated** to record that the six occurrences
+   opened 2026-09-02 for `TC-OPS-002-04`..`-09` are closed the same day, with the two scope
+   boundaries (backend/API-level execution only; role-gate enforcement unverified, consistent
+   with the project-wide UI-only RBAC MVP decision) recorded explicitly.
+3. **§10 TS-OPS-002 — new Status Note added** recording the implementation, the formal execution
+   evidence (Docker stack + unit tests), and the two scope boundaries. All six rows
+   (`TC-OPS-002-04` through `-09`) have their Blocked column rewritten from BLOCKED (pending
+   implementation) to **PASS**, each citing the specific behavior confirmed (pending-state entry
+   without early flip, recipient-identity validation at Stage 2, Stage 3 forwarding, Stage 4
+   approval as the sole action that sets Assigned, terminal rejection at Stage 3 and Stage 4, and
+   the non-IT-Hardware regression guard). The two genuinely open Stage 2 sub-points
+   (e-signature/acknowledgment-text capture; recipient-decline path) are left untouched, still
+   NOT TESTABLE YET, with no test case written for either.
+4. **§19 Test Case Summary** updated: `TS-OPS-002` row moves from `9 | 3 | 6 | 0 | 0` to
+   `9 | 9 | 0 | 0 | 0`. Grand **Total** row moves from `72 | 41 | 26 | 4 | 1` to
+   `72 | 47 | 20 | 4 | 1`. A new dated summary paragraph is added recording this change, and the
+   "Note on columns" paragraph is updated to record the BLOCKED (pending implementation) marking
+   now has zero active occurrences.
+5. **No earlier-layer document touched.** `RAISE-TEST-PLAN.md` and `RAISE-ACCEPTANCE-CRITERIA.md`
+   remain untouched by this update, per instruction — this is a formal execution/evidence update
+   to this document only, not a scope/spec correction.
+6. **No other suite required changes.**
+
+**Change Log — v0.13 → v0.14 (2026-09-02, `RAISE-TEST-PLAN.md` v0.11 / `RAISE-ACCEPTANCE-
+CRITERIA.md` v0.11 sync — new test cases added, none executed, no earlier layer touched):**
+
+1. **Root cause / trigger.** `RAISE-ACCEPTANCE-CRITERIA.md` v0.11 (§11) adds six new criteria,
+   `AC-OPS-002-04` through `-09`, for the IT Hardware Assignment Approval Workflow — a
+   category-scoped exception confirmed by PRD §16 Resolved Question 43 (`RAISE-DESIGN.md` §4.2):
+   Check-out of an IT Hardware-category asset now goes through a 4-stage approval workflow
+   (Initiation → Recipient Confirmation → IT Processing → IT Supervisor Approval) before
+   becoming Assigned, instead of the immediate state change tested by `TC-OPS-002-01`. This
+   workflow shape, its state model, its `IT_STAFF`/`IT_MANAGER` role gates at Stages 3–4, and its
+   terminal-rejection rule are all confirmed by business decision — **but none of it has been
+   implemented in the app yet.** `RAISE-TEST-PLAN.md` v0.11 (§7, §8) mirrors this: `TS-OPS-002`'s
+   Blocked Items entry changes from "No" to "Partial — blocked on implementation, not on any
+   further business decision," and the suite is removed from the "no blocked items" group.
+2. **§10 TS-OPS-002 — six new rows added, `TC-OPS-002-04` through `TC-OPS-002-09`,** 1:1 against
+   `AC-OPS-002-04`..`-09`. Each is written with full test steps (the behavior to verify is
+   well-defined) but marked **BLOCKED (pending implementation)** (§1) — a distinct marking from
+   BLOCKED (partial)/BLOCKED (full), reserved for cases where the underlying AC criterion is
+   fully specified and testable as written, but the UI/backend behavior it describes does not
+   exist yet. **No PASS is claimed for any of the six new cases.** A new Status Note in §10
+   records the resolution, its scope, and explicitly excludes the two genuinely still-open Stage
+   2 sub-points (recipient-decline path; e-signature/acknowledgment-text capture) from any test
+   case, per `RAISE-ACCEPTANCE-CRITERIA.md` §11's own NOT TESTABLE YET framing — those remain
+   blocked on a still-open business decision, not on implementation, and are out of this update's
+   scope. `TC-OPS-002-01..03` are unaffected (unchanged, still fully testable, still PASS).
+3. **§1 BLOCKED (pending implementation) definition updated** to record the marking's six new
+   active occurrences (it had zero active occurrences as of v0.13, having been closed the same
+   day it was first introduced for `TC-ASSET-002-03`).
+4. **§19 Test Case Summary** updated: `TS-OPS-002` row moves from `3 | 3 | 0 | 0 | 0` to
+   `9 | 3 | 6 | 0 | 0` (the six new cases enter via the Partially Blocked column, per the header
+   note's clarification that BLOCKED (pending implementation) is grouped there). Grand **Total**
+   row moves from `66 | 41 | 20 | 4 | 1` to `72 | 41 | 26 | 4 | 1`. A new dated summary paragraph
+   is added recording this change, kept alongside (not replacing) the existing 2026-09-01
+   TS-OPS-002 summary paragraph.
+5. **No earlier-layer document touched.** `RAISE-TEST-PLAN.md` and `RAISE-ACCEPTANCE-CRITERIA.md`
+   are treated as already-updated inputs (v0.11 each) for this sync, per instruction — only this
+   document (`RAISE-TEST-CASES.md`) is edited.
+6. **No other suite required changes;** `TS-LOGIN`, `TS-DASH`, `TS-ASSET-001`,
+   `TS-ASSET-001-DETAIL`, `TS-LIFE-001`, `TS-ASSET-002`, `TS-ASSET-003`, `TS-OPS-001`,
+   `TS-MAINT-001`, `TS-WARRANTY-001`, `TS-ORACLE-001`, `TS-ALERT-001`, `TS-AUDIT-001`,
+   `TS-EXEC-001`, `TS-AI-SEARCH-001`, `TS-AI-STATES`, and `TS-AI-DOC-001..004` are unaffected by
+   this sync.
+7. Version citations in the document header updated: AC v0.10 → v0.11, Test Plan v0.10 → v0.11.
 
 **Change Log — v0.12 → v0.13 (2026-09-01, `RAISE-TEST-PLAN.md` v0.10 / `RAISE-ACCEPTANCE-
 CRITERIA.md` v0.10 sync — scope/spec correction only, no new test execution reported):**

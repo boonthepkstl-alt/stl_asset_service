@@ -152,6 +152,13 @@ func (obj *assetController) AssignAsset(c *fiber.Ctx) error {
 		if errors.Is(err, service.ErrAssetNotFound) {
 			return c.Status(http.StatusNotFound).JSON(fiber.Map{"message": "Asset not found"})
 		}
+		if errors.Is(err, service.ErrRequiresHandoverApproval) {
+			return c.Status(http.StatusConflict).JSON(fiber.Map{
+				"message":  "IT Hardware assets require the handover approval workflow",
+				"error":    err.Error(),
+				"nextStep": "POST /assets/:id/handover",
+			})
+		}
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Failed to assign asset",
 			"error":   err.Error(),

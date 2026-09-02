@@ -9,10 +9,13 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-09-02, after `CHECKPOINT-2026-09-02-001` (Docker stack fixed
-to actually exercise the real backend — it was silently running on mock
-data — plus a real Dashboard null-guard bug found doing so; not yet
-shipped via PR, see that checkpoint for status). The
+**As of:** 2026-09-02, after `CHECKPOINT-2026-09-02-004` (IT Hardware
+Assignment Approval Workflow backend implemented and live-verified; not
+yet shipped via PR — see that checkpoint for status). Earlier the same
+day, `CHECKPOINT-2026-09-02-001` fixed the Docker stack to actually
+exercise the real backend — it was silently running on mock data — plus a
+real Dashboard null-guard bug found doing so (also not yet shipped via
+PR). The
 `BASELINE-CHECKPOINT-2026-08-24` scan is still the last
 full live re-verification against `git`/source. F-20 (checkpoint-coverage
 gap) is closed (R-04); F-21 (QR/Barcode invalid-code state) is closed
@@ -237,6 +240,20 @@ Every
 development session should close out per
 [`SESSION-CLOSEOUT-PROTOCOL.md`](SESSION-CLOSEOUT-PROTOCOL.md), which is
 what keeps this section current.
+**IT Hardware Assignment Approval Workflow backend implemented
+(`CHECKPOINT-2026-09-02-004`)** — per PRD §16 Resolved Question 43, a real
+4-stage approval workflow (Initiation → Recipient Confirmation → IT
+Processing → IT Supervisor Approval), scoped only to assigning IT Hardware
+category assets; all other categories and Check-in unaffected. Backend-only
+(new Asset Handover domain in `go-template-main`, 6 new endpoints, new
+`V5__AssetHandovers_Table.sql` migration) — implemented, `go build`/`vet`/
+`test` clean, 24 new unit tests passing, and live-verified end-to-end
+against the real Docker stack (all 4 stages, both rejection points, the
+non-IT-Hardware regression guard). `TC-OPS-002-04..09` now `PASS` (backend/
+API-level scope). **Frontend UI not started** and **nothing is committed
+yet** — see `CHECKPOINT-2026-09-02-004` for the full record, known issues
+(5 documented residual code-review risks), and next step (git branch/
+commit/PR).
 
 ---
 
@@ -244,7 +261,7 @@ what keeps this section current.
 
 The documentation chain (`docs/01-requirements/` … `docs/07-traceability-matrix/`)
 is internally consistent and current — **`RAISE-TRACEABILITY-MATRIX.md` is
-at v1.5: all 14 traceability gaps identified across this project's
+at v1.7: all 15 traceability gaps identified across this project's
 history are closed** and re-verified against real file content, not just
 re-asserted. `docs/11-compliance-review/RAISE-COMPLIANCE-REVIEW.md` v1.0
 (2026-09-01) consolidates the whole chain into a per-requirement verdict:
@@ -260,13 +277,13 @@ paragraph, which is a summary of a summary and can drift.
 
 | Document | Version | Notes |
 |---|---|---|
-| [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) | 0.13 | Check-in/Check-out workflow/permission/holder-model resolved (Resolved Question 42, 2026-09-01) |
-| [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) | 0.11 | §4.2 Custody & Asset Operations resolved (Resolved Question 42, 2026-09-01) |
-| [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) | 0.12 | P-008/P-006 resolved (Resolved Question 42); a v0.11 overreach on F-10 was caught and corrected same-session |
-| [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) | 0.10 | AC-OPS-002-01/-02 rewritten to state the confirmed rule directly (R-19, 2026-09-01) |
-| [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) | 0.10 | TS-OPS-002 fully unblocked, no new execution needed (R-19, 2026-09-01) |
-| [`RAISE-TEST-CASES.md`](../06-test-cases/RAISE-TEST-CASES.md) | 0.13 | 66 test cases; TC-OPS-002-01..03 reclassified fully PASS, no new execution (R-19, 2026-09-01) |
-| [`RAISE-TRACEABILITY-MATRIX.md`](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md) | 1.5 | Gap 14 opened and closed same revision (R-19) — F-10/F-08 explicitly unaffected |
+| [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) | 0.14 | IT Hardware Assignment Approval Workflow — category-scoped exception to RAISE-FR-OPS-002 (Resolved Question 43, 2026-09-02) |
+| [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) | 0.12 | §4.2 extended with the 4-stage IT Hardware handover approval workflow (2026-09-02) |
+| [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) | 0.13 | P-008 updated for the handover approval workflow (2026-09-02) |
+| [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) | 0.11 | AC-OPS-002-04..09 added for the IT Hardware handover approval workflow (Resolved Question 43, 2026-09-02) |
+| [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) | 0.11 | TS-OPS-002 extended to 9 cases for the handover workflow (2026-09-02) |
+| [`RAISE-TEST-CASES.md`](../06-test-cases/RAISE-TEST-CASES.md) | 0.15 | 72 test cases; TC-OPS-002-04..09 now PASS (backend implemented + live-verified, 2026-09-02) |
+| [`RAISE-TRACEABILITY-MATRIX.md`](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md) | 1.7 | Gap 15 (IT Hardware handover approval) closed — `TC-OPS-002-04..09` PASS |
 | [`RAISE-HIGH-LEVEL-ARCHITECTURE.md`](../08-architecture/RAISE-HIGH-LEVEL-ARCHITECTURE.md) | — | As-built, not versioned against PRD chain |
 | [`RAISE-API-DB-SPEC.md`](../09-api-db-spec/RAISE-API-DB-SPEC.md) | — | As-built |
 | [`RAISE-DETAILED-DESIGN.md`](../10-detailed-design/RAISE-DETAILED-DESIGN.md) | — | As-built |
@@ -279,7 +296,7 @@ paragraph, which is a summary of a summary and can drift.
 |---|---|---|
 | Asset Registry | `RAISE-FR-ASSET-001` | ✅ Built, **PASS on all 6 test cases** per formal test execution 2026-08-26/-27 — list/search/row-click/detail-isolation, the Category filter (F-23), and Asset Detail's Financial/Lifecycle sections (F-24) all fixed and verified |
 | Category & Hierarchy | `RAISE-FR-ASSET-002` | ✅ Built, **PASS** per formal test execution 2026-08-26 and 2026-09-01 — category *display* is consistent across screens, and the "By Category" tab inside Asset Management (`/assets`) now nests 2 levels deep: Category → Type → individual assets (**F-27 resolved, R-14**: sub-category = the existing `type` field, no new field/data model). Expanding a category reveals its real Type sub-groups (e.g. "IT Hardware" → Laptop/Monitor/Headphones); expanding a Type reveals its individual assets |
-| Asset Assign / Check-in | `RAISE-FR-ASSET-003` / `RAISE-FR-OPS-002` | ✅ Built, **PASS on all test cases for both requirements** — `RAISE-FR-ASSET-003` (3/3, 2026-08-26/-27, F-26 fixed: History tab renders from the same audit trail `RAISE-FR-AUDIT-001` builds, append-only) and `RAISE-FR-OPS-002` (3/3, 2026-08-28: Assign functions as the app's Check-out affordance, Check-in restores Available, both create Audit Log entries). **F-02 resolved (R-19, 2026-09-01)**: workflow shape (immediate state-change, no approval step), permission gate (any authenticated user), and holder data model (direct Employee link) all confirmed — matched already-built behavior exactly, no code change. Custody History write-path exclusivity (F-10) and general RBAC role content (F-08) remain separately open |
+| Asset Assign / Check-in | `RAISE-FR-ASSET-003` / `RAISE-FR-OPS-002` | 🟡 Built, **backend PASS on all test cases for both requirements incl. the new IT Hardware handover approval workflow; frontend UI for the new workflow not started** — `RAISE-FR-ASSET-003` (3/3, 2026-08-26/-27, F-26 fixed: History tab renders from the same audit trail `RAISE-FR-AUDIT-001` builds, append-only) and `RAISE-FR-OPS-002` (9/9, 2026-09-02: base Assign/Check-in 3/3 as before, plus a new category-scoped 4-stage approval workflow for IT Hardware assets only — `TC-OPS-002-04..09` PASS, backend implemented and live-verified against the real Docker stack, `CHECKPOINT-2026-09-02-004`). **F-02 resolved (R-19, 2026-09-01)**: workflow shape (immediate state-change, no approval step), permission gate (any authenticated user), and holder data model (direct Employee link) all confirmed for the general case — matched already-built behavior exactly, no code change. **PRD §16 Resolved Question 43 (2026-09-02)** then confirmed a real 4-stage approval exception scoped only to IT Hardware category assignment, now implemented backend-only (frontend UI, RBAC backend-enforcement, and Stage 2 e-signature/decline-path remain open — see `CHECKPOINT-2026-09-02-004`). Custody History write-path exclusivity (F-10) and general RBAC role content (F-08) remain separately open. **Nothing from this session is committed yet** |
 | Employee | supports `RAISE-FR-ASSET-003` | ✅ Built |
 | Warranty | `RAISE-FR-WARRANTY-001` | ✅ Built, **full unqualified PASS** per formal test execution 2026-09-01 — field list resolved (F-01), Expiring-threshold configurability resolved (R-17), and the Settings admin-only access gate resolved (R-18, a real defect found and fixed on execution). 3-state Active/Expiring/Expired badge on Assets Registry/Asset Detail, per-Asset-Category configurable threshold (default 90 days) via Settings (P-018), now correctly ADMIN-gated. `TC-WARRANTY-001-01..06` all **PASS** |
 | Maintenance / Ticket | `RAISE-FR-MAINT-001` | ✅ Built, **PASS on all 9 test cases** per formal test execution 2026-08-28 — all 4 stage transitions (submit/approve/reject/dispatch/status-update/complete) work correctly, the record list shows date/cost per record (F-28 fixed), and the stage-progress indicator now visually distinguishes Current from Pending (F-29 fixed). SLA/vendor/cost model remain separately TBD |

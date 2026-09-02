@@ -13,6 +13,20 @@ import (
 
 var ErrAssetNotFound = errors.New("asset not found")
 
+// ErrRequiresHandoverApproval is returned by AssignAsset when the target asset is IT
+// Hardware category -- per RAISE-FR-OPS-002's IT Hardware Assignment Approval Workflow
+// (PRD Sec16 Resolved Question 43), assigning this category requires going through
+// AssetHandoverService.InitiateHandover (POST /assets/:id/handover) instead of the
+// immediate state-change every other category still uses.
+var ErrRequiresHandoverApproval = errors.New("IT Hardware assets require the handover approval workflow")
+
+// CategoryITHardware is the one Asset Category that RAISE-FR-OPS-002's approval-workflow
+// exception applies to -- matches the literal value used throughout frontend/src/data/
+// fixtures/mockData.ts and frontend/src/pages/CreateAsset/index.tsx's category dropdown.
+// No Go-side category enum exists in this codebase (Category is a plain string), so this is
+// compared as a raw literal, same convention as every other status/category string here.
+const CategoryITHardware = "IT Hardware"
+
 // AssetService is RAISE-FR-ASSET-001's business layer -- CreateAsset/AssignAsset mirror the
 // defaulting behavior already established in the frontend's MockAssetRepository
 // (frontend/src/services/asset-repository.ts) exactly, so swapping the frontend's mock for a
@@ -23,6 +37,12 @@ type AssetService interface {
 	CreateAsset(input model.CreateAssetRequest) (model.AssetModel, error)
 	AssignAsset(id string, input model.AssignAssetRequest) (model.AssetModel, error)
 	CheckInAsset(id string) (model.AssetModel, error)
+	// CompleteHandoverAssignment performs the same state-change AssignAsset does (status ->
+	// Assigned, custody fields set), but skips the CategoryITHardware guard -- this is the one
+	// authorized caller of that transition for IT Hardware assets: AssetHandoverService, at
+	// Stage 4 (IT Supervisor Approval) of RAISE-FR-OPS-002's approval workflow. Never call this
+	// directly from a controller.
+	CompleteHandoverAssignment(id string, employeeID string, employeeName string) (model.AssetModel, error)
 }
 
 type assetService struct {
@@ -105,15 +125,44 @@ func (s *assetService) AssignAsset(id string, input model.AssignAssetRequest) (m
 		return model.AssetModel{}, ErrAssetNotFound
 	}
 
+	if asset.Category == CategoryITHardware {
+		log.Infof("AssignAsset rejected - id: %s is IT Hardware, requires handover approval workflow", id)
+		return model.AssetModel{}, ErrRequiresHandoverApproval
+	}
+
+	return s.applyAssignment(id, asset, input.EmployeeID, input.EmployeeName)
+}
+
+// CompleteHandoverAssignment is AssetHandoverService's Stage 4 completion call -- see the
+// AssetService interface doc comment. Intentionally skips the CategoryITHardware guard
+// AssignAsset enforces, since this *is* the authorized path for that category once approved.
+func (s *assetService) CompleteHandoverAssignment(id string, employeeID string, employeeName string) (model.AssetModel, error) {
+	log := logger.GetLogger()
+	log.Infof("CompleteHandoverAssignment - id: %s, employeeId: %s", id, employeeID)
+
+	asset, err := s.repo.GetByID(id)
+	if err != nil {
+		log.Errorf("CompleteHandoverAssignment lookup error: %v", err)
+		return model.AssetModel{}, ErrAssetNotFound
+	}
+
+	return s.applyAssignment(id, asset, employeeID, employeeName)
+}
+
+// applyAssignment is the shared state-change AssignAsset/CompleteHandoverAssignment both use:
+// status -> Assigned, custody fields set, matching MockAssetRepository.assign exactly.
+func (s *assetService) applyAssignment(id string, asset model.AssetModel, employeeID string, employeeName string) (model.AssetModel, error) {
+	log := logger.GetLogger()
+
 	today := time.Now().Format("2006-01-02")
 	asset.Status = "Assigned"
-	asset.AssignedTo = &input.EmployeeName
-	asset.AssignedEmployeeID = &input.EmployeeID
+	asset.AssignedTo = &employeeName
+	asset.AssignedEmployeeID = &employeeID
 	asset.AssignedDate = &today
 
 	updated, err := s.repo.Update(id, asset)
 	if err != nil {
-		log.Errorf("AssignAsset update error: %v", err)
+		log.Errorf("applyAssignment update error: %v", err)
 		return model.AssetModel{}, err
 	}
 	if !updated {

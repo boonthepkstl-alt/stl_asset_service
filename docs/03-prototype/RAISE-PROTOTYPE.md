@@ -2,11 +2,51 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Prototype Specification
-**Version:** 0.12 Draft
+**Version:** 0.13 Draft
 **Status:** Draft for Prototype Review
-**Source:** [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.13 + [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.11 (§23 Prototype Preparation, §9A Document Intelligence Capabilities, §4.2 Custody & Asset Operations — Check-in/Check-out workflow/permission/holder-model resolved, §5.1 Maintenance Domain, §5.2 Warranty Domain — 3-state status model + per-Asset-Category Expiring threshold resolved, §5.3 License Domain, §5.4 Settings Domain, §4.1B Settings / Platform Configuration, §6.4 ReconciliationPage / "Phase 6" Label, §13 Executive Intelligence — corrected to as-built, §16 Security Architecture — MVP Enforcement Level, §16A Other Non-Functional Requirements — Design Backlog, §15/§22 Out of Scope)
+**Source:** [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.14 + [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.12 (§23 Prototype Preparation, §9A Document Intelligence Capabilities, §4.2 Custody & Asset Operations — Check-in/Check-out workflow/permission/holder-model resolved, plus the new "IT Hardware Assignment Approval Workflow" category-scoped exception, §5.1 Maintenance Domain, §5.2 Warranty Domain — 3-state status model + per-Asset-Category Expiring threshold resolved, §5.3 License Domain, §5.4 Settings Domain, §4.1B Settings / Platform Configuration, §6.4 ReconciliationPage / "Phase 6" Label, §13 Executive Intelligence — corrected to as-built, §16 Security Architecture — MVP Enforcement Level, §16A Other Non-Functional Requirements — Design Backlog, §15/§22 Out of Scope)
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
+
+**Version note (2026-09-02 re-sync, v0.12 → v0.13, PRD §16 Resolved Question 43 /
+Design §4.2 "IT Hardware Assignment Approval Workflow"):** `RAISE-PRD.md` §16 Resolved
+Question 43 and `RAISE-DESIGN.md` v0.12 §4.2 jointly confirm a **new, category-scoped
+exception** to the general Check-in/Check-out resolution already reflected in this
+document (Resolved Question 42, v0.11 note below): assigning (Check-out) an asset in
+the **IT Hardware** Asset Category specifically now requires a **4-stage approval
+workflow** — Stage 1 Initiation (IT/Admin selects an employee and clicks Assign — same
+trigger as today), Stage 2 Recipient Confirmation (the assigned employee confirms
+receipt themselves — combining the real paper source form's recipient and
+recipient's-supervisor signatures into one digital step), Stage 3 IT Processing
+(`IT_STAFF`), and Stage 4 IT Supervisor Approval (`IT_MANAGER` — only after this does
+the asset's status become Assigned). Rejection at Stage 3 or Stage 4 returns the asset
+immediately to Available (terminal, no reopening); no recipient-decline path is defined
+at Stage 2. **No new Role is introduced** — Stage 3/4 reuse the existing `IT_STAFF`/
+`IT_MANAGER` roles. **This narrows, and does not reopen or reverse,** the general
+Check-in/Check-out resolution below — Check-in (every category, including IT Hardware)
+and Check-out of every other category remain the existing immediate, no-approval flow,
+unchanged. **[§14 P-008 Check-in / Check-out](#14-p-008-check-in--check-out)** is
+updated to add this category-scoped exception, using **[§15 P-009
+Maintenance](#15-p-009-maintenance)**'s 4-stage stage-progress-indicator pattern as the
+closest existing UI precedent (an explicit design-layer choice, cited narratively, not
+a claim that P-009's exact fields apply here). **Real-world source (context, not itself
+a requirement):** a real Singer Thailand company form, "ใบดำเนินการเกี่ยวกับคอมพิวเตอร์และ
+อุปกรณ์" (IT Equipment Processing Form, Version 2024), supplied by the business user this
+session. **Explicitly not designed here** (per the PRD's and Design's own non-decisions,
+not silently invented): no "recipient's own supervisor" field on Employee, no
+PDF/document generation, no e-signature or legal-acknowledgment-text capture UI for
+Stage 2 (flagged as still-open on P-008, not decided either way), and no change to
+`RAISE-FR-LICENSE-001`. **Cross-referenced as still open, not resolved here:** Design
+§4.2's own flagged open design point — whether Custody History (`RAISE-FR-ASSET-003`)
+is written once (at Stage 4 approval) or at each of the 4 stage transitions — is **not**
+decided by this pass; P-008's Traceability note below states this explicitly.
+**[§27 Prototype Traceability Matrix](#27-prototype-traceability-matrix)**'s P-008 row
+is updated to record this exception. `RAISE-PRD.md` and `RAISE-DESIGN.md` are not
+modified by this pass; no `## NEEDS_PRD_CONFIRMATION` signal is raised for the workflow
+itself (the business decision is already confirmed) — see P-008 below for the one
+point (e-signature/acknowledgment-text) that remains genuinely open, matching how the
+PRD and Design already flag it. See the "Document Status" section's Change Log for full
+detail.
 
 **Version note (2026-09-01 re-sync, v0.10 → v0.11, PRD §16 Resolved Question 42 /
 Design §4.2):** `RAISE-PRD.md` §16 Resolved Question 42 and `RAISE-DESIGN.md` v0.11
@@ -884,7 +924,13 @@ feature is included here beyond what RAISE-FR-OPS-001 requires.
 
 ## Purpose
 
-Support asset custody operations.
+Support asset custody operations. **As of 2026-09-02 (PRD §16 Resolved Question 43;
+Design §4.2 "IT Hardware Assignment Approval Workflow"), Check-out (Assign) of an asset
+in the IT Hardware Asset Category is a category-scoped exception to the general
+immediate-state-change flow below** — see "IT Hardware Assignment Approval Workflow"
+subsection further down. Check-in (every category, including IT Hardware) and Check-out
+of every other category (Mobile, Office Equipment, Infrastructure, Media Equipment)
+are unaffected and remain exactly as described in the general model.
 
 ## Workflow, Permission, and Holder Model — Resolved 2026-09-01 (PRD §16 Resolved Question 42; Design §4.2)
 
@@ -900,6 +946,13 @@ Check-out and confirmed in Check-in is a **direct 1:1 link to an Employee record
 part of this screen. This matches already-built, already-tested behavior in
 `frontend/src/pages/AssetDetail/index.tsx`'s Assign/Check-in flow; no new field,
 workflow step, or role is invented here.
+
+**Narrowed 2026-09-02 for one category only (PRD §16 Resolved Question 43; Design
+§4.2 "IT Hardware Assignment Approval Workflow") — does not reopen or reverse the
+paragraph above.** This general model continues to apply exactly as written to: Check-in
+for every asset category, and Check-out (assignment) for every category **except IT
+Hardware**. Check-out of an **IT Hardware** category asset instead goes through the
+4-stage approval workflow described below before the asset's status becomes Assigned.
 
 ## Check-out
 
@@ -929,15 +982,202 @@ Audit Event
 
 No approval step or exception-handling workflow exists for this operation — resolved
 2026-09-01 (PRD §16 Resolved Question 42; Design §4.2); see the Workflow, Permission,
-and Holder Model note above.
+and Holder Model note above. **This applies to Check-in for every category, and to
+Check-out for every category except IT Hardware** — for IT Hardware Check-out, see the
+subsection immediately below.
+
+## IT Hardware Assignment Approval Workflow — Category-Scoped Exception (confirmed 2026-09-02, PRD §16 Resolved Question 43; Design §4.2)
+
+Applies **only** to Check-out (assigning) an asset whose Asset Category is **IT
+Hardware**. All other categories, and Check-in for every category (including IT
+Hardware), are unaffected and use the general immediate flow above.
+
+**Real-world source (context, not itself a requirement):** a real Singer Thailand
+company form, "ใบดำเนินการเกี่ยวกับคอมพิวเตอร์และอุปกรณ์" (IT Equipment Processing Form,
+Version 2024), requires 4 physical signatures for an IT equipment handover. The
+confirmed digital workflow merges the paper form's recipient signature and the
+recipient's-supervisor signature into a single digital step (Stage 2 below) — a
+deliberate business simplification, not an oversight.
+
+**Trigger (Stage 1 — Initiation):** identical to today's Assign action on this screen —
+an IT/Admin user selects an employee and clicks Assign. The one difference for IT
+Hardware: instead of the asset immediately becoming **Assigned**, it enters a new
+**pending** state (design-layer name: `PENDING_RECIPIENT_CONFIRMATION`) and an
+**Assignment Approval Request** record is created, tracking the asset, the recipient
+employee, the current stage, and a per-stage actor/timestamp (Design §4.2).
+
+```text
+Asset Detail (IT Hardware asset, currently Available)
+────────────────────────────────────────────────────
+[ Assign ▾ ] → Select employee → Confirm
+        ↓
+Status badge changes from "Available" to a pending-approval indicator
+(e.g., "Assignment Pending — Awaiting Recipient Confirmation")
+— NOT "Assigned" yet
+```
+
+**Stage-progress indicator — pattern reused from P-009 Maintenance (design-layer UI
+choice, not a PRD-defined field):** the closest existing MVP precedent for a multi-actor,
+multi-stage approval flow is P-009's Maintenance ticket workflow (submit → approve/
+reject → dispatch → status-update/complete). This screen reuses that same visible
+stage-progress-indicator pattern, relabeled for this workflow's 4 stages:
+
+```text
+┌────────────────────────────────────────────────────────────────────────┐
+│ Assignment Approval Request: AAR-XXXX             Asset: RAISE-XXXX     │
+├────────────────────────────────────────────────────────────────────────┤
+│  Stage 1            Stage 2                Stage 3          Stage 4    │
+│  Initiation      → Recipient             → IT             → IT          │
+│  (IT/Admin)         Confirmation            Processing       Supervisor │
+│                     (Recipient)             (IT_STAFF)       Approval   │
+│                                                                (IT_MGR) │
+│  ●───────────────────○──────────────────────○──────────────○          │
+│  Done               Current                Pending        Pending     │
+└────────────────────────────────────────────────────────────────────────┘
+```
+
+### Per-Stage Screen Concepts
+
+**Stage 1 — Initiation (IT/Admin)**
+
+```text
+Asset Detail — Assign action (unchanged trigger)
+────────────────────────────────────
+Select employee (recipient)
+[ Assign ]
+        ↓
+State: PENDING_RECIPIENT_CONFIRMATION
+Asset status: remains "Available" in data terms, shown to users as a
+pending-approval indicator (not "Assigned")
+```
+
+**Stage 2 — Recipient Confirmation (the assigned employee, own action)**
+
+```text
+My Pending Assignments (Recipient's own view — new UI surface)
+────────────────────────────────────
+Asset | Category | Initiated by | Initiated on
+[ Confirm Receipt ]
+        ↓ (Confirm)
+State: PENDING_IT_PROCESSING
+```
+
+- Combines the paper form's recipient-signature and recipient's-supervisor-signature
+  steps into this one digital action, per explicit business decision — no separate
+  "recipient's supervisor approves" screen or step exists.
+- **No recipient-decline/reject path is defined** — the business was only asked about
+  `IT_STAFF`/`IT_MANAGER` rejecting (Stages 3–4), not about the recipient declining.
+  This prototype does not invent a "Decline" button here; only "Confirm Receipt" is
+  shown. This is a gap, not a design decision — flagged, not silently resolved.
+- **Not designed here (genuinely open, not decided either way):** any e-signature or
+  legal-acknowledgment-text capture UI at this step. The paper form's liability
+  acknowledgment text is real context for *why* an active confirmation step exists, but
+  the PRD and Design explicitly do not decide whether to capture that text or a
+  signature digitally — this remains open, tracked via the PRD's own
+  `## NEEDS_PRD_CONFIRMATION` note. This prototype shows only a plain "Confirm Receipt"
+  action and does not invent any acknowledgment-capture element.
+
+**Stage 3 — IT Processing (`IT_STAFF`)**
+
+```text
+IT Processing Queue (IT_STAFF view — new UI surface)
+────────────────────────────────────
+Asset | Category | Recipient | Confirmed on
+
+Processing action:
+┌──────────────────────────────────────────┐
+│ [ Process / Forward for Approval ]       │
+│ [ Reject ]                                │
+└──────────────────────────────────────────┘
+        ↓ (Process)                ↓ (Reject)
+State: PENDING_IT_SUPERVISOR_APPROVAL   State: REJECTED
+                                          Asset status → Available (terminal)
+```
+
+**Stage 4 — IT Supervisor Approval (`IT_MANAGER`)**
+
+```text
+IT Supervisor Approval Queue (IT_MANAGER view — new UI surface)
+────────────────────────────────────
+Asset | Category | Recipient | Processed by | Processed on
+
+Approval action:
+┌──────────────────────────────────────────┐
+│ [ Approve ]                               │
+│ [ Reject ]                                │
+└──────────────────────────────────────────┘
+        ↓ (Approve)                ↓ (Reject)
+State: ASSIGNED                     State: REJECTED
+Asset status → Assigned             Asset status → Available (terminal)
+(existing status value —
+no new status name introduced)
+```
+
+### Rejection
+
+Rejecting at Stage 3 or Stage 4 (`IT_STAFF` or `IT_MANAGER`) returns the asset
+**immediately to Available** and ends the flow — **terminal, no reopening**, matching
+the existing P-009 Maintenance `REJECTED_BY_DEPT` terminal-state precedent. No path
+reopens a rejected Assignment Approval Request; a new Assign action (Stage 1) must be
+started over.
+
+### Conceptual State Model (mirrors Design §4.2)
+
+```text
+PENDING_RECIPIENT_CONFIRMATION → PENDING_IT_PROCESSING → PENDING_IT_SUPERVISOR_APPROVAL → ASSIGNED
+                    │                        │                          │
+                    └────────────────────────┴──────────── REJECTED (Stage 3/4 only) → Available
+```
+
+### Roles
+
+No new Role is introduced. Stage 3 and Stage 4 reuse the existing `IT_STAFF` and
+`IT_MANAGER` roles already confirmed under `RAISE-NFR-SEC-RBAC-001`. This is the one
+specific case on this screen where Check-out is **not** gated merely by "any
+authenticated user" — for Stage 3/4 actions specifically, a role is required. As with
+P-009, this prototype does not implement real role-gating logic (MVP RBAC enforcement
+is UI-only/client-side per PRD §16 Resolved Question 38) — the Stage 3/4 queue views
+above are shown as concepts only, not an approved permission-enforcement mechanism.
+
+### Open Design Point — Custody History Write Timing (genuinely undecided, not invented here)
+
+**Cross-referenced from Design §4.2's own explicitly-flagged open design point — not
+resolved by this prototype.** Whether `RAISE-FR-ASSET-003` Custody History is written
+only once, at final (Stage 4) approval, or at each of the 4 stage transitions
+individually, is **not defined** by PRD §16 Resolved Question 43 or by Design §4.2. This
+prototype does not invent an answer or show a specific Custody History entry at any
+particular stage transition above — see [§12 P-006 Custody
+History](#12-p-006-custody-history) for the existing Custody History screen, which is
+unaffected by this open point until it is resolved.
+
+### Explicitly Not Designed Here
+
+Per the PRD's and Design's own non-decisions, this prototype does not add:
+
+- A "recipient's own supervisor" relationship/field to the Employee data model.
+- Any PDF/document generation of the physical form.
+- Any e-signature or legal-acknowledgment-text capture UI at Stage 2 (see Stage 2 note
+  above — flagged as open, not decided either way).
+- Any change to `RAISE-FR-LICENSE-001` (License/software-install tracking) — unaffected.
+- Any recipient-decline/reject UI at Stage 2 (see Stage 2 note above).
 
 ## Traceability
 
-`RAISE-FR-OPS-002` — workflow shape (immediate state-change, no approval/exception
-handling), permission gate (any authenticated user), and holder data model (direct
-Employee link) all confirmed 2026-09-01, PRD §16 Resolved Question 42; Design §4.2.
-Not resolved by this confirmation: the general RBAC role/permission-matrix content for
-other domains (PRD §16 Q21–Q22), which remains TBD.
+`RAISE-FR-OPS-002` — general workflow shape (immediate state-change, no approval/
+exception handling), permission gate (any authenticated user), and holder data model
+(direct Employee link) all confirmed 2026-09-01, PRD §16 Resolved Question 42; Design
+§4.2. **Narrowed 2026-09-02 (PRD §16 Resolved Question 43; Design §4.2 "IT Hardware
+Assignment Approval Workflow"):** Check-out (assign) of an IT Hardware category asset
+requires the 4-stage approval workflow above (Initiation → Recipient Confirmation → IT
+Processing → IT Supervisor Approval), gated at Stages 3–4 by `IT_STAFF`/`IT_MANAGER`
+(`RAISE-NFR-SEC-RBAC-001`, no new role) — all other categories and all Check-in
+unaffected. Also traces to `RAISE-FR-ASSET-002` (Asset Category — IT Hardware is the
+category key that triggers the exception) and `RAISE-FR-ASSET-003` (Custody History —
+write-timing across the 4 stages is a still-open design point, not resolved here; see
+above). Not resolved by any of this: the general RBAC role/permission-matrix content for
+other domains (PRD §16 Q21–Q22), which remains TBD; any recipient-decline path at Stage
+2; and the e-signature/acknowledgment-text question at Stage 2 (both flagged above, not
+invented).
 
 ---
 
@@ -2042,7 +2282,7 @@ not be treated as approved MVP functionality.
 | P-005 Category | RAISE-FR-ASSET-002 | Planned — sub-category taxonomy resolved 2026-09-01 (Open Finding F-27): sub-category = existing Asset `type` field, 2-level hierarchy (Category → Type), real 2026-09-01 seeded example shown, not a closed enumerated list |
 | P-006 Custody | RAISE-FR-ASSET-003 | Planned — holder data model resolved 2026-09-01 (PRD §16 Resolved Question 42; Design §4.2): direct 1:1 link to Employee record, no additional organizational relationship model |
 | P-007 QR / Barcode | RAISE-FR-OPS-001 | Planned |
-| P-008 Check-in / Check-out | RAISE-FR-OPS-002 | Planned — workflow shape and permission gate resolved 2026-09-01 (PRD §16 Resolved Question 42; Design §4.2): immediate state-change operation, no approval/exception-handling workflow, any authenticated user |
+| P-008 Check-in / Check-out | RAISE-FR-OPS-002 | Planned — workflow shape and permission gate resolved 2026-09-01 (PRD §16 Resolved Question 42; Design §4.2): immediate state-change operation, no approval/exception-handling workflow, any authenticated user. **Exception, confirmed 2026-09-02 (PRD §16 Resolved Question 43; Design §4.2 "IT Hardware Assignment Approval Workflow"):** Check-out (Assign) of an **IT Hardware** category asset specifically requires a new 4-stage approval workflow (Initiation → Recipient Confirmation → IT Processing (`IT_STAFF`) → IT Supervisor Approval (`IT_MANAGER`), no new role) before status becomes Assigned; rejection at Stage 3/4 returns the asset to Available (terminal). All other categories and all Check-in unaffected. Custody History write-timing across the 4 stages remains a genuinely open design point (Design §4.2), not resolved by this row; e-signature/acknowledgment-text capture at Stage 2 also remains open, not decided |
 | P-009 Maintenance | RAISE-FR-MAINT-001 | Planned — 4-stage workflow shape reflected (confirmed 2026-08-21); SLA/vendor/cost model TBD |
 | P-010 Warranty | RAISE-FR-WARRANTY-001 | Planned — field list resolved 2026-08-29 (PRD §16 Resolved Question 40; Design §5.2): `warrantyExpiry` only for MVP; 7-field draft explicitly rejected. Expiring-threshold shape resolved 2026-09-01 (PRD §16 Resolved Question 41; Design §5.2/§5.4): 3-state Active/Expiring/Expired status, per-Asset-Category configurable threshold (default 90 days, admin-adjustable via P-018 Settings) — implemented end-to-end |
 | P-011 Oracle FA | RAISE-FR-ORACLE-001 | Planned |
@@ -2249,9 +2489,63 @@ The next artifact should be **Acceptance Criteria**, not source code.
 
 ## Document Status
 
-**Version:** 0.12 (correction pass, 2026-09-01, no PRD/Design version change — see
-Change Log below for what was corrected and why; supersedes the v0.11 wording on
-Custody History write-path exclusivity)
+**Version:** 0.13 (2026-09-02, PRD v0.14 §16 Resolved Question 43 / Design v0.12 §4.2
+"IT Hardware Assignment Approval Workflow")
+
+**Change Log — v0.12 → v0.13 (2026-09-02, PRD §16 Resolved Question 43 / Design §4.2,
+per explicit business confirmation, sourced from a real Singer Thailand company IT
+Equipment Processing Form supplied this session):**
+
+1. **Root confirmation.** PRD §16 Resolved Question 43 and Design v0.12 §4.2 "IT
+   Hardware Assignment Approval Workflow" jointly confirm a **new, category-scoped
+   exception** to the general Check-in/Check-out resolution (Resolved Question 42,
+   already reflected in this document since v0.11): Check-out (assigning) an asset in
+   the **IT Hardware** Asset Category now requires a **4-stage approval workflow**
+   (Stage 1 Initiation — IT/Admin selects employee and clicks Assign, same trigger as
+   today; Stage 2 Recipient Confirmation — the assigned employee confirms receipt
+   themselves, combining the paper source form's recipient and recipient's-supervisor
+   signatures into one digital step; Stage 3 IT Processing — `IT_STAFF`; Stage 4 IT
+   Supervisor Approval — `IT_MANAGER`, only after which the asset's status becomes
+   Assigned) before the asset's status becomes Assigned. Rejection at Stage 3 or 4
+   returns the asset immediately to Available (terminal, no reopening). **No new Role is
+   introduced.** This narrows, and does not reopen or reverse, the general resolution —
+   Check-in for every category, and Check-out for every category except IT Hardware,
+   are unaffected.
+2. **[§14 P-008 Check-in / Check-out](#14-p-008-check-in--check-out)** updated: a new
+   "IT Hardware Assignment Approval Workflow — Category-Scoped Exception" subsection
+   added, describing the pending state entered at Stage 1, the recipient's own
+   confirmation UI surface at Stage 2, the `IT_STAFF` processing queue at Stage 3, the
+   `IT_MANAGER` approval queue at Stage 4, a stage-progress indicator reusing P-009
+   Maintenance's closest existing 4-stage UI precedent, the rejection/terminal-state
+   behavior, and the conceptual state model. The Purpose and "Workflow, Permission, and
+   Holder Model" notes at the top of the section are updated to flag the narrowing
+   without altering the general model they describe. The Traceability line is expanded
+   to cite `RAISE-FR-ASSET-002` (Asset Category) and `RAISE-FR-ASSET-003` (Custody
+   History) alongside `RAISE-FR-OPS-002`.
+3. **Genuinely open points are recorded as open, not invented:** (a) whether Custody
+   History is written once (Stage 4 approval) or at each of the 4 stage transitions is
+   explicitly cross-referenced from Design §4.2's own flagged open design point and left
+   undecided; (b) no recipient-decline/reject UI is shown at Stage 2 (the business was
+   only asked about `IT_STAFF`/`IT_MANAGER` rejection); (c) no e-signature or
+   legal-acknowledgment-text capture UI is shown at Stage 2 — this remains open per the
+   PRD's own `## NEEDS_PRD_CONFIRMATION` note and is stated as still-open on P-008, not
+   silently decided either way.
+4. **Explicitly not invented:** no "recipient's own supervisor" field is added to the
+   Employee model; no PDF/document generation; no change to `RAISE-FR-LICENSE-001`.
+5. **§27 Prototype Traceability Matrix** — P-008 row updated with the confirmed
+   category-scoped exception and the two still-open points above.
+6. **No other screen, requirement ID, or row is added, removed, or changed.** P-009
+   Maintenance's own spec is unchanged — it is only cited narratively as the closest UI
+   precedent for P-008's new stage-progress indicator.
+7. **`RAISE-PRD.md` and `RAISE-DESIGN.md` are not modified by this pass.** No
+   `## NEEDS_PRD_CONFIRMATION` signal is raised for the workflow itself (the business
+   decision is already confirmed); the e-signature/acknowledgment-text question is
+   stated as still-open (matching how the PRD and Design already flag it), not raised as
+   a newly-discovered gap.
+8. Header metadata updated: Version bumped to 0.13; PRD Source updated to v0.14
+   (advanced from v0.13); Design Source updated to v0.12 (advanced from v0.11), with the
+   new §4.2 "IT Hardware Assignment Approval Workflow" subsection added to the cited
+   section list.
 
 **Change Log — v0.11 → v0.12 (2026-09-01, correction — reverting an unconfirmed scope
 expansion introduced in v0.11):**

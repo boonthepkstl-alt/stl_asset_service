@@ -25,6 +25,7 @@ so the history of what was once open stays visible.
 | F-07 | Document Intelligence | Confidence thresholds, field lists, matching/merge rules | PRD §16 Q20a (asked, left unanswered) + Resolved Q28/30–32 (scope only) | Open |
 | F-08 | Auth / RBAC | Auth mechanism and role/permission matrix content | PRD §16 Q21–Q22 | Open — enforcement *location* resolved (Q38), role *content* is not |
 | F-09 | Asset field list | Full asset master field list | PRD §16 Q1 | Open |
+| F-35 | Asset code generation scheme | RAISE currently auto-generates `AST-####`; a real company handover form (Singer Thailand "ใบดำเนินการเกี่ยวกับคอมพิวเตอร์และอุปกรณ์" Version 2024) shows the company's actual convention is `<Company><YY><MM><Dept><TypeCode><4-digit running number>` (e.g. `STL2203ITNB0066`, `STL2310ITOT0042`) | User-supplied reference file, 2026-09-02 (`Retail9972 ไทวัสดุ ภูเก็ต.xlsx`) | Open — **partially confirmed 2026-09-02**: the running number is a single continuous company-wide counter (not reset per month/year, not per type). **Still blocked**: the 2-letter type-code table (only `NB`=Notebook and `OT`=? are attested; Monitor/Keyboard/Mouse/UPS/Scanner/Printer/Bag codes unknown) and the department-code table (only `IT` attested) — user explicitly declined to guess these, waiting on the actual list from the company's IT department before implementation |
 
 ## Unresolved (scope question, not yet blocking a build)
 
@@ -53,10 +54,12 @@ so the history of what was once open stays visible.
 
 Found running `TC-OPS-001-*`/`TC-AUDIT-001-*`/`TC-EXEC-001-*`/`TC-ASSET-001-*`/
 `TC-ASSET-001-D-*`/`TC-ASSET-002-*`/`TC-ASSET-003-*` against the real app
-on 2026-08-26, `TC-OPS-002-*`/`TC-MAINT-001-*` on 2026-08-28, and
+on 2026-08-26, `TC-OPS-002-*`/`TC-MAINT-001-*` on 2026-08-28,
 `TC-DASH-*`/`TC-ORACLE-001-*`/`TC-ALERT-001-*`/`TC-AI-SEARCH-001-*`/
-`TC-AI-STATES-*` on 2026-08-29 (see
-`RAISE-TRACEABILITY-MATRIX.md` §3 for the full evidence per row). Unlike
+`TC-AI-STATES-*` on 2026-08-29, and `TC-OPS-002-04` through `TC-OPS-002-09`
+(the new IT Hardware Assignment Approval Workflow, backend/API-level) on
+2026-09-02 against the real running Docker stack (see
+`RAISE-TRACEABILITY-MATRIX.md` §3/§6 Gap 15 for the full evidence). Unlike
 the "Blocking"/"Unresolved" sections above, these are not waiting on a
 business decision — the AC/prototype already says what's required; the
 implementation simply doesn't do it yet.

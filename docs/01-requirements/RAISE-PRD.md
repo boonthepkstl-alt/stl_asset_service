@@ -2,7 +2,7 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document Type:** Product Requirements Document
-**Version:** 0.13 Draft — `RAISE-FR-OPS-002` (Check-in/Check-out) and `RAISE-FR-ASSET-003` (Custody History) resolved: Check-in/Check-out confirmed as an **immediate state-change operation** with **no approval/exception-handling workflow** (deliberately simpler than `RAISE-FR-MAINT-001`'s 4-stage workflow); permission gate confirmed as **any authenticated user, no role restriction**; holder data model confirmed as a **direct 1:1 link to an Employee record** — resolving §16 Open Questions 11–13 / Open Finding F-02 (§16 Resolved Question 42), matching already-built/already-tested `frontend/` behavior. Prior: `RAISE-FR-WARRANTY-001`'s "Expiring" warranty threshold confirmed **per-Asset-Category configurable** (default 90 days for all 5 current categories, admin-adjustable via Settings UI), not a single global constant (§16 Resolved Question 41) — already implemented and verified end-to-end. Prior: warranty field list confirmed **`warrantyExpiry` only for MVP** (§16 Resolved Question 40); target organization confirmed: **RAISE is developed for direct use by Singer (Thailand)** (§16 Resolved Question 39), not a generic platform — a branding/identity fact, no functional scope change. All six `## NEEDS_PRD_CONFIRMATION` items from `docs/template-analysis/FRONTEND-FOUNDATION-BASELINE.md` §4 remain closed out (RAISE-FR-MAINT-001 4-stage workflow business-confirmed; License Management confirmed **Roadmap-only** — `RAISE-FR-LICENSE-001` added; six ESAPS-reference-only pages confirmed **out of scope**; RAISE-AI-RECOMMEND-001 re-confirmed **Roadmap-only, no MVP subset**; Oracle FA Reconciliation "Phase 6" code-comment label confirmed **not a PRD phase** (the separate `ReconciliationPage`↔`RAISE-FR-ORACLE-001` mapping question remains **unanswered** — carried forward as Open Question 10a); `RAISE-NFR-SEC-RBAC-001` MVP enforcement level confirmed **UI-only/client-side, backend deferred to Roadmap**). See Document Status change log at the bottom of this file for full history, including a correction to an earlier inaccurate draft of License Management's scope.
+**Version:** 0.14 Draft — `RAISE-FR-OPS-002` (Check-in/Check-out): a new **category-scoped exception** confirmed 2026-09-02 — assigning (Check-out) an asset in the **IT Hardware** category now requires a **4-stage approval workflow** (Initiation → Recipient Confirmation → IT Processing → IT Supervisor Approval, using existing `IT_STAFF`/`IT_MANAGER` roles, no new role), sourced from a real Singer Thailand company document (IT Equipment Processing Form, Version 2024) and confirmed via multiple `AskUserQuestion` rounds in a live session — this **narrows, and does not reverse,** v0.13's general Check-in/Check-out resolution below, which remains the rule for Check-in (all categories) and Check-out (every category except IT Hardware); see [§16 Resolved Question 43](#16-open-questions), cross-referenced both directions with [§16 Resolved Question 42](#16-open-questions). Prior (v0.13): `RAISE-FR-OPS-002` (Check-in/Check-out) and `RAISE-FR-ASSET-003` (Custody History) resolved: Check-in/Check-out confirmed as an **immediate state-change operation** with **no approval/exception-handling workflow** (deliberately simpler than `RAISE-FR-MAINT-001`'s 4-stage workflow); permission gate confirmed as **any authenticated user, no role restriction**; holder data model confirmed as a **direct 1:1 link to an Employee record** — resolving §16 Open Questions 11–13 / Open Finding F-02 (§16 Resolved Question 42), matching already-built/already-tested `frontend/` behavior. Prior: `RAISE-FR-WARRANTY-001`'s "Expiring" warranty threshold confirmed **per-Asset-Category configurable** (default 90 days for all 5 current categories, admin-adjustable via Settings UI), not a single global constant (§16 Resolved Question 41) — already implemented and verified end-to-end. Prior: warranty field list confirmed **`warrantyExpiry` only for MVP** (§16 Resolved Question 40); target organization confirmed: **RAISE is developed for direct use by Singer (Thailand)** (§16 Resolved Question 39), not a generic platform — a branding/identity fact, no functional scope change. All six `## NEEDS_PRD_CONFIRMATION` items from `docs/template-analysis/FRONTEND-FOUNDATION-BASELINE.md` §4 remain closed out (RAISE-FR-MAINT-001 4-stage workflow business-confirmed; License Management confirmed **Roadmap-only** — `RAISE-FR-LICENSE-001` added; six ESAPS-reference-only pages confirmed **out of scope**; RAISE-AI-RECOMMEND-001 re-confirmed **Roadmap-only, no MVP subset**; Oracle FA Reconciliation "Phase 6" code-comment label confirmed **not a PRD phase** (the separate `ReconciliationPage`↔`RAISE-FR-ORACLE-001` mapping question remains **unanswered** — carried forward as Open Question 10a); `RAISE-NFR-SEC-RBAC-001` MVP enforcement level confirmed **UI-only/client-side, backend deferred to Roadmap**). See Document Status change log at the bottom of this file for full history, including a correction to an earlier inaccurate draft of License Management's scope.
 **Status:** Draft for Requirement Review
 **Primary Source:** RAISE — Enterprise Asset Intelligence Platform — Final(1).pdf, ADT-RAISE Hackathon Pitch Day, 26 July 2026 (via `RAISE-PRD.md` v0.1 draft supplied 2026-08-20)
 **Source of Truth:** RAISE Hackathon Proposal / RAISE business objectives and MVP scope
@@ -189,11 +189,11 @@ determinable from the source are marked **TBD** rather than invented.
 | User/Actor | IT Asset |
 | Priority | P0 |
 | Scope | MVP |
-| Acceptance Criteria | **Resolved 2026-09-01** (business confirmation via direct chat session — see [§16 Resolved Question 42](#16-open-questions)): Check-in/Check-out is an **immediate state-change operation**, not a multi-stage approval/exception-handling workflow — deliberately simpler in shape than `RAISE-FR-MAINT-001`'s 4-stage workflow (confirmed as an intentional difference, not an oversight). **Check-out (Assign):** any authenticated user selects a holder (an Employee record) and confirms; the operation immediately updates the asset's custody state to assigned and links the asset directly to that Employee record (`assignedEmployeeId`/`assignedTo`). **Check-in:** any authenticated user confirms the asset's return; the operation immediately updates the asset's custody state to unassigned. Neither operation requires a separate approval step; there is no exception-handling sub-workflow. **Permission gate:** "appropriate permission" means **any authenticated user, no role restriction** — consistent with the already-confirmed MVP RBAC enforcement level (UI-only/client-side, backend deferred to Roadmap; see [§16 Resolved Question 38](#16-open-questions)). This resolves this specific gate only — it does **not** reopen or answer the broader role/permission-matrix content question (`RAISE-NFR-SEC-RBAC-001`, [§16 Q21–Q22](#16-open-questions)) for other domains. The operation remains traceable (custody-history/audit implications per `RAISE-FR-ASSET-003`/`RAISE-FR-AUDIT-001`). |
-| Dependencies | RAISE-FR-ASSET-003, RAISE-NFR-SEC-RBAC-001 |
-| Source Reference | v0.1 draft §6.5; workflow shape, permission gate, and holder data model confirmed via direct chat session, 2026-09-01, see [§16 Resolved Question 42](#16-open-questions) |
+| Acceptance Criteria | **Resolved 2026-09-01** (business confirmation via direct chat session — see [§16 Resolved Question 42](#16-open-questions)): Check-in/Check-out is an **immediate state-change operation**, not a multi-stage approval/exception-handling workflow — deliberately simpler in shape than `RAISE-FR-MAINT-001`'s 4-stage workflow (confirmed as an intentional difference, not an oversight). **Check-out (Assign):** any authenticated user selects a holder (an Employee record) and confirms; the operation immediately updates the asset's custody state to assigned and links the asset directly to that Employee record (`assignedEmployeeId`/`assignedTo`). **Check-in:** any authenticated user confirms the asset's return; the operation immediately updates the asset's custody state to unassigned. Neither operation requires a separate approval step; there is no exception-handling sub-workflow. **Permission gate:** "appropriate permission" means **any authenticated user, no role restriction** — consistent with the already-confirmed MVP RBAC enforcement level (UI-only/client-side, backend deferred to Roadmap; see [§16 Resolved Question 38](#16-open-questions)). This resolves this specific gate only — it does **not** reopen or answer the broader role/permission-matrix content question (`RAISE-NFR-SEC-RBAC-001`, [§16 Q21–Q22](#16-open-questions)) for other domains. The operation remains traceable (custody-history/audit implications per `RAISE-FR-ASSET-003`/`RAISE-FR-AUDIT-001`). **Category-scoped exception — IT Hardware asset assignment only, resolved 2026-09-02** (business confirmation via direct chat session, real company document supplied — see [§16 Resolved Question 43](#16-open-questions)): the above "immediate state-change, no approval step" behavior **no longer applies unmodified when the asset being assigned (Check-out) is in the IT Hardware category.** For IT Hardware assets only, Check-out (Assign) instead follows a **4-stage approval workflow**: (1) **Initiation** — an IT/Admin user selects an employee and clicks Assign, unchanged from today; the asset enters a new **pending** state instead of immediately becoming Assigned; (2) **Recipient Confirmation** — the assigned employee (recipient) confirms receipt via the app; (3) **IT Processing** — an `IT_STAFF` user processes/handles the handover; (4) **IT Supervisor Approval** — an `IT_MANAGER` user gives final approval, only after which the asset's status becomes **Assigned** (the existing status value, unchanged). **Rejection:** at stage 2, 3, or 4 (`IT_STAFF` or `IT_MANAGER` rejecting — no recipient-decline path is defined), rejecting returns the asset immediately to **Available** and ends the flow; this is **terminal**, matching the existing `RAISE-FR-MAINT-001` ticket `REJECTED_BY_DEPT` terminal-state precedent — no reopening. **Check-in and all non-IT-Hardware-category Check-out remain exactly as resolved in [§16 Resolved Question 42](#16-open-questions)** — this exception is scoped to IT Hardware Check-out (Assign) only. See [§16 Resolved Question 43](#16-open-questions) for full detail, including the real-world source document and explicit non-decisions (no e-signature/acknowledgment-text capture, no new role, no recipient-supervisor relationship field). |
+| Dependencies | RAISE-FR-ASSET-003, RAISE-NFR-SEC-RBAC-001; for the IT Hardware approval exception specifically: RAISE-FR-ASSET-002 (Asset Category, to identify IT Hardware), the existing `Role` model (`IT_STAFF`, `IT_MANAGER` — no new role introduced) |
+| Source Reference | v0.1 draft §6.5; workflow shape, permission gate, and holder data model confirmed via direct chat session, 2026-09-01, see [§16 Resolved Question 42](#16-open-questions); IT Hardware category-scoped 4-stage approval exception confirmed via direct chat session, 2026-09-02, business document supplied (Singer Thailand "ใบดำเนินการเกี่ยวกับคอมพิวเตอร์และอุปกรณ์" / IT Equipment Processing Form, Version 2024, branch Retail9972 ไทวัสดุ ภูเก็ต), see [§16 Resolved Question 43](#16-open-questions) |
 | Traceability ID | RAISE-FR-OPS-002 |
-| Open Question | **Resolved 2026-09-01** — the exact workflow (immediate state-change, no approval/exception-handling stage) and the permission gate (any authenticated user, no role restriction) are now confirmed; see Acceptance Criteria above and [§16 Resolved Question 42](#16-open-questions), resolving [§16 Q11–Q12](#16-open-questions). This does not resolve the broader RBAC role/permission-matrix content question (`RAISE-NFR-SEC-RBAC-001`, [§16 Q21–Q22](#16-open-questions)) for other domains. |
+| Open Question | **Resolved 2026-09-01** — the exact workflow (immediate state-change, no approval/exception-handling stage) and the permission gate (any authenticated user, no role restriction) are now confirmed; see Acceptance Criteria above and [§16 Resolved Question 42](#16-open-questions), resolving [§16 Q11–Q12](#16-open-questions). This does not resolve the broader RBAC role/permission-matrix content question (`RAISE-NFR-SEC-RBAC-001`, [§16 Q21–Q22](#16-open-questions)) for other domains. **Narrowed 2026-09-02 for IT Hardware category only** — see [§16 Resolved Question 43](#16-open-questions): IT Hardware asset assignment now requires a 4-stage approval workflow (Initiation → Recipient Confirmation → IT Processing → IT Supervisor Approval), not the immediate state-change described above; all other categories and all Check-in are unaffected. **Still TBD, raised but not decided by this exception:** whether the legal liability acknowledgment text on the real paper form should be captured digitally (e.g., e-signature or textual acknowledgment) is explicitly **not yet an in-scope feature** — flagged, not decided, see [§16 Resolved Question 43](#16-open-questions) for detail. |
 
 ### RAISE-FR-MAINT-001 — Maintenance
 
@@ -502,6 +502,11 @@ permission" in Check-in/Check-out, RAISE-FR-OPS-002) without defining the role m
 since been resolved to mean "any authenticated user, no role restriction" (see
 [§16 Resolved Question 42](#16-open-questions)) — this settles that one gate only; the
 general role model for other domains (Audit, Alerts, etc.) remains undefined below.
+**Note (2026-09-02):** the above no-role-restriction gate is narrowed for one specific
+case — assigning (Check-out) an asset in the **IT Hardware** category now requires a
+4-stage approval workflow using the existing `IT_STAFF` and `IT_MANAGER` roles (no new
+role introduced); see [§16 Resolved Question 43](#16-open-questions). Check-in and
+Check-out of every other asset category are unaffected.
 
 A later Security Design must cover, at minimum:
 
@@ -1061,7 +1066,93 @@ recorded here explicitly so it is not mistaken for a resolved item alongside 29�
     was invented beyond this confirmation. See `RAISE-FR-OPS-002` and `RAISE-FR-ASSET-003`
     in [§6 Functional Requirements](#6-functional-requirements) and the
     [§17 Requirement Traceability Matrix](#17-requirement-traceability-matrix) rows for
-    the corresponding status update.
+    the corresponding status update. **Narrowed 2026-09-02 for one specific asset
+    category:** this resolution (immediate state-change, no approval step, any
+    authenticated user) remains the correct general rule for Check-in and for Check-out
+    of every category **except IT Hardware** — see
+    [§16 Resolved Question 43](#16-open-questions), which adds a 4-stage approval
+    workflow scoped only to assigning (Check-out) IT Hardware category assets. Read both
+    resolutions together for the complete picture; neither silently overrides the other.
+
+43. **Does the general Check-in/Check-out workflow confirmed in
+    [Resolved Question 42](#16-open-questions) (immediate state-change, no approval
+    step) apply uniformly to every asset category, or does assigning IT Hardware
+    specifically require an approval workflow?** — Raised 2026-09-02, during a live
+    session in which the business user supplied a real company document: Singer
+    Thailand's **"ใบดำเนินการเกี่ยวกับคอมพิวเตอร์และอุปกรณ์"** (IT Equipment Processing
+    Form, Version 2024, branch Retail9972 ไทวัสดุ ภูเก็ต). That form shows a genuine
+    4-signature approval process exists in practice for IT equipment handover — a fact
+    not visible in the source material behind Resolved Question 42. Business confirmed,
+    **2026-09-02, via multiple `AskUserQuestion` rounds in this session:**
+
+    **This narrows [Resolved Question 42](#16-open-questions) for one specific asset
+    category — it does not reopen, reverse, or generally re-litigate it.** General
+    Check-in/Check-out (Mobile, Office Equipment, Infrastructure, Media Equipment — every
+    category except IT Hardware — and **Check-in for every category including IT
+    Hardware**) remains exactly as Resolved Question 42 confirmed: immediate
+    state-change, no approval step, any authenticated user. **This resolution applies
+    ONLY to assigning (Check-out) an asset in the IT Hardware category.**
+
+    **(a) Real-world source (context, not itself a requirement):** the paper form
+    requires 4 signatures for an IT equipment handover — (1) ผู้รับอุปกรณ์ (equipment
+    recipient), (2) ผู้บังคับบัญชา (recipient's supervisor), (3) ผู้ดำเนินการ ฝ่าย
+    เทคโนโลยีสารสนเทศและพัฒนาระบบ (IT Department processor/handler), (4) ผู้บังคับบัญชา
+    ฝ่าย IT (IT Department supervisor) — plus a legal liability acknowledgment text the
+    recipient signs (equipment inspected and correct; recipient agrees to compensate the
+    company for loss/damage from improper use outside normal use).
+
+    **(b) Confirmed digital workflow shape — exactly 3 stages after Initiation (4 stages
+    total), explicitly simplified from the paper form's 4 signatures by the business
+    user:** the user explicitly merged the paper form's signature #1 (recipient) and
+    signature #2 (recipient's supervisor) into a single digital step, reasoning that the
+    recipient employee who will be responsible for/own the equipment is the one who
+    clicks to confirm receipt themselves — there is no separate "recipient's supervisor
+    approves" step in the digital version. The stages are:
+    - **Stage 1 — Initiation:** an IT/Admin user selects an employee and clicks Assign —
+      unchanged from today. The asset enters a new **pending** state instead of
+      immediately becoming Assigned.
+    - **Stage 2 — Recipient Confirmation:** the assigned employee (recipient) confirms
+      receipt of the equipment via the app (own digital action; combines the paper
+      form's signatures #1 and #2, per explicit user decision).
+    - **Stage 3 — IT Processing:** an `IT_STAFF` user processes/handles the handover
+      (maps to the paper form's ผู้ดำเนินการ, signature #3).
+    - **Stage 4 — IT Supervisor Approval:** an `IT_MANAGER` user gives final approval
+      (maps to the paper form's หัวหน้า IT, signature #4) — only after this does the
+      asset's status become **Assigned** (the existing status value, unchanged).
+
+    **(c) Rejection:** at stage 2, 3, or 4 (`IT_STAFF` or `IT_MANAGER` rejecting — the
+    business user was only asked about IT staff/supervisor rejection, not about the
+    recipient declining, so **no recipient-decline/reject path is defined**), rejecting
+    returns the asset immediately to **Available** and ends the flow — **terminal, no
+    reopening**, matching the existing `RAISE-FR-MAINT-001` maintenance-ticket
+    `REJECTED_BY_DEPT` terminal-state precedent.
+
+    **(d) Roles:** reuses the existing 4 confirmed Roles (`ADMIN`, `IT_MANAGER`,
+    `IT_STAFF`, `EMPLOYEE` — from [Resolved Question 42](#16-open-questions)'s own Q12
+    resolution and `frontend/src/types/auth.ts`) — **no new role is introduced.** IT
+    Staff = `IT_STAFF`; IT Supervisor = `IT_MANAGER` (verified against
+    `frontend/src/types/auth.ts`'s `Role` type, 2026-09-02 — the exact role name is
+    `IT_MANAGER`, not a generic "MANAGER").
+
+    **Explicitly NOT part of this decision (not to be inferred or invented):**
+    - No "recipient's own supervisor" relationship/field is added to the Employee model
+      — the user explicitly rejected that option in favor of merging stages 1+2.
+    - No PDF/document generation of the physical form is in scope — raised as an option
+      in the same session and explicitly not chosen; a separate, not-yet-started track.
+    - No change to the asset-code generation scheme — unrelated, separate open item
+      (F-35 in `OPEN-FINDINGS.md`, blocked pending IT department input); untouched here.
+    - The legal liability acknowledgment text is real context motivating *why* the
+      recipient must actively confirm (not just a passive status flip), but capturing
+      the literal legal text or an e-signature is **not itself a confirmed in-scope
+      feature** — flagged via `## NEEDS_PRD_CONFIRMATION` for a future round, not
+      silently decided either way.
+
+    Updated in §6 (`RAISE-FR-OPS-002` Acceptance Criteria/Dependencies/Source
+    Reference/Open Question — category-scoped exception added without rewriting the
+    general behavior [Resolved Question 42](#16-open-questions) already confirmed), §16
+    (this entry; [Resolved Question 42](#16-open-questions) cross-referenced forward),
+    and the [§17 Requirement Traceability Matrix](#17-requirement-traceability-matrix)
+    row for `RAISE-FR-OPS-002`.
 
 ---
 
@@ -1073,7 +1164,7 @@ recorded here explicitly so it is not mistaken for a resolved item alongside 29�
 | RAISE-FR-ASSET-002 | Category & Hierarchy | MVP | P0 | APPROVED | v0.1 §6.2 |
 | RAISE-FR-ASSET-003 | Custody History | MVP | P0 | APPROVED — holder data model confirmed 2026-09-01: direct 1:1 link to Employee record | v0.1 §6.3; holder data model confirmed 2026-09-01 (§16 Resolved Question 42) |
 | RAISE-FR-OPS-001 | QR / Barcode | MVP | P0 | APPROVED | v0.1 §6.4 |
-| RAISE-FR-OPS-002 | Check-in / Check-out | MVP | P0 | APPROVED — workflow shape and permission gate confirmed 2026-09-01: immediate state-change, any authenticated user | v0.1 §6.5; workflow/permission confirmed 2026-09-01 (§16 Resolved Question 42) |
+| RAISE-FR-OPS-002 | Check-in / Check-out | MVP | P0 | APPROVED — general workflow shape and permission gate confirmed 2026-09-01: immediate state-change, any authenticated user (§16 Resolved Question 42); **narrowed 2026-09-02: IT Hardware category Check-out (Assign) only now requires a 4-stage approval workflow (Initiation → Recipient Confirmation → IT Processing → IT Supervisor Approval) — all other categories and all Check-in unaffected (§16 Resolved Question 43)** | v0.1 §6.5; workflow/permission confirmed 2026-09-01 (§16 Resolved Question 42); IT Hardware approval-workflow exception confirmed 2026-09-02 (§16 Resolved Question 43) |
 | RAISE-FR-MAINT-001 | Maintenance | MVP | P0 | Workflow shape confirmed; SLA/vendor/cost model still TBD | v0.1 §6.6; workflow shape confirmed 2026-08-21 |
 | RAISE-FR-WARRANTY-001 | Warranty | MVP | P0 | APPROVED — field list confirmed 2026-08-29: `warrantyExpiry` only; Expiring-threshold per-Asset-Category configurability (default 90 days, admin Settings UI) confirmed 2026-09-01 and implemented | v0.1 §6.7; field list confirmed 2026-08-29 (§16 Resolved Question 40); Expiring-threshold configurability confirmed 2026-09-01 (§16 Resolved Question 41) |
 | RAISE-FR-LICENSE-001 | Software / SaaS License Management | Roadmap | Not MVP-confirmed | ROADMAP — identity/scope confirmed 2026-08-21; field model/alert rules/vendor-cost tracking TBD | New requirement, not in v0.1 draft; added 2026-08-21, confirmed Roadmap-only |
@@ -1149,6 +1240,13 @@ Per instructions, ambiguity and gaps are surfaced here, not silently resolved.
   Check-in/Check-out's own workflow shape (immediate state-change), the permission gate,
   and the holder data model — it did **not** address this separate question of whether
   other events beyond Check-in/Check-out also write Custody History; that remains open.
+  **Note (2026-09-02):** [Resolved Question 43](#16-open-questions) narrows Resolved
+  Question 42 for one category only — assigning IT Hardware now goes through a 4-stage
+  approval workflow (pending → confirmed → processed → approved) before custody
+  actually changes, rather than an immediate state-change. Whether/how each of those
+  four stages individually writes to Custody History (e.g., only on final approval, or
+  at each stage transition) is **not defined by Resolved Question 43** and is a new,
+  separate open point for downstream design.
 - **RAISE-FR-ALERT-001 (Alerts)** overlaps conceptually with the warranty-expiry example
   used to illustrate both Alerts (§6.9 in v0.1) and AI Recommendation (§7.6 in v0.1 — the
   "which notebooks expire in 90 days" example). The source uses one business scenario to
@@ -1243,6 +1341,18 @@ Per instructions, ambiguity and gaps are surfaced here, not silently resolved.
   inferred, not stated outright.
 - Whether `frontend/`'s `ReconciliationPage` placeholder satisfies `RAISE-FR-ORACLE-001`
   or needs a separate requirement ID — see [Open Question 10a](#16-open-questions).
+- **`## NEEDS_PRD_CONFIRMATION`** (raised 2026-09-02, [§16 Resolved Question 43]
+  (#16-open-questions)): should RAISE capture the legal liability acknowledgment text
+  (or an e-signature) that the recipient signs on the real IT Equipment Processing Form,
+  as part of the new IT Hardware assignment approval workflow's Stage 2 (Recipient
+  Confirmation)? This was raised as real-world context motivating *why* the recipient
+  must actively confirm, but capturing the text/e-signature itself was explicitly not
+  decided either way — needs a dedicated future business confirmation round.
+- At which of the new IT Hardware approval workflow's 4 stages (Initiation, Recipient
+  Confirmation, IT Processing, IT Supervisor Approval) does `RAISE-FR-ASSET-003` Custody
+  History actually get written — only at final approval, or at each stage transition?
+  Not defined by [§16 Resolved Question 43](#16-open-questions); a design-phase input
+  requirement for `RAISE-DESIGN.md`.
 
 ### Gaps Between Hackathon Proposal and Proposed PRD
 
@@ -1303,9 +1413,67 @@ implements the requirement; Test Case passes; Requirement Compliance Review pass
 
 ## Document Status
 
-**Version:** 0.13 (Draft for Requirement Review)
+**Version:** 0.14 (Draft for Requirement Review)
 **Status:** Draft for Requirement Review
 **Primary Source:** RAISE — Enterprise Asset Intelligence Platform — Final(1).pdf, ADT-RAISE Hackathon Pitch Day, 26 July 2026
+
+**Change Log — v0.13 → v0.14 (2026-09-02, business confirmation via direct chat
+conversation, live session, multiple `AskUserQuestion` rounds):**
+
+1. **`RAISE-FR-OPS-002` (Check-in/Check-out): new IT Hardware category-scoped 4-stage
+   approval-workflow exception confirmed** (new [§16 Resolved Question 43]
+   (#16-open-questions), which **narrows — does not reopen or reverse —**
+   [§16 Resolved Question 42](#16-open-questions)). The business user supplied a real
+   company document, Singer Thailand's **"ใบดำเนินการเกี่ยวกับคอมพิวเตอร์และอุปกรณ์"**
+   (IT Equipment Processing Form, Version 2024, branch Retail9972 ไทวัสดุ ภูเก็ต),
+   showing a genuine 4-signature approval process exists in practice for IT equipment
+   handover. Confirmed: **this applies ONLY to assigning (Check-out) assets in the IT
+   Hardware category** — Check-in (all categories) and Check-out of every other
+   category (Mobile, Office Equipment, Infrastructure, Media Equipment) remain exactly
+   as [Resolved Question 42](#16-open-questions) confirmed (immediate state-change, no
+   approval step, any authenticated user). For IT Hardware Check-out specifically, the
+   digital workflow is **4 stages** — (1) Initiation (IT/Admin selects employee and
+   clicks Assign, unchanged; asset enters a new pending state), (2) Recipient
+   Confirmation (assigned employee confirms receipt — explicitly merges the paper
+   form's signatures #1 recipient + #2 recipient's-supervisor into one digital step, per
+   explicit user decision), (3) IT Processing (`IT_STAFF` processes the handover), (4)
+   IT Supervisor Approval (`IT_MANAGER` gives final approval — only then does status
+   become Assigned). **Rejection** at stage 2/3/4 by `IT_STAFF` or `IT_MANAGER` returns
+   the asset immediately to Available and is **terminal** (matching
+   `RAISE-FR-MAINT-001`'s `REJECTED_BY_DEPT` precedent) — no recipient-decline path is
+   defined. **Reuses existing roles only** (`ADMIN`, `IT_MANAGER`, `IT_STAFF`,
+   `EMPLOYEE` — verified against `frontend/src/types/auth.ts`'s `Role` type; no new role
+   introduced). **Explicitly not decided by this change:** no recipient's-own-supervisor
+   relationship/field on the Employee model (option explicitly rejected by the user in
+   favor of merging stages 1+2); no physical-form PDF/document generation (raised as an
+   option, not chosen — separate, not-yet-started track); no change to the asset-code
+   generation scheme (unrelated, separate item F-35 in `OPEN-FINDINGS.md`); capturing the
+   real form's legal liability acknowledgment text/e-signature is **not** an in-scope
+   feature yet — flagged via a new `## NEEDS_PRD_CONFIRMATION` note in the
+   Pre-Finalization Quality Pass rather than decided either way. Updated in §6
+   (`RAISE-FR-OPS-002` Acceptance Criteria/Dependencies/Source Reference/Open Question),
+   §11 (Security & RBAC note), §16 (new Resolved Question 43;
+   [Resolved Question 42](#16-open-questions) cross-referenced forward), §17
+   (Traceability Matrix row for `RAISE-FR-OPS-002`), and the Pre-Finalization Quality
+   Pass (Duplicated/Overlapping Requirements note on Custody History write-timing across
+   the 4 stages; two new Requirements Needing Business Confirmation bullets).
+2. **Impact on downstream documents:** `RAISE-DESIGN.md`, `RAISE-PROTOTYPE.md`,
+   `RAISE-ACCEPTANCE-CRITERIA.md`, `RAISE-TEST-PLAN.md`, `RAISE-TEST-CASES.md`, and
+   `RAISE-TRACEABILITY-MATRIX.md` currently reflect only [Resolved Question 42]
+   (#16-open-questions)'s general (non-category-scoped) Check-in/Check-out behavior and
+   must be checked and updated for the new IT Hardware 4-stage approval-workflow
+   exception (new pending/confirmed/processed/approved states, new
+   `IT_STAFF`/`IT_MANAGER`-gated screens/actions, rejection-to-Available terminal path).
+   `OPEN-FINDINGS.md` should be checked for whether this should be logged as a new
+   finding or cross-referenced from the existing F-02 entry (the general
+   Check-in/Check-out finding this narrows). **This PRD update was scoped to
+   `RAISE-PRD.md` only** per this task's explicit boundary — the downstream documents
+   above were not edited by this change. Downstream synchronization (`/sync-design`,
+   `/sync-prototype`, `/sync-acceptance-criteria`, `/sync-test-plan`,
+   `/sync-test-cases`, `/sync-traceability-matrix`) should be run in a subsequent pass,
+   with particular attention to the two new open design-phase questions raised in the
+   Pre-Finalization Quality Pass (Custody-History write-timing across the 4 stages;
+   whether to capture the legal liability acknowledgment text/e-signature).
 
 **Change Log — v0.12 → v0.13 (2026-09-01, business confirmation via direct chat
 conversation):**

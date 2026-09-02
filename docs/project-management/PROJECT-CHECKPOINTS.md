@@ -2758,6 +2758,61 @@ Commit: pending — predicted next PR after #70 (verify via `gh pr list` before 
 
 ---
 
+## CHECKPOINT-2026-09-02-004
+
+**Phase:** Phase 3 — Asset Management
+**Feature:** IT Hardware Assignment Approval Workflow (`RAISE-FR-OPS-002` category-scoped exception, PRD §16 Resolved Question 43)
+**Task:** Implement the backend for a real 4-stage approval workflow, scoped only to assigning (Check-out) IT Hardware category assets, confirmed this session from a user-supplied real company equipment handover form (Singer Thailand "ใบดำเนินการเกี่ยวกับคอมพิวเตอร์และอุปกรณ์", Version 2024)
+
+**What was implemented:** A new Asset Handover domain in `go-template-main`: Stage 1 Initiation (IT/Admin clicks Assign on an IT Hardware asset → asset enters pending state instead of immediately "Assigned"), Stage 2 Recipient Confirmation (the assigned employee confirms receipt — merges the paper form's recipient + recipient-supervisor signatures into one digital step, a deliberate business simplification), Stage 3 IT Processing (an IT_STAFF-role user processes it), Stage 4 IT Supervisor Approval (an IT_MANAGER-role user gives final approval — only this stage flips the asset's status to the existing "Assigned" value). Rejection is possible only at Stage 3 or Stage 4, returns the asset immediately to "Available", and is terminal (no reopening). No new Role was introduced (reuses IT_STAFF/IT_MANAGER). All other categories and all Check-in are unaffected — the old `POST /assets/:id/assign` immediate-assign path still works unchanged for non-IT-Hardware assets.
+**What was modified:** `controller/assetController.go` (`AssignAsset` now returns HTTP 409 + a `nextStep` hint for IT Hardware assets instead of assigning immediately); `router/sampleRouter.go` (6 new routes wired); `service/assetService.go` (new `ErrRequiresHandoverApproval` sentinel error, `CategoryITHardware` constant, `CompleteHandoverAssignment` method, `applyAssignment` extracted as a shared helper); `service/dashboardService_test.go` (the `fakeAssetService` test double updated for the widened service interface).
+**What was fixed:** During a self-initiated code-review pass (5 parallel reviewer agents, 8 finder angles, 8 candidates found), 3 issues were fixed and re-verified live: (1) `InitiateHandover` now validates `employeeId`/`employeeName` are non-empty (HTTP 400 if missing) — closes a gap where an empty recipient could bypass Stage 2's identity check; (2) handover code sequence numbers are now correctly year-scoped (`AHO-<year>-<seq>` resets each year) via a new `CountByCodePrefix` repository method, replacing a full List()-fetch-and-discard pattern; (3) HTTP status mapping fixed so the new validation error returns 400, not 500.
+**What was added:** `model/assetHandoverModel.go`, `repository/assetHandoverPGRepository.go`, `repository/assetHandoverRepository.go`, `service/assetHandoverService.go`, `controller/assetHandoverController.go`, `sql/pg/V5__AssetHandovers_Table.sql`, `service/assetHandoverService_test.go` (24 test functions). 6 new routes: `GET /handovers`, `GET /handovers/:code`, `POST /assets/:id/handover`, `POST /handovers/:code/confirm`, `POST /handovers/:code/process`, `POST /handovers/:code/decision`.
+**What was removed:** None.
+
+**Files changed:** 13 total — 7 new (`model/assetHandoverModel.go`, `repository/assetHandoverPGRepository.go`, `repository/assetHandoverRepository.go`, `service/assetHandoverService.go`, `controller/assetHandoverController.go`, `sql/pg/V5__AssetHandovers_Table.sql`, `service/assetHandoverService_test.go`) + 4 modified Go files (`controller/assetController.go`, `router/sampleRouter.go`, `service/assetService.go`, `service/dashboardService_test.go`) + 2 modified docs-adjacent files already synced by an earlier step this session (`docs/project-management/OPEN-FINDINGS.md`, plus the 7-file PRD→Traceability-Matrix chain — see that step's own record, not restated here).
+**Database changes:** New `sql/pg/V5__AssetHandovers_Table.sql` migration (new `asset_handovers` table). Applied live to the running Docker `db` container this session for verification.
+**API changes:** `POST /assets/:id/assign` now returns `409 Conflict` + a `nextStep` hint for IT Hardware category assets (was: immediate 200 assign) — a real, intentional breaking-for-that-category change to existing behavior, not additive-only. 6 new endpoints listed above.
+**Frontend changes:** None — explicitly out of scope for this task; frontend UI for this workflow has not been started.
+
+**Tests:**
+- Unit Test: `service/assetHandoverService_test.go`, 24 new test functions — all 4 stages, both rejection points, the non-IT-Hardware regression guard, the empty-recipient validation, and the year-scoped sequence numbering
+- Integration Test: None (Go module has no separate integration-test tier)
+- E2E Test: None automated — live-verified manually via `curl` against the real Docker stack (see Validation)
+
+**Validation:**
+- Build: Pass — `go build ./...` (re-confirmed this close-out, exit 0)
+- Lint: N/A (Go — `gofmt` confirmed clean on every new/edited file)
+- Test: Pass — `go vet ./...` and `go test ./...` (re-confirmed this close-out, exit 0, full module including `singer/go-template-new-2026-06/{controller,middleware,service}`)
+- Type Check: N/A (Go)
+- Live E2E (Docker stack, `stl_asset_pj-backend-1`/`stl_asset_pj-db-1`): applied the V5 migration to the running DB, rebuilt/restarted the backend container, then via `curl`: confirmed old `POST /assets/:id/assign` returns 409 + `nextStep` for IT Hardware assets; confirmed all 4 stages transition correctly (asset stays "Available" through stages 1–3, flips to "Assigned" only at Stage 4 approval); confirmed rejection at Stage 3 and Stage 4 both return the asset to "Available" and are terminal (a second decision on an already-rejected handover is correctly rejected); confirmed `GET /handovers` list + status filter works; confirmed non-IT-Hardware assets (e.g. Office Equipment) still assign immediately with no 409 (regression guard).
+
+**Requirement Traceability:**
+PRD: `RAISE-FR-OPS-002` (§16 Resolved Question 43, v0.14)
+Design: `RAISE-DESIGN.md` §4.2, v0.12
+Acceptance Criteria: `AC-OPS-002-04`..`-09`, `RAISE-ACCEPTANCE-CRITERIA.md` v0.11
+Test Case: `TC-OPS-002-04`..`-09`, `RAISE-TEST-CASES.md` v0.15 — moved from `BLOCKED (pending implementation)` to `PASS` (backend/API-level scope; no frontend UI yet; RBAC not backend-enforced, per this project's existing MVP-wide convention). `TS-OPS-002` row now 9/9/0/0/0 (was 9/3/6/0/0). `RAISE-TRACEABILITY-MATRIX.md` v1.7 — Gap 15 closed.
+
+**Git:**
+Branch: none yet — all changes below are uncommitted in the working tree as of this checkpoint.
+Commit: pending — not yet created, not yet pushed, no PR opened.
+
+**Known Issues:**
+- 5 code-review findings were identified but deliberately **not** fixed this session, documented as residual risk with inline code comments in `service/assetHandoverService.go`: (1) a count-then-insert race condition on the sequence number — the same unaddressed pattern already present in `TicketService.CreateTicket`, needs a DB sequence or `SELECT ... FOR UPDATE`, larger change than this pass's scope; (2) a non-atomic two-write sequence between the asset-status flip and the handover-record update at Stage 4 approval — no shared-transaction mechanism exists anywhere in this codebase, same best-effort trade-off already documented on the audit-log write elsewhere; (3) a TOCTOU gap where Stage 4 approval doesn't re-validate the asset's live status before flipping it (plausible, not confirmed); (4) `GetAsset` errors always mapped to a 404 rather than distinguishing real failures — matches `AssignAsset`'s existing pre-established convention, no change needed; (5) a hardcoded route-string coupling in the 409 response's `nextStep` hint (low severity, cosmetic).
+- RBAC/role enforcement for IT_STAFF/IT_MANAGER is not backend-enforced on the new endpoints — consistent with this codebase's pre-existing, PRD-confirmed, project-wide MVP decision (RBAC is UI-only/client-side for MVP, PRD §16 Resolved Question 38), not a gap specific to this feature, but a real limitation of what "Approve" currently means (anyone with a valid JWT can call these endpoints today).
+- Stage 2 e-signature/acknowledgment-text capture is genuinely undecided — the user was asked this exact question this session and explicitly dismissed it. Must not be decided, invented, or treated as resolved by any future session without new explicit user instruction.
+- Stage 2 recipient-decline path was never asked and is not implemented.
+- Custody History write-timing across the 4 stages: `RAISE-DESIGN.md` §4.2 itself flags this as an open design point, not resolved by this implementation.
+
+**Remaining Work:**
+- Frontend UI for this workflow does not exist at all yet — no "My Pending Assignments" surface, no IT_STAFF queue, no IT_MANAGER queue, no stage-progress indicator. This is a distinct, sizeable, not-yet-started follow-up, comparable in scope to the whole Maintenance domain's frontend work.
+- Git branch/commit/push/PR for all of this session's changes (13 files, doc-chain + backend) — nothing is committed yet.
+- The open business questions above (Stage 2 e-signature, Stage 2 decline path, Custody History write-timing) remain open pending explicit user direction.
+
+**Next Step:** Create a git branch, commit these changes, push, and open a PR — then wait for the user's explicit "merge PR #N" instruction before merging. Frontend UI work is the next substantive follow-up task after that, but is out of scope for this checkpoint.
+
+---
+
 ## Level 2 — Feature Checkpoints
 
 ### FEATURE-CHECKPOINT-project-tracking-governance

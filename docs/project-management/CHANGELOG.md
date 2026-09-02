@@ -14,6 +14,21 @@ changes user-visible or API-visible behavior. Pure documentation-sync PRs
 
 ---
 
+## 2026-09-02
+
+### Added
+- **IT Hardware Assignment Approval Workflow (backend only)** — assigning
+  an asset in the **IT Hardware** category no longer happens instantly.
+  It now goes through 4 steps: the assigned employee must confirm they
+  received it, then IT processes the handover, then an IT supervisor
+  gives final approval before the asset shows as Assigned. If IT or the
+  supervisor rejects it at their step, the asset immediately goes back to
+  Available. Assigning every other category of asset, and all Check-in,
+  works exactly as before — unaffected. **No screen exists yet for
+  employees, IT staff, or IT supervisors to actually act on this
+  workflow** — this release is API-only; a UI for it is a separate,
+  upcoming change.
+
 ## 2026-09-01
 
 ### Added

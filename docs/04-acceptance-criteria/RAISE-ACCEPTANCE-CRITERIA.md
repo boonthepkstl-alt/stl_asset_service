@@ -2,9 +2,9 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Acceptance Criteria
-**Version:** 0.10 Draft
+**Version:** 0.11 Draft
 **Status:** Draft for Acceptance Review
-**Source:** [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.12 §27 (Prototype Traceability Matrix) + §5, §7–§23, §23A, §25A (per-screen specs / P-018 Settings / AI Scope Boundary / NFR Backlog Prototype Note), cross-checked against [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.13 and [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.11
+**Source:** [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.13 §27 (Prototype Traceability Matrix) + §5, §7–§23, §23A, §25A (per-screen specs / P-018 Settings / AI Scope Boundary / NFR Backlog Prototype Note) + §14's new "IT Hardware Assignment Approval Workflow — Category-Scoped Exception" subsection, cross-checked against [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.14 and [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.12
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
 
@@ -56,7 +56,7 @@ detail is "TBD" or "conceptual," the corresponding criterion is marked
 | [AC-ASSET-002](#8-ac-asset-002--p-005-category--hierarchy) | P-005 | RAISE-FR-ASSET-002 | Testable (resolved 2026-09-01, Open Finding F-27) |
 | [AC-ASSET-003](#9-ac-asset-003--p-006-custody-history) | P-006 | RAISE-FR-ASSET-003 | Partially testable |
 | [AC-OPS-001](#10-ac-ops-001--p-007-qr--barcode-scan) | P-007 | RAISE-FR-OPS-001 | Testable |
-| [AC-OPS-002](#11-ac-ops-002--p-008-check-in--check-out) | P-008 | RAISE-FR-OPS-002 | Testable (resolved 2026-09-01, PRD §16 Resolved Question 42 — workflow shape and permission gate confirmed; general RBAC role/permission content for other domains remains NOT TESTABLE YET, PRD §16 Q22) |
+| [AC-OPS-002](#11-ac-ops-002--p-008-check-in--check-out) | P-008 | RAISE-FR-OPS-002 | Testable (resolved 2026-09-01, PRD §16 Resolved Question 42 — general workflow shape and permission gate confirmed for non-IT-Hardware Check-out and all Check-in; **expanded 2026-09-02, PRD §16 Resolved Question 43** — IT Hardware-category Check-out's 4-stage approval workflow now also testable at the confirmed stage-transition level. Two Stage 2 sub-points — recipient-decline path and e-signature/acknowledgment-text capture — remain **NOT TESTABLE YET**, genuinely undecided per Prototype/Design's own open-question framing. General RBAC role/permission content for other domains remains NOT TESTABLE YET, PRD §16 Q22) |
 | [AC-MAINT-001](#12-ac-maint-001--p-009-maintenance) | P-009 | RAISE-FR-MAINT-001 | Partially testable (workflow shape testable; SLA/vendor/cost NOT TESTABLE YET) |
 | [AC-WARRANTY-001](#13-ac-warranty-001--p-010-warranty--p-018-settings) | P-010, P-018 | RAISE-FR-WARRANTY-001 | Testable (field list resolved 2026-08-29; per-category configurable threshold resolved 2026-09-01) |
 | [AC-ORACLE-001](#14-ac-oracle-001--p-011-oracle-fa--financial-view) | P-011 | RAISE-FR-ORACLE-001 | Partially testable |
@@ -423,6 +423,99 @@ mechanism that writes Custody History (AC-ASSET-003), or whether other events (e
 direct reassignment) also do, is a separate, still-open question — tracked as [Open
 Finding F-10](../project-management/OPEN-FINDINGS.md) — and is unaffected by this
 resolution.
+
+### Background — IT Hardware Assignment Approval Workflow (category-scoped exception, confirmed 2026-09-02, PRD §16 Resolved Question 43; Design §4.2)
+
+The criteria immediately above (AC-OPS-002-01/-02/-03) describe the **general** rule
+and continue to apply exactly as written to **Check-in for every Asset Category**, and
+to **Check-out (assignment) for every Asset Category except IT Hardware**. `RAISE-PRD.md`
+§16 Resolved Question 43 (`RAISE-DESIGN.md` §4.2 "IT Hardware Assignment Approval
+Workflow"; `RAISE-PROTOTYPE.md` §14 P-008, v0.13, new "IT Hardware Assignment Approval
+Workflow — Category-Scoped Exception" subsection) confirms a **narrow, category-scoped
+exception**: Check-out of an asset whose Asset Category is **IT Hardware** instead goes
+through a new 4-stage approval workflow (Initiation → Recipient Confirmation → IT
+Processing → IT Supervisor Approval) before the asset's status becomes **Assigned**.
+This mirrors the same distinction AC-MAINT-001's background note (§12 below) draws
+between confirmed workflow-shape content and still-TBD SLA/vendor/cost content: the
+4-stage shape, its state model, its role gates at Stages 3–4 (`IT_STAFF`/`IT_MANAGER`,
+no new Role), and the terminal-rejection rule are all **confirmed and testable**
+(criteria AC-OPS-002-04 through -09 below); two specific Stage 2 sub-points — a
+recipient-decline path, and e-signature/acknowledgment-text capture — are **not**
+decided by this confirmation and remain marked NOT TESTABLE YET, not invented here.
+
+No other asset category, and no Check-in for any category (including IT Hardware), is
+affected by this exception — AC-OPS-002-09 below is a regression-guard criterion
+confirming this explicitly.
+
+- **AC-OPS-002-04 (Stage 1 — Initiation, pending state, not immediate Assigned)** —
+  Given an IT Hardware-category asset is Available, when an IT/Admin user selects an
+  employee and clicks Assign (the same trigger used today), then the asset does **not**
+  immediately become Assigned — instead it enters state `PENDING_RECIPIENT_CONFIRMATION`
+  and its displayed status badge shows a pending-approval indicator (e.g., "Assignment
+  Pending — Awaiting Recipient Confirmation"), not "Assigned."
+- **AC-OPS-002-05 (Stage 2 — Recipient Confirmation)** — Given an IT Hardware-category
+  asset is in state `PENDING_RECIPIENT_CONFIRMATION` for a given recipient employee,
+  when that recipient employee opens their own "My Pending Assignments" UI surface and
+  selects Confirm Receipt, then the asset transitions to state
+  `PENDING_IT_PROCESSING`.
+- **AC-OPS-002-06 (Stage 3 — IT Processing)** — Given an IT Hardware-category asset is
+  in state `PENDING_IT_PROCESSING`, when a user with the `IT_STAFF` role opens the IT
+  Processing Queue and selects Process / Forward for Approval, then the asset
+  transitions to state `PENDING_IT_SUPERVISOR_APPROVAL`.
+- **AC-OPS-002-07 (Stage 4 — IT Supervisor Approval, only action that flips status to
+  Assigned)** — Given an IT Hardware-category asset is in state
+  `PENDING_IT_SUPERVISOR_APPROVAL`, when a user with the `IT_MANAGER` role opens the IT
+  Supervisor Approval Queue and selects Approve, then the asset transitions to state
+  `ASSIGNED` and its status becomes **Assigned** — this is the **only** action in the
+  4-stage workflow that flips the asset's status to Assigned; no earlier stage
+  transition (Stage 1 Initiation, Stage 2 Recipient Confirmation, or Stage 3 IT
+  Processing) does so.
+- **AC-OPS-002-08 (Rejection at Stage 3 or Stage 4 — terminal, returns to Available)** —
+  Given an IT Hardware-category asset is in state `PENDING_IT_PROCESSING` (Stage 3) or
+  `PENDING_IT_SUPERVISOR_APPROVAL` (Stage 4), when the acting `IT_STAFF` or `IT_MANAGER`
+  user selects Reject instead of Process/Approve, then the asset's status returns
+  **immediately to Available**, the flow ends, and no path reopens that rejected
+  Assignment Approval Request — matching the existing P-009 Maintenance
+  `REJECTED_BY_DEPT` terminal-state precedent (AC-MAINT-001, §12).
+- **AC-OPS-002-09 (Regression guard — non-IT-Hardware categories unaffected)** — Given
+  an asset whose Asset Category is **not** IT Hardware (Mobile, Office Equipment,
+  Infrastructure, or Media Equipment) is Available, when **any authenticated user** (no
+  role restriction) selects Check-out and identifies a holder and confirms, then the
+  asset's custody state updates **immediately** to reflect the new holder exactly as
+  described in AC-OPS-002-01 — no pending state, no 4-stage approval workflow, and no
+  `IT_STAFF`/`IT_MANAGER` role requirement is introduced for any category other than
+  IT Hardware. This criterion tests that the confirmed exception is category-scoped, not
+  a change to the general rule.
+
+**Stage-progress indicator:** consistent with AC-MAINT-001-09's precedent (§12), a
+request in this workflow at any stage is expected to show a 4-stage progress indicator
+(Initiation → Recipient Confirmation → IT Processing → IT Supervisor Approval)
+displaying which stages are Done, Current, or Pending, consistent with the request's
+current state. This is a design-layer UI pattern reused from P-009, not a new PRD field.
+
+**NOT TESTABLE YET (Stage 2 sub-points — genuinely open, not decided either way):**
+- **Recipient-decline path.** `RAISE-PROTOTYPE.md` §14 P-008 states explicitly that "no
+  recipient-decline/reject path is defined" — the business was only asked about
+  `IT_STAFF`/`IT_MANAGER` rejecting at Stages 3–4, not about the recipient declining at
+  Stage 2. No criterion above tests a decline action, since no such UI element or
+  resulting state is shown in the Prototype. This is a gap flagged by the Prototype
+  itself, not a design decision, and no criterion should be read as confirming a
+  decline path exists or is absent.
+- **E-signature / acknowledgment-text capture.** Whether Stage 2's Confirm Receipt
+  action should also capture an e-signature or legal-acknowledgment text (as the
+  underlying physical form does) is explicitly **not decided** by PRD §16 Resolved
+  Question 43 or Design §4.2 — tracked via the PRD's own `## NEEDS_PRD_CONFIRMATION`
+  note (`RAISE-PRD.md` §16, raised 2026-09-02). AC-OPS-002-05 above tests only that a
+  plain "Confirm Receipt" action advances the state; no criterion asserts any
+  signature-capture or acknowledgment-text UI element, since none is shown in the
+  Prototype.
+
+Separately, and unaffected by this expansion: whether Custody History (`RAISE-FR-ASSET-003`)
+is written once at Stage 4 final approval, or at each of the 4 stage transitions
+individually, is a still-open design point per `RAISE-PROTOTYPE.md` §14's own "Open
+Design Point — Custody History Write Timing" note and `RAISE-DESIGN.md` §4.2 — no
+criterion above asserts when a Custody History entry is written during this workflow.
+This is distinct from, and does not resolve, Open Finding F-10 (AC-ASSET-003-03, §9).
 
 ---
 
@@ -935,7 +1028,7 @@ Prototype spec already describes a concrete element, state, or flow, and Prototy
 | PRD §10 NFR Area | Acceptance Criteria Status |
 |---|---|
 | Authentication | Already covered narrowly by AC-LOGIN (§4) — existence of success/error/access-denied states only; mechanism NOT TESTABLE YET (PRD §16 Q21) |
-| Authorization / RBAC | Already covered narrowly by AC-LOGIN and AC-MAINT-001 RBAC-dependency notes (MVP enforcement level only, per `RAISE-NFR-SEC-RBAC-001`); role list/permission matrix content NOT TESTABLE YET (PRD §16 Q22). AC-OPS-002's own permission gate is a narrow exception, fully resolved 2026-09-01 (PRD §16 Resolved Question 42 — any authenticated user, no role restriction) — this does not extend to the general role/permission-matrix content question for other domains. |
+| Authorization / RBAC | Already covered narrowly by AC-LOGIN and AC-MAINT-001 RBAC-dependency notes (MVP enforcement level only, per `RAISE-NFR-SEC-RBAC-001`); role list/permission matrix content NOT TESTABLE YET (PRD §16 Q22). AC-OPS-002's own permission gate is a narrow exception, fully resolved 2026-09-01 (PRD §16 Resolved Question 42 — any authenticated user, no role restriction) for Check-in and non-IT-Hardware Check-out — this does not extend to the general role/permission-matrix content question for other domains. **Expanded 2026-09-02 (PRD §16 Resolved Question 43):** IT Hardware-category Check-out's Stages 3–4 reuse the existing `IT_STAFF`/`IT_MANAGER` roles (already confirmed under `RAISE-NFR-SEC-RBAC-001`, no new role introduced) — AC-OPS-002-06/-07/-08 test only that the state transition occurs when the corresponding stage action is performed, not that the acting user's role is actually enforced (MVP RBAC enforcement remains UI-only/client-side). |
 | Performance | No AC group — no target defined in PRD/Design/Prototype |
 | Availability | No AC group — no target defined in PRD/Design/Prototype |
 | Scalability | No AC group — no target defined in PRD/Design/Prototype |
@@ -979,6 +1072,7 @@ them as final:
 | RAISE-AI-DOC-002 Open Question (metadata fields/tags / surfacing undefined — `RAISE-PRD.md` §7) | AC-AI-DOC-002-01 |
 | RAISE-AI-DOC-003 Open Question (assign-vs-suggest classification behavior undefined — `RAISE-PRD.md` §7) | AC-AI-DOC-003-01 |
 | RAISE-AI-DOC-004 Open Question (matching threshold / merge-or-flag workflow undefined — `RAISE-PRD.md` §7) | AC-AI-DOC-004-01 |
+| `## NEEDS_PRD_CONFIRMATION` (raised 2026-09-02, `RAISE-PRD.md` §16 — IT Hardware Assignment Approval Workflow Stage 2 recipient-decline path and e-signature/acknowledgment-text capture, both genuinely undecided) | AC-OPS-002's Stage 2 NOT TESTABLE YET note (§11) |
 
 No criterion in this document silently resolves these — each affected
 criterion above carries its own **NOT TESTABLE YET** note.
@@ -1061,6 +1155,21 @@ Open Finding F-08. Separately, whether Check-in/Check-out is the *exclusive* wri
 Custody History (AC-ASSET-003-03) was **not** part of this confirmation and remains open
 — see Open Finding F-10 in `OPEN-FINDINGS.md`.
 
+**New in this revision (2026-09-02):** PRD §16 Resolved Question 43 (Design §4.2 "IT
+Hardware Assignment Approval Workflow") confirmed a **category-scoped exception** to
+Resolved Question 42's general rule: Check-out of an IT Hardware-category asset goes
+through a new 4-stage approval workflow (Initiation → Recipient Confirmation → IT
+Processing → IT Supervisor Approval) before its status becomes Assigned, gated at
+Stages 3–4 by the existing `IT_STAFF`/`IT_MANAGER` roles (no new Role). AC-OPS-002 (§11)
+gained five new criteria (AC-OPS-002-04 through -09) testing the pending-state
+initiation, recipient confirmation, IT processing, IT supervisor approval (the only
+action that flips status to Assigned), terminal rejection, and a regression guard
+confirming non-IT-Hardware categories are unaffected. Two Stage 2 sub-points remain
+genuinely open and are **not** resolved by this confirmation: the recipient-decline
+path, and e-signature/acknowledgment-text capture — both tracked via the new
+`## NEEDS_PRD_CONFIRMATION` row added to the table above. AC-OPS-002-01/-02/-03 (the
+general rule for Check-in and non-IT-Hardware Check-out) are unchanged.
+
 **Resolved since last revision:** Q26 (Disposal MVP scope for `RAISE-FR-LIFE-001`) —
 confirmed Enterprise Roadmap, not MVP, on 2026-08-21. See §7.5 above and
 `RAISE-PRD.md` §16 Resolved Questions. No AC criterion was ever written claiming
@@ -1136,6 +1245,12 @@ Before moving to Test Plan:
       criterion asserts the old, never-built "NBV"/"Risk"/"Warranty Expiry"/"Asset by
       Category"/"Recent Alerts" wireframe; NBV/Risk remain explicitly NOT TESTABLE YET
       (Open Finding F-03), not silently marked passing
+- [x] AC-OPS-002 (§11) reflects the category-scoped IT Hardware Assignment Approval
+      Workflow exception (PRD §16 Resolved Question 43; Design §4.2) without altering
+      AC-OPS-002-01/-02/-03's general rule for Check-in and non-IT-Hardware Check-out;
+      the Stage 2 recipient-decline path and e-signature/acknowledgment-text capture are
+      explicitly marked NOT TESTABLE YET rather than invented, per the Prototype's own
+      open-question framing
 
 ---
 
@@ -1169,9 +1284,64 @@ as blocked pending business confirmation.
 
 ## Document Status
 
-**Version:** 0.10 (re-synced against `RAISE-PROTOTYPE.md` v0.12, `RAISE-PRD.md` v0.13, and
-`RAISE-DESIGN.md` v0.11, 2026-09-01 — PRD §16 Resolved Question 42 / `RAISE-FR-OPS-002`
-Check-in/Check-out workflow shape and permission gate resolved)
+**Version:** 0.11 (re-synced against `RAISE-PROTOTYPE.md` v0.13, `RAISE-PRD.md` v0.14, and
+`RAISE-DESIGN.md` v0.12, 2026-09-02 — PRD §16 Resolved Question 43 / `RAISE-FR-OPS-002`
+IT Hardware Assignment Approval Workflow, category-scoped exception, resolved)
+
+**Change Log — v0.10 → v0.11 (2026-09-02, PRD §16 Resolved Question 43, per confirmed
+business decision):**
+
+1. **Root cause.** `RAISE-PRD.md` §16 Resolved Question 43 (Design §4.2 "IT Hardware
+   Assignment Approval Workflow") confirmed a **category-scoped exception** to Resolved
+   Question 42's general Check-in/Check-out rule: Check-out (assigning) an asset whose
+   Asset Category is **IT Hardware** goes through a new 4-stage approval workflow
+   (Initiation → Recipient Confirmation → IT Processing → IT Supervisor Approval) before
+   the asset's status becomes Assigned, gated at Stages 3–4 by the existing `IT_STAFF`/
+   `IT_MANAGER` roles (no new Role introduced). Check-in for every category, and
+   Check-out for every other category, are completely unaffected. `RAISE-PROTOTYPE.md`
+   v0.13 §14 (P-008) was corrected first (new "IT Hardware Assignment Approval Workflow
+   — Category-Scoped Exception" subsection); this document is corrected to match.
+2. **AC-OPS-002 (§11) expanded.** A new "Background — IT Hardware Assignment Approval
+   Workflow" note distinguishes this category-scoped exception from AC-OPS-002-01/-02/-03's
+   unchanged general rule, mirroring how AC-MAINT-001's own background note (§12)
+   distinguishes confirmed workflow-shape content from still-TBD SLA/vendor/cost
+   content. Six new criteria were added: **AC-OPS-002-04** (Stage 1 Initiation enters a
+   pending state, not immediate Assigned), **AC-OPS-002-05** (Stage 2 Recipient
+   Confirmation via the recipient's own "My Pending Assignments" UI surface),
+   **AC-OPS-002-06** (Stage 3 IT Processing by an `IT_STAFF` user), **AC-OPS-002-07**
+   (Stage 4 IT Supervisor Approval by an `IT_MANAGER` user — the only action that flips
+   status to Assigned), **AC-OPS-002-08** (rejection at Stage 3 or 4 returns the asset
+   immediately to Available, terminal, matching the existing P-009 `REJECTED_BY_DEPT`
+   precedent), and **AC-OPS-002-09** (a regression-guard criterion confirming
+   non-IT-Hardware categories remain immediate, any-authenticated-user Check-out,
+   unaffected by the exception). A stage-progress-indicator expectation (modeled on
+   AC-MAINT-001-09's Done/Current/Pending precedent) is noted.
+3. **Two Stage 2 sub-points explicitly marked NOT TESTABLE YET, not invented.** The
+   recipient-decline path and e-signature/acknowledgment-text capture at Stage 2 are
+   genuinely undecided per `RAISE-PROTOTYPE.md` §14's own open-question framing and the
+   PRD's own `## NEEDS_PRD_CONFIRMATION` note (raised 2026-09-02) — no criterion is
+   written for either; both are called out by name in a new NOT TESTABLE YET block under
+   §11.
+4. **AC Index (§3)** — AC-OPS-002 row's Status expanded to record the confirmed IT
+   Hardware exception is now testable, while explicitly naming the two Stage 2
+   sub-points that remain NOT TESTABLE YET.
+5. **Not-Yet-Testable Summary (§20)** — a new "New in this revision (2026-09-02)" note
+   summarizes the expansion; a new `## NEEDS_PRD_CONFIRMATION`-sourced row was added to
+   the blocking-questions table pointing at AC-OPS-002's Stage 2 NOT TESTABLE YET note.
+6. **§19.9 NFR Backlog Note** — the Authorization/RBAC row was updated to record that
+   Stages 3–4 reuse the existing `IT_STAFF`/`IT_MANAGER` roles (no new role), consistent
+   with the general MVP UI-only/client-side enforcement-level note.
+7. **Acceptance Criteria Review Checklist (§21)** gained a new checklist item confirming
+   the category-scoped exception is reflected without altering the general rule, and
+   that the two Stage 2 sub-points are marked NOT TESTABLE YET rather than invented.
+8. No other AC group required a correction — this revision touches only the document
+   header, §3 (index row), §11 (AC-OPS-002), §19.9 (RBAC summary table row), §20
+   (Not-Yet-Testable Summary), and §21 (checklist). `RAISE-PROTOTYPE.md` and earlier
+   layers were **not** modified by this pass, per this document's own scope boundary —
+   only this document was edited. The Login/Asset/Maintenance/Warranty/Oracle/Alert/
+   Audit/Executive/AI-Search/AI-Doc groups were checked against the corresponding
+   Prototype v0.13 sections and found unchanged in substance — Prototype v0.12 → v0.13's
+   only content change was the IT Hardware Assignment Approval Workflow addition itself.
 
 **Change Log — v0.9 → v0.10 (2026-09-01, PRD §16 Resolved Question 42, per confirmed
 business decision):**
@@ -1501,12 +1671,13 @@ No other screen changes were found in Prototype v0.3; no existing criterion beyo
 the two items above required correction.
 
 **Status:** Draft for Acceptance Review
-**Source:** [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.10, [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.12, [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.10
+**Source:** [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.13, [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.14, [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.12
 **Reference:** VERSCAN only
-**Next Action:** Review the v0.9 update (AC-WARRANTY-001 §13 rewritten/expanded for the
-per-Asset-Category configurable Expiring threshold and new P-018 Settings screen) and
-resolve remaining blocking Open Questions (§20) before Test Plan. `RAISE-TEST-PLAN.md` /
-`RAISE-TEST-CASES.md` should be checked next for the same drift, in particular whether
-they need new test cases for AC-WARRANTY-001-04/-05/-06 (P-018 Settings) alongside the
-already-noted AC-MAINT-001-03..09 stage-transition coverage check, and whether they need
-an equivalent NFR-backlog acknowledgment note of their own.
+**Next Action:** Review the v0.11 update (AC-OPS-002 §11 expanded for the IT Hardware
+Assignment Approval Workflow category-scoped exception, PRD §16 Resolved Question 43)
+and resolve remaining blocking Open Questions (§20) before Test Plan.
+`RAISE-TEST-PLAN.md` / `RAISE-TEST-CASES.md` should be checked next for the same drift,
+in particular whether they need new test cases for AC-OPS-002-04..09 (IT Hardware
+4-stage approval workflow) alongside the already-noted AC-WARRANTY-001-04/-05/-06
+(P-018 Settings) and AC-MAINT-001-03..09 stage-transition coverage checks, and whether
+they need an equivalent NFR-backlog acknowledgment note of their own.

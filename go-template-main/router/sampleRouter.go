@@ -48,6 +48,10 @@ func SetupRoutes(app *fiber.App, dbManager *repository.DBManager) {
 	ticketService := service.NewTicketService(ticketRepo, assetService, employeeService)
 	ticketCtrl := controller.NewTicketController(ticketService, auditService)
 
+	handoverRepo := repository.NewAssetHandoverRepository(repository.NewAssetHandoverPGRepository())
+	handoverService := service.NewAssetHandoverService(handoverRepo, assetService)
+	handoverCtrl := controller.NewAssetHandoverController(handoverService, auditService)
+
 	authService := service.NewAuthService()
 	authCtrl := controller.NewAuthController(authService)
 
@@ -108,6 +112,20 @@ func SetupRoutes(app *fiber.App, dbManager *repository.DBManager) {
 	protected.Post("/tickets/:code/dispatch", ticketCtrl.Dispatch)
 	protected.Post("/tickets/:code/status", ticketCtrl.UpdateExecutionStatus)
 	protected.Get("/technicians", ticketCtrl.ListTechnicians)
+
+	// RAISE-FR-OPS-002's IT Hardware Assignment Approval Workflow (PRD Sec16 Resolved
+	// Question 43, narrowing Resolved Question 42) -- category-scoped exception to the
+	// /assets/:id/assign route above, which now rejects IT Hardware with 409 directing here.
+	// Same RBAC reasoning as every other domain in this file: RAISE-DESIGN.md Sec4.2 confirms
+	// Stage 3/4 require IT_STAFF/IT_MANAGER, but per this codebase's project-wide MVP decision
+	// (no RequireRole gate on any real domain route, only /samples), that role check is
+	// enforced UI-only/client-side, not here.
+	protected.Get("/handovers", handoverCtrl.ListHandovers)
+	protected.Get("/handovers/:code", handoverCtrl.GetHandoverByCode)
+	protected.Post("/assets/:id/handover", handoverCtrl.InitiateHandover)
+	protected.Post("/handovers/:code/confirm", handoverCtrl.ConfirmReceipt)
+	protected.Post("/handovers/:code/process", handoverCtrl.ProcessHandover)
+	protected.Post("/handovers/:code/decision", handoverCtrl.DecideHandover)
 
 	// RAISE-FR-AUDIT-001 (Immutable Audit Log) -- first cut. Read-only route: no
 	// POST/PUT/DELETE exists here or anywhere downstream (AC-AUDIT-001-02). Same RBAC

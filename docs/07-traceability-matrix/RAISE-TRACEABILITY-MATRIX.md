@@ -2,38 +2,53 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Requirement Traceability Matrix (RTM)
-**Version:** 1.5 Draft (`RAISE-FR-OPS-002` and `RAISE-FR-ASSET-003` — Open
-Finding F-02, PRD §16 Open Questions 11–13, **RESOLVED 2026-09-01** per
-confirmed business decision, `RAISE-PRD.md` v0.13 §16 Resolved Question 42.
-**This closes new Gap 14** (opened and RESOLVED in this same revision, the
-same "opened and closed same revision" pattern used for Gap 12, not the
-"opened in one revision, closed in a later one" pattern used for Gap 13).
-Unlike Gap 13, **no new code was written and no new test execution was
-performed** — this is a pure requirement-content resolution matching
-already-built, already-tested behavior exactly: (a) Check-in/Check-out
-confirmed as an **immediate state-change operation**, no approval/
-exception-handling step; (b) the permission gate confirmed as **any
-authenticated user, no role restriction**; (c) `RAISE-FR-ASSET-003`'s
-holder data model confirmed as a **direct 1:1 link to an Employee record**.
-The existing `TC-OPS-002-01..03` **PASS** result (executed 2026-08-28)
-already covers the newly-confirmed scope, per the same "resolution can
-retroactively validate an already-PASSing execution without a new test
-run" pattern used for `TC-OPS-002-01`/`-02` in `RAISE-TEST-CASES.md`
-v0.13. **Explicitly NOT resolved by this revision, and not implied to be
-resolved:** Open Finding F-10 (whether Check-in/Check-out is the
-*exclusive* writer of Custody History) remains genuinely open, tracked
-separately at Gap 4 (§6) — a `RAISE-PROTOTYPE.md` v0.11 draft briefly and
-incorrectly over-resolved this related-but-separate question; it was
-caught and corrected in v0.12, restoring F-10 to genuinely open, and this
-matrix does not repeat that error. Also **not** resolved: the general
-`RAISE-NFR-SEC-RBAC-001` role/permission-matrix-content question for other
-domains (PRD §16 Q21–Q22, Open Finding F-08) — only Check-in/Check-out's
-own permission gate is settled here. See the `RAISE-FR-OPS-002` and
-`RAISE-FR-ASSET-003` rows (§3) and Gap 14 (§6, RESOLVED) for the full
-record. Gaps 1–13 remain fully resolved from v1.4, unchanged this
-revision.)
+**Version:** 1.7 Draft (`RAISE-FR-OPS-002` — **Gap 15 (IT Hardware Assignment
+Approval Workflow implementation gap) RESOLVED this revision, 2026-09-02.**
+The 4-stage workflow (Initiation → Recipient Confirmation → IT Processing →
+IT Supervisor Approval) confirmed by PRD §16 Resolved Question 43 (v1.6,
+narrowing Resolved Question 42) has now been **implemented in
+`go-template-main`** — new backend files `model/assetHandoverModel.go`,
+`repository/assetHandoverPGRepository.go`, `repository/
+assetHandoverRepository.go`, `service/assetHandoverService.go`,
+`controller/assetHandoverController.go`, `sql/pg/V5__AssetHandovers_Table.sql`;
+new routes `GET /handovers`, `GET /handovers/:code`, `POST
+/assets/:id/handover`, `POST /handovers/:code/confirm`, `POST
+/handovers/:code/process`, `POST /handovers/:code/decision`;
+`AssetService.AssignAsset` now branches on Category `"IT Hardware"`,
+returning HTTP 409 with a `nextStep` hint into the new handover flow, while
+every other category continues to assign immediately (regression-verified).
+`RAISE-TEST-CASES.md` v0.15 records `TC-OPS-002-04` through
+`TC-OPS-002-09` — all six — moved from **BLOCKED (pending implementation)**
+to **PASS**, formally re-executed end-to-end against the real running Docker
+stack (backend + Postgres), covering all 4 stages, both rejection points
+(Stage 3 and Stage 4, both confirmed terminal), and the non-IT-Hardware
+regression guard, corroborated by 18 new Go unit tests
+(`service/assetHandoverService_test.go`, all passing) and a clean
+`go build`/`go vet`/`go test` sweep. **This is backend/API-level execution
+only** — no frontend UI exists yet for "My Pending Assignments"/`IT_STAFF`
+queue/`IT_MANAGER` queue (a distinct, not-yet-started follow-up, tracked as a
+scope boundary below, not re-opened as part of Gap 15), and `IT_STAFF`/
+`IT_MANAGER` role gates were **not** verified as backend-enforced —
+consistent with this codebase's existing project-wide MVP decision that RBAC
+is UI-only/client-side (PRD §16 Resolved Question 38), not a gap specific to
+this feature. `RAISE-FR-OPS-002`'s row (§3) is accordingly upgraded from
+**PASS (partial)** to a full **PASS on the testable-now scope**
+(backend/API-level, 4-stage state machine, terminal rejection, regression
+guard) — see the row's own Test Status cell for the explicit list of
+still-open sub-points this PASS does **not** cover. **Genuinely still open,
+unaffected by this closure, not resolved by real code+test evidence and
+therefore correctly left open per this document's no-silent-resolution
+discipline:** the Stage-2 e-signature/acknowledgment-text-capture question
+(PRD's own `## NEEDS_PRD_CONFIRMATION` note, untouched — the user dismissed
+this question this session rather than answering it); the Stage-2
+recipient-decline path (never asked, not implemented); and the Custody
+History write-timing question across the 4 stages
+(`RAISE-DESIGN.md` §4.2's own flagged open design point, distinct from and
+not resolving Open Finding F-10 / Gap 4). See the `RAISE-FR-OPS-002` row
+(§3) and Gap 15 (§6, now **RESOLVED**) for the full closure record. Gaps
+1–14 remain resolved from v1.5/v1.6, unchanged this revision.)
 **Status:** Draft for Traceability Review
-**Source:** [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.13 (§16 Resolved Question 42, resolving Open Questions 11–13 / Open Finding F-02 — **the actual PRD file on disk was re-read in full for this revision, not assumed from downstream citations**, per this document's own standing practice since v0.4), [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.11 (§4.2, resolution propagated), [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.12 (P-006/P-008 rewritten; note the v0.11 → v0.12 correction that restored Open Finding F-10 to genuinely open after a briefly-incorrect over-resolution — this matrix does not repeat that error), [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.10 (AC-OPS-002-01/-02 rewritten), [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.10 (TS-OPS-002 fully unblocked), and [`RAISE-TEST-CASES.md`](../06-test-cases/RAISE-TEST-CASES.md) v0.13 (`TC-OPS-002-01..03` status notes updated — **no new execution claimed**, the existing 2026-08-28 PASS already covers the newly-confirmed scope). All six upstream documents were already synced against this resolution in prior steps — this revision updates only `RAISE-TRACEABILITY-MATRIX.md` itself to reflect that sync. Confirmed: this is a requirement-content resolution matching already-built, already-tested behavior, not a new defect find (unlike Gap 13) and not a build-gap fix (unlike Gaps 9–11) — no source code changed, no new test execution was run.
+**Source:** [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.14 (§16 Resolved Question 43, unchanged this revision), [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.12 (§4.2, unchanged this revision), [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.13 (P-008, unchanged this revision), [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.11 (§11 AC-OPS-002-04..09, unchanged this revision), [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.11 (TS-OPS-002, unchanged this revision), and [`RAISE-TEST-CASES.md`](../06-test-cases/RAISE-TEST-CASES.md) v0.15 (`TC-OPS-002-04..09` moved from BLOCKED (pending implementation) to **PASS**, formal execution against the real running Docker stack, 2026-09-02). Only `RAISE-TEST-CASES.md` and the real `go-template-main` source tree changed to produce this closure — this revision updates only `RAISE-TRACEABILITY-MATRIX.md` itself to reflect that. Confirmed: this closure rests on real implementation + real test execution evidence, not a business decision or spec correction alone, per this document's own standing discipline (Gap 6/8/9/12's "a business decision or spec correction alone never upgrades a Test Status; only a real execution does").
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
 
@@ -146,7 +161,7 @@ per v0.4 Gap 6's own closure criteria.
 | `RAISE-FR-ASSET-002` | Category & Hierarchy | P0 / MVP | §4.1 Asset Management | P-005 | AC-ASSET-002 (AC-ASSET-002-01/-02/-03) | TS-ASSET-002 | TC-ASSET-002-01..03 | **PASS — spec corrected and re-execution complete 2026-09-01 (Open Finding F-27, RESOLVED).** Prior formal execution (2026-08-26) confirmed TC-ASSET-002-02 **PASS** (Category is consistent between Asset Registry and Asset Detail for the same asset, e.g. `a1` shows "IT Hardware" in both) and TC-ASSET-002-01 **PASS on the display mechanism** (a "By Category" view inside Asset Management, `frontend/src/pages/Assets/index.tsx`, groups Category → its real assets; verified live: "IT Hardware" expands to 6 real seeded assets, clicking one navigates to Asset Detail). At that time, the *spec itself* (AC-ASSET-002-01, Prototype P-005) still described an illustrative, unconfirmed sub-category tree (Computer > Notebook/Desktop, etc.), so the PASS above was explicitly scoped to the flat category-to-assets grouping only, not to a Category→Type hierarchy — the taxonomy question was open, tracked as F-27. **Spec resolved 2026-09-01 (Open Finding F-27, per explicit business decision):** "sub-category" is confirmed as the existing Asset `type` field (no new field/data model); the hierarchy is exactly 2 levels — Category → Type → individual assets — using the real, currently-seeded Category → Type breakdown (IT Hardware → Laptop/Monitor/Headphones; Mobile → Smartphone/Tablet; Office Equipment → Printer/Projector; Infrastructure → Server/Router; Media Equipment → Camera). Propagated through Prototype P-005 (§11, v0.9), AC-ASSET-002 (§8, v0.8, now includes a new **AC-ASSET-002-03**), Test Plan TS-ASSET-002 (v0.8), and Test Cases `TC-ASSET-002-01..03` (v0.9). **UI code change shipped and formally re-executed, same day (2026-09-01):** the "By Category" view (`frontend/src/pages/Assets/index.tsx`) was extended one level deeper to nest Category → Type → individual assets, closing the previously-BLOCKED `TC-ASSET-002-03`. Formal execution against the real running app: navigated to `/assets`, opened "By Category," expanded "IT Hardware" — confirmed it reveals Type-level sub-groups only (Headphones: 1 asset, Laptop: 3 assets, Monitor: 2 assets), with no individual assets shown at that level; expanded "Laptop" — confirmed it reveals exactly its 3 individual assets (MacBook Pro 16" M3 / AST-0001, MacBook Air M2 / AST-0011, ThinkPad X1 Carbon Gen 11 / AST-0012), none of Monitor's or Headphones' assets. Matches `AC-ASSET-002-01`/`-03` and Prototype P-005 (v0.9) exactly. `TC-ASSET-002-01` **PASS** — the corrected Category → Type hierarchy display is now confirmed by this same execution (the 2026-08-26 PASS is no longer relied on; this is a fresh, direct PASS against the corrected wording). `TC-ASSET-002-03` **PASS** — no longer BLOCKED (pending implementation). `TC-ASSET-002-02` **unaffected, still PASS**. Also confirmed: 3 new/updated automated tests in `frontend/src/pages/Assets/index.test.tsx` all pass, the full frontend suite (145 tests) passes with no regressions, and `tsc --noEmit`/lint are both clean. **All three sub-items of Gap 9 (spec correction, UI implementation, execution sweep) are now closed** — see Gap 9, §6, RESOLVED. Overall row status: **PASS**. |
 | `RAISE-FR-ASSET-003` | Custody History | P0 / MVP | §4.2 Custody & Asset Operations | P-006 | AC-ASSET-003 | TS-ASSET-003 | TC-ASSET-003-01..03 | **PASS** — executed 2026-08-26: TC-ASSET-003-01 **PASS** (current holder "Sarah Chen" displays for asset `a1`). TC-ASSET-003-02/-03 originally **FAIL** — the "Assignment History" panel derived a single "current custody state" row instead of a chronological list, and a Check-in **replaced** the prior entry instead of appending — **now PASS**, re-executed after the fix (F-26): the History tab renders from the same per-asset audit trail `RAISE-FR-AUDIT-001` already builds (append-only by construction — `recordMockAuditEntry` only ever `unshift`s), which `assign`/`checkIn` already fed. Verified live on `a1`: Check-in appended "Asset checked in", then Assign appended "Asset assigned to Sarah Chen" alongside it (not replacing it) — both visible, newest-first. Independent of the still-open Check-in/Check-out-exclusivity question (Gap 4), which only concerns *other* write paths, not this one. **Holder-data-model question resolved 2026-09-01** (`RAISE-PRD.md` §16 Resolved Question 42, resolving Open Question 13, Open Finding F-02): confirmed as a **direct 1:1 link to an Employee record** (`Asset.assignedEmployeeId`/`assignedTo`) — no additional organizational relationship model (department, team, or location-based custody) is needed for MVP. This matches already-built, already-tested behavior exactly (the existing `TC-ASSET-003-01..03` results already exercise this data model); **no new field, model, or test execution was required or performed**. This resolution is independent of, and does **not** touch, the separate custody-writing-events exclusivity question (Gap 4, Open Finding F-10) — whether Check-in/Check-out is the *exclusive* writer of Custody History remains genuinely open, unaffected (`RAISE-PROTOTYPE.md` v0.12 explicitly restored F-10 to open after a v0.11 draft briefly and incorrectly over-resolved it). See Gap 14 (§6, opened and RESOLVED same revision, v1.5) for the full closure record. |
 | `RAISE-FR-OPS-001` | QR / Barcode | P0 / MVP | §4.2 Custody & Asset Operations | P-007 | AC-OPS-001 | TS-OPS-001 | TC-OPS-001-01..03 | **PASS** — re-executed 2026-08-26 (after the F-21 fix) against the real running app (`frontend/src/pages/Assets/index.tsx`'s Scan QR flow): TC-OPS-001-01 **PASS** (valid code `AST-0001` opens Asset Detail); TC-OPS-001-02 **PASS** (unmatched-but-well-formed code `AST-9999` shows "No asset found for..."); TC-OPS-001-03 **PASS** (malformed code `%%$#!!garbage///` now shows a distinct "Invalid code — ... doesn't look like a scannable asset code" message, without attempting a lookup — no longer the same message as TC-OPS-001-02). F-21 resolved (`OPEN-FINDINGS.md`). |
-| `RAISE-FR-OPS-002` | Check-in / Check-out | P0 / MVP | §4.2 Custody & Asset Operations | P-008 | AC-OPS-002 | TS-OPS-002 | TC-OPS-002-01..03 | **PASS** — executed 2026-08-28 against the real running app: TC-OPS-002-01 **PASS** (Assign — the app's actual affordance for identifying a holder and confirming, no distinct "Check-out" label exists but the behavior matches: custody state updated to the new holder on asset `a4`); TC-OPS-002-02 **PASS** (Check-in confirmed the asset's return to Available/Unassigned); TC-OPS-002-03 **PASS** (both operations created a corresponding Audit Log entry, verified visible with actor and timestamp). **Permission-gate and workflow-shape questions resolved 2026-09-01** (`RAISE-PRD.md` §16 Resolved Question 42, resolving Open Questions 11 and 12, Open Finding F-02): Check-in/Check-out is confirmed as an **immediate state-change operation**, with no approval step or exception-handling workflow, and the permission gate is confirmed as **any authenticated user, no role restriction** — matching the already-executed behavior exactly (the 2026-08-28 execution above already exercised an authenticated user performing the operation with no role gate blocking it). **No new test execution is required or claimed by this resolution** — the existing `TC-OPS-002-01..03` PASS result already covers the newly-confirmed scope. This resolves only Check-in/Check-out's *own* permission requirement — it does **not** resolve the broader `RAISE-NFR-SEC-RBAC-001` role/permission-matrix-content question for other domains (PRD §16 Q21–Q22, Open Finding F-08), which remains genuinely open and unaffected. It also does **not** touch the separate, still-open question of whether Check-in/Check-out is the *exclusive* writer of Custody History (Gap 4, Open Finding F-10, unaffected). See Gap 14 (§6, opened and RESOLVED same revision, v1.5) for the full closure record. |
+| `RAISE-FR-OPS-002` | Check-in / Check-out (**narrowed 2026-09-02 for one category**: IT Hardware Check-out/Assign now requires a new 4-stage approval workflow — Initiation → Recipient Confirmation → IT Processing → IT Supervisor Approval — before status becomes Assigned; every other category, and Check-in for every category including IT Hardware, unaffected) | P0 / MVP | §4.2 Custody & Asset Operations; §4.2's new "IT Hardware Assignment Approval Workflow" subsection (category-scoped exception) | P-008 | AC-OPS-002 (AC-OPS-002-01/-02/-03 general rule; **AC-OPS-002-04..09**, IT Hardware exception) | TS-OPS-002 | TC-OPS-002-01..03 (general rule); **TC-OPS-002-04..09 (IT Hardware exception, now implemented and PASS)** | **PASS on the testable-now scope — Gap 15 (implementation gap) RESOLVED 2026-09-02.** General-rule evidence unchanged from 2026-08-28 execution against the real running app: TC-OPS-002-01 **PASS** (Assign — the app's actual affordance for identifying a holder and confirming, no distinct "Check-out" label exists but the behavior matches: custody state updated to the new holder on asset `a4`); TC-OPS-002-02 **PASS** (Check-in confirmed the asset's return to Available/Unassigned); TC-OPS-002-03 **PASS** (both operations created a corresponding Audit Log entry, verified visible with actor and timestamp). **Permission-gate and workflow-shape questions resolved 2026-09-01** (`RAISE-PRD.md` §16 Resolved Question 42, resolving Open Questions 11 and 12, Open Finding F-02): Check-in/Check-out is confirmed as an **immediate state-change operation**, with no approval step or exception-handling workflow, and the permission gate is confirmed as **any authenticated user, no role restriction** — matching the already-executed behavior exactly. This resolves only Check-in/Check-out's *own* permission requirement — it does **not** resolve the broader `RAISE-NFR-SEC-RBAC-001` role/permission-matrix-content question for other domains (PRD §16 Q21–Q22, Open Finding F-08), which remains genuinely open and unaffected. It also does **not** touch the separate, still-open question of whether Check-in/Check-out is the *exclusive* writer of Custody History (Gap 4, Open Finding F-10, unaffected). See Gap 14 (§6, opened and RESOLVED same revision, v1.5) for the full closure record of the general-rule resolution. **IT Hardware Assignment Approval Workflow, PRD §16 Resolved Question 43, narrowing Resolved Question 42 for the IT Hardware category only — confirmed 2026-09-02, implemented and formally tested this same session:** a real Singer Thailand company form ("ใบดำเนินการเกี่ยวกับคอมพิวเตอร์และอุปกรณ์") supplied by the business user during a live session showed a genuine 4-signature approval process for IT equipment handovers, confirmed and digitized to 4 stages (Initiation → Recipient Confirmation → IT Processing (`IT_STAFF`) → IT Supervisor Approval (`IT_MANAGER`, only stage that flips status to Assigned); rejection at Stage 3/4 is terminal, returns to Available). Fully propagated through `RAISE-DESIGN.md` v0.12 §4.2, `RAISE-PROTOTYPE.md` v0.13 P-008, `RAISE-ACCEPTANCE-CRITERIA.md` v0.11 §11 (`AC-OPS-002-04..09`), `RAISE-TEST-PLAN.md` v0.11 (`TS-OPS-002` Partial, blocked on implementation) — and **now implemented**: new `go-template-main` files `model/assetHandoverModel.go`, `repository/assetHandoverPGRepository.go`, `repository/assetHandoverRepository.go`, `service/assetHandoverService.go`, `controller/assetHandoverController.go`, `sql/pg/V5__AssetHandovers_Table.sql`; new routes `GET /handovers`, `GET /handovers/:code`, `POST /assets/:id/handover`, `POST /handovers/:code/confirm`, `POST /handovers/:code/process`, `POST /handovers/:code/decision`; `AssetService.AssignAsset` branches on Category `"IT Hardware"` to return HTTP 409 directing to the new handover flow, with non-IT-Hardware assets unaffected (regression-verified). `RAISE-TEST-CASES.md` v0.15 §10 records `TC-OPS-002-04..09` **all PASS**, formally re-executed end-to-end against the real running Docker stack (backend + Postgres): TC-OPS-002-04 **PASS** (Stage 1 Initiate enters `PENDING_RECIPIENT_CONFIRMATION`, asset stays Available, no early flip); TC-OPS-002-05 **PASS** (Stage 2 Confirm Receipt by the matching recipient advances to `PENDING_IT_PROCESSING`, with recipient-identity validation confirmed — mismatched/empty recipient rejected); TC-OPS-002-06 **PASS** (Stage 3 IT Processing advances to `PENDING_IT_SUPERVISOR_APPROVAL`); TC-OPS-002-07 **PASS** (Stage 4 IT Supervisor Approval is confirmed the *only* action that flips status to Assigned — no earlier stage does so); TC-OPS-002-08 **PASS** (rejection at both Stage 3 and Stage 4 confirmed terminal — asset returns to Available, no path reopens the rejected request); TC-OPS-002-09 **PASS** (non-IT-Hardware Check-out regression guard confirmed unaffected — no 409, no pending/handover state introduced). Corroborated by 18 new Go unit tests (`service/assetHandoverService_test.go`, all passing) and a clean full `go build`/`go vet`/`go test` sweep. `AC-OPS-002-01..09` are now all **PASS** on the testable-now scope. **Scope boundaries that remain genuinely open, NOT closed by this evidence (do not treat these as resolved):** (1) this is **backend/API-level execution only** — no frontend UI exists yet for "My Pending Assignments"/`IT_STAFF` queue/`IT_MANAGER` queue, a distinct, not-yet-started follow-up; (2) `IT_STAFF`/`IT_MANAGER` role gates are **not** backend-enforced, consistent with this codebase's project-wide MVP decision (UI-only/client-side RBAC, PRD §16 Resolved Question 38) — not a gap specific to this feature; (3) the Stage-2 e-signature/acknowledgment-text-capture question remains genuinely open — the PRD's own `## NEEDS_PRD_CONFIRMATION` note is untouched (the user dismissed rather than answered this question this session); (4) the Stage-2 recipient-decline path was never asked and is not implemented; (5) Custody History write-timing across the 4 stages (`RAISE-DESIGN.md` §4.2's own flagged open design point) remains unresolved, distinct from and not resolving Open Finding F-10 (Gap 4). See **Gap 15 (§6, RESOLVED)** for the full closure record. Overall row status: **PASS on the testable-now scope** — the general Check-in/Check-out rule and the new IT Hardware Assignment Approval Workflow (backend/API-level, all 4 stages, both terminal-rejection points, non-IT-Hardware regression guard) are all real, evidence-based PASS; frontend UI, backend role enforcement, and the two Stage-2 sub-points remain out of this PASS's scope, tracked separately above and not silently folded in. |
 | `RAISE-FR-MAINT-001` | Maintenance (4-stage workflow: User Requisition → Dept Approval (Delegated) → IT Dispatch → Technician Execution) | P0 / MVP | §5.1 Maintenance Domain | P-009 | AC-MAINT-001 (AC-MAINT-001-01..09) | TS-MAINT-001 | TC-MAINT-001-01..09 | **PASS** — executed 2026-08-28 against the real running app, all 9 cases: TC-MAINT-001-03 **PASS** (a new requisition submitted via "New IT Requisition" enters `PENDING_DEPT_APPROVAL`). TC-MAINT-001-04 **PASS** (Dept Sign-off → Approve transitions to `PENDING_IT_DISPATCH`). TC-MAINT-001-05 **PASS** (Reject on a separate `PENDING_DEPT_APPROVAL` ticket resulted in `REJECTED_BY_DEPT`, confirmed **not** `PENDING_IT_DISPATCH` — per this case's own scope, no claim is made about whether that specific resulting state is itself correct). TC-MAINT-001-06 **PASS** (Assign Tech + Dispatch transitions to `IN_PROGRESS`, one of the three allowed states). TC-MAINT-001-07 **PASS** (Update Status to On-Hold with a hold reason correctly reflects "3. On-Hold" and shows the reason banner). TC-MAINT-001-08 **PASS** (Mark Complete transitions to `DONE`/"4. Resolved & Closed" with resolution notes shown). TC-MAINT-001-01 originally **FAIL** — the Maintenance record list showed no date/cost fields (F-28) — **now PASS**, re-executed after the fix: each record now shows created date and cost, verified live on asset `a1`. TC-MAINT-001-09 originally **FAIL** — the 4-stage progress indicator (`GovernanceStep` in `TicketDetail/index.tsx`) only rendered two visual states (done ✓ vs. a plain gray circle with the step number), so the "Current" stage and any not-yet-reached "Pending" stage were visually identical (F-29) — **now PASS**, re-executed after the fix: the current stage is derived from `ticket.status` and rendered with a distinct brand-colored circle, ring, and a "Current" badge; verified live across `PENDING_DEPT_APPROVAL` (stage 2 current), `PENDING_IT_DISPATCH` (stage 3 current), and `DONE` (no stage marked current, all done). TC-MAINT-001-02 **PASS** (2 records for asset `a1` displayed in ascending-chronological order by observed outcome, though the underlying code has no explicit sort — `assetTickets` in `AssetDetail/index.tsx` is unsorted array-filter order — a fragility worth watching, not a current failure since the observed order was correct). **The 4-stage workflow shape and state model remain verified present in `RAISE-PRD.md` v0.9 §6 and §16 Resolved Question 33.** |
 | `RAISE-FR-WARRANTY-001` | Warranty | P0 / MVP | §5.2 Warranty Domain (3-state model); §5.4 Settings Domain | P-003 (Asset Registry column), P-004 (Asset Detail), P-018 (Settings > Warranty, new) | AC-WARRANTY-001 (AC-WARRANTY-001-01..06) | TS-WARRANTY-001 | TC-WARRANTY-001-01..06 | **PASS (partial)** — field-list blocker resolved 2026-08-29 (`RAISE-PRD.md` §16 Resolved Question 40, resolving Open Question 15: `warrantyExpiry` is the only MVP field). **Expiring-threshold blocker resolved 2026-09-01** (`RAISE-PRD.md` §16 Resolved Question 41, resolving follow-on Open Question 15b): the Expiring threshold is confirmed **per-Asset-Category configurable**, not a single global 90-day constant — defaulting to 90 days for all 5 current Asset Categories, admin-adjustable via a new P-018 Settings screen. **Implemented and formally executed 2026-09-01:** `frontend/src/lib/warranty.ts` (`getWarrantyStatus`, 3-state Active/Expiring/Expired), `frontend/src/types/settings.ts` (`WarrantySettings`), `frontend/src/services/settings-service.ts` + `settings-repository.ts` (per-category seed/merge), `frontend/src/pages/Settings/index.tsx` (new Warranty section, P-018), `frontend/src/pages/Assets/index.tsx` + `AssetDetail/index.tsx` (3-state badge). TC-WARRANTY-001-01 **PASS** (Warranty column/field displays `warrantyExpiry`). TC-WARRANTY-001-02 **PASS** (Active/Expiring/Expired badge correctly derived from `warrantyExpiry` + the asset's category's configured threshold, via `getWarrantyStatus()`). TC-WARRANTY-001-03 **PASS** — no longer BLOCKED: a category-specific threshold correctly flags an asset as Expiring, confirmed by automated test and live browser (setting IT Hardware to 5000 days flagged only IT Hardware assets Expiring, with an unrelated Mobile-category expired asset unaffected — no cross-category leakage). TC-WARRANTY-001-04 **PASS** (P-018 Settings > Warranty renders all 5 Asset Categories with a "90" default threshold input each). TC-WARRANTY-001-05 **PASS** (editing/saving one category's threshold recomputes only that category's assets; other categories unaffected). Verified via 151/151 automated tests (`tsc --noEmit`/lint clean) and live browser execution. **TC-WARRANTY-001-06 (non-admin access/write denial to P-018) formally executed 2026-09-01 and now PASS** — but only after a real defect was found and fixed first: the Settings route (`ROUTES.SETTINGS`) in `frontend/src/App.tsx` was **not actually gated to ADMIN**, sitting in the general authenticated-user route block instead of the existing `<Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>` block that already gates Administration/User Management/Role Management. Fixed by moving the Settings route into that existing block — no new RBAC mechanism invented, this reuses the exact mechanism already confirmed elsewhere in the app (PRD §16 Resolved Question 38, UI-only/client-side MVP enforcement level, per `RAISE-NFR-SEC-RBAC-001`). Confirmed by 2 new tests in `frontend/src/App.rbac.test.tsx` (non-ADMIN `EMPLOYEE`-role user redirected to the Forbidden page at `/settings`; ADMIN user let through), full suite 153/153 (was 151), `tsc --noEmit`/lint both clean, and live browser verification (2026-09-01): an EMPLOYEE-role user sees the app's real "403 — Access denied" Forbidden page at `/settings`, an ADMIN-role user sees the real Settings page render. **Both PRD-content blockers this row previously carried (field list, Q15; Expiring-threshold shape, Q15b) are now fully resolved** — see Gap 7 (§6, resolved 2026-08-29) and Gap 12 (§6, opened and RESOLVED same-revision, v1.3, 2026-09-01). **The one remaining coverage gap (TC-WARRANTY-001-06 unexecuted) is now also closed** — see Gap 13 (§6, opened v1.3, RESOLVED this revision v1.4, 2026-09-01). Overall row status: **PASS** — no remaining PRD-content blocker and no remaining unexecuted test case for this requirement. |
 | `RAISE-FR-ORACLE-001` | Oracle FA Integration + NBV/Depreciation | P0 / MVP | §6 Oracle FA Integration (incl. §6.4 "Phase 6" label note) | P-011 | AC-ORACLE-001 | TS-ORACLE-001 | TC-ORACLE-001-01..04 | **FAIL** — executed 2026-08-29 against the real running app, and the result is worse than the pre-existing BLOCKED status: the route the app maps to `RAISE-FR-ORACLE-001` (`/reconciliation`, labeled "Oracle FA Reconcile" in navigation) renders `ModulePage` — a generic, literal "foundation placeholder" `EmptyState` ("Oracle FA Reconciliation — foundation placeholder / Migrates from src/pages/Reconciliation.tsx once Oracle FA is connected in Phase 6."), confirmed via `frontend/src/pages/_shared/ModulePage.tsx` and real page text. TC-ORACLE-001-01 **FAILS even on its testable-now scope** — no "Asset Number", "Acquisition Information", "NBV", "Depreciation", "Oracle Source", or "Synchronization Status" field exists anywhere on this page (the closest analog, Asset Detail's own "Financial" section added for F-24, shows only Purchase Cost/Current Value/Purchase Date — no Oracle-specific fields at all). TC-ORACLE-001-02/-03/-04 **FAIL** — no "data unavailable"/"sync error"/"data conflict" state is rendered anywhere; the placeholder has no state logic at all. This is independent of, and does not wait on, the still-open integration-mechanism question (PRD §16 Q6–Q10, tracked as F-04) or the `ReconciliationPage` mapping question (Open Question 10a) — even presence-only testing of the four UI states fails, since no P-011 screen was actually built (a stub exists in its place). See `OPEN-FINDINGS.md` F-31 for this new build-gap finding (distinct from F-04's integration-mechanism gap). |
@@ -905,6 +920,168 @@ document this revision:
 `OPEN-FINDINGS.md` F-02's closure (to Resolved) is tracked and handled
 separately, out of this document's scope.
 
+**Gap 15 (opened 2026-09-02, v1.6 — RESOLVED 2026-09-02, v1.7, same day but a
+later revision, not the same-revision pattern used for Gaps 12/14):**
+`RAISE-FR-OPS-002`'s Check-in/Check-out
+workflow, resolved as a uniform immediate-state-change rule at Gap 14
+(2026-09-01, PRD §16 Resolved Question 42), is **narrowed for one category**
+by a new business decision, 2026-09-02, PRD §16 Resolved Question 43: a real
+Singer Thailand company form ("ใบดำเนินการเกี่ยวกับคอมพิวเตอร์และอุปกรณ์",
+IT Equipment Processing Form, Version 2024, branch Retail9972 ไทวัสดุ ภูเก็ต)
+supplied by the business user during a live session showed a genuine
+4-signature approval process exists in practice for IT equipment handovers —
+a fact not visible in the source material behind Resolved Question 42.
+Confirmed: this applies **only** to assigning (Check-out) an asset in the
+**IT Hardware** category — Check-in (all categories) and Check-out of every
+other category remain exactly as Resolved Question 42 confirmed.
+
+**Why this is a genuinely different case from every other same-day
+resolution in this document (Gaps 9, 12, 13, 14):** those were either (a) a
+pure requirement-content/spec correction matching already-built,
+already-tested behavior exactly (Gap 14, Gap 12's threshold-value half), or
+(b) a small, already-scoped UI change shipped and formally executed the same
+day (Gap 9's Type-level nesting, Gap 13's ADMIN-route fix). This is neither:
+it is a **brand-new 4-stage approval feature with zero code written yet** —
+new pending/confirmed/processed/approved states, two new role-gated queues
+(`IT_STAFF` IT Processing Queue, `IT_MANAGER` IT Supervisor Approval Queue),
+a new "My Pending Assignments" employee-facing surface, and a 4-stage
+progress indicator (reused pattern from `RAISE-FR-MAINT-001`'s
+`GovernanceStep`, but not yet wired to this new state model). Marking this
+row's new scope PASS, or closing this gap same-revision, would overstate
+readiness in exactly the way this document's own standing discipline
+(Gap 6/8/9's "a spec correction alone never upgrades a Test Status; only a
+real execution does") forbids. **Historical note, superseded by the
+Resolution subsection below:** this gap was correctly left open at v1.6
+opening for exactly the reasons above (zero code existed). It was later
+resolved in v1.7, same day, once real backend code was actually written and
+`TC-OPS-002-04..09` were formally re-executed against it — a genuinely
+later revision producing real evidence, not a re-labeling of this v1.6
+snapshot.
+
+**What has been done, verified by direct re-read of every document in the
+chain this revision:**
+
+- `RAISE-PRD.md` v0.14, §16 Resolved Question 43 (narrowing Resolved
+  Question 42, not reopening or reversing it) — the 4-stage digital workflow
+  (Initiation → Recipient Confirmation → IT Processing → IT Supervisor
+  Approval), state model, and role gates (`IT_STAFF`/`IT_MANAGER`, no new
+  Role) are specified; §6 (`RAISE-FR-OPS-002` Acceptance Criteria/
+  Dependencies/Source Reference/Open Question), §11 (Security & RBAC note),
+  and §17 (Traceability Matrix row) updated to match.
+- `RAISE-DESIGN.md` v0.12, §4.2, new "IT Hardware Assignment Approval
+  Workflow — Category-Scoped Exception" subsection.
+- `RAISE-PROTOTYPE.md` v0.13, P-008 (§14), new subsection — explicitly notes
+  no recipient-decline path is defined, and flags an open design point on
+  Custody History write-timing across the 4 stages.
+- `RAISE-ACCEPTANCE-CRITERIA.md` v0.11, §11 — six new criteria
+  `AC-OPS-002-04..09` (Stage 1 pending-state entry, Stage 2 Recipient
+  Confirmation, Stage 3 IT Processing, Stage 4 IT Supervisor Approval as the
+  sole status-flipping action, Stage 3/4 rejection returning to Available
+  terminal, and a regression-guard criterion confirming non-IT-Hardware
+  categories are unaffected). Two Stage-2 sub-points (recipient-decline path;
+  e-signature/acknowledgment-text capture) explicitly marked NOT TESTABLE
+  YET, tracked via the PRD's own `## NEEDS_PRD_CONFIRMATION` note rather than
+  invented.
+- `RAISE-TEST-PLAN.md` v0.11 — `TS-OPS-002` removed from the "no blocked
+  items" group and marked Partial: `AC-OPS-002-01..03` remain fully testable
+  and already-PASSing; `AC-OPS-002-04..09` are blocked **on implementation**
+  (a different blocking category from every other row in that section, which
+  waits on a business/product decision, not on code being written).
+- `RAISE-TEST-CASES.md` v0.14, §10 — six new test cases `TC-OPS-002-04..09`
+  added 1:1 against the six new criteria, **each explicitly marked BLOCKED
+  (pending implementation)** — fully specified, none executed, since no code
+  exists yet.
+
+**What this closes, and what it explicitly does not close:**
+
+1. **RESOLVED 2026-09-02 (this revision, v1.7):** implementation of the
+   4-stage workflow's backend/state-machine core. The 4-stage workflow has
+   now been implemented in `go-template-main` (see the Resolution subsection
+   below for the full record) and `TC-OPS-002-04..09` have been formally
+   re-executed end-to-end against the real running Docker stack and recorded
+   **PASS** in `RAISE-TEST-CASES.md` v0.15. `RAISE-FR-OPS-002`'s row (§3) is
+   accordingly upgraded from `PASS (partial)` back to **PASS on the
+   testable-now scope**. **Not fully closed by this resolution, and
+   correctly not claimed as such:** the frontend UI for this workflow
+   (a distinct, not-yet-started follow-up) and backend enforcement of the
+   `IT_STAFF`/`IT_MANAGER` role gates (consistent with this codebase's
+   existing project-wide UI-only RBAC MVP decision, not a gap specific to
+   this feature) — both are recorded as explicit scope boundaries in the
+   Resolution subsection below, not silently folded into this PASS.
+2. **Not closed — genuinely open, tracked via the PRD's own
+   `## NEEDS_PRD_CONFIRMATION` mechanism, not invented here:** whether the
+   recipient's Confirm Receipt action (Stage 2) should also capture an
+   e-signature or legal-acknowledgment text, matching the underlying physical
+   form. No criterion, test case, or this matrix's row assumes an answer
+   either way.
+3. **Not closed — a new design-phase question, distinct from Open Finding
+   F-10 (Gap 4):** at which of the 4 stages `RAISE-FR-ASSET-003` Custody
+   History is actually written (only at final approval, or at each stage
+   transition) is explicitly not defined by Resolved Question 43. This does
+   **not** touch or resolve Gap 4/F-10 (whether Check-in/Check-out is the
+   *exclusive* writer of Custody History), which remains open and unaffected.
+4. **NOT closed — also unaffected and out of scope for this gap:** the
+   general `RAISE-NFR-SEC-RBAC-001` role/permission-matrix-content question
+   for other domains (PRD §16 Q21–Q22, Open Finding F-08) — Resolved
+   Question 43 reuses the existing, already-confirmed `IT_STAFF`/`IT_MANAGER`
+   roles (no new Role introduced) and does not touch that broader question.
+
+**Gap 15 — Resolution (2026-09-02, v1.7):** real code has now been written
+and a formal execution sweep against `TC-OPS-002-04..09` has recorded real
+PASS results — the condition this gap's own closure rule (above) required.
+
+- **Implementation:** new `go-template-main` files
+  `model/assetHandoverModel.go`, `repository/assetHandoverPGRepository.go`,
+  `repository/assetHandoverRepository.go`, `service/assetHandoverService.go`,
+  `controller/assetHandoverController.go`,
+  `sql/pg/V5__AssetHandovers_Table.sql`; new routes `GET /handovers`,
+  `GET /handovers/:code`, `POST /assets/:id/handover`,
+  `POST /handovers/:code/confirm`, `POST /handovers/:code/process`,
+  `POST /handovers/:code/decision`. `AssetService.AssignAsset` now branches
+  on Asset Category `"IT Hardware"`, returning HTTP 409 with a `nextStep`
+  hint into the new handover flow; every other category continues to assign
+  immediately, unchanged (regression-verified via `TC-OPS-002-09`).
+- **Test evidence:** `RAISE-TEST-CASES.md` v0.15, §10 — `TC-OPS-002-04`
+  through `TC-OPS-002-09` (all six) rewritten from **BLOCKED (pending
+  implementation)** to **PASS**, formally re-executed end-to-end against the
+  real running Docker stack (backend + Postgres): Stage 1 Initiate (no early
+  status flip, TC-OPS-002-04), Stage 2 Recipient Confirmation with
+  recipient-identity validation (TC-OPS-002-05), Stage 3 IT Processing
+  (TC-OPS-002-06), Stage 4 IT Supervisor Approval as the sole
+  status-flipping action (TC-OPS-002-07), terminal rejection at both Stage 3
+  and Stage 4 confirmed non-reopenable (TC-OPS-002-08), and the
+  non-IT-Hardware regression guard (TC-OPS-002-09). Corroborated by 18 new
+  Go unit tests (`service/assetHandoverService_test.go`, all passing) and a
+  clean full `go build`/`go vet`/`go test` sweep.
+- **§3 row updated:** `RAISE-FR-OPS-002`'s Test Status is upgraded from
+  `PASS (partial)` to **PASS on the testable-now scope** (see the row itself
+  for the full evidence list and the explicit scope-boundary list below).
+- **What this closes:** item 1 above only — the "zero code written yet"
+  implementation gap. **What this explicitly does NOT close** (items 2–4
+  above, all unchanged and still genuinely open): the Stage-2 e-signature/
+  acknowledgment-text-capture question (PRD's own
+  `## NEEDS_PRD_CONFIRMATION` note — the user dismissed rather than answered
+  this question this session, so it remains untouched, not resolved by
+  omission); the Stage-2 recipient-decline path (never asked, not
+  implemented); the Custody History write-timing question across the 4
+  stages (`RAISE-DESIGN.md` §4.2's own flagged open design point, distinct
+  from and not resolving Open Finding F-10 / Gap 4); and the general
+  `RAISE-NFR-SEC-RBAC-001` role/permission-matrix-content question (PRD §16
+  Q21–Q22, Open Finding F-08).
+- **Two additional scope boundaries, new to this resolution, correctly not
+  claimed as closed by it:** (a) this execution is **backend/API-level
+  only** — no frontend UI exists yet for "My Pending Assignments"/
+  `IT_STAFF` queue/`IT_MANAGER` queue, a distinct, not-yet-started
+  follow-up; (b) `IT_STAFF`/`IT_MANAGER` role gates were confirmed present
+  in the state machine but **not** verified as backend-enforced, consistent
+  with this codebase's existing project-wide MVP decision that RBAC is
+  UI-only/client-side (PRD §16 Resolved Question 38) — not a gap specific to
+  this feature, and not newly introduced by this resolution.
+
+**Gap 15 is RESOLVED as of this revision (v1.7).** `OPEN-FINDINGS.md` update
+(recording this closure, if tracked there) is handled separately, out of
+this document's scope.
+
 ---
 
 ## 7. Chain Consistency Check
@@ -1131,8 +1308,56 @@ downstream document's citation of an upstream document's content:
   newly-confirmed scope; no new code was written and no new test execution
   was performed. Thread confirmed complete (Gap 14, §6, opened and RESOLVED
   same revision, v1.5).
+- **`RAISE-FR-OPS-002` — IT Hardware Assignment Approval Workflow, PRD §16
+  Resolved Question 43 (narrowing Resolved Question 42) — thread walked this
+  revision (2026-09-02, v1.6):** `RAISE-PRD.md` v0.14 §16 Resolved Question
+  43 → `RAISE-DESIGN.md` v0.12 §4.2 (new "IT Hardware Assignment Approval
+  Workflow — Category-Scoped Exception" subsection) →
+  `RAISE-PROTOTYPE.md` v0.13 P-008 (§14, new subsection; explicitly flags no
+  recipient-decline path and an open Custody-History write-timing design
+  point) → `RAISE-ACCEPTANCE-CRITERIA.md` v0.11 §11 (six new criteria
+  `AC-OPS-002-04..09`, two Stage-2 sub-points explicitly marked NOT TESTABLE
+  YET) → `RAISE-TEST-PLAN.md` v0.11 (`TS-OPS-002` removed from the "no
+  blocked items" group, marked Partial, blocked on implementation) →
+  `RAISE-TEST-CASES.md` v0.14 §10 (six new cases `TC-OPS-002-04..09`, each
+  explicitly **BLOCKED (pending implementation)**). Every layer agrees on
+  the same 4-stage shape, state model, and role gates, and — critically —
+  every layer agrees **no implementation exists yet (at v1.6 opening)**: no
+  document in this thread claims or implies a PASS for the new scope at that
+  point. This matrix's own §3 row mirrored that exactly at v1.6: general-rule
+  PASS unchanged, new-scope status downgraded to **PASS (partial)** overall,
+  with `AC-OPS-002-04..09` / `TC-OPS-002-04..09` carried as BLOCKED (pending
+  implementation), not PASS and not silently omitted. Thread confirmed
+  complete and consistent at v1.6 — **deliberately left open as a gap**
+  (Gap 15, opened v1.6) at that point, since the underlying implementation
+  work, not just the spec sync, remained outstanding. **Superseded by the
+  bullet immediately below, this same revision (v1.7).**
+- **`RAISE-FR-OPS-002` / IT Hardware Assignment Approval Workflow — Gap 15
+  RESOLVED, thread walked this revision (2026-09-02, v1.7):** the upstream
+  five documents (`RAISE-PRD.md` v0.14, `RAISE-DESIGN.md` v0.12,
+  `RAISE-PROTOTYPE.md` v0.13, `RAISE-ACCEPTANCE-CRITERIA.md` v0.11,
+  `RAISE-TEST-PLAN.md` v0.11) are **unchanged** from v1.6 — this closure is
+  produced entirely by real implementation (`go-template-main`, new files
+  and routes listed in the `RAISE-FR-OPS-002` row and Gap 15's Resolution
+  subsection, §6) plus a formal test-execution update to
+  `RAISE-TEST-CASES.md` v0.15 §10, which rewrites `TC-OPS-002-04..09` from
+  BLOCKED (pending implementation) to **PASS**, each citing specific,
+  re-checked behavior (Stage 1 no-early-flip; Stage 2
+  recipient-identity-validated confirmation; Stage 3 forwarding; Stage 4
+  sole status-flip; Stage 3/4 terminal rejection; non-IT-Hardware
+  regression guard), corroborated by 18 new passing Go unit tests and a
+  clean `go build`/`go vet`/`go test` sweep. This matrix's own §3 row now
+  mirrors that exactly: **PASS on the testable-now scope**, with the two
+  scope boundaries this execution does not cover (no frontend UI yet;
+  role gates not backend-enforced, consistent with the project-wide
+  UI-only RBAC MVP decision) recorded explicitly, not silently folded into
+  the PASS. No document in this thread claims or implies the two Stage-2
+  sub-points (e-signature/acknowledgment-text capture; recipient-decline
+  path) or the Custody-History write-timing question are resolved by this
+  closure — all three remain genuinely open and are carried forward
+  unchanged. Thread confirmed complete — **Gap 15 is now RESOLVED** (§6).
 - Full re-walk confirmed no other Test Status cell in §3/§4 has drifted from
-  the current text of `RAISE-TEST-CASES.md` v0.13 (cross-checked TC-by-TC):
+  the current text of `RAISE-TEST-CASES.md` v0.15 (cross-checked TC-by-TC):
   `RAISE-FR-ASSET-001`, `RAISE-FR-ORACLE-001`, `RAISE-FR-AUDIT-001`,
   `RAISE-AI-SEARCH-001`, `RAISE-FR-LIFE-001`,
   `RAISE-AI-DOC-001..004` all match their respective TC Blocked-column text
@@ -1295,6 +1520,30 @@ not touched by this correction.
   (Open Finding F-10, Gap 4) or the general RBAC role/permission-matrix
   content question for other domains (PRD §16 Q21–Q22, Open Finding F-08) —
   both remain genuinely open and unaffected. See Gap 14, §6.
+- **Resolved this revision (2026-09-02), Gap 15:** `RAISE-FR-OPS-002`'s new
+  IT Hardware Assignment Approval Workflow (PRD §16 Resolved Question 43,
+  narrowing Resolved Question 42 for the IT Hardware category only) is now
+  implemented in `go-template-main` and formally executed. `TC-OPS-002-04`
+  through `TC-OPS-002-09` were formally re-executed end-to-end against the
+  real running Docker stack (backend + Postgres) and confirmed **PASS**,
+  per `RAISE-TEST-CASES.md` v0.15, corroborated by 18 new passing Go unit
+  tests and a clean `go build`/`go vet`/`go test` sweep. Compliance Review
+  may treat `RAISE-FR-OPS-002`'s row as **PASS on the testable-now scope**
+  — the general Check-in/Check-out rule and the new IT Hardware workflow's
+  4-stage state machine, terminal-rejection behavior, and non-IT-Hardware
+  regression guard are all real, evidence-based PASS. **Compliance Review
+  must not**, however, treat this as: (a) confirmation of a frontend UI for
+  this workflow — none exists yet, a distinct, not-yet-started follow-up;
+  (b) confirmation that the `IT_STAFF`/`IT_MANAGER` role gates are
+  backend-enforced — they are not, consistent with this codebase's
+  project-wide UI-only/client-side RBAC MVP decision (PRD §16 Resolved
+  Question 38), not a gap specific to this feature; (c) resolution of the
+  separate, still-open recipient-decline-path / e-signature-capture
+  sub-points (tracked via the PRD's own `## NEEDS_PRD_CONFIRMATION` note,
+  untouched — the user dismissed rather than answered this question this
+  session); or (d) resolution of the Custody-History write-timing question
+  across the 4 stages (a design-phase question, distinct from and not
+  resolving Open Finding F-10 / Gap 4). See Gap 15, §6, RESOLVED.
 
 ---
 
@@ -1386,6 +1635,24 @@ not touched by this correction.
       (Custody-History write-path exclusivity, Gap 4) and Open Finding F-08
       (general RBAC role/permission-matrix content, PRD §16 Q21–Q22) —
       both remain genuinely open, tracked separately
+- [x] **Gap 15 (§6) is RESOLVED this revision (v1.7, opened v1.6, resolved
+      v1.7, same day)** — `RAISE-FR-OPS-002`'s new IT Hardware Assignment
+      Approval Workflow (PRD §16 Resolved Question 43, narrowing Resolved
+      Question 42) is now implemented in `go-template-main` (new
+      model/repository/service/controller/SQL migration files, new
+      `/handovers` routes, `AssetService.AssignAsset` branching on Category
+      "IT Hardware") and formally re-executed end-to-end against the real
+      running Docker stack (backend + Postgres). `TC-OPS-002-04..09` all move
+      from BLOCKED (pending implementation) to **PASS** in
+      `RAISE-TEST-CASES.md` v0.15, corroborated by 18 new passing Go unit
+      tests. `RAISE-FR-OPS-002`'s row (§3) is upgraded from `PASS (partial)`
+      to **PASS on the testable-now scope**. **Explicitly not resolved by
+      this**, and correctly not claimed as such: frontend UI for the
+      workflow (not yet started), backend role-gate enforcement (consistent
+      with this codebase's project-wide UI-only RBAC MVP decision), the two
+      Stage-2 sub-points (e-signature capture; recipient-decline path), and
+      the Custody-History write-timing question — all remain genuinely open,
+      tracked separately (§6, Gap 15's Resolution subsection)
 - [x] No VERSCAN-only item appears anywhere in this matrix
 
 ---
@@ -1412,9 +1679,11 @@ Development (Source Code)
 RAISE-COMPLIANCE-REVIEW.md
 ```
 
-Gaps 1–14 are now all resolved — Gaps 1–13 are re-confirmed with no drift
-this revision except where noted, and **Gap 14 (opened and RESOLVED this
-revision, v1.5)** — see below for the closure record, the same
+**Gaps 1–15 are all resolved** — Gap 15 (opened v1.6, 2026-09-02) is now
+**RESOLVED this revision (v1.7, same day)**, see below. Gaps 1–13 are
+re-confirmed with no drift this revision except where noted, and **Gap 14
+(opened and RESOLVED in the v1.5
+revision, unchanged this pass)** — see below for the closure record, the same
 "opened-and-closed-same-revision" pattern used for Gap 12, distinct from
 Gap 13's "opened in one revision, closed in a later one" pattern.
 **Gap 8
@@ -1471,7 +1740,30 @@ workflow/permission/holder-model half — the separate Custody-History
 write-path exclusivity question (Open Finding F-10, Gap 4) and the general
 RBAC role/permission-matrix content question for other domains (PRD §16
 Q21–Q22, Open Finding F-08) remain open and are carried forward in item 1
-below, unchanged in scope.
+below, unchanged in scope. **Gap 15, opened v1.6 (2026-09-02), is now RESOLVED this revision (v1.7,
+same day)** — `RAISE-FR-OPS-002`'s new IT Hardware Assignment Approval
+Workflow (PRD §16 Resolved Question 43, narrowing Resolved Question 42 for
+the IT Hardware category only) is confirmed at the requirement-content
+layer, fully propagated through `RAISE-DESIGN.md` v0.12 §4.2,
+`RAISE-PROTOTYPE.md` v0.13 P-008, `RAISE-ACCEPTANCE-CRITERIA.md` v0.11
+(`AC-OPS-002-04..09`), `RAISE-TEST-PLAN.md` v0.11 (`TS-OPS-002` Partial,
+blocked on implementation) — and **now genuinely implemented**: new
+`go-template-main` backend files/routes for the 4-stage handover state
+machine, with `AssetService.AssignAsset` branching on Category "IT
+Hardware." `RAISE-TEST-CASES.md` v0.15 records `TC-OPS-002-04..09` all
+**PASS**, formally re-executed end-to-end against the real running Docker
+stack (backend + Postgres), corroborated by 18 new passing Go unit tests.
+Unlike Gaps 9/12/13/14 (closed same-revision via spec correction or a small
+already-scoped fix), this gap took two revisions (opened v1.6, resolved
+v1.7) because it genuinely required real net-new implementation work first
+— but it is now closed on real code + real execution evidence, per this
+document's own no-silent-resolution discipline (see Gap 15, §6, RESOLVED,
+and the `RAISE-FR-OPS-002` row in §3, now **PASS on the testable-now
+scope**, upgraded from the `PASS (partial)` Gap 15's opening left it at).
+**Not closed by this resolution** (unaffected, carried forward): frontend UI
+for the workflow, backend role-gate enforcement, the two Stage-2 sub-points,
+and the Custody-History write-timing question — see Gap 15, §6, for the
+full scope-boundary list.
 
 **Recommended next actions, in order:**
 
@@ -1479,27 +1771,31 @@ below, unchanged in scope.
    P0/MVP requirements (§3/§4 above) — in particular Q1 (asset master
    fields), Q3/Q4 residual KPI formulas, Q6–Q10 (Oracle integration design)
    (Q11–Q13's Check-in/Check-out workflow shape, permission gate, and
-   holder-data-model questions are now resolved — see Gap 14, §6; Q15's
-   field-list portion is resolved — see Gap 7, §6 — and Q15b's
-   threshold-configurability portion is now also resolved — see Gap 12, §6),
-   Q18–Q20 (AI citation/confidence/conflict), Q21–Q23
-   (authentication mechanism, role list, permission matrix content — **still
-   genuinely open; the four `MockAuthRepository` demo accounts added to
-   close Gap 10 are a testing convenience, and the Check-in/Check-out
-   permission-gate answer resolved by Gap 14 is a narrow exception scoped
-   to that one gate only — neither is a proposed answer to this broader
-   question**), Q24–Q25 (audit taxonomy/retention), the PRD §6.9 Open
-   Question (Alerts severity mapping / trigger rules for any condition
-   beyond warranty-expired — **still genuinely open; the "Not yet defined"
-   Severity rendering added to close Gap 11 is an honest placeholder, not a
-   proposed answer to this question**, tracked as Open Finding F-05), Open
-   Question 10a (`ReconciliationPage` mapping), and Open Question 20a
-   (`RAISE-AI-DOC-004` matching/merge behavior).
+   holder-data-model questions are now resolved — see Gap 14, §6, and Q11
+   for the IT Hardware category specifically has since been narrowed by
+   Q43 and implemented — see Gap 15, §6, RESOLVED; Q15's field-list portion is
+   resolved — see Gap 7, §6 — and Q15b's threshold-configurability portion is
+   now also resolved — see Gap 12, §6), Q18–Q20 (AI citation/confidence/
+   conflict), Q21–Q23 (authentication mechanism, role list, permission
+   matrix content — **still genuinely open; the four `MockAuthRepository`
+   demo accounts added to close Gap 10 are a testing convenience, and the
+   Check-in/Check-out permission-gate answer resolved by Gap 14 is a narrow
+   exception scoped to that one gate only — neither is a proposed answer to
+   this broader question**), Q24–Q25 (audit taxonomy/retention), the PRD
+   §6.9 Open Question (Alerts severity mapping / trigger rules for any
+   condition beyond warranty-expired — **still genuinely open; the "Not yet
+   defined" Severity rendering added to close Gap 11 is an honest
+   placeholder, not a proposed answer to this question**, tracked as Open
+   Finding F-05), Open Question 10a (`ReconciliationPage` mapping), and Open
+   Question 20a (`RAISE-AI-DOC-004` matching/merge behavior).
 2. Resolve the `RAISE-FR-ASSET-003` vs. `RAISE-FR-OPS-002` custody-writing-
    events exclusivity question (Gap 4, Open Finding F-10 — **explicitly not
    resolved by Gap 14's closure of the workflow/permission/holder-model
-   questions**) before any custody-writing code path beyond Check-in/
-   Check-out is built.
+   questions, and not resolved by Gap 15's IT Hardware workflow confirmation
+   or implementation either**) before any custody-writing code path beyond
+   Check-in/Check-out is built — this now also includes deciding at which of
+   the new 4 stages Custody History is written, per the open design point
+   Gap 15's Resolution left explicitly unresolved (`RAISE-DESIGN.md` §4.2).
 3. If and when any PRD §10 NFR backlog area (§4.2 above) receives a defined
    value/target, add the corresponding Traceability ID to `RAISE-PRD.md`
    first, then propagate a real AC group / Suite / Test Case down the chain
@@ -1507,44 +1803,72 @@ below, unchanged in scope.
    definition.
 4. Proceed to Development for requirements with no open blocker (e.g.,
    `RAISE-FR-OPS-001`, `TS-AI-STATES`), while tracking the BLOCKED items
-   above for the remaining requirements.
+   above for the remaining requirements. **Resolved this revision:** the IT
+   Hardware Assignment Approval Workflow's backend (new
+   pending/confirmed/processed/approved states, `AssetService.AssignAsset`
+   branching, `/handovers` routes) has been implemented and
+   `TC-OPS-002-04..09` formally executed — see Gap 15, §6, RESOLVED.
+   **Remaining follow-up work, not yet started, not part of this closure:**
+   build the frontend UI for this workflow (`IT_STAFF`/`IT_MANAGER`
+   role-gated queues, "My Pending Assignments" surface, 4-stage progress
+   indicator reusing `RAISE-FR-MAINT-001`'s `GovernanceStep` pattern) and,
+   once the RBAC-enforcement question (PRD §16 Q21–Q22) is answered,
+   backend-enforce the `IT_STAFF`/`IT_MANAGER` role gates.
 
 ---
 
 ## Document Status
 
-**Version:** 1.5 (`RAISE-FR-OPS-002` and `RAISE-FR-ASSET-003` — Open Finding
-F-02, PRD §16 Open Questions 11–13 — **RESOLVED 2026-09-01** per confirmed
-business decision, `RAISE-PRD.md` v0.13 §16 Resolved Question 42. **This
-closes new Gap 14** (opened and RESOLVED in this same revision, the same
-pattern used for Gap 12, not the "opened in one revision, closed in a later
-one" pattern used for Gap 13). Check-in/Check-out confirmed as an immediate
-state-change operation, no approval/exception-handling step; permission
-gate confirmed as any authenticated user, no role restriction;
-`RAISE-FR-ASSET-003`'s holder data model confirmed as a direct 1:1 link to
-an Employee record. **No new code was written and no new test execution was
-performed** — the existing `TC-OPS-002-01..03` PASS result (executed
-2026-08-28) already covers the newly-confirmed scope. **This does NOT
-close** Open Finding F-10 (Custody-History write-path exclusivity, Gap 4,
-still genuinely open — a `RAISE-PROTOTYPE.md` v0.11 draft briefly and
-incorrectly over-resolved this related-but-separate question; it was caught
-and corrected in v0.12, restoring F-10 to open) or Open Finding F-08 (general
-RBAC role/permission-matrix content for other domains, PRD §16 Q21–Q22,
-still genuinely open — only Check-in/Check-out's own permission gate is
-settled here). Gaps 1–13 unchanged from v1.4.)
+**Version:** 1.7 (`RAISE-FR-OPS-002` — **Gap 15 RESOLVED, 2026-09-02, same
+day as its v1.6 opening.** The IT Hardware Assignment Approval Workflow
+(PRD §16 Resolved Question 43, narrowing Resolved Question 42) is now
+implemented in `go-template-main`: new `model/assetHandoverModel.go`,
+`repository/assetHandoverPGRepository.go`,
+`repository/assetHandoverRepository.go`, `service/assetHandoverService.go`,
+`controller/assetHandoverController.go`,
+`sql/pg/V5__AssetHandovers_Table.sql`; new routes `GET /handovers`,
+`GET /handovers/:code`, `POST /assets/:id/handover`,
+`POST /handovers/:code/confirm`, `POST /handovers/:code/process`,
+`POST /handovers/:code/decision`; `AssetService.AssignAsset` branches on
+Category `"IT Hardware"`, returning HTTP 409 into the new handover flow,
+with every other category unaffected (regression-verified).
+`RAISE-TEST-CASES.md` v0.15 records `TC-OPS-002-04..09` (all six) moved
+from **BLOCKED (pending implementation)** to **PASS**, formally re-executed
+end-to-end against the real running Docker stack (backend + Postgres),
+covering all 4 stages, both terminal-rejection points (Stage 3 and Stage
+4), and the non-IT-Hardware regression guard — corroborated by 18 new Go
+unit tests (`service/assetHandoverService_test.go`, all passing) and a
+clean full `go build`/`go vet`/`go test` sweep. `RAISE-FR-OPS-002`'s row
+(§3) is accordingly upgraded from `PASS (partial)` (as v1.6/Gap 15's opening
+left it) to **PASS on the testable-now scope**. This is backend/API-level
+execution only — **explicitly not closed by this resolution**: frontend UI
+for this workflow (a distinct, not-yet-started follow-up); backend
+enforcement of the `IT_STAFF`/`IT_MANAGER` role gates (consistent with this
+codebase's existing project-wide UI-only RBAC MVP decision, PRD §16
+Resolved Question 38, not a gap specific to this feature); the Stage-2
+e-signature/acknowledgment-text-capture question (PRD's own
+`## NEEDS_PRD_CONFIRMATION` note, untouched — dismissed rather than
+answered this session); the Stage-2 recipient-decline path (never asked,
+not implemented); and the Custody-History write-timing question across the
+4 stages (`RAISE-DESIGN.md` §4.2's own flagged open design point, distinct
+from and not resolving Open Finding F-10 / Gap 4). Gaps 1–14 unchanged from
+v1.5/v1.6.)
 **Status:** Draft for Traceability Review
-**Source:** [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.13 (§16 Resolved Question 42), [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.11 (§4.2), [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.12 (P-006/P-008), [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.10 (§11 AC-OPS-002), [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.10 (TS-OPS-002), and [`RAISE-TEST-CASES.md`](../06-test-cases/RAISE-TEST-CASES.md) v0.13 (§10 TC-OPS-002-01..03) — all six were already synced against this resolution in prior steps; this revision updates only `RAISE-TRACEABILITY-MATRIX.md` itself
+**Source:** [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.14 (§16 Resolved Question 43, unchanged this revision), [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.12 (§4.2, unchanged this revision), [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.13 (P-008, unchanged this revision), [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.11 (§11 AC-OPS-002-04..09, unchanged this revision), [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.11 (TS-OPS-002, unchanged this revision), and [`RAISE-TEST-CASES.md`](../06-test-cases/RAISE-TEST-CASES.md) v0.15 (§10 TC-OPS-002-04..09 now PASS) — plus the real `go-template-main` source tree (new handover model/repository/service/controller/SQL migration files and routes, `AssetService.AssignAsset` branching). This revision updates only `RAISE-TRACEABILITY-MATRIX.md` itself to reflect that closure.
 **Reference:** VERSCAN only
-**Last Re-Verified:** 2026-09-01 (`RAISE-FR-OPS-002` and `RAISE-FR-ASSET-003`
-rows updated to record PRD §16 Resolved Question 42's resolution — see
-Change Log v1.4 → v1.5 below and Gap 14, §6, for the full record. **No new
-test execution was performed this revision** — the existing
-`TC-OPS-002-01..03` PASS result (2026-08-28) already covers the
-newly-confirmed scope, so no new pass/fail evidence is reported below. Prior
-re-verification work on `RAISE-FR-WARRANTY-001` (unaffected this revision)
-is retained below for history: `TC-WARRANTY-001-01` through `-06` executed
-against the real running app and confirmed PASS (Gap 12/13, §6, RESOLVED,
-v1.3/v1.4).
+**Last Re-Verified:** 2026-09-02 (`RAISE-FR-OPS-002` row updated to record
+Gap 15's resolution — the IT Hardware Assignment Approval Workflow is now
+implemented and formally executed — see Change Log v1.6 → v1.7 below and
+Gap 15, §6, RESOLVED, for the full record. **Real backend code was written
+and a formal test-execution sweep was performed** — all six new test cases
+(`TC-OPS-002-04..09`) are correctly recorded **PASS** in
+`RAISE-TEST-CASES.md` v0.15, corroborated by 18 new passing Go unit tests.
+Prior re-verification work on `RAISE-FR-OPS-002`'s general rule and
+`RAISE-FR-ASSET-003` (unaffected this revision) is retained below for
+history: `TC-OPS-002-01..03` executed 2026-08-28 and confirmed PASS (Gap 14,
+§6, RESOLVED, v1.5); `RAISE-FR-WARRANTY-001`'s `TC-WARRANTY-001-01` through
+`-06` executed against the real running app and confirmed PASS (Gap 12/13,
+§6, RESOLVED, v1.3/v1.4).
 
 **This revision's execution evidence (2026-09-01, v1.4):** 153/153
 automated tests pass (`tsc --noEmit`/lint clean, up from 151/151 in v1.3 —
@@ -1578,7 +1902,172 @@ Pro showed "Expiring" consistently in both its Lifecycle row and Warranty &
 Coverage section badge. `TC-WARRANTY-001-06` was **not** executed that
 pass — this is exactly the gap v1.4 closes above.
 
-**Change Log — v1.4 → v1.5 (this revision, 2026-09-01):**
+**Change Log — v1.6 → v1.7 (this revision, 2026-09-02, same day as v1.6):**
+
+1. **Gap 15 RESOLVED — real implementation + real test execution, not a
+   business decision or spec correction alone:** the IT Hardware Assignment
+   Approval Workflow confirmed at v1.6 (PRD §16 Resolved Question 43) has
+   now been implemented in `go-template-main`: new files
+   `model/assetHandoverModel.go`, `repository/assetHandoverPGRepository.go`,
+   `repository/assetHandoverRepository.go`,
+   `service/assetHandoverService.go`, `controller/assetHandoverController.go`,
+   `sql/pg/V5__AssetHandovers_Table.sql`; new routes `GET /handovers`,
+   `GET /handovers/:code`, `POST /assets/:id/handover`,
+   `POST /handovers/:code/confirm`, `POST /handovers/:code/process`,
+   `POST /handovers/:code/decision`; `AssetService.AssignAsset` now branches
+   on Category `"IT Hardware"`, returning HTTP 409 into the new handover
+   flow, with every other category unaffected (regression-verified).
+2. **`RAISE-TEST-CASES.md` v0.15 formally re-executed `TC-OPS-002-04..09`**
+   end-to-end against the real running Docker stack (backend + Postgres):
+   Stage 1 Initiate (no early status flip), Stage 2 Recipient Confirmation
+   (recipient-identity validation confirmed), Stage 3 IT Processing, Stage 4
+   IT Supervisor Approval (confirmed the sole status-flipping action),
+   terminal rejection at both Stage 3 and Stage 4 (confirmed non-reopenable),
+   and the non-IT-Hardware regression guard — all six moved from **BLOCKED
+   (pending implementation)** to **PASS**. Corroborated by 18 new Go unit
+   tests (`service/assetHandoverService_test.go`, all passing) and a clean
+   full `go build`/`go vet`/`go test` sweep.
+3. **§3 `RAISE-FR-OPS-002` row updated**: Test Status upgraded from `PASS
+   (partial)` to **PASS on the testable-now scope**, with the full evidence
+   list and an explicit list of still-open scope boundaries (no frontend UI
+   yet; role gates not backend-enforced; Stage-2 e-signature/decline
+   sub-points; Custody-History write-timing question) recorded directly in
+   the row, not silently omitted.
+4. **§6 Gap 15 updated from OPEN to RESOLVED**, with a new "Gap 15 —
+   Resolution (2026-09-02, v1.7)" subsection recording the implementation,
+   the test evidence, what this closes (the "zero code written" item only),
+   and what it explicitly does not close (the Stage-2 sub-points, the
+   Custody-History write-timing question, the general RBAC content
+   question, the frontend UI, and backend role-gate enforcement) — the
+   original "opened" narrative (what was propagated, why it was genuinely
+   different from Gaps 9/12/13/14 at opening) is retained unedited for
+   history, with a note pointing to the new Resolution subsection.
+5. **§7 Chain Consistency Check** gained a new `RAISE-FR-OPS-002` / Gap 15
+   RESOLVED thread-walk bullet for this revision, noting the five upstream
+   documents are unchanged from v1.6 and this closure rests entirely on real
+   implementation + `RAISE-TEST-CASES.md` v0.15's execution evidence; the
+   prior v1.6 bullet is retained for history with a note that it is
+   superseded. The "full re-walk" closing bullet's Test Cases version
+   citation updated from v0.14 to v0.15.
+6. **§8 Compliance Review Readiness** Gap 15 bullet changed from OPEN to
+   Resolved, with the same explicit list of what Compliance Review may and
+   must not treat as covered by this closure.
+7. **§9 Checklist** Gap 15 item changed from unchecked (`[ ]`) to checked
+   (`[x]`), with the resolution evidence and the still-open scope-boundary
+   list recorded in the item text.
+8. **§10 Next Step** — the "Gaps 1–14 are resolved; Gap 15 is OPEN" summary
+   text is corrected to "Gaps 1–15 are all resolved," with Gap 15's
+   resolution recorded; recommended next-action item 1's Q11 citation
+   updated from "still open pending implementation" to "narrowed by Q43 and
+   implemented"; item 2 (Gap 4 / F-10) updated to note Gap 15's resolution
+   still does not resolve it, and to point at `RAISE-DESIGN.md` §4.2's
+   flagged open design point for Custody-History write-timing; item 4
+   updated from "implement the workflow" to "resolved this revision," with
+   the remaining frontend-UI and role-gate-enforcement follow-up work
+   recorded as explicit next steps.
+9. Version citations updated this revision: only `RAISE-TEST-CASES.md` v0.14
+   → v0.15 (the five upstream documents — PRD, Design, Prototype, AC, Test
+   Plan — are unchanged from v1.6, since this closure required no
+   spec-content change, only real implementation and real test execution).
+   Document version bumped 1.6 → 1.7. **No other gap in §6 was found open,
+   closed, or newly discovered during this pass** — Gaps 1–14 are unchanged
+   from v1.6 and are not re-litigated here; this revision's scope was Gap 15
+   specifically, per the instruction that prompted it. `OPEN-FINDINGS.md`
+   update (recording this closure, if tracked there) is handled separately,
+   out of this document's scope. **Explicitly unaffected and not touched by
+   this revision:** Open Finding F-10 (Custody-History write-path
+   exclusivity, Gap 4), Open Finding F-08 (general RBAC role/
+   permission-matrix content, PRD §16 Q21–Q22), and the two Stage-2
+   sub-points (e-signature capture; recipient-decline path, tracked via the
+   PRD's own `## NEEDS_PRD_CONFIRMATION` note) — all remain genuinely open
+   or unaffected, per the instruction that prompted this revision.
+
+**Change Log — v1.5 → v1.6 (prior revision, 2026-09-02, retained for
+history):**
+
+1. **Gap 15 opened, deliberately left OPEN (not resolved that revision) —
+   a genuine new-feature gap, distinct from every same-day resolution
+   pattern used so far (Gaps 9/12/13/14):** `RAISE-PRD.md` §16 Resolved
+   Question 43 (narrowing Resolved Question 42, not reopening or reversing
+   it) confirms a new IT Hardware Assignment Approval Workflow: a real
+   Singer Thailand company form ("ใบดำเนินการเกี่ยวกับคอมพิวเตอร์และอุปกรณ์")
+   supplied by the business user during a live session showed a genuine
+   4-signature approval process exists in practice for IT equipment
+   handovers. Confirmed digital workflow, scoped **only** to Check-out
+   (assign) of IT Hardware-category assets — 4 stages (Initiation →
+   Recipient Confirmation → IT Processing (`IT_STAFF`) → IT Supervisor
+   Approval (`IT_MANAGER`, only stage flipping status to Assigned));
+   rejection at Stage 3/4 is terminal, returns to Available; no new Role
+   introduced. Propagated through `RAISE-DESIGN.md` v0.12 (§4.2, new
+   subsection), `RAISE-PROTOTYPE.md` v0.13 (P-008, new subsection),
+   `RAISE-ACCEPTANCE-CRITERIA.md` v0.11 (six new criteria
+   `AC-OPS-002-04..09`), `RAISE-TEST-PLAN.md` v0.11 (`TS-OPS-002` moved out
+   of the "no blocked items" group, marked Partial, blocked on
+   implementation), and `RAISE-TEST-CASES.md` v0.14 (six new test cases
+   `TC-OPS-002-04..09`, all **BLOCKED (pending implementation)**). **Unlike
+   Gaps 9/12/13/14, this is a brand-new feature with zero code written yet**
+   — not a spec correction matching already-built behavior, and not a small
+   already-scoped UI fix shipped same-day. This gap is therefore correctly
+   left **OPEN**, per this document's own rule that a gap is never closed
+   without a real source-document fix (here: real implementation) backing
+   the closure.
+2. **§3 `RAISE-FR-OPS-002` row updated**: Priority/Scope, Design Area,
+   AC Group(s), TC ID(s), and Test Status columns all updated to reflect the
+   new category-scoped exception. Test Status changed from a full,
+   unqualified `PASS` to **`PASS (partial)`** — the general rule (all
+   Check-in, and Check-out for every category except IT Hardware) remains
+   PASS on unchanged 2026-08-28 evidence; the new IT Hardware workflow is
+   recorded as confirmed-but-unimplemented, with `AC-OPS-002-04..09` /
+   `TC-OPS-002-04..09` carried as BLOCKED (pending implementation).
+3. **§6 new Gap 15 added**, opened and left OPEN this revision, with a full
+   record of what was propagated, what remains genuinely undecided
+   (recipient-decline path; e-signature/acknowledgment-text capture, both
+   tracked via the PRD's own `## NEEDS_PRD_CONFIRMATION` note), and a new
+   design-phase question surfaced (Custody History write-timing across the 4
+   stages, distinct from and not resolving Open Finding F-10 / Gap 4).
+4. **§7 Chain Consistency Check** gained a dedicated `RAISE-FR-OPS-002` / IT
+   Hardware Assignment Approval Workflow thread-walk bullet for this
+   revision; the "full re-walk" closing bullet's Test Cases version citation
+   updated from v0.13 to v0.14.
+5. **§8 Compliance Review Readiness** gained a new Gap 15 OPEN bullet, with
+   an explicit instruction that Compliance Review must not treat
+   `RAISE-FR-OPS-002` as fully PASS, and must not treat this as resolving the
+   Stage-2 sub-points or the Custody-History write-timing question.
+6. **§9 Checklist** gained a new Gap 15 item, left **unchecked** (`[ ]`) —
+   the first unchecked item in this section's history — deliberately, to
+   visually distinguish an open gap from every prior checklist entry, all of
+   which record a resolution.
+7. **§10 Next Step** — the "Gaps 1–14 are now all resolved" summary text is
+   corrected to "Gaps 1–14 are resolved; Gap 15 (opened this revision, v1.6)
+   is OPEN, not resolved," with a new Gap 15 summary paragraph; recommended
+   next-action item 1's Q11 citation is annotated to note the IT Hardware
+   narrowing; item 2 (Gap 4 / F-10) gained a note that Gap 15's new
+   Custody-History-write-timing question does not resolve it either; item 4
+   gained an explicit new action item to implement the workflow and execute
+   `TC-OPS-002-04..09` before this row can return to a full PASS.
+8. Version citations updated this revision: `RAISE-PRD.md` v0.13 → v0.14,
+   `RAISE-DESIGN.md` v0.11 → v0.12, `RAISE-PROTOTYPE.md` v0.12 → v0.13,
+   `RAISE-ACCEPTANCE-CRITERIA.md` v0.10 → v0.11, `RAISE-TEST-PLAN.md` v0.10 →
+   v0.11, `RAISE-TEST-CASES.md` v0.13 → v0.14 (all six were already synced
+   against this new requirement in prior steps, not by this revision — this
+   revision only updates `RAISE-TRACEABILITY-MATRIX.md` itself to reflect
+   that prior sync). Document version bumped 1.5 → 1.6. **No other gap in
+   §6 was found open, closed, or newly discovered during this pass** — Gaps
+   1–14 are unchanged from v1.5 and are not re-litigated here; this
+   revision's reverse-chain re-verification was scoped to `RAISE-FR-OPS-002`
+   / the new IT Hardware Assignment Approval Workflow / PRD §16 Resolved
+   Question 43 specifically, per the instruction that prompted it, not a
+   full re-walk of every requirement. `OPEN-FINDINGS.md` update (recording
+   this as a new, still-open finding, if tracked there) is handled
+   separately, out of this document's scope. **Explicitly unaffected and not
+   touched by this revision:** `RAISE-FR-ASSET-003` (Gap 14, unaffected —
+   the holder-data-model resolution is untouched by this narrower Check-out
+   exception), Open Finding F-10 (Custody-History write-path exclusivity,
+   Gap 4), and Open Finding F-08 (general RBAC role/permission-matrix
+   content, PRD §16 Q21–Q22) — all remain genuinely open or unaffected, per
+   the instruction that prompted this revision.
+
+**Change Log — v1.4 → v1.5 (prior revision, 2026-09-01):**
 
 1. **Gap 14 opened and RESOLVED in the same revision, requirement-content
    scope (matching the Gap 12 pattern, not the Gap 13 pattern):**

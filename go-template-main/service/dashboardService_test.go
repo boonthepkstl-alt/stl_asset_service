@@ -18,7 +18,9 @@ type fakeAssetService struct {
 func (f *fakeAssetService) ListAssets(query model.AssetListQuery) (*model.AssetListResponse, error) {
 	return &model.AssetListResponse{Data: f.assets, Total: len(f.assets)}, nil
 }
-func (f *fakeAssetService) GetAsset(id string) (model.AssetModel, error) { return model.AssetModel{}, nil }
+func (f *fakeAssetService) GetAsset(id string) (model.AssetModel, error) {
+	return model.AssetModel{}, nil
+}
 func (f *fakeAssetService) CreateAsset(input model.CreateAssetRequest) (model.AssetModel, error) {
 	return model.AssetModel{}, nil
 }
@@ -26,6 +28,9 @@ func (f *fakeAssetService) AssignAsset(id string, input model.AssignAssetRequest
 	return model.AssetModel{}, nil
 }
 func (f *fakeAssetService) CheckInAsset(id string) (model.AssetModel, error) {
+	return model.AssetModel{}, nil
+}
+func (f *fakeAssetService) CompleteHandoverAssignment(id string, employeeID string, employeeName string) (model.AssetModel, error) {
 	return model.AssetModel{}, nil
 }
 

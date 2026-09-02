@@ -41,12 +41,29 @@ import { useTickets } from '@/hooks/useTickets';
 import { useLicenses } from '@/hooks/useLicenses';
 import { useEmployees } from '@/hooks/useEmployees';
 import { useAuditLogs } from '@/hooks/useAuditLogs';
+import { useHandovers } from '@/hooks/useHandovers';
 import { ticketService } from '@/services/ticket-service';
 import { assetService } from '@/services/asset-service';
+import { handoverService } from '@/services/handover-service';
+import { useAuth } from '@/contexts/AuthContext';
 import type { Ticket } from '@/types/ticket';
 import { cn } from '@/lib/cn';
 import { getWarrantyStatus } from '@/lib/warranty';
 import { useSettings } from '@/hooks/useSettings';
+
+// RAISE-FR-OPS-002 exception: assigning an "IT Hardware" category asset goes through the
+// 4-stage IT Hardware Assignment Approval Workflow (types/handover.ts, services/
+// handover-service.ts) instead of the immediate assign every other category still uses. The
+// asset itself stays 'Available' server-side throughout Stages 1-3 (only Stage 4 approval sets
+// it 'Assigned') -- so this page checks for an in-flight handover on the asset to show a
+// distinct "Assignment Pending" state instead of silently looking Available while a handover
+// is actually in progress.
+const HANDOVER_ACTIVE_STATUSES = ['PENDING_RECIPIENT_CONFIRMATION', 'PENDING_IT_PROCESSING', 'PENDING_IT_SUPERVISOR_APPROVAL'];
+const handoverStageLabel: Record<string, string> = {
+  PENDING_RECIPIENT_CONFIRMATION: 'Awaiting Recipient Confirmation',
+  PENDING_IT_PROCESSING: 'Awaiting IT Processing',
+  PENDING_IT_SUPERVISOR_APPROVAL: 'Awaiting IT Supervisor Approval',
+};
 
 // Ported from src/pages/AssetDetail.tsx. The core asset record (header, General Information,
 // Technical Specifications, Warranty) goes through assetService/useAsset; the Maintenance &
@@ -77,9 +94,24 @@ export function AssetDetailPage() {
   const { push } = useToast();
   const { asset, loading, error, notFound, refetch } = useAsset(assetId);
   const { settings: platformSettings } = useSettings();
+  const { user } = useAuth();
   const [tab, setTab] = useState('overview');
 
   const { entries: auditEntries, refetch: refetchAuditEntries } = useAuditLogs({ entityType: 'asset', entityId: asset?.id ?? '' });
+
+  // See the HANDOVER_ACTIVE_STATUSES doc comment above -- the /handovers list endpoint has no
+  // assetId filter (only search/status/recipientEmployeeId, per RAISE-API-DB-SPEC.md), so this
+  // filters client-side, same pattern assetTickets below already uses for the Ticket domain.
+  const { handovers, refetch: refetchHandovers } = useHandovers({});
+  const activeHandover = useMemo(
+    // asset.category === 'IT Hardware' is redundant today (InitiateHandover only ever creates
+    // a handover for that category, both server-side and in MockHandoverRepository), but this
+    // page renders for every category, so it's cheap defense-in-depth against a stray/synced
+    // handover row surfacing an "Assignment Pending" badge and quick-action on a category this
+    // workflow was never supposed to touch.
+    () => (asset && asset.category === 'IT Hardware' ? handovers.find((h) => h.asset.id === asset.id && HANDOVER_ACTIVE_STATUSES.includes(h.status)) : undefined),
+    [handovers, asset]
+  );
 
   const { tickets, refetch: refetchTickets } = useTickets({});
   const assetTickets = useMemo(
@@ -167,6 +199,25 @@ export function AssetDetailPage() {
     if (!employee) return;
     setIsAssigning(true);
     try {
+      // RAISE-FR-OPS-002 exception: "IT Hardware" assets go through the 4-stage handover
+      // workflow instead of the immediate assign every other category still uses. Checked
+      // client-side (asset.category is already on hand) rather than always calling
+      // assetService.assignAsset and catching its 409 -- cheap, and avoids a round trip AND a
+      // scary error-catching code path for what is actually the expected, documented case.
+      if (asset.category === 'IT Hardware') {
+        await handoverService.initiateHandover(
+          asset.id,
+          { employeeId: employee.id, employeeName: employee.name },
+          { id: user?.id ?? 'unknown', name: user?.fullName ?? 'Administrator', role: user?.role }
+        );
+        refetch();
+        refetchHandovers();
+        refetchAuditEntries();
+        setIsAssignModalOpen(false);
+        setAssignEmployeeId('');
+        push({ variant: 'success', title: 'Assignment initiated', message: `Assignment of ${asset.name} to ${employee.name} is awaiting recipient confirmation.` });
+        return;
+      }
       await assetService.assignAsset({ assetId: asset.id, employeeId: employee.id, employeeName: employee.name });
       refetch();
       refetchAuditEntries();
@@ -197,7 +248,9 @@ export function AssetDetailPage() {
   const quickActions = [
     asset.assignedTo
       ? { label: 'Check-in', icon: UserPlus, onClick: handleCheckIn }
-      : { label: 'Assign', icon: UserPlus, onClick: () => setIsAssignModalOpen(true) },
+      : activeHandover
+        ? { label: 'Assignment Pending', icon: UserPlus, onClick: () => navigate(`/handovers/${activeHandover.handoverCode}`) }
+        : { label: 'Assign', icon: UserPlus, onClick: () => setIsAssignModalOpen(true) },
     { label: 'Transfer', icon: ArrowRightLeft, onClick: () => push({ variant: 'info', title: 'Transfer asset', message: asset.name }) },
     {
       label: 'Request IT Service',
@@ -272,6 +325,11 @@ export function AssetDetailPage() {
               <div className="flex items-center gap-3 flex-wrap">
                 <h1 className="text-heading font-bold text-surface-900">{asset.name}</h1>
                 <StatusBadge status={asset.status} />
+                {activeHandover && (
+                  <Badge variant="warning" dot>
+                    Assignment Pending — {handoverStageLabel[activeHandover.status] ?? activeHandover.status}
+                  </Badge>
+                )}
                 <Badge variant="neutral">{asset.condition}</Badge>
                 {activeTicket && (
                   <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-caption font-bold bg-amber-100 text-amber-900 border border-amber-300">
@@ -393,7 +451,7 @@ export function AssetDetailPage() {
                   <LifecycleRow
                     icon={<User className="h-4 w-4 text-surface-400" />}
                     label="Custody"
-                    value={asset.assignedTo ? `Assigned to ${asset.assignedTo}` : 'Currently Available'}
+                    value={asset.assignedTo ? `Assigned to ${asset.assignedTo}` : activeHandover ? `Assignment Pending — ${activeHandover.recipient.name}` : 'Currently Available'}
                     onClick={() => setTab('history')}
                   />
                   <LifecycleRow

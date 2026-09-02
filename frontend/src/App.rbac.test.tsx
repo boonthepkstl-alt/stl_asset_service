@@ -26,8 +26,15 @@ function RbacHarness({ initialRoute }: { initialRoute: string }) {
             <Route path="/administration" element={<div>Admin Page</div>} />
             <Route path="/settings" element={<div>Settings Page</div>} />
           </Route>
+          <Route element={<ProtectedRoute allowedRoles={['IT_STAFF', 'ADMIN']} />}>
+            <Route path="/it-processing-queue" element={<div>IT Processing Queue Page</div>} />
+          </Route>
+          <Route element={<ProtectedRoute allowedRoles={['IT_MANAGER', 'ADMIN']} />}>
+            <Route path="/it-supervisor-approval-queue" element={<div>IT Supervisor Approval Queue Page</div>} />
+          </Route>
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" element={<div>Dashboard Page</div>} />
+            <Route path="/my-pending-assignments" element={<div>My Pending Assignments Page</div>} />
           </Route>
         </Routes>
       </AuthProvider>
@@ -87,6 +94,57 @@ describe('ProtectedRoute role enforcement', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Settings Page')).toBeInTheDocument();
+    });
+  });
+
+  // RAISE-FR-OPS-002 exception (IT Hardware Assignment Approval Workflow, PRs #72-73). RBAC is
+  // UI-only for MVP -- these lock in the route-guard gating documented in App.tsx: the IT
+  // Processing Queue (Stage 3) to IT_STAFF/ADMIN, and the IT Supervisor Approval Queue
+  // (Stage 4) to IT_MANAGER/ADMIN.
+  it('redirects a non-IT_STAFF/ADMIN authenticated user away from the IT Processing Queue', async () => {
+    seedAuth('EMPLOYEE');
+    render(<RbacHarness initialRoute="/it-processing-queue" />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Forbidden Page')).toBeInTheDocument();
+    });
+    expect(screen.queryByText('IT Processing Queue Page')).not.toBeInTheDocument();
+  });
+
+  it('allows an IT_STAFF user through to the IT Processing Queue', async () => {
+    seedAuth('IT_STAFF');
+    render(<RbacHarness initialRoute="/it-processing-queue" />);
+
+    await waitFor(() => {
+      expect(screen.getByText('IT Processing Queue Page')).toBeInTheDocument();
+    });
+  });
+
+  it('redirects an IT_STAFF user (not IT_MANAGER/ADMIN) away from the IT Supervisor Approval Queue', async () => {
+    seedAuth('IT_STAFF');
+    render(<RbacHarness initialRoute="/it-supervisor-approval-queue" />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Forbidden Page')).toBeInTheDocument();
+    });
+    expect(screen.queryByText('IT Supervisor Approval Queue Page')).not.toBeInTheDocument();
+  });
+
+  it('allows an IT_MANAGER user through to the IT Supervisor Approval Queue', async () => {
+    seedAuth('IT_MANAGER');
+    render(<RbacHarness initialRoute="/it-supervisor-approval-queue" />);
+
+    await waitFor(() => {
+      expect(screen.getByText('IT Supervisor Approval Queue Page')).toBeInTheDocument();
+    });
+  });
+
+  it('allows any authenticated role through My Pending Assignments (no role restriction)', async () => {
+    seedAuth('EMPLOYEE');
+    render(<RbacHarness initialRoute="/my-pending-assignments" />);
+
+    await waitFor(() => {
+      expect(screen.getByText('My Pending Assignments Page')).toBeInTheDocument();
     });
   });
 });

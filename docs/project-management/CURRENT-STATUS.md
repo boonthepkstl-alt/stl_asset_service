@@ -9,9 +9,9 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-09-01, after `CHECKPOINT-2026-09-01-010` (local 3-container
-Docker infrastructure added — frontend/backend/db — with a real nginx
-routing bug found and fixed during end-to-end verification; not yet
+**As of:** 2026-09-02, after `CHECKPOINT-2026-09-02-001` (Docker stack fixed
+to actually exercise the real backend — it was silently running on mock
+data — plus a real Dashboard null-guard bug found doing so; not yet
 shipped via PR, see that checkpoint for status). The
 `BASELINE-CHECKPOINT-2026-08-24` scan is still the last
 full live re-verification against `git`/source. F-20 (checkpoint-coverage

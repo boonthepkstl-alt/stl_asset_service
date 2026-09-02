@@ -39,4 +39,25 @@ describe('HttpDashboardRepository', () => {
     expect(getMock).toHaveBeenCalledWith('/dashboard/stats');
     expect(result).toEqual(sampleStats);
   });
+
+  // Found running against the real go-template-main backend in the local Docker stack
+  // (2026-09-02) with an empty Asset table: Go marshals a nil slice as JSON `null`, not
+  // `[]`, which crashed Dashboard/index.tsx's `.map()` calls despite the TS type claiming
+  // a non-null array. Locks in the null -> [] normalization added to fix it.
+  it('normalizes a null departmentDistribution/assetTypeDistribution (Go nil-slice JSON) to []', async () => {
+    getMock.mockResolvedValueOnce({
+      data: {
+        ...sampleStats,
+        departmentDistribution: null,
+        assetTypeDistribution: null,
+      },
+    });
+    const { HttpDashboardRepository } = await import('@/services/dashboard-repository');
+    const repo = new HttpDashboardRepository();
+
+    const result = await repo.getAssetStats();
+
+    expect(result.departmentDistribution).toEqual([]);
+    expect(result.assetTypeDistribution).toEqual([]);
+  });
 });

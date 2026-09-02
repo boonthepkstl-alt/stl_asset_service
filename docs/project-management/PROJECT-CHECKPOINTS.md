@@ -2655,6 +2655,42 @@ Commit: pending — predicted next PR after #67 (verify via `gh pr list` before 
 
 ---
 
+## CHECKPOINT-2026-09-02-001
+
+**Phase:** Infrastructure / Process (F-13/F-14) + Phase 8 (Executive Dashboard, `RAISE-FR-EXEC-001`)
+**Feature:** Fix the Docker stack to actually exercise the real backend, and a real dashboard null-guard bug found while doing so
+**Task:** User asked to log in through the running Docker stack and try it (`admin`/`password`)
+
+**What was implemented:** N/A — two bug fixes, not new features.
+**What was modified:** `frontend/Dockerfile` (added `VITE_AUTH_API_ENABLED`/`VITE_ASSET_API_ENABLED`/`VITE_EMPLOYEE_API_ENABLED`/`VITE_TICKET_API_ENABLED`/`VITE_AUDIT_API_ENABLED`/`VITE_DASHBOARD_API_ENABLED` build args, all defaulting `true`), `docker-compose.yml` (passes them through), `docker.env.example` (documents them), `frontend/nginx.conf` (adds an explicit no-cache header on `index.html`), `frontend/src/services/dashboard-repository.ts` (null-guards `departmentDistribution`/`assetTypeDistribution`).
+**What was fixed:** Two real defects, both found via live verification, neither by test suite alone:
+1. The Docker frontend image was built without any `*_API_ENABLED` flag set, so it silently ran entirely on in-memory mock data — `admin`/`password` (the real backend's demo credential) failed login with "Invalid username or password" because the frontend was validating against `MockAuthRepository`'s different demo accounts instead of ever calling the real `go-template-main` container. Root cause: my initial Dockerfile only wired `VITE_API_BASE_URL`, missing every feature-flag env var the app actually gates its repository choice on.
+2. Once real API calls were wired up, the Executive Dashboard crashed with "Unable to load dashboard statistics" against an empty (freshly-migrated, unseeded) database: Go marshals a nil slice as JSON `null`, not `[]`, and `HttpDashboardRepository.getAssetStats()` trusted the `AssetDashboardStats` TS type (which claims non-null arrays) without guarding against it — `Dashboard/index.tsx`'s `.map()` calls threw on `null`.
+3. Also caught along the way (already fixed in the prior checkpoint's stack but re-verified here): `index.html` was not being sent with an explicit no-cache header, so a rebuilt container's new JS hash could stay invisible behind a browser's own cached copy of the previous `index.html` — fixed by an explicit `location = /index.html { add_header Cache-Control "no-cache, no-store, must-revalidate"; }` block.
+**What was added:** 1 new regression test (`dashboard-repository.http.test.ts` — null → `[]` normalization).
+**What was removed:** None.
+
+**Decision:** N/A — bug fixes found via live testing, not business questions.
+
+**Files changed:** 6 files (`frontend/Dockerfile`, `docker-compose.yml`, `docker.env.example`, `frontend/nginx.conf`, `frontend/src/services/dashboard-repository.ts`, `frontend/src/services/dashboard-repository.http.test.ts`).
+**Database changes:** None. **API changes:** None (frontend-only). **Frontend changes:** See above.
+
+**Tests:** Full suite **154/154 passing** (was 153, +1 for the new null-guard regression test). `npx tsc --noEmit` → clean. `npm run lint` → clean.
+**Validation:** Live Docker verification, twice — once per bug: (1) after adding the `*_API_ENABLED` build args and rebuilding, `admin`/`password` successfully logged in through the real browser UI, landing on the Executive Dashboard as "Template Admin"/ADMIN (the real backend's demo user, distinct from the mock's "Demo Admin") — confirmed via network log showing a real `POST /api/auth/login` call, not an in-memory resolution. (2) After the dashboard null-guard fix and nginx no-cache fix, rebuilt again and re-verified via a cache-busted navigation (`?cachebust=1`, since the browser automation tool's own navigation reused a stale cached `index.html` referencing an old JS hash even after the no-cache header was added — confirmed server-side via direct `curl` that the header and correct hash were being served correctly throughout): Dashboard now renders "0" for every KPI tile (correctly reflecting the empty database) with no crash, and the Department Distribution donut chart renders its empty state correctly. No console errors.
+
+**Requirement Traceability:**
+No `RAISE-FR-*` ID for the Docker/nginx fixes (Infrastructure/Process, F-13/F-14). The dashboard null-guard touches `RAISE-FR-EXEC-001`'s existing `PASS` status — this is a defensive fix for an edge case (0 assets) that the existing formal `TC-DASH-01/-02`/`TC-EXEC-001-01/-02` execution (2026-08-31, against a seeded fixture) never exercised; it does not change that Test Status, since it was never formally re-executed against a live empty-database scenario as a numbered test case.
+
+**Git:**
+Branch: pending (not yet created as of this checkpoint).
+Commit: pending — predicted next PR after #68 (verify via `gh pr list` before treating as final; must not be merged until the user explicitly instructs "merge PR #N").
+
+**Known Issues:** None new.
+**Remaining Work:** Git branch/commit/push/PR for this checkpoint's changes.
+**Next Step:** Recalculate `NEXT-STEP.md`. Create git branch, commit, push, open PR, and wait for the user's explicit "merge PR #N" instruction before merging.
+
+---
+
 ## Level 2 — Feature Checkpoints
 
 ### FEATURE-CHECKPOINT-project-tracking-governance

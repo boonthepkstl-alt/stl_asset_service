@@ -66,6 +66,15 @@ export class MockDashboardRepository implements DashboardRepository {
 export class HttpDashboardRepository implements DashboardRepository {
   async getAssetStats(): Promise<AssetDashboardStats> {
     const response = await apiClient.get<AssetDashboardStats>('/dashboard/stats');
-    return response.data;
+    const data = response.data;
+    // go-template-main marshals a nil Go slice as JSON `null`, not `[]` -- happens whenever
+    // there are 0 assets (e.g. a freshly-seeded database). The TS type claims a non-null
+    // array; guard here so callers (dashboard-service.ts, Dashboard/index.tsx's .map() calls)
+    // don't have to.
+    return {
+      ...data,
+      departmentDistribution: data.departmentDistribution ?? [],
+      assetTypeDistribution: data.assetTypeDistribution ?? [],
+    };
   }
 }

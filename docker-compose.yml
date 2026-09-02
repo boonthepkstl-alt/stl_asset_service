@@ -50,6 +50,15 @@ services:
         # port above, not the internal Docker network hostname.
         VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8080/api}
         VITE_APP_ENV: production
+        # Default true for this stack -- without these, the frontend silently falls
+        # back to its in-memory Mock*Repository fixtures instead of the real backend
+        # container, which looks like it's "working" but never touches `db` at all.
+        VITE_AUTH_API_ENABLED: ${VITE_AUTH_API_ENABLED:-true}
+        VITE_ASSET_API_ENABLED: ${VITE_ASSET_API_ENABLED:-true}
+        VITE_EMPLOYEE_API_ENABLED: ${VITE_EMPLOYEE_API_ENABLED:-true}
+        VITE_TICKET_API_ENABLED: ${VITE_TICKET_API_ENABLED:-true}
+        VITE_AUDIT_API_ENABLED: ${VITE_AUDIT_API_ENABLED:-true}
+        VITE_DASHBOARD_API_ENABLED: ${VITE_DASHBOARD_API_ENABLED:-true}
     ports:
       - "${FRONTEND_PORT:-3000}:80"
     depends_on:

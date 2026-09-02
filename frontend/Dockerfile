@@ -13,8 +13,24 @@ COPY . .
 # container's env at `docker run` time is too late to affect an already-built bundle.
 ARG VITE_API_BASE_URL=http://localhost:8080/api
 ARG VITE_APP_ENV=production
+# Default true in this Docker build specifically: the whole point of this 3-container
+# stack is to exercise the real go-template-main backend, unlike the plain `npm run dev`
+# workflow, which defaults every one of these to false/unset (in-memory mock data, no
+# backend required) -- see frontend/.env.example and frontend/src/config/featureFlags.ts.
+ARG VITE_AUTH_API_ENABLED=true
+ARG VITE_ASSET_API_ENABLED=true
+ARG VITE_EMPLOYEE_API_ENABLED=true
+ARG VITE_TICKET_API_ENABLED=true
+ARG VITE_AUDIT_API_ENABLED=true
+ARG VITE_DASHBOARD_API_ENABLED=true
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 ENV VITE_APP_ENV=$VITE_APP_ENV
+ENV VITE_AUTH_API_ENABLED=$VITE_AUTH_API_ENABLED
+ENV VITE_ASSET_API_ENABLED=$VITE_ASSET_API_ENABLED
+ENV VITE_EMPLOYEE_API_ENABLED=$VITE_EMPLOYEE_API_ENABLED
+ENV VITE_TICKET_API_ENABLED=$VITE_TICKET_API_ENABLED
+ENV VITE_AUDIT_API_ENABLED=$VITE_AUDIT_API_ENABLED
+ENV VITE_DASHBOARD_API_ENABLED=$VITE_DASHBOARD_API_ENABLED
 
 RUN npm run build
 

@@ -2794,8 +2794,8 @@ Acceptance Criteria: `AC-OPS-002-04`..`-09`, `RAISE-ACCEPTANCE-CRITERIA.md` v0.1
 Test Case: `TC-OPS-002-04`..`-09`, `RAISE-TEST-CASES.md` v0.15 — moved from `BLOCKED (pending implementation)` to `PASS` (backend/API-level scope; no frontend UI yet; RBAC not backend-enforced, per this project's existing MVP-wide convention). `TS-OPS-002` row now 9/9/0/0/0 (was 9/3/6/0/0). `RAISE-TRACEABILITY-MATRIX.md` v1.7 — Gap 15 closed.
 
 **Git:**
-Branch: none yet — all changes below are uncommitted in the working tree as of this checkpoint.
-Commit: pending — not yet created, not yet pushed, no PR opened.
+Branch: `feature/it-hardware-handover-approval-workflow` (deleted after merge)
+Commit: `16a062c` (feature commit), merged to `main` via [PR #72](https://github.com/boonthepkstl-alt/stl_asset_service/pull/72) (merge commit `498b7fb`), 2026-09-02.
 
 **Known Issues:**
 - 5 code-review findings were identified but deliberately **not** fixed this session, documented as residual risk with inline code comments in `service/assetHandoverService.go`: (1) a count-then-insert race condition on the sequence number — the same unaddressed pattern already present in `TicketService.CreateTicket`, needs a DB sequence or `SELECT ... FOR UPDATE`, larger change than this pass's scope; (2) a non-atomic two-write sequence between the asset-status flip and the handover-record update at Stage 4 approval — no shared-transaction mechanism exists anywhere in this codebase, same best-effort trade-off already documented on the audit-log write elsewhere; (3) a TOCTOU gap where Stage 4 approval doesn't re-validate the asset's live status before flipping it (plausible, not confirmed); (4) `GetAsset` errors always mapped to a 404 rather than distinguishing real failures — matches `AssignAsset`'s existing pre-established convention, no change needed; (5) a hardcoded route-string coupling in the 409 response's `nextStep` hint (low severity, cosmetic).
@@ -2806,10 +2806,9 @@ Commit: pending — not yet created, not yet pushed, no PR opened.
 
 **Remaining Work:**
 - Frontend UI for this workflow does not exist at all yet — no "My Pending Assignments" surface, no IT_STAFF queue, no IT_MANAGER queue, no stage-progress indicator. This is a distinct, sizeable, not-yet-started follow-up, comparable in scope to the whole Maintenance domain's frontend work.
-- Git branch/commit/push/PR for all of this session's changes (13 files, doc-chain + backend) — nothing is committed yet.
 - The open business questions above (Stage 2 e-signature, Stage 2 decline path, Custody History write-timing) remain open pending explicit user direction.
 
-**Next Step:** Create a git branch, commit these changes, push, and open a PR — then wait for the user's explicit "merge PR #N" instruction before merging. Frontend UI work is the next substantive follow-up task after that, but is out of scope for this checkpoint.
+**Next Step:** ~~Create a git branch, commit these changes, push, and open a PR~~ — **done**: [PR #72](https://github.com/boonthepkstl-alt/stl_asset_service/pull/72) opened, then merged to `main` on the user's explicit "merge PR #72" instruction, 2026-09-02 (see Git section above). Frontend UI work is the next substantive follow-up task, but is out of scope for this checkpoint.
 
 ---
 

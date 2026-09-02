@@ -41,6 +41,12 @@ export const AUDIT_API_ENABLED = import.meta.env.VITE_AUDIT_API_ENABLED === 'tru
 // assetService, so enabling it doesn't require ASSET_API_ENABLED to also be on.
 export const DASHBOARD_API_ENABLED = import.meta.env.VITE_DASHBOARD_API_ENABLED === 'true';
 
+// Same reasoning as the flags above, for the IT Hardware Assignment Approval Workflow domain
+// (go-template-main's AssetHandover endpoints, PRs #72-73, RAISE-FR-OPS-002 exception).
+// Independent flag since it depends on both the Asset and Employee domains already being
+// resolvable server-side, same as TICKET_API_ENABLED.
+export const HANDOVER_API_ENABLED = import.meta.env.VITE_HANDOVER_API_ENABLED === 'true';
+
 // Same reasoning as the flags above, for Auth (go-template-main/controller/authController.go).
 // Independent flag since Auth can land/be enabled separately from every other domain.
 // Resolves Open Finding F-30 (OPEN-FINDINGS.md, R-15): unlike every other domain, auth-service.ts

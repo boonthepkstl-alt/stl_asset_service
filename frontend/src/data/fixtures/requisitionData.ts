@@ -20,7 +20,11 @@ export type PriorityLevel = 'Critical' | 'High' | 'Medium' | 'Low';
 
 export interface TimelineEvent {
   id: string;
-  stage: 'Creation' | 'Dept Approval' | 'IT Assignment' | 'Planning' | 'In-Progress' | 'On-Hold' | 'Resolution';
+  // 'Recipient Confirmation' | 'IT Processing' | 'IT Supervisor Approval' | 'Rejected' were
+  // added for the IT Hardware Assignment Approval Workflow (RAISE-FR-OPS-002 exception,
+  // types/handover.ts), which re-exports and reuses this same TimelineEvent shape rather than
+  // inventing a parallel one -- see that file's doc comment.
+  stage: 'Creation' | 'Dept Approval' | 'IT Assignment' | 'Planning' | 'In-Progress' | 'On-Hold' | 'Resolution' | 'Recipient Confirmation' | 'IT Processing' | 'IT Supervisor Approval' | 'Rejected';
   actorName: string;
   actorRole: string;
   timestamp: string;

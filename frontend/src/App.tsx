@@ -14,6 +14,10 @@ import { EmployeesPage } from '@/pages/Employees';
 import { EmployeeDetailPage } from '@/pages/EmployeeDetail';
 import { MaintenancePage } from '@/pages/Maintenance';
 import { TicketDetailPage } from '@/pages/TicketDetail';
+import { MyPendingAssignmentsPage } from '@/pages/MyPendingAssignments';
+import { ITProcessingQueuePage } from '@/pages/ITProcessingQueue';
+import { ITSupervisorApprovalQueuePage } from '@/pages/ITSupervisorApprovalQueue';
+import { HandoverDetailPage } from '@/pages/HandoverDetail';
 import { LicensesPage } from '@/pages/Licenses';
 import { LicenseDetailPage } from '@/pages/LicenseDetail';
 import { ReconciliationPage } from '@/pages/modules';
@@ -72,6 +76,18 @@ const App: React.FC = () => {
                 <Route path={ROUTES.EMPLOYEE_DETAIL} element={<EmployeeDetailPage />} />
                 <Route path={ROUTES.MAINTENANCE} element={<MaintenancePage />} />
                 <Route path={ROUTES.TICKET_DETAIL} element={<TicketDetailPage />} />
+                {/* IT Hardware Assignment Approval Workflow (RAISE-FR-OPS-002 exception,
+                    PRs #72-73). "My Pending Assignments" needs no role restriction -- any
+                    authenticated user, filtered to their own recipient records. The two IT
+                    queues are gated client-side only (no backend enforcement yet, per spec). */}
+                <Route path={ROUTES.MY_PENDING_ASSIGNMENTS} element={<MyPendingAssignmentsPage />} />
+                <Route path={ROUTES.HANDOVER_DETAIL} element={<HandoverDetailPage />} />
+                <Route element={<ProtectedRoute allowedRoles={['IT_STAFF', 'ADMIN']} />}>
+                  <Route path={ROUTES.IT_PROCESSING_QUEUE} element={<ITProcessingQueuePage />} />
+                </Route>
+                <Route element={<ProtectedRoute allowedRoles={['IT_MANAGER', 'ADMIN']} />}>
+                  <Route path={ROUTES.IT_SUPERVISOR_APPROVAL_QUEUE} element={<ITSupervisorApprovalQueuePage />} />
+                </Route>
                 {/* RAISE-FR-LICENSE-001 and RAISE-AI-RECOMMEND-001 are Roadmap-only per
                     RAISE-PRD.md, not MVP -- gated behind VITE_ENABLE_ROADMAP_FEATURES so they
                     aren't presented as approved MVP scope by default. See

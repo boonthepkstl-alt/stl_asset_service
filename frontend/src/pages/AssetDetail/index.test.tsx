@@ -42,11 +42,14 @@ describe('AssetDetailPage', () => {
   // fix, which renders the History tab from the same per-asset audit trail (RAISE-FR-AUDIT-001)
   // the Audit tab already uses -- append-only by construction.
   it('TC-ASSET-003-02/-03: Check-in and Assign each append a history entry without replacing prior ones', async () => {
-    renderWithProviders(<AssetDetailPage />, { route: '/assets/a1', path: '/assets/:assetId' });
-    await waitFor(() => screen.getByText('AST-0001 · C02XK1ABJGH'));
+    // a1 (MacBook Pro) is "IT Hardware" and, as of the IT Hardware Assignment Approval
+    // Workflow (RAISE-FR-OPS-002 exception), no longer assigns immediately -- see the
+    // dedicated "IT Hardware Assign interception" tests below. This test covers the
+    // still-unaffected immediate-assign path, so it uses a3 (iPhone 15 Pro, category
+    // "Mobile") instead, which starts Assigned to Marcus Johnson per seed fixture data.
+    renderWithProviders(<AssetDetailPage />, { route: '/assets/a3', path: '/assets/:assetId' });
+    await waitFor(() => screen.getByText('AST-0003 · IP15P0982'));
 
-    // a1 starts Assigned to Sarah Chen per seed fixture data (no audit entry backs that --
-    // same documented limitation the Audit tab already has for pre-existing seeded assets).
     fireEvent.click(screen.getByRole('button', { name: 'Check-in' }));
     await waitFor(() => {
       expect(screen.getByRole('button', { name: 'Assign' })).toBeInTheDocument();
@@ -75,6 +78,37 @@ describe('AssetDetailPage', () => {
     // (there's also a toast with the coincidentally-identical title "Asset checked in" --
     // scoping to the History card avoids matching that instead).
     expect(within(historyCard).getByText('Asset checked in')).toBeInTheDocument();
+  });
+
+  // RAISE-FR-OPS-002 exception (IT Hardware Assignment Approval Workflow, PRs #72-73).
+  // Assigning an "IT Hardware" category asset must NOT immediately assign it -- it must
+  // create a pending handover instead, and the asset stays Available (not Assigned) until
+  // Stage 4 approval. Regression guard for the non-IT-Hardware path lives in the test above.
+  describe('IT Hardware Assign interception', () => {
+    it('initiating an assignment on an IT Hardware asset does not immediately assign it', async () => {
+      // a13 (Dell OptiPlex 7090) is "IT Hardware" and starts unassigned per seed data, with no
+      // seeded active handover against it (unlike a11/a12/a2, which data/fixtures/
+      // handoverData.ts already has active handovers against).
+      renderWithProviders(<AssetDetailPage />, { route: '/assets/a13', path: '/assets/:assetId' });
+      await waitFor(() => screen.getByRole('button', { name: 'Assign' }));
+
+      fireEvent.click(screen.getByRole('button', { name: 'Assign' }));
+      const assignModal = (await screen.findByText('Assign Asset')).closest('.bg-white') as HTMLElement;
+      fireEvent.change(within(assignModal).getByRole('combobox'), { target: { value: 'e2' } });
+      fireEvent.click(within(assignModal).getByRole('button', { name: 'Assign' }));
+
+      await waitFor(() => {
+        expect(screen.queryByText('Assign Asset')).not.toBeInTheDocument();
+      });
+      // Not "Assigned" -- a distinct pending badge, and the Assign button is replaced with an
+      // "Assignment Pending" one (not Check-in, since the asset itself never transitioned to
+      // Assigned). Both the header badge and the quick-action button render this text.
+      await waitFor(() => {
+        expect(screen.getAllByText(/Assignment Pending/).length).toBeGreaterThan(0);
+      });
+      expect(screen.queryByRole('button', { name: 'Check-in' })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Assign' })).not.toBeInTheDocument();
+    });
   });
 
   // RAISE-FR-MAINT-001 / AC-MAINT-001-01, formally executed as TC-MAINT-001-01

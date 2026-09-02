@@ -2691,6 +2691,39 @@ Commit: pending — predicted next PR after #68 (verify via `gh pr list` before 
 
 ---
 
+## CHECKPOINT-2026-09-02-002
+
+**Phase:** Infrastructure / Process (F-13/F-14) + Phase 8 (Executive Dashboard, `RAISE-FR-EXEC-001`)
+**Feature:** `/code-review` pass on the Docker infra diff (PRs #68–#69), fixes applied
+**Task:** User ran `/code-review max --fix` against the Docker infrastructure changes
+
+**What was implemented:** N/A — code-review-driven fixes, not new features.
+**What was modified:** `docker-compose.yml` (CORS_ALLOW_ORIGINS/VITE_API_BASE_URL now derive their defaults from FRONTEND_PORT/BACKEND_PORT via nested compose interpolation instead of hardcoded literals), `docker.env.example` (comments updated to match, override lines now commented out by default so the new derivation actually applies), `frontend/Dockerfile` (removed 8 redundant `ENV VAR=$VAR` lines mirroring `ARG` declarations — Docker already exposes ARG values to same-stage RUN instructions), `DOCKER.md` (documents that the stack is only reachable from the Docker host machine, not other machines on the LAN, and updates the stale "manually update VITE_API_BASE_URL" advice), `frontend/src/services/dashboard-repository.ts` (added a whole-object null guard on top of the existing per-field array guard), `frontend/src/services/dashboard-repository.http.test.ts` (1 new regression test).
+**What was fixed:** 6 findings reported via `ReportFindings`, 5 fixed, 1 skipped (see below).
+**What was added:** 1 new regression test.
+**What was removed:** 8 redundant `ENV` lines in `frontend/Dockerfile`.
+
+**Decision:** N/A — code-review findings, not business questions. One finding (frontend's `depends_on: backend` lacking a health condition, since `backend` has no healthcheck at all) was deliberately **not** auto-fixed: writing a correct healthcheck for the Go binary risked shipping something worse than the problem it fixed (an incorrect check would make `docker compose up` hang forever waiting for a container that's actually fine), and the underlying race window is narrow and self-healing (a few hundred ms to ~1-2s before the human/script can plausibly hit the endpoint). Reported as `PLAUSIBLE`/`skipped` with reasoning rather than fixed via guesswork.
+
+**Files changed:** 6 files (listed above).
+**Database changes:** None. **API changes:** None. **Frontend changes:** See above.
+
+**Tests:** Full suite **155/155 passing** (was 154, +1 for the new whole-object-null regression test). `npx tsc --noEmit` → clean (had to restructure the null-guard from a spread+override pattern to explicit `?? 0`/`?? []` per field after `tsc` correctly flagged the spread pattern as TS2783 "specified more than once"). `npm run lint` → clean.
+**Validation:** `docker compose config` (with and without `BACKEND_PORT`/`FRONTEND_PORT` overrides) confirmed the new nested interpolation resolves correctly in both the default and overridden cases. Full Docker rebuild (`docker compose up -d --build`) and live re-verification: frontend/backend/db all healthy, login succeeds, CORS preflight passes, dashboard renders correctly with no console errors — same evidence bar as `CHECKPOINT-2026-09-02-001`, confirming the code-review fixes didn't regress anything.
+
+**Requirement Traceability:**
+No `RAISE-FR-*` ID for the Docker/nginx fixes (Infrastructure/Process, F-13/F-14, unaffected in scope). The dashboard whole-object null guard is a defensive hardening of `RAISE-FR-EXEC-001`'s existing `PASS` status, not a new test execution.
+
+**Git:**
+Branch: pending (not yet created as of this checkpoint).
+Commit: pending — predicted next PR after #69 (verify via `gh pr list` before treating as final; must not be merged until the user explicitly instructs "merge PR #N").
+
+**Known Issues:** The `frontend`/`backend` `depends_on` health-condition gap (skipped finding) remains open — a narrow, self-healing race window, not tracked as a numbered Open Finding since it's sub-severity for this project's F-13/F-14 categorization.
+**Remaining Work:** Git branch/commit/push/PR for this checkpoint's changes.
+**Next Step:** Recalculate `NEXT-STEP.md`. Create git branch, commit, push, open PR, and wait for the user's explicit "merge PR #N" instruction before merging.
+
+---
+
 ## Level 2 — Feature Checkpoints
 
 ### FEATURE-CHECKPOINT-project-tracking-governance

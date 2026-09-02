@@ -34,7 +34,10 @@ services:
       DB_PG_INST: ${DB_PG_INST:-raise}
       DB_PG_SCHEMA: public
       DB_PG_SSLMODE: disable
-      CORS_ALLOW_ORIGINS: ${CORS_ALLOW_ORIGINS:-http://localhost:3000}
+      # Derived from FRONTEND_PORT by default so the two can't silently drift apart --
+      # override CORS_ALLOW_ORIGINS directly only if the frontend is reachable at a
+      # different origin than this host/port (e.g. a comma-separated multi-origin list).
+      CORS_ALLOW_ORIGINS: ${CORS_ALLOW_ORIGINS:-http://localhost:${FRONTEND_PORT:-3000}}
     ports:
       - "${BACKEND_PORT:-8080}:8080"
     depends_on:
@@ -47,8 +50,9 @@ services:
       args:
         # Vite bakes this into the built bundle -- it must be the URL the *browser*
         # (not another container) can reach, so it points at the host-mapped backend
-        # port above, not the internal Docker network hostname.
-        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8080/api}
+        # port above, not the internal Docker network hostname. Derived from
+        # BACKEND_PORT by default so the two can't silently drift apart.
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:${BACKEND_PORT:-8080}/api}
         VITE_APP_ENV: production
         # Default true for this stack -- without these, the frontend silently falls
         # back to its in-memory Mock*Repository fixtures instead of the real backend

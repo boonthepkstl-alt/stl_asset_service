@@ -23,14 +23,10 @@ ARG VITE_EMPLOYEE_API_ENABLED=true
 ARG VITE_TICKET_API_ENABLED=true
 ARG VITE_AUDIT_API_ENABLED=true
 ARG VITE_DASHBOARD_API_ENABLED=true
-ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
-ENV VITE_APP_ENV=$VITE_APP_ENV
-ENV VITE_AUTH_API_ENABLED=$VITE_AUTH_API_ENABLED
-ENV VITE_ASSET_API_ENABLED=$VITE_ASSET_API_ENABLED
-ENV VITE_EMPLOYEE_API_ENABLED=$VITE_EMPLOYEE_API_ENABLED
-ENV VITE_TICKET_API_ENABLED=$VITE_TICKET_API_ENABLED
-ENV VITE_AUDIT_API_ENABLED=$VITE_AUDIT_API_ENABLED
-ENV VITE_DASHBOARD_API_ENABLED=$VITE_DASHBOARD_API_ENABLED
+# No ENV re-declaration needed: Docker already exposes ARG values as environment
+# variables to every subsequent instruction (including the RUN below) within this same
+# build stage, and this stage's environment is discarded anyway -- only /app/dist is
+# copied into the runtime image.
 
 RUN npm run build
 

@@ -44,13 +44,25 @@ default (DB credentials, host ports, the frontend's backend URL).
 
 Vite inlines every `VITE_*` variable into the built JS bundle when
 `npm run build` runs — changing an env var on an already-built container
-does nothing. If you change `VITE_API_BASE_URL` (e.g. because you
-changed `BACKEND_PORT`), you must rebuild the frontend image:
+does nothing. `VITE_API_BASE_URL` and `CORS_ALLOW_ORIGINS` derive from
+`BACKEND_PORT`/`FRONTEND_PORT` by default (see `docker-compose.yml`), so
+changing a port alone is enough — but any change that affects a
+`VITE_*` build arg still requires rebuilding the frontend image:
 
 ```bash
 docker compose build frontend
 docker compose up -d frontend
 ```
+
+**This stack is only reachable from the machine running Docker.**
+`VITE_API_BASE_URL` is baked into the frontend bundle as an absolute
+`http://localhost:<port>/...` URL, and nginx does not proxy `/api` to
+the backend container — so a browser on any *other* machine (e.g. a
+teammate on the same LAN hitting `http://<docker-host-ip>:3000`) will
+load the page but every API call will fail, since `localhost` in their
+browser resolves to their own machine, not the Docker host. There is no
+config override for this; it would require adding an nginx reverse
+proxy and switching `VITE_API_BASE_URL` to a relative path.
 
 ## Resetting the database
 

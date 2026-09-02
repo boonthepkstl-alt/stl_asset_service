@@ -66,13 +66,22 @@ export class MockDashboardRepository implements DashboardRepository {
 export class HttpDashboardRepository implements DashboardRepository {
   async getAssetStats(): Promise<AssetDashboardStats> {
     const response = await apiClient.get<AssetDashboardStats>('/dashboard/stats');
-    const data = response.data;
+    // Guard the whole payload, not just its fields below -- go-template-main's handler
+    // always returns the full struct on any 2xx today, but nothing in the HTTP contract
+    // guarantees that stays true, and an empty/`null` body here would otherwise throw
+    // reading `data.departmentDistribution` before the field-level guard even runs.
+    const data = response.data ?? ({} as Partial<AssetDashboardStats>);
     // go-template-main marshals a nil Go slice as JSON `null`, not `[]` -- happens whenever
     // there are 0 assets (e.g. a freshly-seeded database). The TS type claims a non-null
     // array; guard here so callers (dashboard-service.ts, Dashboard/index.tsx's .map() calls)
     // don't have to.
     return {
-      ...data,
+      totalAssets: data.totalAssets ?? 0,
+      available: data.available ?? 0,
+      assigned: data.assigned ?? 0,
+      inMaintenance: data.inMaintenance ?? 0,
+      retired: data.retired ?? 0,
+      expiredWarranty: data.expiredWarranty ?? 0,
       departmentDistribution: data.departmentDistribution ?? [],
       assetTypeDistribution: data.assetTypeDistribution ?? [],
     };

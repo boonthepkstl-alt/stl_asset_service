@@ -60,10 +60,8 @@ func (s *dashboardService) GetDashboardStats() (model.DashboardStatsModel, error
 			stats.Retired++
 		}
 
-		if a.WarrantyExpiry != "" {
-			if t, err := time.Parse("2006-01-02", a.WarrantyExpiry); err == nil && t.Before(now) {
-				stats.ExpiredWarranty++
-			}
+		if t, ok := parseAssetDate(a.WarrantyExpiry); ok && t.Before(now) {
+			stats.ExpiredWarranty++
 		}
 
 		if _, seen := deptCounts[a.Department]; !seen {
@@ -85,4 +83,24 @@ func (s *dashboardService) GetDashboardStats() (model.DashboardStatsModel, error
 	}
 
 	return stats, nil
+}
+
+// parseAssetDate tolerates both the bare "2006-01-02" layout the unit tests use and the
+// RFC3339 "2006-01-02T15:04:05Z07:00" layout the pq driver actually returns when scanning a
+// Postgres `date` column into a Go string (found running against a real seeded database,
+// where every WarrantyExpiry came back as e.g. "2025-06-10T00:00:00Z" -- the strict
+// "2006-01-02"-only parse silently failed for every real row, so ExpiredWarranty stayed 0
+// regardless of actual data). An empty or genuinely unparsable value returns ok=false,
+// matching NaN-comparison-is-false in the frontend's equivalent `new Date(...)` check.
+func parseAssetDate(value string) (time.Time, bool) {
+	if value == "" {
+		return time.Time{}, false
+	}
+	if t, err := time.Parse(time.RFC3339, value); err == nil {
+		return t, true
+	}
+	if t, err := time.Parse("2006-01-02", value); err == nil {
+		return t, true
+	}
+	return time.Time{}, false
 }

@@ -60,6 +60,22 @@ func TestGetDashboardStats_CountsExpiredWarrantyOnly(t *testing.T) {
 	assert.Equal(t, 1, stats.ExpiredWarranty)
 }
 
+// Found running against a real seeded Postgres database (2026-09-02): scanning a `date`
+// column via the pq driver into a Go string yields RFC3339 ("2025-06-10T00:00:00Z"), not the
+// bare "2006-01-02" layout used elsewhere in this file's fixtures -- ExpiredWarranty silently
+// stayed 0 for every real row until parseAssetDate learned to accept both layouts.
+func TestGetDashboardStats_CountsExpiredWarranty_RFC3339Layout(t *testing.T) {
+	svc := NewDashboardService(&fakeAssetService{assets: []model.AssetModel{
+		{Status: "Available", WarrantyExpiry: "2020-01-01T00:00:00Z"}, // expired
+		{Status: "Available", WarrantyExpiry: "2099-01-01T00:00:00Z"}, // not expired
+	}})
+
+	stats, err := svc.GetDashboardStats()
+
+	assert.NoError(t, err)
+	assert.Equal(t, 1, stats.ExpiredWarranty)
+}
+
 func TestGetDashboardStats_GroupsDistributionsInFirstSeenOrder(t *testing.T) {
 	svc := NewDashboardService(&fakeAssetService{assets: []model.AssetModel{
 		{Department: "Sales", Type: "Laptop"},

@@ -60,4 +60,26 @@ describe('HttpDashboardRepository', () => {
     expect(result.departmentDistribution).toEqual([]);
     expect(result.assetTypeDistribution).toEqual([]);
   });
+
+  // /code-review (2026-09-02): the field-level `?? []` guard above assumes the whole
+  // response.data object is non-null -- not guaranteed by axios/HTTP in general, even
+  // though it's unreachable via today's Go handler. Locks in the whole-object guard.
+  it('normalizes a null/undefined response body to a fully zeroed stats object', async () => {
+    getMock.mockResolvedValueOnce({ data: null });
+    const { HttpDashboardRepository } = await import('@/services/dashboard-repository');
+    const repo = new HttpDashboardRepository();
+
+    const result = await repo.getAssetStats();
+
+    expect(result).toEqual({
+      totalAssets: 0,
+      available: 0,
+      assigned: 0,
+      inMaintenance: 0,
+      retired: 0,
+      expiredWarranty: 0,
+      departmentDistribution: [],
+      assetTypeDistribution: [],
+    });
+  });
 });

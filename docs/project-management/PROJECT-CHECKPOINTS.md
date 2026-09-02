@@ -2724,6 +2724,40 @@ Commit: pending — predicted next PR after #69 (verify via `gh pr list` before 
 
 ---
 
+## CHECKPOINT-2026-09-02-003
+
+**Phase:** Phase 8 (Executive Dashboard, `RAISE-FR-EXEC-001`)
+**Feature:** Fix `ExpiredWarranty` always reporting 0 regardless of real data — found while seeding demo data into the local Docker stack
+**Task:** User asked to seed the Docker stack's database so the dashboard shows real numbers
+
+**What was implemented:** N/A — a bug fix, not a new feature. 10 sample assets were inserted directly into the running `db` container's Postgres (ephemeral — not a committed SQL migration, lost on `docker compose down -v`) to populate the dashboard for demo purposes.
+**What was modified:** `go-template-main/service/dashboardService.go` (new `parseAssetDate` helper tolerating both RFC3339 and bare-date layouts), `go-template-main/service/dashboardService_test.go` (1 new regression test).
+**What was fixed:** A real, pre-existing backend bug (not introduced this session): `GetDashboardStats()`'s expired-warranty check parsed `WarrantyExpiry` with the strict layout `"2006-01-02"`, but `lib/pq` actually scans a Postgres `date` column into a Go string as RFC3339 (`"2025-06-10T00:00:00Z"`), which that layout doesn't match — the parse silently failed (non-nil `err`) for every real row, so `ExpiredWarranty` stayed `0` no matter how much genuinely-expired seed data existed. This is why the existing unit tests (which use bare `"2020-01-01"`-style fixtures) never caught it — they don't exercise the real driver's actual wire format.
+**What was added:** `parseAssetDate` helper; 1 new regression test (`TestGetDashboardStats_CountsExpiredWarranty_RFC3339Layout`).
+**What was removed:** None.
+
+**Decision:** N/A — a clear, unambiguous bug fix (not a business/scope question), found via the same "seed real data through the real stack" verification pattern that already caught the nginx routing bug and the dashboard null-guard bug earlier in this session.
+
+**Files changed:** 2 files (`go-template-main/service/dashboardService.go`, `go-template-main/service/dashboardService_test.go`).
+**Database changes:** None to schema. 10 sample asset rows inserted directly into the running container's Postgres for demo purposes — ephemeral, not part of any committed migration.
+**API changes:** None (response shape unchanged — only the previously-always-0 `expiredWarranty` value is now correct). **Frontend changes:** None.
+
+**Tests:** `go build ./...` → **Pass**. `go vet ./...` → **Pass**. `go test ./...` → **Pass** (all packages, including the new regression test).
+**Validation:** Live-verified against the real seeded Docker stack: `GET /api/dashboard/stats` returned `expiredWarranty: 7` after the fix (was `0` before), matching manual counting of the 10 seed assets' warranty dates against today's date (2026-09-02) exactly. Confirmed visually in the browser — the Dashboard's "Expired Warranty" KPI tile shows 7.
+
+**Requirement Traceability:**
+`RAISE-FR-EXEC-001` — this is a defensive/correctness fix to the existing `PASS` dashboard implementation, not a new test execution against `RAISE-TEST-CASES.md`'s `TC-DASH-*`/`TC-EXEC-001-*` (those test presence of tiles/sections against a fixture, not this specific date-parsing edge case).
+
+**Git:**
+Branch: pending (not yet created as of this checkpoint).
+Commit: pending — predicted next PR after #70 (verify via `gh pr list` before treating as final; must not be merged until the user explicitly instructs "merge PR #N").
+
+**Known Issues:** None new.
+**Remaining Work:** Git branch/commit/push/PR for this checkpoint's changes. The 10 seed asset rows in the running container are ephemeral (not committed to a migration) — if a durable local demo dataset is wanted later, that would be a separate, explicitly-requested task.
+**Next Step:** Recalculate `NEXT-STEP.md`. Create git branch, commit, push, open PR, and wait for the user's explicit "merge PR #N" instruction before merging.
+
+---
+
 ## Level 2 — Feature Checkpoints
 
 ### FEATURE-CHECKPOINT-project-tracking-governance

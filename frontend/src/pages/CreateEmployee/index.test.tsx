@@ -10,6 +10,7 @@ describe('CreateEmployeePage', () => {
     // Step 1 fields
     expect(screen.getByLabelText('Full Name')).toBeInTheDocument();
     expect(screen.getByLabelText('Work Email')).toBeInTheDocument();
+    expect(screen.getByLabelText('Employee Code')).toBeInTheDocument();
     expect(screen.getByLabelText('Job Title / Position')).toBeInTheDocument();
     expect(screen.getByLabelText('Phone Number')).toBeInTheDocument();
   });
@@ -125,6 +126,61 @@ describe('CreateEmployeePage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
 
     expect(screen.getByLabelText('Department')).toBeInTheDocument();
+  });
+
+  it('uses a manually entered Employee Code on submit instead of auto-generating', async () => {
+    renderWithProviders(<CreateEmployeePage />, { route: '/employees/create', path: '/employees/create' });
+
+    fireEvent.change(screen.getByLabelText('Full Name'), { target: { value: 'Coded Employee' } });
+    fireEvent.change(screen.getByLabelText('Work Email'), { target: { value: 'coded.employee@example.com' } });
+    fireEvent.change(screen.getByLabelText('Employee Code'), { target: { value: 'EMP-CUSTOM-01' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+
+    await waitFor(() => {
+      expect(screen.getByText('Review & Confirm')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Create Employee' }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/EMP-CUSTOM-01/)).toBeInTheDocument();
+    });
+  });
+
+  it('leaves Employee Code blank and still auto-generates (existing behavior preserved)', async () => {
+    renderWithProviders(<CreateEmployeePage />, { route: '/employees/create', path: '/employees/create' });
+
+    fireEvent.change(screen.getByLabelText('Full Name'), { target: { value: 'Auto Code Employee' } });
+    fireEvent.change(screen.getByLabelText('Work Email'), { target: { value: 'auto.code@example.com' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+
+    await waitFor(() => {
+      expect(screen.getByText('Review & Confirm')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Create Employee' }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/EMP-\d{4}/)).toBeInTheDocument();
+    });
+  });
+
+  it('blocks advancing past step 1 when the Employee Code matches an existing employee', async () => {
+    renderWithProviders(<CreateEmployeePage />, { route: '/employees/create', path: '/employees/create' });
+    fireEvent.change(screen.getByLabelText('Full Name'), { target: { value: 'Seed' } });
+    fireEvent.change(screen.getByLabelText('Work Email'), { target: { value: 'seed@example.com' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+    await waitForEmployeesLoaded();
+
+    fireEvent.change(screen.getByLabelText('Full Name'), { target: { value: 'Duplicate Code Tester' } });
+    fireEvent.change(screen.getByLabelText('Work Email'), { target: { value: 'unique.code.tester@example.com' } });
+    fireEvent.change(screen.getByLabelText('Employee Code'), { target: { value: 'emp-0001' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+
+    expect(screen.getByText('An employee with this code already exists')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Department')).not.toBeInTheDocument();
   });
 
   it('advances to step 2 when the email is unique', async () => {

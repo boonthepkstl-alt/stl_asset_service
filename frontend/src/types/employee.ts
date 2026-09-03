@@ -53,6 +53,7 @@ export interface EmployeeAssignment {
 export interface CreateEmployeeInput {
   name: string;
   email: string;
+  employeeCode?: string;
   jobTitle?: string;
   phone?: string;
   department: string;

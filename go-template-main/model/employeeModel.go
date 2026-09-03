@@ -46,6 +46,7 @@ type EmployeeListResponse struct {
 type CreateEmployeeRequest struct {
 	Name         string `json:"name"`
 	Email        string `json:"email"`
+	EmployeeCode string `json:"employeeCode,omitempty"`
 	JobTitle     string `json:"jobTitle,omitempty"`
 	Phone        string `json:"phone,omitempty"`
 	Department   string `json:"department"`

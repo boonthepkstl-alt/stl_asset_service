@@ -30,6 +30,7 @@ export function CreateEmployeePage() {
   const [form, setForm] = useState({
     name: '',
     email: '',
+    employeeCode: '',
     jobTitle: '',
     phone: '',
     department: departments[0] || 'Engineering',
@@ -61,6 +62,16 @@ export function CreateEmployeePage() {
       : undefined;
   };
 
+  // Employee Code is optional (left blank -> auto-generated), so the duplicate check only runs
+  // when the user actually typed one -- same "skip when blank" rule as phone, above.
+  const checkEmployeeCodeDuplicate = (employeeCode: string): string | undefined => {
+    const trimmed = employeeCode.trim().toLowerCase();
+    if (!trimmed) return undefined;
+    return employeeList.some((emp) => emp.employeeCode && emp.employeeCode.toLowerCase() === trimmed)
+      ? 'An employee with this code already exists'
+      : undefined;
+  };
+
   // On-blur validation (not on every keystroke): shows the duplicate error as soon as the user
   // leaves the field, but never invents the "required" error here -- that's validateStep's job.
   const handleEmailBlur = () => {
@@ -83,6 +94,16 @@ export function CreateEmployeePage() {
     });
   };
 
+  const handleEmployeeCodeBlur = () => {
+    setErrors((prev) => {
+      const next = { ...prev };
+      const dup = checkEmployeeCodeDuplicate(form.employeeCode);
+      if (dup) next.employeeCode = dup;
+      else delete next.employeeCode;
+      return next;
+    });
+  };
+
   const validateStep = () => {
     const e: Record<string, string> = {};
     if (step === 1) {
@@ -94,6 +115,8 @@ export function CreateEmployeePage() {
       }
       const phoneDup = checkPhoneDuplicate(form.phone);
       if (phoneDup) e.phone = phoneDup;
+      const employeeCodeDup = checkEmployeeCodeDuplicate(form.employeeCode);
+      if (employeeCodeDup) e.employeeCode = employeeCodeDup;
     }
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -113,6 +136,7 @@ export function CreateEmployeePage() {
       const created = await employeeService.createEmployee({
         name: form.name,
         email: form.email,
+        employeeCode: form.employeeCode || undefined,
         jobTitle: form.jobTitle || undefined,
         phone: form.phone || undefined,
         department: form.department,
@@ -160,6 +184,7 @@ export function CreateEmployeePage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Input name="name" label="Full Name" value={form.name} onChange={(e) => set('name', e.target.value)} error={errors.name} />
               <Input name="email" label="Work Email" value={form.email} onChange={(e) => set('email', e.target.value)} onBlur={handleEmailBlur} error={errors.email} />
+              <Input name="employeeCode" label="Employee Code" value={form.employeeCode} onChange={(e) => set('employeeCode', e.target.value)} onBlur={handleEmployeeCodeBlur} error={errors.employeeCode} helpText="Leave blank for auto-generation" />
               <Input name="jobTitle" label="Job Title / Position" value={form.jobTitle} onChange={(e) => set('jobTitle', e.target.value)} />
               <Input name="phone" label="Phone Number" value={form.phone} onChange={(e) => set('phone', e.target.value)} onBlur={handlePhoneBlur} error={errors.phone} />
             </div>

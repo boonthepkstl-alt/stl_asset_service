@@ -53,9 +53,10 @@ export class MockEmployeeRepository implements EmployeeRepository {
   async create(input: CreateEmployeeInput): Promise<Employee> {
     const seq = this.employees.length + 1;
     const initials = input.name.split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase() || 'EM';
+    const employeeCode = input.employeeCode?.trim() || `EMP-${seq.toString().padStart(4, '0')}`;
     const created: Employee = {
       id: `e${seq}`,
-      employeeCode: `EMP-${seq.toString().padStart(4, '0')}`,
+      employeeCode,
       name: input.name,
       email: input.email,
       phone: input.phone || '+1 (555) 000-0000',

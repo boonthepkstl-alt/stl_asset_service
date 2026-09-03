@@ -2964,6 +2964,305 @@ Commit: `01c8517` (feature commit), merged to `main` via [PR #76](https://github
 
 ---
 
+## CHECKPOINT-2026-09-03-003
+
+**Phase:** Phase 3 — Asset Management (Employee domain, supports `RAISE-FR-ASSET-003`)
+**Feature:** Create Employee — form surface
+**Task:** Convert "Add Employee" from a Modal on the Employees list into a full page at `/employees/create`, mirroring the then-existing `CreateAsset` 4-step wizard pattern
+
+**What was implemented:** A new full-page `frontend/src/pages/CreateEmployee/index.tsx` with a 3-step flow (Basic Info → Organization & Location → Review), copying `CreateAsset`'s then-current pattern exactly: horizontal step indicator, one `SectionCard` per step, inline footer actions. New `ROUTES.EMPLOYEE_CREATE` (`config/constants.ts`) wired in `App.tsx`. Layout-only — **no new fields**.
+**What was modified:** `frontend/src/pages/Employees/index.tsx` — the "Add Employee" button now navigates instead of opening a modal; `Employees/index.test.tsx` updated accordingly.
+**What was fixed:** None (layout change, not a defect fix).
+**What was added:** `frontend/src/pages/CreateEmployee/{index.tsx,index.test.tsx}`.
+**What was removed:** The inline Add-Employee Modal from the Employees list page (−66 lines there).
+
+**Scope decision worth recording (this is the substance of this PR, not the layout):** the user proposed a much larger Employee-form redesign — Employment Type, Cost Center/Business Unit, Emergency Contact, Personal Email, Alternate Phone, **Matrix Manager**, System Role, AD/SSO toggle, Profile Picture, and an auto-generate-ID button. Each was compared against the real `Employee` type and `RAISE-PRD.md` before any code was written. Result: several proposed "new" fields **already existed** (Reporting Manager, Location Campus, Physical Desk); the rest were **unconfirmed new scope** with no PRD backing; and **Matrix Manager directly contradicts an explicit prior business rejection** — the PRD records that a second manager/supervisor relationship on Employee was rejected during the Check-out workflow discussion. The user agreed to ship layout-only and defer the field set. No field was invented, and no recorded rejection was quietly reversed.
+
+**Files changed:** 6 (`+279/-66`) — `frontend/src/App.tsx`, `frontend/src/config/constants.ts`, `frontend/src/pages/CreateEmployee/index.tsx` (new), `frontend/src/pages/CreateEmployee/index.test.tsx` (new), `frontend/src/pages/Employees/index.tsx`, `frontend/src/pages/Employees/index.test.tsx`.
+**Database changes:** None. **API changes:** None. **Frontend changes:** See above — this is the change.
+
+**Tests:**
+- Unit Test: None new
+- Integration Test: `CreateEmployee/index.test.tsx` (new); `Employees/index.test.tsx` (updated for navigation instead of modal)
+- E2E Test: None automated — live-verified manually (see Validation)
+
+**Validation:**
+- Build: Pass
+- Lint: Pass (0 warnings)
+- Test: Pass — 210 tests at merge time (was 205 at PR #76)
+- Type Check: Pass (`tsc --noEmit` clean)
+- Live E2E (real running Docker stack, through the actual UI): the Add Employee button navigates to the new page; all 3 steps advance and a real employee is created.
+
+**Requirement Traceability:**
+PRD: **N/A — no governing FR.** `RAISE-PRD.md` contains **no `RAISE-FR-EMP-*` requirements at all** (re-verified by grep during this close-out); Employee appears only incidentally under `RAISE-FR-ASSET-003` (Custody History) and `RAISE-FR-OPS-002` (Check-in/Check-out), neither of which specifies an employee-creation form.
+Design: N/A — UI layout decision, not a logical-architecture change.
+Acceptance Criteria: N/A — no AC group covers Employee creation.
+Test Case: N/A — no `TC-*` covers this screen; coverage is the new component test only.
+
+**Git:**
+Branch: `frontend/employee-create-full-page` (deleted after merge)
+Commit: `e8c1c80` (feature commit), merged to `main` via [PR #78](https://github.com/boonthepkstl-alt/stl_asset_service/pull/78) (merge commit `1e9e246`), 2026-09-03 17:20+07:00.
+
+**Status:** ✅ Complete for its confirmed scope (layout conversion only) — **but superseded four PRs later**: the wizard pattern this PR deliberately mirrored was itself removed in PR #82 (`CHECKPOINT-2026-09-03-007`) after the user questioned whether either Create form should be a wizard at all. See that checkpoint for the reversal reasoning; this is not unexplained churn.
+**Known Issues:** None from this change.
+**Remaining Work:** The deferred field-set proposal above remains undecided — none of it is scheduled, and Matrix Manager specifically must not be added without first reversing a recorded business rejection.
+**Next Step:** Ship the one item from the deferred proposal that is buildable now without new scope — duplicate-checking on fields that already exist (became PR #79, `CHECKPOINT-2026-09-03-004`).
+
+---
+
+## CHECKPOINT-2026-09-03-004
+
+**Phase:** Phase 3 — Asset Management (Employee domain)
+**Feature:** Create Employee — form surface
+**Task:** Add live duplicate-check validation for Work Email and Phone — the first buildable-now item from PR #78's deferred proposal
+
+**What was implemented:** Duplicate detection on Create Employee for Work Email and Phone — checked on field blur and again on submit, blocking the form from advancing when a match is found against the existing employee list. Chosen deliberately as the first item from the deferred proposal because it is a **safeguard on fields that already exist**, not new scope requiring a PRD decision.
+**What was modified:** `frontend/src/pages/EmployeeDetail/index.tsx` — the "Edit Identity" modal gained the same phone duplicate check, **excluding the employee being edited** (so saving an unchanged record isn't rejected by its own value). Email is not checked there because that modal has no email field.
+**What was fixed:** None (a validation gap with no prior behavior, not a regression).
+**What was added:** 80 lines of new test coverage in `CreateEmployee/index.test.tsx`.
+**What was removed:** None.
+
+**Files changed:** 3 (`+161/-3`) — `frontend/src/pages/CreateEmployee/index.tsx`, `frontend/src/pages/CreateEmployee/index.test.tsx`, `frontend/src/pages/EmployeeDetail/index.tsx`.
+**Database changes:** None. **API changes:** None — the check runs client-side against the loaded employee list; there is no server-side uniqueness constraint behind it. **Frontend changes:** See above.
+
+**Tests:**
+- Unit Test: None new
+- Integration Test: `CreateEmployee/index.test.tsx` extended (duplicate email blocks, duplicate phone blocks, unique values pass)
+- E2E Test: None automated — live-verified manually
+
+**Validation:**
+- Build: Pass
+- Lint: Pass (0 warnings)
+- Test: Pass — 215 tests at merge time (was 210)
+- Type Check: Pass
+- Live E2E (real running Docker stack, through the actual UI): entering an existing employee's email/phone blocks the step; a unique value clears the error on blur.
+
+**Requirement Traceability:**
+PRD: **N/A — no governing FR** (no `RAISE-FR-EMP-*` exists; see `CHECKPOINT-2026-09-03-003`).
+Design: N/A. Acceptance Criteria: N/A. Test Case: N/A — component tests only.
+
+**Git:**
+Branch: `frontend/employee-duplicate-email-phone-check` (deleted after merge)
+Commit: `2c9c343`, merged to `main` via [PR #79](https://github.com/boonthepkstl-alt/stl_asset_service/pull/79) (merge commit `c774b08`), 2026-09-03 17:33+07:00.
+
+**Status:** ✅ Complete for its confirmed scope.
+**Known Issues:** Uniqueness is enforced **client-side only** — the backend has no unique constraint on employee email or phone, so a concurrent create through the API can still produce a duplicate. Consistent with this app's existing MVP validation posture, but a real limitation, not a solved problem.
+**Remaining Work:** None for this item.
+**Next Step:** Add the optional Employee Code field, mirroring `CreateAsset`'s existing optional Asset Code pattern (became PR #80, `CHECKPOINT-2026-09-03-005`).
+
+---
+
+## CHECKPOINT-2026-09-03-005
+
+**Phase:** Phase 3 — Asset Management (Employee domain)
+**Feature:** Create Employee — Employee Code field
+**Task:** Add an optional "Employee Code" field, mirroring `CreateAsset`'s optional Asset Code field ("leave blank for auto-generation")
+
+**What was implemented:** An optional Employee Code input on Create Employee with the same helper text and the same duplicate-check pattern already established in PR #79. `types/employee.ts` and `services/employee-repository.ts` carry the field through.
+**What was modified:** See below — the backend half.
+**What was fixed:** **A real backend parity gap, found while implementing and fixed in the same PR.** `AssetService.CreateAsset` already accepted an optional client-supplied code and fell back to auto-generation only when it was empty; `EmployeeService.CreateEmployee` **always overwrote the input with a generated code regardless of what was sent**. Without this fix the new frontend field would have been purely cosmetic — a user's typed code silently discarded by the server. Fixed by mirroring the asset pattern in `go-template-main/model/employeeModel.go` (request field) and `go-template-main/service/employeeService.go` (`code := input.EmployeeCode; if code == "" { code = fmt.Sprintf("EMP-%s", id[:8]) }`). `gofmt` then had to be run on both files — the edit had left them unformatted.
+**What was added:** 56 lines of new test coverage in `CreateEmployee/index.test.tsx`.
+**What was removed:** None.
+
+**Files changed:** 6 (`+89/-2`) — `frontend/src/pages/CreateEmployee/index.tsx`, `frontend/src/pages/CreateEmployee/index.test.tsx`, `frontend/src/services/employee-repository.ts`, `frontend/src/types/employee.ts`, `go-template-main/model/employeeModel.go`, `go-template-main/service/employeeService.go`.
+**Database changes:** None (the `employee_code` column already existed). **API changes:** `POST /employees` now honours a client-supplied `employeeCode` instead of ignoring it — a behaviour change on an existing endpoint, no new endpoint. **Frontend changes:** See above.
+
+**Tests:**
+- Unit Test: Backend — the existing `service/employeeService_test.go` suite still passes; **no new Go test was added** for the honour-supplied-code path
+- Integration Test: `CreateEmployee/index.test.tsx` extended (optional code accepted, blank allowed, duplicate blocked)
+- E2E Test: None automated — live-verified manually
+
+**Validation:**
+- Build: Pass (`go build ./...` and frontend build)
+- Lint: Pass (0 warnings); `gofmt` clean on both touched Go files
+- Test: Pass — 218 frontend tests at merge time (was 215); `go test ./...` clean
+- Type Check: Pass
+- Live E2E (real running Docker stack, through the actual UI): a typed Employee Code survives the round-trip to Postgres; a blank one still auto-generates.
+
+**Requirement Traceability:**
+PRD: **N/A — no governing FR.** The backend parity fix likewise traces to no requirement — it was found by comparing two sibling services, not by testing against an AC.
+Design: N/A. Acceptance Criteria: N/A. Test Case: N/A.
+
+**Git:**
+Branch: `feature/employee-code-optional-field` (deleted after merge)
+Commit: `995b330`, merged to `main` via [PR #80](https://github.com/boonthepkstl-alt/stl_asset_service/pull/80) (merge commit `ba79456`), 2026-09-03 20:42+07:00.
+
+**Status:** ✅ Complete for its confirmed scope.
+**Known Issues:** No Go unit test covers the newly-honoured client-supplied-code path — verified live against the real stack, but not guarded by an automated backend regression test. Employee-code uniqueness, like email/phone, remains client-side only (no DB unique constraint).
+**Remaining Work:** None for this item.
+**Next Step:** The auto-generated fallback here emits `EMP-<8 hex chars>`, which is **not** the company's real Employee ID convention — ask the business what that convention actually is before doing anything further with this field (became PR #81, `CHECKPOINT-2026-09-03-006`).
+
+---
+
+## CHECKPOINT-2026-09-03-006
+
+**Phase:** Phase 3 — Asset Management (Employee domain)
+**Feature:** Create Employee — Employee ID format
+**Task:** Validate Employee Code against the company's real Employee ID convention, newly confirmed by the business
+
+**Business confirmation (2026-09-03, direct Q&A with the user) — the substance of this PR:** the company's real Employee ID is **exactly 8 digits, where the first 2 digits are the Gregorian join year** (e.g. `26725898` = joined 2026). The remaining **6 digits are issued by HR/payroll — RAISE cannot derive or generate them**. The confirmed scope is therefore explicitly **validate the format on input only, deliberately NOT auto-generate it**. Recorded as new finding **F-36** in [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md) — the direct sibling of **F-35** (asset code generation scheme).
+
+**What was implemented:** `checkEmployeeCodeFormat` in `frontend/src/pages/CreateEmployee/index.tsx` — rejects anything that is not exactly 8 digits, on blur and on submit. Format is checked **before** uniqueness (`checkEmployeeCodeFormat(...) ?? checkEmployeeCodeDuplicate(...)`), since a duplicate check on a malformed value is useless. Help text states the rule: "8 digits, first 2 = join year (e.g. 26725898). Leave blank for auto-generation."
+**What was modified:** Two existing tests used non-conforming codes and were updated. The duplicate-code test had to **change shape**, not merely change its literal: the seeded fixtures use the legacy `EMP-####` form, which the new format check now rejects outright, so that test can no longer reach the duplicate branch via a seeded value.
+**What was fixed:** None (new validation, not a regression).
+**What was added:** See above. **What was removed:** None.
+
+**Files changed:** 2 (`+59/-12`) — `frontend/src/pages/CreateEmployee/index.tsx`, `frontend/src/pages/CreateEmployee/index.test.tsx`.
+**Database changes:** None. **API changes:** None — validation is client-side; the backend accepts any non-empty string. **Frontend changes:** See above.
+
+**Tests:**
+- Unit Test: None new
+- Integration Test: `CreateEmployee/index.test.tsx` — format-rejection cases added, 2 existing cases updated, the duplicate-code case restructured
+- E2E Test: None automated — live-verified manually
+
+**Validation:**
+- Build: Pass
+- Lint: Pass (0 warnings)
+- Test: Pass — 219 tests at merge time (was 218)
+- Type Check: Pass
+- Live E2E (real running Docker stack, through the actual UI): a 7-digit or alphanumeric code is rejected on blur with the format message; `26725898` is accepted.
+
+**Requirement Traceability:**
+PRD: **N/A — no governing FR.** This is a newly-confirmed business rule with no `RAISE-FR-*` ID to trace to; it is recorded in `OPEN-FINDINGS.md` as F-36 rather than written into a requirement this session had no authority to create.
+Design: N/A. Acceptance Criteria: N/A. Test Case: N/A.
+
+**Git:**
+Branch: `feature/employee-id-format-validation` (deleted after merge)
+Commit: `a970143`, merged to `main` via [PR #81](https://github.com/boonthepkstl-alt/stl_asset_service/pull/81) (merge commit `b26ff11`), 2026-09-03 20:53+07:00.
+
+**Status:** 🟡 **Partial** — the *confirmed* scope (validate-on-input) is fully shipped and verified, but the application now **enforces a format its own data does not follow**: `employeeService.go`'s auto-generation still emits `EMP-<8 hex>`, and the frontend seed fixtures still use `EMP-####` — both are rejected by the check this PR added. Marking this ✅ would hide a live internal contradiction, so per Rule 14 it stays 🟡.
+**Known Issues:** As above — auto-generated and seeded Employee Codes do not conform to the confirmed 8-digit convention. Fixing that needs a rule for the HR-issued 6-digit portion, which RAISE does not own. Tracked as the open half of **F-36**.
+**Remaining Work:** Decide (with HR) whether seed fixtures and the auto-generation fallback should switch to a conforming form, or whether auto-generation should be removed outright on the grounds that RAISE cannot legitimately mint an HR-issued number.
+**Next Step:** Not a further Employee-field task — the user's next input redirected to the shape of the Create forms themselves (became PR #82, `CHECKPOINT-2026-09-03-007`).
+
+---
+
+## CHECKPOINT-2026-09-03-007
+
+**Phase:** Phase 3 — Asset Management — cross-cutting form IA
+**Feature:** Create Asset / Create Employee — form structure
+**Task:** User questioned whether the Create Asset wizard should be a wizard at all, and asked for analysis **before** any code. The analysis supported the instinct; both Create forms were then flattened to single-page.
+
+**Analysis performed before writing code (recorded because it is what justified the reversal):** the real field counts were measured, not estimated — `CreateAsset` holds **13 fields total**, with step 2 (Financial) and step 3 (Assignment) holding **only 3 fields each**, far too thin to justify their own step.
+**What was implemented:** `CreateAsset` flattened from 4 steps to 3 stacked `SectionCard`s; `CreateEmployee` flattened from 3 steps to 2. The action bar is now sticky to the viewport bottom. Validation became a **single pass on submit**, so every error surfaces at once instead of one step at a time.
+**What was modified:** Both pages' test suites, rewritten for a single-page flow (no step navigation left to drive).
+**What was fixed:** The Review step on both forms was dropped as redundant once every field is visible at once — and on Asset it was **actively misleading**, listing only 6 of the 13 fields, so a user reviewing it saw less than half of what they were about to submit.
+**What was added:** None net. **What was removed:** Both step indicators, both Review steps, and the per-step validation machinery. **Net −137 lines.**
+
+**Why this reverses PR #78 four PRs earlier — recorded explicitly so it does not read as unexplained churn:** `CreateEmployee` had been built to mirror the `CreateAsset` stepper only two days earlier (`CHECKPOINT-2026-09-03-003`). Flattening Asset alone would have re-introduced the exact inconsistency PR #78 existed to remove, so both were flattened in one PR. PR #78 was not wrong given what was known then — it correctly copied the pattern the codebase had; the *pattern itself* is what was later found unjustified, and only measuring the field counts showed that.
+
+**Files changed:** 4 (`+261/-398`) — `frontend/src/pages/CreateAsset/{index.tsx,index.test.tsx}`, `frontend/src/pages/CreateEmployee/{index.tsx,index.test.tsx}`.
+**Database changes:** None. **API changes:** None. **Frontend changes:** See above — this is the change.
+
+**Tests:**
+- Unit Test: None new
+- Integration Test: `CreateAsset/index.test.tsx` and `CreateEmployee/index.test.tsx` both substantially rewritten for the single-page flow, including a case confirming all validation errors appear together on submit
+- E2E Test: None automated — live-verified manually
+
+**Validation:**
+- Build: Pass
+- Lint: Pass (0 warnings)
+- Test: Pass at merge time
+- Type Check: Pass
+- Live E2E (real running Docker stack, through the actual UI): both forms create real records in one pass; the sticky action bar stays reachable while scrolling; submitting an empty form surfaces every error simultaneously.
+
+**Requirement Traceability:**
+PRD: **N/A — no governing FR.** No `RAISE-FR-*` acceptance criterion covers either Create form's structure; `RAISE-FR-ASSET-001` covers the registry, not the creation form's step count.
+Design: N/A — UI/IA decision, not a logical-architecture change.
+Acceptance Criteria: N/A. Test Case: N/A — no `TC-*` asserts a wizard, so nothing in the chain regressed.
+
+**Git:**
+Branch: `frontend/flatten-create-forms-single-page` (deleted after merge)
+Commit: `1f75818`, merged to `main` via [PR #82](https://github.com/boonthepkstl-alt/stl_asset_service/pull/82) (merge commit `19d1a0b`), 2026-09-03 21:08+07:00.
+
+**Status:** ✅ Complete for its confirmed scope.
+**Known Issues:** None from this change.
+**Remaining Work:** None for this item.
+**Next Step:** Continue the user's review of the app shell — the global "New Asset" button was the next item raised (became PR #83, `CHECKPOINT-2026-09-03-008`).
+
+---
+
+## CHECKPOINT-2026-09-03-008
+
+**Phase:** Cross-cutting — app shell / navigation
+**Feature:** App header
+**Task:** Remove the "New Asset" button from the global app header
+
+**What was implemented:** N/A — this is a removal.
+**What was modified:** `frontend/src/App.route.test.tsx` tightened from `getAllByRole(...)[0]` to `getByRole` — the loosened form existed only to tolerate two identical buttons on screen, so tightening it now also **guards against the duplicate silently returning**.
+**What was fixed:** The button rendered on **every** page (Employees, Settings, Licenses, Dashboard, …) despite doing one asset-specific thing, and duplicated the Assets page's own "New Asset" button on the one page where it was actually relevant.
+**What was added:** None.
+**What was removed:** The header button in `frontend/src/components/AppShell.tsx`, plus its now-unused `Plus` import. The Assets page's own button stays, as does the asset table's empty-state one — every path to creating an asset that made sense is preserved.
+
+**Files changed:** 2 (`+4/-6`) — `frontend/src/App.route.test.tsx`, `frontend/src/components/AppShell.tsx`.
+**Database changes:** None. **API changes:** None. **Frontend changes:** See above.
+
+**Tests:**
+- Unit Test: None new
+- Integration Test: `App.route.test.tsx` tightened (now fails if a second "New Asset" button reappears)
+- E2E Test: None automated — live-verified manually
+
+**Validation:**
+- Build: Pass
+- Lint: Pass (0 warnings) — the unused `Plus` import would have failed lint had it been left behind
+- Test: Pass at merge time
+- Type Check: Pass
+- Live E2E (real running Docker stack, through the actual UI): the header no longer offers "New Asset" on non-asset pages; the Assets page still does.
+
+**Requirement Traceability:**
+PRD: **N/A — no governing FR.** Design: N/A. Acceptance Criteria: N/A. Test Case: N/A — no test case asserted the header button's existence.
+
+**Git:**
+Branch: `frontend/remove-global-new-asset-button` (deleted after merge)
+Commit: `b3c0cce`, merged to `main` via [PR #83](https://github.com/boonthepkstl-alt/stl_asset_service/pull/83) (merge commit `65b3799`), 2026-09-03 21:14+07:00.
+
+**Status:** ✅ Complete for its confirmed scope.
+**Known Issues:** None.
+**Remaining Work:** None.
+**Next Step:** Continue the shell review — breadcrumbs were the next item raised (became PR #84, `CHECKPOINT-2026-09-03-009`).
+
+---
+
+## CHECKPOINT-2026-09-03-009
+
+**Phase:** Cross-cutting — app shell / navigation
+**Feature:** Breadcrumbs
+**Task:** User asked for the breadcrumb root to read "Home" and be clickable, and for intermediate crumbs (e.g. "Employee Management") to link back
+
+**What was implemented:** Non-last crumbs carrying an `href` now render as **navigating buttons**; the last crumb stays inert, since it is the page you are already on. `AppShell` now **owns the root crumb** and prepends `Home` (→ dashboard) itself. Navigation goes through the existing `onNavigate(id)` prop rather than importing react-router, keeping `AppShell` router-agnostic as originally designed.
+**What was modified:** All **39 call sites across 19 page files** dropped their hardcoded `{ label: 'RAISE' }` root crumb, now that `AppShell` supplies it.
+**What was fixed:** **A latent bug, not just a feature request.** The breadcrumb prop type has always been `{ label: string; href?: string }[]`, and roughly 9 pages were already passing real `href` values — but the rendering **ignored `href` entirely** and emitted a plain `<span>` for every crumb. Every one of those hrefs was dead code: the data was correct and had been for a long time; nothing ever read it. The user's request surfaced it.
+**What was added:** None beyond the above. **What was removed:** 39 hardcoded root-crumb literals.
+
+**Files changed:** 21 (`+70/-45`) — `frontend/src/components/AppShell.tsx` plus 20 page files (`AIDecisionCenter`, `Administration`, `Alerts`, `AssetDetail`, `Assets`, `CreateAsset`, `CreateEmployee`, `Dashboard`, `EmployeeDetail`, `Employees`, `HandoverDetail`, `Handovers`, `LicenseDetail`, `Licenses`, `Maintenance`, `RoleManagement`, `Settings`, `TicketDetail`, `UserManagement`, `_shared/ModulePage`).
+**Database changes:** None. **API changes:** None. **Frontend changes:** See above.
+
+**Tests:**
+- Unit Test: None new
+- Integration Test: Existing page suites cover the changed call sites; **no breadcrumb-specific suite was added**
+- E2E Test: None automated — live-verified manually
+
+**Validation:**
+- Build: Pass
+- Lint: Pass (0 warnings)
+- Test: Pass — **46 test files / 221 tests**, re-confirmed during this close-out (`npx tsc --noEmit`, `npm run lint`, `npm run test` all exit 0)
+- Type Check: Pass
+- Live E2E (real running Docker stack, through the actual UI): "Home" appears as the first crumb on every page and navigates to the dashboard; "Employee Management" on Employee Detail navigates back to the list; the final crumb is not clickable.
+
+**Requirement Traceability:**
+PRD: **N/A — no governing FR.** Design: N/A. Acceptance Criteria: N/A. Test Case: N/A — no test case covers breadcrumb behaviour, which is precisely why the dead-`href` bug survived undetected.
+
+**Git:**
+Branch: `frontend/clickable-breadcrumbs-home-root` (deleted after merge)
+Commit: `e88c919`, merged to `main` via [PR #84](https://github.com/boonthepkstl-alt/stl_asset_service/pull/84) (merge commit `02d99cb`), 2026-09-03 21:28+07:00.
+
+**Status:** ✅ Complete for its confirmed scope.
+**Known Issues:** Breadcrumb rendering still has **no automated test coverage** — the very gap that let ~9 pages carry dead `href` props unnoticed. The fix is live-verified but not regression-guarded.
+**Remaining Work:** Add a focused `AppShell` breadcrumb test (root crumb present, intermediate crumbs navigate, last crumb inert) so this cannot silently regress again.
+**Next Step:** See `CURRENT-STATUS.md` §4 — the recommended next task is resolving **F-36**'s open half (seed fixtures / auto-generation vs. the confirmed 8-digit convention), not a further shell refinement.
+
+---
+
 ## Level 2 — Feature Checkpoints
 
 ### FEATURE-CHECKPOINT-project-tracking-governance

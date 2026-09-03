@@ -16,7 +16,48 @@ changes user-visible or API-visible behavior. Pure documentation-sync PRs
 
 ## 2026-09-03
 
+### Added
+- **Adding an employee is now its own page, not a pop-up** — "Add
+  Employee" on the Employees list opens a full page instead of a modal
+  dialog, so there's room to see every field at once. (It briefly shipped
+  as a multi-step wizard earlier the same day; see "Create forms are now
+  a single page" below for why that changed.)
+- **Optional Employee Code on the Add Employee form** — you can now type
+  an employee's ID yourself instead of always getting a generated one,
+  the same way the Add Asset form already let you supply an Asset Code.
+  Leave it blank and one is still generated for you. Previously, typing
+  one had no effect — the server replaced whatever you entered.
+
 ### Changed
+- **Create forms are now a single page instead of a step-by-step
+  wizard** — both "Add Asset" and "Add Employee" now show all their
+  fields on one scrolling page with a Save bar pinned to the bottom,
+  rather than walking you through numbered steps. The final "Review"
+  step is gone: everything is already visible, and on the Asset form
+  that review screen only listed 6 of the form's 13 fields anyway. If
+  something is missing when you save, **all** the errors now appear at
+  once instead of one step at a time.
+- **Employee ID must now be 8 digits** — the Employee Code field is
+  checked against the company's real ID format: exactly 8 digits, where
+  the first 2 are the year the person joined (for example `26725898` for
+  someone who joined in 2026). Anything else is rejected as you type.
+  RAISE does **not** invent these numbers — the last 6 digits are issued
+  by HR, so the field is validated, never auto-filled with a real-looking
+  ID. Note that automatically-generated and demo employee codes still use
+  the older `EMP-…` style and do not match this format yet.
+- **Duplicate work email or phone number is now blocked** — entering an
+  email address or phone number that already belongs to another employee
+  now shows an error and stops you from continuing, both when adding a
+  new employee and when editing an existing one's contact details.
+- **"New Asset" removed from the top bar** — the button used to appear
+  on every screen, including ones that have nothing to do with assets
+  (Settings, Employees, Licenses). It's still on the Asset Management
+  page itself, where it belongs.
+- **Breadcrumbs are now clickable, starting from "Home"** — the trail at
+  the top of each page now begins with "Home" (which takes you to the
+  dashboard), and the steps in between — like "Employee Management" —
+  now actually navigate back. Previously the whole trail was plain text
+  that looked like links but did nothing.
 - **Asset Handovers navigation consolidated to one page** — the sidebar
   previously listed 3 separate items for the IT Hardware handover
   workflow (My Pending Assignments / IT Processing Queue / IT Supervisor

@@ -2812,6 +2812,158 @@ Commit: `16a062c` (feature commit), merged to `main` via [PR #72](https://github
 
 ---
 
+## CHECKPOINT-2026-09-02-005
+
+**Phase:** Phase 3 — Asset Management
+**Feature:** IT Hardware Assignment Approval Workflow (`RAISE-FR-OPS-002` category-scoped exception)
+**Task:** Docs-only session close-out for `CHECKPOINT-2026-09-02-004`/PR #72 — this checkpoint itself was never logged at the time
+
+**What was implemented:** N/A — documentation-only, no code/behavior change.
+**What was modified:** `docs/project-management/PROJECT-CHECKPOINTS.md` (`CHECKPOINT-2026-09-02-004`'s Git section updated from `pending` to the real merged commit/branch, once PR #72 actually merged).
+**What was fixed:** None.
+**What was added:** `docs/project-management/DEVELOPMENT-LOG.md` row for PR #72; `docs/project-management/CHANGELOG.md` entry for PR #72's user-visible change (IT Hardware Assignment Approval Workflow, backend-only) — both deferred until #72 was confirmed merged, per this project's own convention that those two files only get entries for **merged** PRs, not predicted ones.
+**What was removed:** None.
+
+**Files changed:** 3 (`docs/project-management/CHANGELOG.md`, `docs/project-management/DEVELOPMENT-LOG.md`, `docs/project-management/PROJECT-CHECKPOINTS.md`) — +19/-4.
+**Database changes:** None. **API changes:** None. **Frontend changes:** None.
+
+**Tests:** N/A — documentation-only change.
+**Validation:** N/A — documentation-only change (all four fields).
+
+**Requirement Traceability:**
+PRD: `RAISE-FR-OPS-002` (§16 Resolved Question 43) — recording only, no new evidence generated.
+Design/Acceptance Criteria/Test Case: Unchanged by this PR — see `CHECKPOINT-2026-09-02-004`.
+
+**Git:**
+Branch: `docs/it-hardware-handover-closeout` (deleted after merge)
+Commit: `85d67e6` (feature commit), merged to `main` via [PR #73](https://github.com/boonthepkstl-alt/stl_asset_service/pull/73) (merge commit `d86d109`), 2026-09-02.
+
+**Known Issues:** This checkpoint itself is being recorded retroactively (during the PR #73–#76 close-out pass) — the gap it documents (a pure-docs-closeout PR lacking its own `DEVELOPMENT-LOG.md` row and Task Checkpoint) is the same class of gap R-04 fixed for PRs #19–#28, now recurring here for #73/#75. Established convention (PR #30, #32, #34, #36, #66 all pure-docs-closeout PRs with their own rows) says every merged PR gets one — this checkpoint and the `DEVELOPMENT-LOG.md` row added in this same pass close that gap for #73.
+**Remaining Work:** None for PR #72's close-out itself. Frontend UI for this workflow remained the open follow-up at the time (addressed next, PR #74).
+**Next Step:** Frontend UI for the IT Hardware handover workflow (became PR #74).
+
+---
+
+## CHECKPOINT-2026-09-02-006
+
+**Phase:** Phase 3 — Asset Management
+**Feature:** IT Hardware Assignment Approval Workflow (`RAISE-FR-OPS-002` category-scoped exception) — frontend
+**Task:** Build the frontend UI for the 4-stage approval workflow whose backend shipped in PR #72 (`CHECKPOINT-2026-09-02-004`), per that checkpoint's own predicted next step
+
+**What was implemented:** Full frontend surface for the 4-stage workflow: `types/handover.ts`, `services/handover-repository.ts` (Mock + Http, mirroring the established `ticket-repository.ts` pattern), `services/handover-service.ts`, `hooks/useHandover.ts`/`useHandovers.ts`, three new pages (`MyPendingAssignments`, `ITProcessingQueue`, `ITSupervisorApprovalQueue` — all three later deleted and replaced by a single consolidated page in PR #76, see `CHECKPOINT-2026-09-03-002`) plus `HandoverDetail` (a 4-stage governance indicator mirroring `TicketDetail`'s existing pattern). New routes role-gated client-side (`IT_STAFF`/`ADMIN` for the processing queue, `IT_MANAGER`/`ADMIN` for the approval queue) via the existing `ProtectedRoute` pattern — UI-only, no backend RBAC enforcement, consistent with this codebase's pre-existing MVP decision.
+**What was modified:** `AssetDetail`'s existing Assign button now intercepts IT Hardware category assets and routes through this flow instead of assigning immediately; every other category unaffected (regression-tested). `App.tsx`, `config/constants.ts`, `config/featureFlags.ts`, `config/navigation.ts`, `data/fixtures/requisitionData.ts`, `docker-compose.yml`, `docker.env.example`, `frontend/.env.example`, `frontend/Dockerfile`.
+**What was fixed:** A self-initiated code-review pass (5 parallel reviewer agents, 8 finder angles) found and fixed 3 real bugs before merge: (1) the mock repository's Approve action never actually completed the underlying asset assignment (the default, `HANDOVER_API_ENABLED=false` demo path silently left assets stuck "Available" forever despite the handover record showing "Assigned") — fixed in `handoverService.decideHandover` to complete the assignment itself when mocked, mirroring the real backend's `CompleteHandoverAssignment`; (2) the pending-handover badge/quick-action on Asset Detail was category-blind (didn't check `asset.category === 'IT Hardware'`) — fixed with defense-in-depth; (3) the Custody Lifecycle row on Asset Detail said "Currently Available" while a handover was actively pending, contradicting the header badge on the same page — fixed to show "Assignment Pending — {recipient}".
+**What was added:** See "What was implemented." Plus new test files: `App.rbac.test.tsx` additions, `AssetDetail/index.test.tsx` additions, `HandoverDetail/index.test.tsx`, `ITProcessingQueue/index.test.tsx`, `ITSupervisorApprovalQueue/index.test.tsx`, `MyPendingAssignments/index.test.tsx`, `handover-repository.http.test.ts`, `handover-repository.test.ts`, `handover-service.test.ts`.
+**What was removed:** None (the 3 queue pages added here were removed later, in PR #76).
+
+**Files changed:** 29 (`+2055/-7`) — full list: `docker-compose.yml`, `docker.env.example`, `frontend/.env.example`, `frontend/Dockerfile`, `frontend/src/App.rbac.test.tsx`, `frontend/src/App.tsx`, `frontend/src/config/constants.ts`, `frontend/src/config/featureFlags.ts`, `frontend/src/config/navigation.ts`, `frontend/src/data/fixtures/handoverData.ts`, `frontend/src/data/fixtures/requisitionData.ts`, `frontend/src/hooks/useHandover.ts`, `frontend/src/hooks/useHandovers.ts`, `frontend/src/pages/AssetDetail/index.test.tsx`, `frontend/src/pages/AssetDetail/index.tsx`, `frontend/src/pages/HandoverDetail/index.test.tsx`, `frontend/src/pages/HandoverDetail/index.tsx`, `frontend/src/pages/ITProcessingQueue/{index.tsx,index.test.tsx}`, `frontend/src/pages/ITSupervisorApprovalQueue/{index.tsx,index.test.tsx}`, `frontend/src/pages/MyPendingAssignments/{index.tsx,index.test.tsx}`, `frontend/src/services/handover-repository.{ts,test.ts,http.test.ts}`, `frontend/src/services/handover-service.{ts,test.ts}`, `frontend/src/types/handover.ts`.
+**Database changes:** None (consumes PR #72's existing backend endpoints; no schema change). **API changes:** None new (frontend-only; wires to PR #72's 6 endpoints behind `HANDOVER_API_ENABLED`, default off — mock path is the default demo experience). **Frontend changes:** See above — this is the change.
+
+**Tests:**
+- Unit Test: `handover-repository.test.ts`, `handover-repository.http.test.ts`, `handover-service.test.ts` (new)
+- Integration Test: `HandoverDetail/index.test.tsx`, `ITProcessingQueue/index.test.tsx`, `ITSupervisorApprovalQueue/index.test.tsx`, `MyPendingAssignments/index.test.tsx` (new); `AssetDetail/index.test.tsx`, `App.rbac.test.tsx` (extended)
+- E2E Test: None automated — live-verified manually (see Validation)
+
+**Validation:**
+- Build: Pass
+- Lint: Pass (0 warnings)
+- Test: Pass — 47 test files / 196 tests passing at merge time
+- Type Check: Pass (`tsc --noEmit` clean)
+- Live E2E (real running Docker stack, through the actual UI, not just API calls): all 4 stages exercised via real button clicks; both rejection paths verified with correct stage-attribution in the governance indicator; the non-IT-Hardware regression guard confirmed (other categories still assign immediately).
+
+**Requirement Traceability:**
+PRD: `RAISE-FR-OPS-002` (§16 Resolved Question 43)
+Design: `RAISE-DESIGN.md` §4.2 (unchanged this PR — already covers the workflow from PR #72)
+Acceptance Criteria: `AC-OPS-002-04`..`-09` (frontend now exercises what PR #72 only satisfied at the API level)
+Test Case: `TC-OPS-002-04`..`-09` — status unchanged by this PR itself (the deliverable-chain re-sync recording the frontend's completion is PR #75, `CHECKPOINT-2026-09-03-001`)
+
+**Git:**
+Branch: `feature/it-hardware-handover-workflow-frontend` (deleted after merge)
+Commit: `97e7558` (feature commit), merged to `main` via [PR #74](https://github.com/boonthepkstl-alt/stl_asset_service/pull/74) (merge commit `c5b17d9`), 2026-09-02.
+
+**Known Issues:** 4 lower-severity findings from the code-review pass were left as documented residual risk, not fixed: (1) name-only recipient matching between the User/auth model and Employee/recipient model — no `employeeId` link exists anywhere in this codebase, a documented accepted MVP limitation; (2) no double-submit guard on queue row actions, mitigated by the backend's own stage guard; (3) a `GovernanceStep` component duplicated from `TicketDetail` instead of shared; (4) unformatted raw timestamps. Backend RBAC enforcement for `IT_STAFF`/`IT_MANAGER` remains UI-only/client-side, consistent with the pre-existing project-wide MVP decision (not a gap specific to this feature).
+**Remaining Work:** Deliverable-chain re-sync to reflect the frontend now existing (became PR #75). The 3 separate queue pages' navigation/IA (3 top-level nav items for one workflow) was later identified as a UX problem and consolidated in PR #76.
+**Next Step:** Sync `RAISE-TEST-CASES.md`/`RAISE-TRACEABILITY-MATRIX.md` to remove the "backend/API-level scope only, no frontend UI yet" caveat now that the frontend shipped and was live-verified (became PR #75, `CHECKPOINT-2026-09-03-001`).
+
+---
+
+## CHECKPOINT-2026-09-03-001
+
+**Phase:** Phase 1 — Foundation (deliverable chain sync) / Phase 3 — Asset Management (`RAISE-FR-OPS-002`)
+**Feature:** IT Hardware Assignment Approval Workflow — deliverable chain sync
+**Task:** Update `RAISE-TEST-CASES.md` and `RAISE-TRACEABILITY-MATRIX.md` now that PR #74 shipped the frontend and it was live-verified through the real UI
+
+**What was implemented:** N/A — documentation-only, no code/behavior change.
+**What was modified:** `docs/06-test-cases/RAISE-TEST-CASES.md` (v0.15 → v0.16) and `docs/07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md` (v1.7 → v1.8) — removed the "backend/API-level scope only, no frontend UI yet" caveat on `TC-OPS-002-04..09`/`RAISE-FR-OPS-002`, since PR #74's frontend shipped and was live-verified end-to-end against the real running Docker stack through the actual UI (not just API calls).
+**What was fixed:** None.
+**What was added:** None.
+**What was removed:** The now-stale "no frontend UI yet" caveat text.
+
+**Files changed:** 2 (`docs/06-test-cases/RAISE-TEST-CASES.md`, `docs/07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md`) — +365/-148.
+**Database changes:** None. **API changes:** None. **Frontend changes:** None.
+
+**Tests:** N/A — documentation-only change.
+**Validation:** N/A — documentation-only change (all four fields).
+
+**Requirement Traceability:**
+PRD: `RAISE-FR-OPS-002` (§16 Resolved Question 43)
+Design: Unchanged
+Acceptance Criteria: `AC-OPS-002-04`..`-09` unchanged (already correct as of PR #72)
+Test Case: `TC-OPS-002-04`..`-09`, `RAISE-TEST-CASES.md` v0.16 — full-stack scope now recorded (was backend/API-only)
+
+**Git:**
+Branch: `docs/it-hardware-handover-frontend-closeout` (deleted after merge)
+Commit: `3ccfc62` (feature commit), merged to `main` via [PR #75](https://github.com/boonthepkstl-alt/stl_asset_service/pull/75) (merge commit `b886de6`), 2026-09-03 (00:55 UTC / 09:55+07:00 local).
+
+**Known Issues:** Still-open items explicitly preserved as unresolved by this PR (not decided or silently dropped): backend RBAC enforcement, Stage 2 e-signature, Stage 2 recipient-decline path, name-string-based recipient matching. This PR itself was also never given its own `DEVELOPMENT-LOG.md` row/checkpoint at the time — the same gap as PR #73, closed retroactively in this same close-out pass.
+**Remaining Work:** None for the deliverable-chain sync itself. The 3-page navigation/IA problem (identified by the user reviewing a sidebar screenshot) was the next follow-up (became PR #76).
+**Next Step:** Consolidate the 3 handover nav items into one page, per direct user feedback (became PR #76, `CHECKPOINT-2026-09-03-002`).
+
+---
+
+## CHECKPOINT-2026-09-03-002
+
+**Phase:** Phase 3 — Asset Management (`RAISE-FR-OPS-002`) — cross-cutting navigation/IA
+**Feature:** IT Hardware Assignment Approval Workflow — navigation consolidation
+**Task:** User-requested IA refactor after reviewing a sidebar screenshot: collapse 3 separate top-level nav items (one per workflow stage/actor) into 1
+
+**What was implemented:** One new page `frontend/src/pages/Handovers/index.tsx` with role-aware tabs — "My Pending" visible to everyone, "IT Processing" visible to `IT_STAFF`/`ADMIN`, "Supervisor Approval" visible to `IT_MANAGER`/`ADMIN` — default active tab matching the signed-in user's primary role. Follows this codebase's own established precedent: "IT Requisition & Maintenance" (the Ticket/Maintenance domain) is also a multi-stage, multi-actor workflow, but is a single nav item/page, not one per stage — the same pattern applied here.
+**What was modified:** `ROUTES.MY_PENDING_ASSIGNMENTS`/`ROUTES.IT_PROCESSING_QUEUE`/`ROUTES.IT_SUPERVISOR_APPROVAL_QUEUE` collapsed into one `ROUTES.HANDOVERS = '/handovers'` (`config/constants.ts`); `HANDOVER_DETAIL` route unchanged. 3 nav items collapsed into one "Asset Handovers" nav item in `config/navigation.ts`, positioned next to "IT Requisition & Maintenance" in the Assets group. `HandoverDetail`'s hardcoded back-references updated from the old `my-pending-assignments` id/path to the new `handovers` one (`frontend/src/pages/HandoverDetail/index.tsx`). `frontend/src/services/handover-service.ts` (minor). `App.tsx` (route wiring). `App.rbac.test.tsx` — removed 3 route-level role-gating tests since role-gating is now a page-level tab-visibility concern, added a test confirming `/handovers` is reachable by every authenticated role.
+**What was fixed:** None (UX/IA refactor, not a bug fix).
+**What was added:** `frontend/src/pages/Handovers/index.tsx`, `frontend/src/pages/Handovers/index.test.tsx`.
+**What was removed:** `frontend/src/pages/MyPendingAssignments/`, `frontend/src/pages/ITProcessingQueue/`, `frontend/src/pages/ITSupervisorApprovalQueue/` (all 3 page folders, including their test files) — fully replaced by the one consolidated page above.
+
+**Files changed:** 14 (`+586/-561`) — `frontend/src/App.rbac.test.tsx`, `frontend/src/App.tsx`, `frontend/src/config/constants.ts`, `frontend/src/config/navigation.ts`, `frontend/src/pages/HandoverDetail/index.tsx`, `frontend/src/pages/Handovers/{index.tsx,index.test.tsx}` (new), `frontend/src/pages/ITProcessingQueue/{index.tsx,index.test.tsx}` (deleted), `frontend/src/pages/ITSupervisorApprovalQueue/{index.tsx,index.test.tsx}` (deleted), `frontend/src/pages/MyPendingAssignments/{index.tsx,index.test.tsx}` (deleted), `frontend/src/services/handover-service.ts`.
+**Database changes:** None. **API changes:** None (frontend-only IA refactor). **Frontend changes:** See above — sidebar now shows exactly one "Asset Handovers" entry instead of 3.
+
+**Tests:**
+- Unit Test: None new beyond the consolidated page's own suite
+- Integration Test: `Handovers/index.test.tsx` (new, 17 tests covering all 3 tabs' visibility/default-tab/row-action behavior across roles); `App.rbac.test.tsx` updated (3 route-level tests removed, 1 new `/handovers`-reachable-by-every-role test added, net +9 tests / -2 files vs. pre-consolidation)
+- E2E Test: None automated — live-verified manually (see Validation)
+
+**Validation:**
+- Build: Pass
+- Lint: Pass (0 warnings) — re-confirmed this close-out (`npm run lint`, exit 0)
+- Test: Pass — 45 test files / 205 tests passing — re-confirmed this close-out (`npm run test -- --run`, exit 0, matches the PR's own reported count exactly)
+- Type Check: Pass — re-confirmed this close-out (`npx tsc --noEmit`, exit 0)
+- Live E2E (real running Docker stack): sidebar now shows exactly one "Asset Handovers" entry; tabs switch correctly with per-tab counts.
+
+**Requirement Traceability:**
+PRD: `RAISE-FR-OPS-002` (§16 Resolved Question 43) — IA/navigation change only, no requirement content change.
+Design: N/A — this is a UI/IA decision, not a logical-architecture change; no `RAISE-DESIGN.md` update required.
+Acceptance Criteria: Unaffected — `AC-OPS-002-04..09` describe workflow behavior, not nav structure.
+Test Case: Unaffected in content; `TC-OPS-002-04..09` continue to PASS against the consolidated page (re-verified live, see Validation).
+
+**Git:**
+Branch: `frontend/consolidate-handover-nav-into-single-page` (deleted after merge)
+Commit: `01c8517` (feature commit), merged to `main` via [PR #76](https://github.com/boonthepkstl-alt/stl_asset_service/pull/76) (merge commit `bf5b88d`), 2026-09-03 (06:42 UTC / 13:42+07:00 local).
+
+**Known Issues:** Carried forward, unaffected by this IA-only change: (1)-(4) the 4 lower-severity PR #74 code-review findings (name-only recipient matching, no double-submit guard, duplicated `GovernanceStep`, unformatted timestamps); Stage 2 e-signature/acknowledgment capture undecided (user explicitly dismissed this question in the PR #72 session — must not be decided by any future session without new explicit instruction); Stage 2 recipient-decline path never asked, not implemented; Custody History write-timing across the 4 stages (`RAISE-DESIGN.md` §4.2 flags this as an open design point, F-10-adjacent); backend RBAC enforcement remains UI-only/client-side (explicit pre-existing MVP decision — not a gap to close).
+**Remaining Work:** None unblocked by engineering — every buildable-now item for this feature (backend, frontend, and now IA) is shipped, tested, and live-verified. What remains is business/data decisions: the Blocking findings F-03–F-09/F-35, or F-10 (Custody History write-timing), none of which this feature's frontend work can resolve on its own.
+**Next Step:** Not a further engineering task on this feature — check in with the user on which Blocking finding (F-03–F-09, F-35) or F-10 to resolve next, per `NEXT-STEP.md`'s standing recommendation pattern. Recalculate `NEXT-STEP.md` (stale since 2026-09-01, predates PR #67) as part of this same close-out pass.
+
+---
+
 ## Level 2 — Feature Checkpoints
 
 ### FEATURE-CHECKPOINT-project-tracking-governance

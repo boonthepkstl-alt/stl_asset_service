@@ -9,13 +9,19 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-09-02, after `CHECKPOINT-2026-09-02-004` (IT Hardware
-Assignment Approval Workflow backend implemented and live-verified; not
-yet shipped via PR — see that checkpoint for status). Earlier the same
-day, `CHECKPOINT-2026-09-02-001` fixed the Docker stack to actually
-exercise the real backend — it was silently running on mock data — plus a
-real Dashboard null-guard bug found doing so (also not yet shipped via
-PR). The
+**As of:** 2026-09-03, after `CHECKPOINT-2026-09-03-002` (PR #76 —
+IT Hardware Assignment Approval Workflow's 3 handover nav items
+consolidated into one "Asset Handovers" page with role-aware tabs, per
+direct user feedback on the sidebar's IA). The full feature is now
+shipped full-stack and live-verified: backend (PR #72,
+`CHECKPOINT-2026-09-02-004`), frontend UI (PR #74,
+`CHECKPOINT-2026-09-02-006`), deliverable-chain sync (PR #75,
+`CHECKPOINT-2026-09-03-001`), and nav consolidation (PR #76,
+`CHECKPOINT-2026-09-03-002`) — plus a docs-only close-out for PR #72
+itself (PR #73, `CHECKPOINT-2026-09-02-005`). Re-verified live this
+close-out pass: `npx tsc --noEmit` clean, `npm run lint` clean (0
+warnings), `npm run test -- --run` — **45 test files / 205 tests
+passing**, matching PR #76's own reported count exactly. The
 `BASELINE-CHECKPOINT-2026-08-24` scan is still the last
 full live re-verification against `git`/source. F-20 (checkpoint-coverage
 gap) is closed (R-04); F-21 (QR/Barcode invalid-code state) is closed
@@ -250,10 +256,27 @@ category assets; all other categories and Check-in unaffected. Backend-only
 `test` clean, 24 new unit tests passing, and live-verified end-to-end
 against the real Docker stack (all 4 stages, both rejection points, the
 non-IT-Hardware regression guard). `TC-OPS-002-04..09` now `PASS` (backend/
-API-level scope). **Frontend UI not started** and **nothing is committed
-yet** — see `CHECKPOINT-2026-09-02-004` for the full record, known issues
-(5 documented residual code-review risks), and next step (git branch/
-commit/PR).
+API-level scope).
+**The frontend then shipped the same day (PR #74, `CHECKPOINT-2026-09-02-006`)** —
+full UI for all 4 stages (My Pending Assignments / IT Processing Queue /
+IT Supervisor Approval Queue at the time, plus `HandoverDetail`'s governance
+indicator), `AssetDetail`'s Assign button intercepting IT Hardware assets,
+client-side role-gated routes, 3 real bugs found and fixed by a
+self-initiated code review before merge, 47 test files / 196 tests passing,
+live-verified end-to-end through the real UI. **PR #75** then synced
+`RAISE-TEST-CASES.md`/`RAISE-TRACEABILITY-MATRIX.md` (v1.7 → v1.8) to
+remove the now-stale "backend/API-level scope only" caveat. **PR #76**
+(2026-09-03) then consolidated the 3 separate nav items into one "Asset
+Handovers" page with role-aware tabs, per direct user feedback on the
+sidebar's IA — following the same single-nav-item precedent already
+established by the Maintenance/Ticket domain. **The feature is now
+✅ Complete for its currently confirmed MVP scope** (backend + frontend +
+consolidated nav, all shipped, tested, and live-verified) — explicitly
+**not** including Stage 2 e-signature, the Stage 2 recipient-decline path,
+backend RBAC enforcement, or Custody History write-timing across the 4
+stages, all of which remain outside the confirmed scope, not gaps in what
+was promised. See `CHECKPOINT-2026-09-02-005`/`-006` and
+`CHECKPOINT-2026-09-03-001`/`-002` for the full per-PR record.
 
 ---
 
@@ -261,7 +284,7 @@ commit/PR).
 
 The documentation chain (`docs/01-requirements/` … `docs/07-traceability-matrix/`)
 is internally consistent and current — **`RAISE-TRACEABILITY-MATRIX.md` is
-at v1.7: all 15 traceability gaps identified across this project's
+at v1.8: all 15 traceability gaps identified across this project's
 history are closed** and re-verified against real file content, not just
 re-asserted. `docs/11-compliance-review/RAISE-COMPLIANCE-REVIEW.md` v1.0
 (2026-09-01) consolidates the whole chain into a per-requirement verdict:
@@ -282,8 +305,8 @@ paragraph, which is a summary of a summary and can drift.
 | [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) | 0.13 | P-008 updated for the handover approval workflow (2026-09-02) |
 | [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) | 0.11 | AC-OPS-002-04..09 added for the IT Hardware handover approval workflow (Resolved Question 43, 2026-09-02) |
 | [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) | 0.11 | TS-OPS-002 extended to 9 cases for the handover workflow (2026-09-02) |
-| [`RAISE-TEST-CASES.md`](../06-test-cases/RAISE-TEST-CASES.md) | 0.15 | 72 test cases; TC-OPS-002-04..09 now PASS (backend implemented + live-verified, 2026-09-02) |
-| [`RAISE-TRACEABILITY-MATRIX.md`](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md) | 1.7 | Gap 15 (IT Hardware handover approval) closed — `TC-OPS-002-04..09` PASS |
+| [`RAISE-TEST-CASES.md`](../06-test-cases/RAISE-TEST-CASES.md) | 0.16 | 72 test cases; `TC-OPS-002-04..09` PASS, full-stack scope (backend PR #72 + frontend PR #74, both live-verified) — "backend/API-level scope only, no frontend UI yet" caveat removed 2026-09-03 (PR #75) |
+| [`RAISE-TRACEABILITY-MATRIX.md`](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md) | 1.8 | Gap 15 (IT Hardware handover approval) closed — `TC-OPS-002-04..09` PASS, full-stack scope recorded (PR #75, 2026-09-03) |
 | [`RAISE-HIGH-LEVEL-ARCHITECTURE.md`](../08-architecture/RAISE-HIGH-LEVEL-ARCHITECTURE.md) | — | As-built, not versioned against PRD chain |
 | [`RAISE-API-DB-SPEC.md`](../09-api-db-spec/RAISE-API-DB-SPEC.md) | — | As-built |
 | [`RAISE-DETAILED-DESIGN.md`](../10-detailed-design/RAISE-DETAILED-DESIGN.md) | — | As-built |
@@ -296,7 +319,7 @@ paragraph, which is a summary of a summary and can drift.
 |---|---|---|
 | Asset Registry | `RAISE-FR-ASSET-001` | ✅ Built, **PASS on all 6 test cases** per formal test execution 2026-08-26/-27 — list/search/row-click/detail-isolation, the Category filter (F-23), and Asset Detail's Financial/Lifecycle sections (F-24) all fixed and verified |
 | Category & Hierarchy | `RAISE-FR-ASSET-002` | ✅ Built, **PASS** per formal test execution 2026-08-26 and 2026-09-01 — category *display* is consistent across screens, and the "By Category" tab inside Asset Management (`/assets`) now nests 2 levels deep: Category → Type → individual assets (**F-27 resolved, R-14**: sub-category = the existing `type` field, no new field/data model). Expanding a category reveals its real Type sub-groups (e.g. "IT Hardware" → Laptop/Monitor/Headphones); expanding a Type reveals its individual assets |
-| Asset Assign / Check-in | `RAISE-FR-ASSET-003` / `RAISE-FR-OPS-002` | 🟡 Built, **backend PASS on all test cases for both requirements incl. the new IT Hardware handover approval workflow; frontend UI for the new workflow not started** — `RAISE-FR-ASSET-003` (3/3, 2026-08-26/-27, F-26 fixed: History tab renders from the same audit trail `RAISE-FR-AUDIT-001` builds, append-only) and `RAISE-FR-OPS-002` (9/9, 2026-09-02: base Assign/Check-in 3/3 as before, plus a new category-scoped 4-stage approval workflow for IT Hardware assets only — `TC-OPS-002-04..09` PASS, backend implemented and live-verified against the real Docker stack, `CHECKPOINT-2026-09-02-004`). **F-02 resolved (R-19, 2026-09-01)**: workflow shape (immediate state-change, no approval step), permission gate (any authenticated user), and holder data model (direct Employee link) all confirmed for the general case — matched already-built behavior exactly, no code change. **PRD §16 Resolved Question 43 (2026-09-02)** then confirmed a real 4-stage approval exception scoped only to IT Hardware category assignment, now implemented backend-only (frontend UI, RBAC backend-enforcement, and Stage 2 e-signature/decline-path remain open — see `CHECKPOINT-2026-09-02-004`). Custody History write-path exclusivity (F-10) and general RBAC role content (F-08) remain separately open. **Nothing from this session is committed yet** |
+| Asset Assign / Check-in | `RAISE-FR-ASSET-003` / `RAISE-FR-OPS-002` | ✅ Built, **PASS on all test cases for both requirements, full stack** — `RAISE-FR-ASSET-003` (3/3, 2026-08-26/-27, F-26 fixed: History tab renders from the same audit trail `RAISE-FR-AUDIT-001` builds, append-only) and `RAISE-FR-OPS-002` (9/9, 2026-09-02/-03: base Assign/Check-in 3/3 as before, plus a category-scoped 4-stage approval workflow for IT Hardware assets only — `TC-OPS-002-04..09` PASS, **backend (PR #72) and frontend (PR #74) both implemented and live-verified** against the real Docker stack through the actual UI). **F-02 resolved (R-19, 2026-09-01)**: workflow shape (immediate state-change, no approval step), permission gate (any authenticated user), and holder data model (direct Employee link) all confirmed for the general case — matched already-built behavior exactly, no code change. **PRD §16 Resolved Question 43 (2026-09-02)** confirmed a real 4-stage approval exception scoped only to IT Hardware category assignment; backend shipped PR #72, frontend UI shipped PR #74, deliverable chain synced PR #75, and the 3-page navigation consolidated into one "Asset Handovers" page with role-aware tabs PR #76 (2026-09-03, per direct user feedback on the sidebar's IA). **Out of confirmed scope, not gaps**: backend RBAC enforcement (UI-only/client-side is the explicit pre-existing MVP decision), Stage 2 e-signature (user explicitly dismissed this question), and the Stage 2 recipient-decline path (never asked). Custody History write-path exclusivity (F-10) and general RBAC role content (F-08) remain separately open |
 | Employee | supports `RAISE-FR-ASSET-003` | ✅ Built |
 | Warranty | `RAISE-FR-WARRANTY-001` | ✅ Built, **full unqualified PASS** per formal test execution 2026-09-01 — field list resolved (F-01), Expiring-threshold configurability resolved (R-17), and the Settings admin-only access gate resolved (R-18, a real defect found and fixed on execution). 3-state Active/Expiring/Expired badge on Assets Registry/Asset Detail, per-Asset-Category configurable threshold (default 90 days) via Settings (P-018), now correctly ADMIN-gated. `TC-WARRANTY-001-01..06` all **PASS** |
 | Maintenance / Ticket | `RAISE-FR-MAINT-001` | ✅ Built, **PASS on all 9 test cases** per formal test execution 2026-08-28 — all 4 stage transitions (submit/approve/reject/dispatch/status-update/complete) work correctly, the record list shows date/cost per record (F-28 fixed), and the stage-progress indicator now visually distinguishes Current from Pending (F-29 fixed). SLA/vendor/cost model remain separately TBD |

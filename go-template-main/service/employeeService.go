@@ -73,7 +73,10 @@ func (s *employeeService) CreateEmployee(input model.CreateEmployeeRequest) (mod
 	log.Infof("CreateEmployee - input: %+v", input)
 
 	id := uuid.New().String()
-	code := fmt.Sprintf("EMP-%s", id[:8])
+	code := input.EmployeeCode
+	if code == "" {
+		code = fmt.Sprintf("EMP-%s", id[:8])
+	}
 
 	phone := input.Phone
 	if phone == "" {

@@ -42,13 +42,13 @@ export function HandoverDetailPage() {
   };
 
   if (loading) {
-    return <AppShell current="my-pending-assignments" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'RAISE' }, { label: 'Handover Details' }]}><div className="flex items-center justify-center py-24 text-body text-surface-400">Loading handover...</div></AppShell>;
+    return <AppShell current="handovers" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'RAISE' }, { label: 'Handover Details' }]}><div className="flex items-center justify-center py-24 text-body text-surface-400">Loading handover...</div></AppShell>;
   }
   if (error) {
-    return <AppShell current="my-pending-assignments" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'RAISE' }, { label: 'Handover Details' }]}><EmptyState icon={<AlertTriangle className="h-6 w-6" />} title="Unable to load handover" description={error} action={<Button onClick={refetch}>Retry</Button>} /></AppShell>;
+    return <AppShell current="handovers" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'RAISE' }, { label: 'Handover Details' }]}><EmptyState icon={<AlertTriangle className="h-6 w-6" />} title="Unable to load handover" description={error} action={<Button onClick={refetch}>Retry</Button>} /></AppShell>;
   }
   if (notFound || !handover) {
-    return <AppShell current="my-pending-assignments" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'RAISE' }, { label: 'Handover Details' }]}><EmptyState icon={<ArrowRightLeft className="h-6 w-6" />} title="Handover not found" description="This handover may have been removed or the link is out of date." action={<Button onClick={() => navigate('/my-pending-assignments')}>Back</Button>} /></AppShell>;
+    return <AppShell current="handovers" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'RAISE' }, { label: 'Handover Details' }]}><EmptyState icon={<ArrowRightLeft className="h-6 w-6" />} title="Handover not found" description="This handover may have been removed or the link is out of date." action={<Button onClick={() => navigate('/handovers')}>Back</Button>} /></AppShell>;
   }
 
   const Icon = getAssetIcon(handover.asset.type);
@@ -120,7 +120,7 @@ export function HandoverDetailPage() {
   };
 
   return (
-    <AppShell current="my-pending-assignments" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'RAISE' }, { label: 'Handover', href: '/my-pending-assignments' }, { label: handover.handoverCode }]}>
+    <AppShell current="handovers" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'RAISE' }, { label: 'Handover', href: '/handovers' }, { label: handover.handoverCode }]}>
       <div className="flex flex-col gap-4">
         <button onClick={() => navigate(-1)} className="inline-flex items-center gap-1.5 text-body text-surface-500 hover:text-surface-800 transition-colors w-fit">
           <ArrowLeft className="h-4 w-4" /> Back

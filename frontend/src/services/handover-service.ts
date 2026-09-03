@@ -19,8 +19,9 @@ const repository: HandoverRepository = HANDOVER_API_ENABLED
 
 /**
  * The stable frontend contract for the IT Hardware Assignment Approval Workflow
- * (pages/MyPendingAssignments, pages/ITProcessingQueue, pages/ITSupervisorApprovalQueue,
- * pages/HandoverDetail, and the Assign-flow interception in pages/AssetDetail). Depends on
+ * (pages/Handovers -- the consolidated My Pending / IT Processing / Supervisor Approval tabs,
+ * formerly 3 separate pages -- pages/HandoverDetail, and the Assign-flow interception in
+ * pages/AssetDetail). Depends on
  * assetService one-way (to resolve the asset snapshot when initiating a handover), mirroring
  * how ticket-service.ts depends on assetService/employeeService -- neither of those services
  * imports anything from here.

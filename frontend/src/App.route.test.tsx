@@ -54,7 +54,10 @@ describe('Asset Management routing', () => {
       expect(screen.getByText(/\d+ assets/)).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getAllByRole('button', { name: 'New Asset' })[0]);
+    // getBy (not getAllBy[0]): the global header's duplicate "New Asset" button was removed, so
+    // the Assets page's own header button is now the only one on a populated list -- this also
+    // guards against the duplicate creeping back in.
+    fireEvent.click(screen.getByRole('button', { name: 'New Asset' }));
 
     await waitFor(() => {
       expect(screen.getByText('Basic Information')).toBeInTheDocument();

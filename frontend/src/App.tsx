@@ -11,6 +11,7 @@ import { AssetsPage } from '@/pages/Assets';
 import { AssetDetailPage } from '@/pages/AssetDetail';
 import { CreateAssetPage } from '@/pages/CreateAsset';
 import { EmployeesPage } from '@/pages/Employees';
+import { CreateEmployeePage } from '@/pages/CreateEmployee';
 import { EmployeeDetailPage } from '@/pages/EmployeeDetail';
 import { MaintenancePage } from '@/pages/Maintenance';
 import { TicketDetailPage } from '@/pages/TicketDetail';
@@ -71,6 +72,7 @@ const App: React.FC = () => {
                 <Route path={ROUTES.ASSET_CREATE} element={<CreateAssetPage />} />
                 <Route path={ROUTES.ASSET_DETAIL} element={<AssetDetailPage />} />
                 <Route path={ROUTES.EMPLOYEES} element={<EmployeesPage />} />
+                <Route path={ROUTES.EMPLOYEE_CREATE} element={<CreateEmployeePage />} />
                 <Route path={ROUTES.EMPLOYEE_DETAIL} element={<EmployeeDetailPage />} />
                 <Route path={ROUTES.MAINTENANCE} element={<MaintenancePage />} />
                 <Route path={ROUTES.TICKET_DETAIL} element={<TicketDetailPage />} />

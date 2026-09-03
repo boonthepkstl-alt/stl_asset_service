@@ -14,7 +14,7 @@ import {
   Sparkles,
   Filter,
 } from 'lucide-react';
-import { Card, Button, StatusBadge, Avatar, Modal, Select, Input, useToast, Textarea, Alert } from '@/components/ui';
+import { Card, Button, StatusBadge, Avatar, Modal, Select, useToast, Textarea, Alert } from '@/components/ui';
 import { AppShell } from '@/components/AppShell';
 import { DataTable, type Column } from '@/components/DataTable';
 import { departments, locations } from '@/data/fixtures/mockData';
@@ -22,7 +22,7 @@ import { getAssetIcon } from '@/data/asset-icons';
 import { useAssets } from '@/hooks/useAssets';
 import { useEmployees } from '@/hooks/useEmployees';
 import { assetService } from '@/services/asset-service';
-import { employeeService } from '@/services/employee-service';
+import { ROUTES } from '@/config/constants';
 import type { Employee, EmployeeStatus } from '@/types/employee';
 
 // Ported from src/pages/Assignment.tsx (the "Employee Management" module in
@@ -41,19 +41,8 @@ export function EmployeesPage() {
   const [statusFilter, setStatusFilter] = useState<EmployeeStatus | 'ALL'>('ALL');
   const [showFilters, setShowFilters] = useState(false);
 
-  const [addEmployeeOpen, setAddEmployeeOpen] = useState(false);
   const [assignOpen, setAssignOpen] = useState(false);
   const [transferOpen, setTransferOpen] = useState(false);
-
-  const [newEmpName, setNewEmpName] = useState('');
-  const [newEmpTitle, setNewEmpTitle] = useState('');
-  const [newEmpEmail, setNewEmpEmail] = useState('');
-  const [newEmpPhone, setNewEmpPhone] = useState('');
-  const [newEmpDept, setNewEmpDept] = useState(departments[0] || 'Engineering');
-  const [newEmpLoc, setNewEmpLoc] = useState(locations[0] || 'HQ - Floor 4');
-  const [newEmpDesk, setNewEmpDesk] = useState('');
-  const [newEmpManager, setNewEmpManager] = useState('David Kim');
-  const [newEmpStatus] = useState<'Active' | 'On Leave' | 'Inactive'>('Active');
 
   const [assignEmpId, setAssignEmpId] = useState('');
   const [assignAssetId, setAssignAssetId] = useState('');
@@ -99,32 +88,6 @@ export function EmployeesPage() {
       if (empAssets.length > 0) setTransferAssetId(empAssets[0].id);
     }
     setTransferOpen(true);
-  };
-
-  const handleCreateEmployee = async () => {
-    if (!newEmpName.trim() || !newEmpEmail.trim()) {
-      push({ variant: 'warning', title: 'Required Fields', message: 'Name and Email are required.' });
-      return;
-    }
-    const created = await employeeService.createEmployee({
-      name: newEmpName,
-      email: newEmpEmail,
-      jobTitle: newEmpTitle || undefined,
-      phone: newEmpPhone || undefined,
-      department: newEmpDept,
-      location: newEmpLoc,
-      deskLocation: newEmpDesk || undefined,
-      manager: newEmpManager || undefined,
-      status: newEmpStatus,
-    });
-    refetchEmployees();
-    setAddEmployeeOpen(false);
-    setNewEmpName('');
-    setNewEmpEmail('');
-    setNewEmpPhone('');
-    setNewEmpTitle('');
-    setNewEmpDesk('');
-    push({ variant: 'success', title: 'Employee Profile Created', message: `${created.name} (${created.employeeCode}) added to system.` });
   };
 
   const handleConfirmAssign = async () => {
@@ -269,7 +232,7 @@ export function EmployeesPage() {
           <div className="flex flex-wrap items-center gap-2.5">
             <Button variant="outline" size="sm" leftIcon={<ArrowRightLeft className="h-4 w-4" />} onClick={() => setTransferOpen(true)}>Transfer Asset</Button>
             <Button variant="outline" size="sm" leftIcon={<Laptop className="h-4 w-4" />} onClick={() => handleOpenAssignModal()}>Assign Asset</Button>
-            <Button variant="primary" size="sm" leftIcon={<UserPlus className="h-4 w-4" />} onClick={() => setAddEmployeeOpen(true)}>Add Employee</Button>
+            <Button variant="primary" size="sm" leftIcon={<UserPlus className="h-4 w-4" />} onClick={() => navigate(ROUTES.EMPLOYEE_CREATE)}>Add Employee</Button>
           </div>
         </div>
 
@@ -339,31 +302,6 @@ export function EmployeesPage() {
             />
           </Card>
         )}
-
-        <Modal open={addEmployeeOpen} onClose={() => setAddEmployeeOpen(false)} title="Add New Employee Profile" size="md">
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input label="Full Name *" value={newEmpName} onChange={(e) => setNewEmpName(e.target.value)} />
-              <Input label="Work Email *" value={newEmpEmail} onChange={(e) => setNewEmpEmail(e.target.value)} />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input label="Job Title / Position" value={newEmpTitle} onChange={(e) => setNewEmpTitle(e.target.value)} />
-              <Input label="Phone Number" value={newEmpPhone} onChange={(e) => setNewEmpPhone(e.target.value)} />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Select label="Department" value={newEmpDept} onChange={(e) => setNewEmpDept(e.target.value)} options={departments.map((d) => ({ label: d, value: d }))} />
-              <Select label="Location Campus" value={newEmpLoc} onChange={(e) => setNewEmpLoc(e.target.value)} options={locations.map((l) => ({ label: l, value: l }))} />
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input label="Physical Desk" value={newEmpDesk} onChange={(e) => setNewEmpDesk(e.target.value)} />
-              <Select label="Reporting Manager" value={newEmpManager} onChange={(e) => setNewEmpManager(e.target.value)} options={employeeList.map((e) => ({ label: e.name, value: e.name }))} />
-            </div>
-            <div className="flex justify-end gap-3 pt-3 border-t border-surface-100">
-              <Button variant="outline" onClick={() => setAddEmployeeOpen(false)}>Cancel</Button>
-              <Button variant="primary" onClick={handleCreateEmployee}>Save Profile</Button>
-            </div>
-          </div>
-        </Modal>
 
         <Modal open={assignOpen} onClose={() => setAssignOpen(false)} title="Assign IT Equipment" size="md">
           <div className="space-y-4">

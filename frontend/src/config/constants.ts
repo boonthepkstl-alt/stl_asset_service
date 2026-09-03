@@ -11,6 +11,7 @@ export const ROUTES = {
   ASSET_DETAIL: '/assets/:assetId',
   ASSET_CREATE: '/assets/create',
   EMPLOYEES: '/employees',
+  EMPLOYEE_CREATE: '/employees/create',
   EMPLOYEE_DETAIL: '/employees/:employeeId',
   MAINTENANCE: '/maintenance',
   TICKET_DETAIL: '/maintenance/:ticketCode',

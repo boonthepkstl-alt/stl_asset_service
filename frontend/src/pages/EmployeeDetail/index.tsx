@@ -26,22 +26,20 @@ import { Card, CardHeader, Button, Badge, StatusBadge, Avatar, Tabs, EmptyState,
 import { AppShell } from '@/components/AppShell';
 import { DataTable, type Column } from '@/components/DataTable';
 import { getAssetIcon } from '@/data/asset-icons';
-import { departments, locations, employeeHistoryEvents as fixtureHistory, employeeAuditLogs as fixtureAudit, type EmployeeHistoryEvent, type EmployeeAuditLog } from '@/data/fixtures/mockData';
+import { employeeHistoryEvents as fixtureHistory, employeeAuditLogs as fixtureAudit, type EmployeeHistoryEvent, type EmployeeAuditLog } from '@/data/fixtures/mockData';
 import type { PriorityLevel } from '@/data/fixtures/requisitionData';
 import { useEmployee } from '@/hooks/useEmployee';
-import { useEmployees } from '@/hooks/useEmployees';
 import { useEmployeeAssignments } from '@/hooks/useEmployeeAssignments';
 import { useTickets } from '@/hooks/useTickets';
 import { useLicenses } from '@/hooks/useLicenses';
 import { assetService } from '@/services/asset-service';
-import { employeeService } from '@/services/employee-service';
 import { ticketService } from '@/services/ticket-service';
 import type { Asset } from '@/types/asset';
-import type { EmployeeStatus } from '@/types/employee';
 import { cn } from '@/lib/cn';
 
 // Ported from src/pages/EmployeeDetail.tsx (1600+ lines). Core Employee domain data — identity,
-// department/org hierarchy, edit profile — goes through employeeService; assigned assets go
+// department/org hierarchy — goes through employeeService (identity/org editing now lives on
+// its own page, pages/EditEmployee); assigned assets go
 // through employeeService.getEmployeeAssignments (which itself reads assetService — the one
 // documented Employee→Asset dependency, never the reverse). The IT Tickets tab goes through
 // ticketService/useTickets as of Phase 5B (closing the coupling documented in
@@ -63,17 +61,17 @@ export function EmployeeDetailPage() {
   const { employee, loading, error, notFound, refetch } = useEmployee(employeeId);
   const { assets: assignedAssets, loading: assetsLoading, refetch: refetchAssignments } = useEmployeeAssignments(employee);
   const { licenses: allLicenses } = useLicenses({});
-  const { employees: allEmployees } = useEmployees({});
 
   const [tab, setTab] = useState('overview');
 
   const { tickets, refetch: refetchTickets } = useTickets({});
   const [historyEvents, setHistoryEvents] = useState<EmployeeHistoryEvent[]>(fixtureHistory);
-  const [auditLogs, setAuditLogs] = useState<EmployeeAuditLog[]>(fixtureAudit);
+  // Read-only here: audit entries are written by pages/EditEmployee (which prepends to the
+  // same shared fixture array), so a remount of this page picks them up.
+  const [auditLogs] = useState<EmployeeAuditLog[]>(fixtureAudit);
 
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
   const [isNewTicketModalOpen, setIsNewTicketModalOpen] = useState(false);
-  const [isEditProfileModalOpen, setIsEditProfileModalOpen] = useState(false);
 
   const [selectedAssetToAssign, setSelectedAssetToAssign] = useState('');
   const [assignNotes, setAssignNotes] = useState('');
@@ -81,15 +79,6 @@ export function EmployeeDetailPage() {
   const [ticketTitle, setTicketTitle] = useState('');
   const [ticketDescription, setTicketDescription] = useState('');
   const [ticketPriority, setTicketPriority] = useState<PriorityLevel>('High');
-
-  const [editJobTitle, setEditJobTitle] = useState('');
-  const [editDepartment, setEditDepartment] = useState('');
-  const [editLocation, setEditLocation] = useState('');
-  const [editDesk, setEditDesk] = useState('');
-  const [editPhone, setEditPhone] = useState('');
-  const [editManager, setEditManager] = useState('');
-  const [editStatus, setEditStatus] = useState<EmployeeStatus>('Active');
-  const [editErrors, setEditErrors] = useState<Record<string, string>>({});
 
   const employeeTickets = useMemo(() => {
     if (!employee) return [];
@@ -156,73 +145,9 @@ export function EmployeeDetailPage() {
     { id: 'audit', label: 'Audit', icon: <ClipboardList className="h-4 w-4" />, count: employeeAudit.length },
   ];
 
-  const openEditModal = () => {
-    setEditJobTitle(employee.jobTitle);
-    setEditDepartment(employee.department);
-    setEditLocation(employee.location);
-    setEditDesk(employee.deskLocation || '');
-    setEditPhone(employee.phone || '');
-    setEditManager(employee.manager || '');
-    setEditStatus(employee.status);
-    setEditErrors({});
-    setIsEditProfileModalOpen(true);
-  };
-
-  // Client-side-only duplicate check against the already-fetched employee list -- excludes the
-  // employee currently being edited (matching your own existing phone is not a duplicate). No
-  // new repository method, no backend change; email isn't editable in this modal (see
-  // UpdateEmployeeInput), so only phone is checked here.
-  const checkEditPhoneDuplicate = (phone: string): string | undefined => {
-    const trimmed = phone.trim();
-    if (!trimmed) return undefined;
-    return allEmployees.some((emp) => emp.id !== employee.id && emp.phone && emp.phone.trim() === trimmed)
-      ? 'An employee with this phone number already exists'
-      : undefined;
-  };
-
-  const handleEditPhoneBlur = () => {
-    setEditErrors((prev) => {
-      const next = { ...prev };
-      const dup = checkEditPhoneDuplicate(editPhone);
-      if (dup) next.phone = dup;
-      else delete next.phone;
-      return next;
-    });
-  };
-
-  const handleSaveProfile = async () => {
-    const phoneDup = checkEditPhoneDuplicate(editPhone);
-    if (phoneDup) {
-      setEditErrors({ phone: phoneDup });
-      return;
-    }
-    const changes: EmployeeAuditLog[] = [];
-    if (editJobTitle !== employee.jobTitle) {
-      changes.push({ id: `aud-${Date.now()}-title`, employeeId: employee.id, action: 'Position Change', actor: 'Current Admin', timestamp: new Date().toLocaleString(), field: 'Job Title', oldValue: employee.jobTitle, newValue: editJobTitle });
-    }
-    if (editDepartment !== employee.department) {
-      changes.push({ id: `aud-${Date.now()}-dept`, employeeId: employee.id, action: 'Department Change', actor: 'Current Admin', timestamp: new Date().toLocaleString(), field: 'Department', oldValue: employee.department, newValue: editDepartment });
-    }
-    if (editDesk !== employee.deskLocation) {
-      changes.push({ id: `aud-${Date.now()}-desk`, employeeId: employee.id, action: 'Location Update', actor: 'Current Admin', timestamp: new Date().toLocaleString(), field: 'Physical Desk Workspace', oldValue: employee.deskLocation || 'None', newValue: editDesk });
-    }
-    if (changes.length > 0) {
-      setAuditLogs([...changes, ...auditLogs]);
-    }
-
-    await employeeService.updateEmployee(employee.id, {
-      jobTitle: editJobTitle,
-      department: editDepartment,
-      location: editLocation,
-      deskLocation: editDesk,
-      phone: editPhone,
-      manager: editManager,
-      status: editStatus,
-    });
-    refetch();
-    setIsEditProfileModalOpen(false);
-    push({ variant: 'success', title: 'Profile Updated', message: `${employee.name}'s profile has been updated.` });
-  };
+  // "Edit Identity & Organization" is a full page now (pages/EditEmployee), not a modal --
+  // mirroring the CreateEmployee modal -> full-page conversion (PRs #78/#82).
+  const goToEditPage = () => navigate(`/employees/${employee.id}/edit`);
 
   const handleAssignAsset = async () => {
     if (!selectedAssetToAssign) {
@@ -337,7 +262,7 @@ export function EmployeeDetailPage() {
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-2.5">
-              <Button variant="outline" size="sm" leftIcon={<Edit className="h-3.5 w-3.5" />} onClick={openEditModal}>Edit Identity</Button>
+              <Button variant="outline" size="sm" leftIcon={<Edit className="h-3.5 w-3.5" />} onClick={goToEditPage}>Edit Identity</Button>
               <Button variant="outline" size="sm" leftIcon={<Plus className="h-3.5 w-3.5" />} onClick={() => setIsAssignModalOpen(true)}>Assign Asset</Button>
               <Button variant="primary" size="sm" leftIcon={<Wrench className="h-3.5 w-3.5" />} onClick={() => { setTicketTitle(`Hardware repair for ${employee.name}`); setIsNewTicketModalOpen(true); }}>New IT Ticket</Button>
             </div>
@@ -358,7 +283,7 @@ export function EmployeeDetailPage() {
                 </div>
 
                 <Card className="p-6">
-                  <CardHeader title="IT Workstation & Environment Profile" description="Configured IT workplace tier and primary operating systems" action={<Button variant="ghost" size="sm" onClick={openEditModal}>Modify Specs</Button>} />
+                  <CardHeader title="IT Workstation & Environment Profile" description="Configured IT workplace tier and primary operating systems" action={<Button variant="ghost" size="sm" onClick={goToEditPage}>Modify Specs</Button>} />
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
                     <div className="space-y-4">
                       <div className="flex items-start gap-3"><div className="h-8 w-8 rounded bg-surface-100 flex items-center justify-center text-surface-600 shrink-0 mt-0.5"><Briefcase className="h-4 w-4" /></div><div><p className="text-caption font-medium text-surface-500">Workstation Archetype</p><p className="text-body-sm font-semibold text-surface-900">{employee.workstationType}</p></div></div>
@@ -586,27 +511,6 @@ export function EmployeeDetailPage() {
         </div>
       </Modal>
 
-      <Modal open={isEditProfileModalOpen} onClose={() => setIsEditProfileModalOpen(false)} title={`Edit Identity & Organization: ${employee.name}`} size="md">
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input label="Job Title / Position" value={editJobTitle} onChange={(e) => setEditJobTitle(e.target.value)} />
-            <Select label="Department" value={editDepartment} onChange={(e) => setEditDepartment(e.target.value)} options={departments.map((d) => ({ label: d, value: d }))} />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Select label="Location Campus" value={editLocation} onChange={(e) => setEditLocation(e.target.value)} options={locations.map((l) => ({ label: l, value: l }))} />
-            <Input label="Physical Desk / Unit" value={editDesk} onChange={(e) => setEditDesk(e.target.value)} />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input label="Phone Number" value={editPhone} onChange={(e) => setEditPhone(e.target.value)} onBlur={handleEditPhoneBlur} error={editErrors.phone} />
-            <Select label="Status" value={editStatus} onChange={(e) => setEditStatus(e.target.value as EmployeeStatus)} options={[{ label: 'Active', value: 'Active' }, { label: 'On Leave', value: 'On Leave' }, { label: 'Inactive', value: 'Inactive' }]} />
-          </div>
-          <Input label="Reporting Manager" value={editManager} onChange={(e) => setEditManager(e.target.value)} />
-          <div className="flex justify-end gap-3 pt-3 border-t border-surface-100">
-            <Button variant="outline" onClick={() => setIsEditProfileModalOpen(false)}>Cancel</Button>
-            <Button variant="primary" onClick={handleSaveProfile}>Save Changes</Button>
-          </div>
-        </div>
-      </Modal>
     </AppShell>
   );
 }

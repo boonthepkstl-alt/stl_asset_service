@@ -7,7 +7,6 @@ import {
   Menu,
   PanelLeftClose,
   PanelLeft,
-  Plus,
   ChevronDown,
   LogOut,
   User as UserIcon,
@@ -164,10 +163,6 @@ export function AppShell({ current, onNavigate, children, breadcrumb, notificati
           >
             <span className="hidden sm:inline">AI Assistant</span>
             <span className="sm:hidden">AI</span>
-          </Button>
-
-          <Button size="sm" leftIcon={<Plus className="h-4 w-4" />} className="hidden sm:inline-flex" onClick={() => onNavigate('assets/create')}>
-            New Asset
           </Button>
 
           <div className="relative">

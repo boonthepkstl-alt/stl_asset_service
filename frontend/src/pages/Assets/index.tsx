@@ -238,7 +238,7 @@ export function AssetsPage() {
   ];
 
   return (
-    <AppShell current="assets" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'RAISE' }, { label: 'Asset Management' }]}>
+    <AppShell current="assets" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'Asset Management' }]}>
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-2">

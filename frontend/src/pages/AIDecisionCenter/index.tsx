@@ -97,28 +97,28 @@ export function AIDecisionCenterPage() {
 
   if (loading) {
     return (
-      <AppShell current="ai" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'RAISE' }, { label: 'AI Decision Center' }]}>
+      <AppShell current="ai" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'AI Decision Center' }]}>
         <div className="flex items-center justify-center py-24 text-body text-surface-400">Loading AI decision profiles...</div>
       </AppShell>
     );
   }
   if (error) {
     return (
-      <AppShell current="ai" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'RAISE' }, { label: 'AI Decision Center' }]}>
+      <AppShell current="ai" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'AI Decision Center' }]}>
         <EmptyState icon={<AlertTriangle className="h-6 w-6" />} title="Unable to load AI decision profiles" description={error} action={<Button onClick={refetch}>Retry</Button>} />
       </AppShell>
     );
   }
   if (!selectedProfile) {
     return (
-      <AppShell current="ai" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'RAISE' }, { label: 'AI Decision Center' }]}>
+      <AppShell current="ai" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'AI Decision Center' }]}>
         <EmptyState icon={<Sparkles className="h-6 w-6" />} title="No AI decision profiles available" description="No assets currently have an AI-scored decision profile." />
       </AppShell>
     );
   }
 
   return (
-    <AppShell current="ai" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'RAISE' }, { label: 'AI Decision Center' }]}>
+    <AppShell current="ai" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'AI Decision Center' }]}>
       <div className="flex flex-col gap-6">
         {/* Top Header Card */}
         <div className="bg-gradient-to-r from-brand-900 via-surface-900 to-accent-950 text-white rounded-xl p-6 shadow-md border border-brand-800/40 relative overflow-hidden">

@@ -147,7 +147,7 @@ export function AssetDetailPage() {
 
   if (loading) {
     return (
-      <AppShell current="assets" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'RAISE' }, { label: 'Asset Details' }]}>
+      <AppShell current="assets" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'Asset Details' }]}>
         <div className="flex items-center justify-center py-24 text-body text-surface-400">Loading asset...</div>
       </AppShell>
     );
@@ -155,7 +155,7 @@ export function AssetDetailPage() {
 
   if (error) {
     return (
-      <AppShell current="assets" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'RAISE' }, { label: 'Asset Details' }]}>
+      <AppShell current="assets" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'Asset Details' }]}>
         <EmptyState icon={<AlertTriangle className="h-6 w-6" />} title="Unable to load asset" description={error} action={<Button onClick={refetch}>Retry</Button>} />
       </AppShell>
     );
@@ -163,7 +163,7 @@ export function AssetDetailPage() {
 
   if (notFound || !asset) {
     return (
-      <AppShell current="assets" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'RAISE' }, { label: 'Asset Details' }]}>
+      <AppShell current="assets" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'Asset Details' }]}>
         <EmptyState
           icon={<Package className="h-6 w-6" />}
           title="Asset not found"
@@ -310,7 +310,7 @@ export function AssetDetailPage() {
   };
 
   return (
-    <AppShell current="assets" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'RAISE' }, { label: 'Asset Management', href: '/assets' }, { label: asset.name }]}>
+    <AppShell current="assets" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'Asset Management', href: '/assets' }, { label: asset.name }]}>
       <div className="flex flex-col gap-4">
         <button onClick={() => navigate('/assets')} className="inline-flex items-center gap-1.5 text-body text-surface-500 hover:text-surface-800 transition-colors w-fit">
           <ArrowLeft className="h-4 w-4" /> Back to Assets

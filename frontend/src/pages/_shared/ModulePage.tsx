@@ -21,7 +21,7 @@ export function ModulePage({ pageId, breadcrumbLabel, icon, description }: Modul
   const navigate = useNavigate();
 
   return (
-    <AppShell current={pageId} onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'RAISE' }, { label: breadcrumbLabel }]}>
+    <AppShell current={pageId} onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: breadcrumbLabel }]}>
       <EmptyState icon={icon} title={`${breadcrumbLabel} — foundation placeholder`} description={description} />
     </AppShell>
   );

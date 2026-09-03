@@ -317,7 +317,7 @@ export function MaintenancePage() {
   };
 
   return (
-    <AppShell current="maintenance" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'RAISE' }, { label: 'IT Requisition & Maintenance' }]}>
+    <AppShell current="maintenance" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'IT Requisition & Maintenance' }]}>
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-2 flex-wrap">

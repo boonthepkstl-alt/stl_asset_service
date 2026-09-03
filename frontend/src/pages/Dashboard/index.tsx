@@ -87,7 +87,7 @@ export function DashboardPage() {
   };
 
   return (
-    <AppShell current="dashboard" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'RAISE' }, { label: 'Dashboard' }]}>
+    <AppShell current="dashboard" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'Dashboard' }]}>
       {error ? (
         <Card className="p-0">
           <EmptyState icon={<AlertTriangle className="h-6 w-6" />} title="Unable to load dashboard" description={error} action={<Button onClick={refetch}>Retry</Button>} />

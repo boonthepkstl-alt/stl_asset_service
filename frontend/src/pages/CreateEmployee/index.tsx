@@ -158,7 +158,7 @@ export function CreateEmployeePage() {
   };
 
   return (
-    <AppShell current="employees" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'RAISE' }, { label: 'Employee Management', href: '/employees' }, { label: 'Create Employee' }]}>
+    <AppShell current="employees" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'Employee Management', href: '/employees' }, { label: 'Create Employee' }]}>
       <div className="max-w-3xl mx-auto flex flex-col gap-4">
         <SectionCard title="Basic Information" description="Enter the employee's core details">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

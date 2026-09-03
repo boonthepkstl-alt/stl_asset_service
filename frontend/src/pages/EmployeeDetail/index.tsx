@@ -120,7 +120,7 @@ export function EmployeeDetailPage() {
 
   if (loading) {
     return (
-      <AppShell current="employees" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'RAISE' }, { label: 'Employee Details' }]}>
+      <AppShell current="employees" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'Employee Details' }]}>
         <div className="flex items-center justify-center py-24 text-body text-surface-400">Loading employee...</div>
       </AppShell>
     );
@@ -128,7 +128,7 @@ export function EmployeeDetailPage() {
 
   if (error) {
     return (
-      <AppShell current="employees" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'RAISE' }, { label: 'Employee Details' }]}>
+      <AppShell current="employees" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'Employee Details' }]}>
         <EmptyState icon={<AlertTriangle className="h-6 w-6" />} title="Unable to load employee" description={error} action={<Button onClick={refetch}>Retry</Button>} />
       </AppShell>
     );
@@ -136,7 +136,7 @@ export function EmployeeDetailPage() {
 
   if (notFound || !employee) {
     return (
-      <AppShell current="employees" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'RAISE' }, { label: 'Employee Details' }]}>
+      <AppShell current="employees" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'Employee Details' }]}>
         <EmptyState
           icon={<User className="h-6 w-6" />}
           title="Employee not found"
@@ -308,7 +308,7 @@ export function EmployeeDetailPage() {
   ];
 
   return (
-    <AppShell current="employees" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'RAISE' }, { label: 'Employee Management', href: '/employees' }, { label: employee.name }]}>
+    <AppShell current="employees" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'Employee Management', href: '/employees' }, { label: employee.name }]}>
       <div className="space-y-6">
         <Card className="p-6">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">

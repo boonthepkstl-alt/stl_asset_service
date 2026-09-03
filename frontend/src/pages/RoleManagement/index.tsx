@@ -107,7 +107,7 @@ export function RoleManagementPage() {
   };
 
   return (
-    <AppShell current="administration" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'RAISE' }, { label: 'Administration', href: '/administration' }, { label: 'Role Management' }]}>
+    <AppShell current="administration" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'Administration', href: '/administration' }, { label: 'Role Management' }]}>
       {loading ? (
         <div className="flex items-center justify-center py-24 text-body text-surface-400">Loading roles...</div>
       ) : !selectedRole ? (

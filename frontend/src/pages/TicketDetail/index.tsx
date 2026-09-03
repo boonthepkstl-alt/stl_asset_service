@@ -113,13 +113,13 @@ export function TicketDetailPage() {
   };
 
   if (loading) {
-    return <AppShell current="maintenance" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'RAISE' }, { label: 'Ticket Details' }]}><div className="flex items-center justify-center py-24 text-body text-surface-400">Loading ticket...</div></AppShell>;
+    return <AppShell current="maintenance" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'Ticket Details' }]}><div className="flex items-center justify-center py-24 text-body text-surface-400">Loading ticket...</div></AppShell>;
   }
   if (error) {
-    return <AppShell current="maintenance" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'RAISE' }, { label: 'Ticket Details' }]}><EmptyState icon={<AlertTriangle className="h-6 w-6" />} title="Unable to load ticket" description={error} action={<Button onClick={refetch}>Retry</Button>} /></AppShell>;
+    return <AppShell current="maintenance" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'Ticket Details' }]}><EmptyState icon={<AlertTriangle className="h-6 w-6" />} title="Unable to load ticket" description={error} action={<Button onClick={refetch}>Retry</Button>} /></AppShell>;
   }
   if (notFound || !ticket) {
-    return <AppShell current="maintenance" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'RAISE' }, { label: 'Ticket Details' }]}><EmptyState icon={<Wrench className="h-6 w-6" />} title="Ticket not found" description="This ticket may have been removed or the link is out of date." action={<Button onClick={() => navigate('/maintenance')}>Back to IT Requisition Desk</Button>} /></AppShell>;
+    return <AppShell current="maintenance" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'Ticket Details' }]}><EmptyState icon={<Wrench className="h-6 w-6" />} title="Ticket not found" description="This ticket may have been removed or the link is out of date." action={<Button onClick={() => navigate('/maintenance')}>Back to IT Requisition Desk</Button>} /></AppShell>;
   }
 
   const Icon = getAssetIcon(ticket.asset.type);
@@ -219,7 +219,7 @@ export function TicketDetailPage() {
   };
 
   return (
-    <AppShell current="maintenance" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'RAISE' }, { label: 'IT Requisition & Maintenance', href: '/maintenance' }, { label: ticket.ticketCode }]}>
+    <AppShell current="maintenance" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'IT Requisition & Maintenance', href: '/maintenance' }, { label: ticket.ticketCode }]}>
       <div className="flex flex-col gap-4">
         <button onClick={() => navigate('/maintenance')} className="inline-flex items-center gap-1.5 text-body text-surface-500 hover:text-surface-800 transition-colors w-fit">
           <ArrowLeft className="h-4 w-4" /> Back to IT Requisition Desk

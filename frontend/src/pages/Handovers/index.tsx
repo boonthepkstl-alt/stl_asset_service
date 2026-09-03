@@ -192,7 +192,7 @@ export function HandoversPage() {
   ];
 
   return (
-    <AppShell current="handovers" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'RAISE' }, { label: 'Asset Handovers' }]}>
+    <AppShell current="handovers" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'Asset Handovers' }]}>
       <div className="flex flex-col gap-4">
         <Tabs items={tabs} active={activeTab} onChange={(id) => setActiveTab(id as TabId)} />
 

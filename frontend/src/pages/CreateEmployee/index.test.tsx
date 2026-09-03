@@ -133,7 +133,9 @@ describe('CreateEmployeePage', () => {
 
     fireEvent.change(screen.getByLabelText('Full Name'), { target: { value: 'Coded Employee' } });
     fireEvent.change(screen.getByLabelText('Work Email'), { target: { value: 'coded.employee@example.com' } });
-    fireEvent.change(screen.getByLabelText('Employee Code'), { target: { value: 'EMP-CUSTOM-01' } });
+    // 8 digits, first 2 = Gregorian join year -- the company's real Employee ID convention,
+    // confirmed with the business 2026-09-03.
+    fireEvent.change(screen.getByLabelText('Employee Code'), { target: { value: '26900001' } });
     fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
     fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
 
@@ -144,7 +146,7 @@ describe('CreateEmployeePage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Create Employee' }));
 
     await waitFor(() => {
-      expect(screen.getByText(/EMP-CUSTOM-01/)).toBeInTheDocument();
+      expect(screen.getByText(/26900001/)).toBeInTheDocument();
     });
   });
 
@@ -167,16 +169,43 @@ describe('CreateEmployeePage', () => {
     });
   });
 
-  it('blocks advancing past step 1 when the Employee Code matches an existing employee', async () => {
+  it('rejects an Employee Code that is not exactly 8 digits', async () => {
     renderWithProviders(<CreateEmployeePage />, { route: '/employees/create', path: '/employees/create' });
-    fireEvent.change(screen.getByLabelText('Full Name'), { target: { value: 'Seed' } });
-    fireEvent.change(screen.getByLabelText('Work Email'), { target: { value: 'seed@example.com' } });
+    fireEvent.change(screen.getByLabelText('Full Name'), { target: { value: 'Bad Code Tester' } });
+    fireEvent.change(screen.getByLabelText('Work Email'), { target: { value: 'bad.code@example.com' } });
+
+    // Too short, non-numeric, and the legacy EMP-#### shape are all rejected -- HR issues an
+    // 8-digit ID, so anything else is a typo rather than a valid alternative format.
+    for (const bad of ['2672589', '267258980', 'EMP-0001', '2672589a']) {
+      fireEvent.change(screen.getByLabelText('Employee Code'), { target: { value: bad } });
+      fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+      expect(screen.getByText(/must be exactly 8 digits/)).toBeInTheDocument();
+      expect(screen.queryByLabelText('Department')).not.toBeInTheDocument();
+    }
+  });
+
+  it('blocks advancing past step 1 when the Employee Code matches an existing employee', async () => {
+    // The seeded fixtures use the legacy auto-generated EMP-#### shape, which the format check
+    // now rejects outright -- so a *duplicate* can only ever be a real 8-digit HR code. Create
+    // one first, then attempt to reuse it.
+    const { unmount } = renderWithProviders(<CreateEmployeePage />, { route: '/employees/create', path: '/employees/create' });
+    fireEvent.change(screen.getByLabelText('Full Name'), { target: { value: 'Original Code Holder' } });
+    fireEvent.change(screen.getByLabelText('Work Email'), { target: { value: 'original.holder@example.com' } });
+    fireEvent.change(screen.getByLabelText('Employee Code'), { target: { value: '26900002' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+    await waitFor(() => expect(screen.getByText('Review & Confirm')).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'Create Employee' }));
+    await waitFor(() => expect(screen.getByText(/26900002/)).toBeInTheDocument());
+    unmount();
+
+    renderWithProviders(<CreateEmployeePage />, { route: '/employees/create', path: '/employees/create' });
+    fireEvent.change(screen.getByLabelText('Full Name'), { target: { value: 'Duplicate Code Tester' } });
+    fireEvent.change(screen.getByLabelText('Work Email'), { target: { value: 'unique.code.tester@example.com' } });
     fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
     await waitForEmployeesLoaded();
 
-    fireEvent.change(screen.getByLabelText('Full Name'), { target: { value: 'Duplicate Code Tester' } });
-    fireEvent.change(screen.getByLabelText('Work Email'), { target: { value: 'unique.code.tester@example.com' } });
-    fireEvent.change(screen.getByLabelText('Employee Code'), { target: { value: 'emp-0001' } });
+    fireEvent.change(screen.getByLabelText('Employee Code'), { target: { value: '26900002' } });
     fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
 
     expect(screen.getByText('An employee with this code already exists')).toBeInTheDocument();

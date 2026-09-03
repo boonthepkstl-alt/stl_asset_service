@@ -14,6 +14,17 @@ changes user-visible or API-visible behavior. Pure documentation-sync PRs
 
 ---
 
+## 2026-09-03
+
+### Changed
+- **Asset Handovers navigation consolidated to one page** — the sidebar
+  previously listed 3 separate items for the IT Hardware handover
+  workflow (My Pending Assignments / IT Processing Queue / IT Supervisor
+  Approval Queue). These are now one "Asset Handovers" entry with tabs
+  for each stage — only the tabs relevant to your role show up, and the
+  page opens on the tab that matches what you'd normally act on. No
+  change to what the workflow itself does.
+
 ## 2026-09-02
 
 ### Added
@@ -24,10 +35,15 @@ changes user-visible or API-visible behavior. Pure documentation-sync PRs
   gives final approval before the asset shows as Assigned. If IT or the
   supervisor rejects it at their step, the asset immediately goes back to
   Available. Assigning every other category of asset, and all Check-in,
-  works exactly as before — unaffected. **No screen exists yet for
-  employees, IT staff, or IT supervisors to actually act on this
-  workflow** — this release is API-only; a UI for it is a separate,
-  upcoming change.
+  works exactly as before — unaffected. **Initially shipped API-only**
+  (no screen for employees, IT staff, or IT supervisors to act on it) —
+  a real UI shipped later the same day, see below.
+- **IT Hardware Assignment Approval Workflow now has a real UI** — the
+  employee being assigned an IT Hardware asset now sees it under "My
+  Pending Assignments" and can confirm receipt; IT staff and IT
+  supervisors get their own queues to process and approve handovers.
+  Previously this workflow only existed at the API level with no way to
+  actually use it from the app.
 
 ## 2026-09-01
 

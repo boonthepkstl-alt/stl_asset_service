@@ -239,7 +239,10 @@ export function AppShell({ current, onNavigate, children, breadcrumb, notificati
         <div className="bg-white border-b border-surface-200 px-4 lg:px-6 py-3">
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div className="min-w-0">
-              <nav className="flex items-center gap-1.5 text-caption mb-1">
+              {/* aria-label per the WAI-ARIA breadcrumb pattern: without it this is a second
+                  unnamed <nav> landmark alongside the sidebar, indistinguishable to a screen
+                  reader (and to tests) from the main navigation. */}
+              <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-caption mb-1">
                 {crumbs.map((b, i) => {
                   const isLast = i === crumbs.length - 1;
                   // The last crumb is the current page, so it is never a link.

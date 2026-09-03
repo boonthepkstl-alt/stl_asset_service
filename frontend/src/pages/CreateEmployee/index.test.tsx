@@ -60,4 +60,84 @@ describe('CreateEmployeePage', () => {
       expect(screen.queryByText('Review & Confirm')).not.toBeInTheDocument();
     });
   });
+
+  // The employee list backing the duplicate check loads asynchronously (MockEmployeeRepository
+  // simulates network latency), so these tests wait for it before interacting with step 1 --
+  // otherwise the check would run against an empty list and never find a match.
+  const waitForEmployeesLoaded = async () => {
+    // The "Reporting Manager" <select> options come straight from the same fetched employee
+    // list the duplicate check reads -- once Sarah Chen (a seeded fixture employee) shows up as
+    // an option, the list has arrived.
+    await waitFor(() => expect(screen.getByText('Sarah Chen')).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'Back' }));
+  };
+
+  it('blocks advancing past step 1 when the email matches an existing employee', async () => {
+    renderWithProviders(<CreateEmployeePage />, { route: '/employees/create', path: '/employees/create' });
+    fireEvent.change(screen.getByLabelText('Full Name'), { target: { value: 'Seed' } });
+    fireEvent.change(screen.getByLabelText('Work Email'), { target: { value: 'seed@example.com' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+    await waitForEmployeesLoaded();
+
+    fireEvent.change(screen.getByLabelText('Full Name'), { target: { value: 'Duplicate Tester' } });
+    fireEvent.change(screen.getByLabelText('Work Email'), { target: { value: 'sarah.chen@raise.co' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+
+    expect(screen.getByText('An employee with this email already exists')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Department')).not.toBeInTheDocument();
+  });
+
+  it('shows the duplicate email error on blur, matching case-insensitively', async () => {
+    renderWithProviders(<CreateEmployeePage />, { route: '/employees/create', path: '/employees/create' });
+    fireEvent.change(screen.getByLabelText('Full Name'), { target: { value: 'Seed' } });
+    fireEvent.change(screen.getByLabelText('Work Email'), { target: { value: 'seed@example.com' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+    await waitForEmployeesLoaded();
+
+    const emailInput = screen.getByLabelText('Work Email');
+    fireEvent.change(emailInput, { target: { value: 'SARAH.CHEN@RAISE.CO' } });
+    fireEvent.blur(emailInput);
+
+    expect(screen.getByText('An employee with this email already exists')).toBeInTheDocument();
+  });
+
+  it('blocks advancing past step 1 when the phone number matches an existing employee', async () => {
+    renderWithProviders(<CreateEmployeePage />, { route: '/employees/create', path: '/employees/create' });
+    fireEvent.change(screen.getByLabelText('Full Name'), { target: { value: 'Seed' } });
+    fireEvent.change(screen.getByLabelText('Work Email'), { target: { value: 'seed@example.com' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+    await waitForEmployeesLoaded();
+
+    fireEvent.change(screen.getByLabelText('Full Name'), { target: { value: 'Duplicate Phone Tester' } });
+    fireEvent.change(screen.getByLabelText('Work Email'), { target: { value: 'unique.person@example.com' } });
+    fireEvent.change(screen.getByLabelText('Phone Number'), { target: { value: '+1 (555) 234-5678' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+
+    expect(screen.getByText('An employee with this phone number already exists')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Department')).not.toBeInTheDocument();
+  });
+
+  it('allows advancing when phone is left empty (phone stays optional)', () => {
+    renderWithProviders(<CreateEmployeePage />, { route: '/employees/create', path: '/employees/create' });
+
+    fireEvent.change(screen.getByLabelText('Full Name'), { target: { value: 'No Phone Tester' } });
+    fireEvent.change(screen.getByLabelText('Work Email'), { target: { value: 'no.phone@example.com' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+
+    expect(screen.getByLabelText('Department')).toBeInTheDocument();
+  });
+
+  it('advances to step 2 when the email is unique', async () => {
+    renderWithProviders(<CreateEmployeePage />, { route: '/employees/create', path: '/employees/create' });
+    fireEvent.change(screen.getByLabelText('Full Name'), { target: { value: 'Seed' } });
+    fireEvent.change(screen.getByLabelText('Work Email'), { target: { value: 'seed@example.com' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+    await waitForEmployeesLoaded();
+
+    fireEvent.change(screen.getByLabelText('Full Name'), { target: { value: 'Unique Tester' } });
+    fireEvent.change(screen.getByLabelText('Work Email'), { target: { value: 'unique.tester@example.com' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
+
+    expect(screen.getByLabelText('Department')).toBeInTheDocument();
+  });
 });

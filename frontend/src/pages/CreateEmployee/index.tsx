@@ -42,11 +42,58 @@ export function CreateEmployeePage() {
 
   const set = (k: string, v: string) => setForm((f) => ({ ...f, [k]: v }));
 
+  // Client-side-only duplicate checks against the already-fetched employee list -- no new
+  // repository method, no backend change. Case-insensitive exact match on email; phone matches
+  // as-typed (stays optional, see checkPhoneDuplicate callers below).
+  const checkEmailDuplicate = (email: string): string | undefined => {
+    const trimmed = email.trim().toLowerCase();
+    if (!trimmed) return undefined;
+    return employeeList.some((emp) => emp.email.toLowerCase() === trimmed)
+      ? 'An employee with this email already exists'
+      : undefined;
+  };
+
+  const checkPhoneDuplicate = (phone: string): string | undefined => {
+    const trimmed = phone.trim();
+    if (!trimmed) return undefined;
+    return employeeList.some((emp) => emp.phone && emp.phone.trim() === trimmed)
+      ? 'An employee with this phone number already exists'
+      : undefined;
+  };
+
+  // On-blur validation (not on every keystroke): shows the duplicate error as soon as the user
+  // leaves the field, but never invents the "required" error here -- that's validateStep's job.
+  const handleEmailBlur = () => {
+    setErrors((prev) => {
+      const next = { ...prev };
+      const dup = checkEmailDuplicate(form.email);
+      if (dup) next.email = dup;
+      else if (next.email && next.email !== 'Work email is required') delete next.email;
+      return next;
+    });
+  };
+
+  const handlePhoneBlur = () => {
+    setErrors((prev) => {
+      const next = { ...prev };
+      const dup = checkPhoneDuplicate(form.phone);
+      if (dup) next.phone = dup;
+      else delete next.phone;
+      return next;
+    });
+  };
+
   const validateStep = () => {
     const e: Record<string, string> = {};
     if (step === 1) {
       if (!form.name.trim()) e.name = 'Full name is required';
       if (!form.email.trim()) e.email = 'Work email is required';
+      else {
+        const emailDup = checkEmailDuplicate(form.email);
+        if (emailDup) e.email = emailDup;
+      }
+      const phoneDup = checkPhoneDuplicate(form.phone);
+      if (phoneDup) e.phone = phoneDup;
     }
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -112,9 +159,9 @@ export function CreateEmployeePage() {
           <SectionCard title="Basic Information" description="Enter the employee's core details">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Input name="name" label="Full Name" value={form.name} onChange={(e) => set('name', e.target.value)} error={errors.name} />
-              <Input name="email" label="Work Email" value={form.email} onChange={(e) => set('email', e.target.value)} error={errors.email} />
+              <Input name="email" label="Work Email" value={form.email} onChange={(e) => set('email', e.target.value)} onBlur={handleEmailBlur} error={errors.email} />
               <Input name="jobTitle" label="Job Title / Position" value={form.jobTitle} onChange={(e) => set('jobTitle', e.target.value)} />
-              <Input name="phone" label="Phone Number" value={form.phone} onChange={(e) => set('phone', e.target.value)} />
+              <Input name="phone" label="Phone Number" value={form.phone} onChange={(e) => set('phone', e.target.value)} onBlur={handlePhoneBlur} error={errors.phone} />
             </div>
           </SectionCard>
         )}

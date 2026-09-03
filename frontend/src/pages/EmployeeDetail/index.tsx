@@ -29,6 +29,7 @@ import { getAssetIcon } from '@/data/asset-icons';
 import { departments, locations, employeeHistoryEvents as fixtureHistory, employeeAuditLogs as fixtureAudit, type EmployeeHistoryEvent, type EmployeeAuditLog } from '@/data/fixtures/mockData';
 import type { PriorityLevel } from '@/data/fixtures/requisitionData';
 import { useEmployee } from '@/hooks/useEmployee';
+import { useEmployees } from '@/hooks/useEmployees';
 import { useEmployeeAssignments } from '@/hooks/useEmployeeAssignments';
 import { useTickets } from '@/hooks/useTickets';
 import { useLicenses } from '@/hooks/useLicenses';
@@ -62,6 +63,7 @@ export function EmployeeDetailPage() {
   const { employee, loading, error, notFound, refetch } = useEmployee(employeeId);
   const { assets: assignedAssets, loading: assetsLoading, refetch: refetchAssignments } = useEmployeeAssignments(employee);
   const { licenses: allLicenses } = useLicenses({});
+  const { employees: allEmployees } = useEmployees({});
 
   const [tab, setTab] = useState('overview');
 
@@ -87,6 +89,7 @@ export function EmployeeDetailPage() {
   const [editPhone, setEditPhone] = useState('');
   const [editManager, setEditManager] = useState('');
   const [editStatus, setEditStatus] = useState<EmployeeStatus>('Active');
+  const [editErrors, setEditErrors] = useState<Record<string, string>>({});
 
   const employeeTickets = useMemo(() => {
     if (!employee) return [];
@@ -161,10 +164,38 @@ export function EmployeeDetailPage() {
     setEditPhone(employee.phone || '');
     setEditManager(employee.manager || '');
     setEditStatus(employee.status);
+    setEditErrors({});
     setIsEditProfileModalOpen(true);
   };
 
+  // Client-side-only duplicate check against the already-fetched employee list -- excludes the
+  // employee currently being edited (matching your own existing phone is not a duplicate). No
+  // new repository method, no backend change; email isn't editable in this modal (see
+  // UpdateEmployeeInput), so only phone is checked here.
+  const checkEditPhoneDuplicate = (phone: string): string | undefined => {
+    const trimmed = phone.trim();
+    if (!trimmed) return undefined;
+    return allEmployees.some((emp) => emp.id !== employee.id && emp.phone && emp.phone.trim() === trimmed)
+      ? 'An employee with this phone number already exists'
+      : undefined;
+  };
+
+  const handleEditPhoneBlur = () => {
+    setEditErrors((prev) => {
+      const next = { ...prev };
+      const dup = checkEditPhoneDuplicate(editPhone);
+      if (dup) next.phone = dup;
+      else delete next.phone;
+      return next;
+    });
+  };
+
   const handleSaveProfile = async () => {
+    const phoneDup = checkEditPhoneDuplicate(editPhone);
+    if (phoneDup) {
+      setEditErrors({ phone: phoneDup });
+      return;
+    }
     const changes: EmployeeAuditLog[] = [];
     if (editJobTitle !== employee.jobTitle) {
       changes.push({ id: `aud-${Date.now()}-title`, employeeId: employee.id, action: 'Position Change', actor: 'Current Admin', timestamp: new Date().toLocaleString(), field: 'Job Title', oldValue: employee.jobTitle, newValue: editJobTitle });
@@ -566,7 +597,7 @@ export function EmployeeDetailPage() {
             <Input label="Physical Desk / Unit" value={editDesk} onChange={(e) => setEditDesk(e.target.value)} />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input label="Phone Number" value={editPhone} onChange={(e) => setEditPhone(e.target.value)} />
+            <Input label="Phone Number" value={editPhone} onChange={(e) => setEditPhone(e.target.value)} onBlur={handleEditPhoneBlur} error={editErrors.phone} />
             <Select label="Status" value={editStatus} onChange={(e) => setEditStatus(e.target.value as EmployeeStatus)} options={[{ label: 'Active', value: 'Active' }, { label: 'On Leave', value: 'On Leave' }, { label: 'Inactive', value: 'Inactive' }]} />
           </div>
           <Input label="Reporting Manager" value={editManager} onChange={(e) => setEditManager(e.target.value)} />

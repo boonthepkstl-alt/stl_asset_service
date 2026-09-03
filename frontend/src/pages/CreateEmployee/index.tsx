@@ -72,6 +72,24 @@ export function CreateEmployeePage() {
       : undefined;
   };
 
+  // Format check for the company's real Employee ID convention, confirmed with the business
+  // 2026-09-03: 8 digits, where the first 2 are the Gregorian join year (e.g. 26725898 -> joined
+  // 2026). The remaining 6 digits are issued by HR/payroll -- RAISE cannot derive or generate
+  // them, so this only validates what a user types; it deliberately does NOT auto-generate this
+  // format (leaving the field blank still falls back to the existing EMP-#### placeholder).
+  const checkEmployeeCodeFormat = (employeeCode: string): string | undefined => {
+    const trimmed = employeeCode.trim();
+    if (!trimmed) return undefined;
+    return /^\d{8}$/.test(trimmed)
+      ? undefined
+      : 'Employee ID must be exactly 8 digits (first 2 = join year, e.g. 26725898)';
+  };
+
+  // Format is checked before uniqueness: a malformed code is the more actionable error, and a
+  // duplicate check against a malformed value tells the user nothing useful.
+  const checkEmployeeCode = (employeeCode: string): string | undefined =>
+    checkEmployeeCodeFormat(employeeCode) ?? checkEmployeeCodeDuplicate(employeeCode);
+
   // On-blur validation (not on every keystroke): shows the duplicate error as soon as the user
   // leaves the field, but never invents the "required" error here -- that's validateStep's job.
   const handleEmailBlur = () => {
@@ -97,8 +115,8 @@ export function CreateEmployeePage() {
   const handleEmployeeCodeBlur = () => {
     setErrors((prev) => {
       const next = { ...prev };
-      const dup = checkEmployeeCodeDuplicate(form.employeeCode);
-      if (dup) next.employeeCode = dup;
+      const err = checkEmployeeCode(form.employeeCode);
+      if (err) next.employeeCode = err;
       else delete next.employeeCode;
       return next;
     });
@@ -115,8 +133,8 @@ export function CreateEmployeePage() {
       }
       const phoneDup = checkPhoneDuplicate(form.phone);
       if (phoneDup) e.phone = phoneDup;
-      const employeeCodeDup = checkEmployeeCodeDuplicate(form.employeeCode);
-      if (employeeCodeDup) e.employeeCode = employeeCodeDup;
+      const employeeCodeErr = checkEmployeeCode(form.employeeCode);
+      if (employeeCodeErr) e.employeeCode = employeeCodeErr;
     }
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -184,7 +202,7 @@ export function CreateEmployeePage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Input name="name" label="Full Name" value={form.name} onChange={(e) => set('name', e.target.value)} error={errors.name} />
               <Input name="email" label="Work Email" value={form.email} onChange={(e) => set('email', e.target.value)} onBlur={handleEmailBlur} error={errors.email} />
-              <Input name="employeeCode" label="Employee Code" value={form.employeeCode} onChange={(e) => set('employeeCode', e.target.value)} onBlur={handleEmployeeCodeBlur} error={errors.employeeCode} helpText="Leave blank for auto-generation" />
+              <Input name="employeeCode" label="Employee Code" value={form.employeeCode} onChange={(e) => set('employeeCode', e.target.value)} onBlur={handleEmployeeCodeBlur} error={errors.employeeCode} helpText="8 digits, first 2 = join year (e.g. 26725898). Leave blank for auto-generation." />
               <Input name="jobTitle" label="Job Title / Position" value={form.jobTitle} onChange={(e) => set('jobTitle', e.target.value)} />
               <Input name="phone" label="Phone Number" value={form.phone} onChange={(e) => set('phone', e.target.value)} onBlur={handlePhoneBlur} error={errors.phone} />
             </div>

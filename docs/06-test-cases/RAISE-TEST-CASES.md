@@ -2,7 +2,7 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Test Cases
-**Version:** 0.15 Draft
+**Version:** 0.16 Draft
 **Status:** Draft for Test Case Review
 **Source:** [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.11 §7 (Test Suites) + §8 (Blocked Items) + §8.1 (Fully-Blocked Suites — AI Document Intelligence Capabilities) + §3.3 (PRD §10 NFR Backlog — No Suite), expanding [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.11
 **Source of Truth:** RAISE PRD
@@ -67,21 +67,31 @@ Two distinct BLOCKED markings are used, matching Test Plan §7/§8/§8.1:
   (`service/assetHandoverService_test.go`, all passing). All six cases are
   now **PASS** on the testable-now scope — the 4-stage state machine, the
   category-scoped exception, the regression guard for non-IT-Hardware
-  assets, and the terminal-rejection behavior (§10) — with two important
-  caveats that keep this from being a full closure: (1) this execution was
-  performed directly against the backend API (no frontend UI for this
-  workflow exists yet — a separate, not-yet-started follow-up, so the
-  literal UI-surface steps written in each case below, e.g. "My Pending
-  Assignments," "IT Processing Queue," "IT Supervisor Approval Queue," were
-  not exercised as UI, only as their equivalent API calls); and (2) the
-  `IT_STAFF`/`IT_MANAGER` role gates at Stages 3–4 were not verified as
-  *enforced*, consistent with this codebase's existing project-wide MVP
-  decision that RBAC is UI-only/client-side and not backend-enforced
-  anywhere else in the app either (not a gap specific to this feature). The
-  two genuinely open Stage 2 sub-points (e-signature/acknowledgment-text
-  capture, recipient-decline path) remain untouched and NOT TESTABLE YET
-  (§10) — neither is implemented, and both remain blocked on a still-open
-  business decision, not on implementation.
+  assets, and the terminal-rejection behavior (§10). **Updated again
+  2026-09-02, same day, once the frontend UI shipped (PR #74,
+  `frontend/src/pages/MyPendingAssignments/`, `ITProcessingQueue/`,
+  `ITSupervisorApprovalQueue/`, `HandoverDetail/`):** all six cases were
+  re-executed live through the real running UI (not just the backend API),
+  closing caveat (1) above — the literal UI-surface steps written in each
+  case below (e.g. "My Pending Assignments," "IT Processing Queue," "IT
+  Supervisor Approval Queue," "Click Assign") were exercised as actual UI
+  interactions via real button clicks, end to end across all 4 stages, with
+  the asset's displayed status confirmed to stay "Available" through Stages
+  1–3 and flip to "Assigned" only at Stage 4, matching backend behavior
+  exactly. One caveat remains, unchanged and unresolved: the
+  `IT_STAFF`/`IT_MANAGER` role gates at Stages 3–4 are enforced client-side
+  only (the queue pages are role-gated in the UI) and were **not** verified
+  as backend-enforced — consistent with this codebase's existing
+  project-wide MVP decision that RBAC is UI-only/client-side and not
+  backend-enforced anywhere else in the app either (not a gap specific to
+  this feature). The two genuinely open Stage 2 sub-points (e-signature/
+  acknowledgment-text capture, recipient-decline path) remain untouched and
+  NOT TESTABLE YET (§10) — neither is implemented, and both remain blocked
+  on a still-open business decision, not on implementation. Recipient
+  matching on "My Pending Assignments" is name-string-based (no
+  `employeeId` link exists between the User/auth model and Employee/
+  recipient model anywhere in this codebase) — a documented, accepted MVP
+  limitation, unaffected by this update.
 
 ---
 
@@ -340,24 +350,54 @@ the testable-now scope (§1): the 4-stage state machine, the category-scoped exc
 regression guard for non-IT-Hardware assets, and the terminal-rejection behavior. This is also
 covered by 18 new Go unit tests (`service/assetHandoverService_test.go`, all passing).
 
-**Two scope boundaries apply to every PASS below, so as not to overclaim (§1):**
+**Status Note — Frontend UI shipped and formally re-executed 2026-09-02 (PR #74, same day as the
+backend Status Note above):** the frontend UI for this workflow has now been built in
+`frontend/src/` — `types/handover.ts`, `services/handover-repository.ts` (Mock + Http),
+`services/handover-service.ts`, `hooks/useHandover(s).ts`, three new pages (`MyPendingAssignments`
+— Stage 2, any authenticated user, "Confirm Receipt" only; `ITProcessingQueue` — Stage 3,
+client-side role-gated `IT_STAFF`/`ADMIN`, "Process / Forward for Approval" or "Reject";
+`ITSupervisorApprovalQueue` — Stage 4, client-side role-gated `IT_MANAGER`/`ADMIN`, "Approve" or
+"Reject"), and `HandoverDetail` (a 4-stage governance indicator mirroring `TicketDetail`'s
+pattern, with a full audit timeline). `AssetDetail`'s existing Assign button now intercepts IT
+Hardware-category assets client-side and routes through this flow instead of assigning
+immediately; every other category is unaffected (verified via a regression test). 47 test
+files / 196 automated tests all passing (`tsc --noEmit` and `eslint` both clean). All six cases
+below were formally re-executed **live, end to end, through the real running UI** against the
+real running Docker stack (not just the backend API): a handover was walked through all 4 stages
+via real button clicks (Assign → Confirm Receipt → Process/Forward → Approve), confirming the
+asset stays "Available" through Stages 1–3 and only flips to "Assigned" at Stage 4 (matching
+backend behavior exactly), confirming the header badge shows "Assignment Pending — Awaiting
+Recipient Confirmation" during the pending window, confirming rejection at both Stage 3 and Stage
+4 through the UI (with a reason-entry modal), confirming the 4-stage governance indicator
+correctly marks Done/Current/Pending and attributes the "Rejected" label to the actual stage
+where rejection happened, and confirming the non-IT-Hardware regression guard (a
+different-category asset's Assign flow is completely unaffected). A self-initiated code-review
+pass (5 parallel reviewer agents) found and fixed 3 real bugs before merging: (1) the mock
+repository (default demo mode, no live backend) never actually completed the asset assignment on
+Approve — fixed so the mock path now calls into the Asset domain the same way the real backend's
+`CompleteHandoverAssignment` does; (2) the pending-handover badge/quick-action was
+category-blind (did not check `asset.category === 'IT Hardware'`), fixed with defense-in-depth;
+(3) the Custody Lifecycle row on Asset Detail said "Currently Available" while a handover was
+actively pending, contradicting the header badge — fixed to show "Assignment Pending —
+{recipient}". All six cases below are now **PASS** on the fuller UI-plus-backend scope; the
+former "backend/API-level execution only" caveat is closed.
 
-1. **Backend/API-level execution only.** No frontend UI for this workflow exists yet — that
-   remains a separate, not-yet-started follow-up. The literal UI-surface language in each case's
-   Steps column below ("My Pending Assignments," "IT Processing Queue," "IT Supervisor Approval
-   Queue," "Click Assign") describes the AC-specified UI affordance; execution against it was
-   performed as the equivalent direct API call against the real running backend, not as a UI
-   interaction. The Steps/Test Data/Expected Result columns are left as originally written (they
-   remain the correct AC-derived spec for whenever the UI is built); each row's Blocked/Evidence
-   column below records precisely what was executed.
-2. **Role gates not verified as *enforced*.** The `IT_STAFF`/`IT_MANAGER` role gates at Stages
-   3–4 are confirmed by business decision as the intended actors, but this execution did not (and
-   could not) verify backend role enforcement — consistent with this codebase's existing
-   project-wide MVP decision that RBAC is UI-only/client-side and not backend-enforced anywhere
-   else in the app either (PRD §16 Resolved Question 38; not a gap specific to this feature).
+**One scope boundary remains, unchanged and unaffected by the frontend, so as not to overclaim
+(§1):**
 
-Once a frontend UI for this workflow ships, each case should be re-executed against it and this
-note updated, exactly as was done for other domains (e.g. `TC-WARRANTY-001-06`, §12).
+1. **Role gates not verified as *backend*-enforced.** The `IT_STAFF`/`IT_MANAGER` role gates at
+   Stages 3–4 are now enforced client-side (`ITProcessingQueue`/`ITSupervisorApprovalQueue` are
+   role-gated in the UI), consistent with the confirmed business decision on the intended actors,
+   but no server-side role check exists — consistent with this codebase's existing project-wide
+   MVP decision that RBAC is UI-only/client-side and not backend-enforced anywhere else in the app
+   either (PRD §16 Resolved Question 38; not a gap specific to this feature).
+
+Two further items remain genuinely open and are unaffected by this update (unchanged from the
+backend-only closure above): recipient matching on "My Pending Assignments" is
+name-string-based (no `employeeId` link exists between the User/auth model and Employee/recipient
+model anywhere in this codebase) — a documented, accepted MVP limitation, not resolved by this
+PR; and the two Stage 2 sub-points below (e-signature/acknowledgment-text capture, recipient-decline
+path) remain NOT TESTABLE YET, neither implemented nor resolved by a business decision.
 
 **Not covered by any new test case, per the AC document's own framing:** the two Stage 2
 sub-points that remain genuinely open — the recipient-decline path, and e-signature/
@@ -368,12 +408,12 @@ for either. `TC-OPS-002-05` below tests only the plain "Confirm Receipt" state t
 described in `AC-OPS-002-05`, with no decline action and no signature/acknowledgment-text
 assertion.
 
-| TC-OPS-002-04 | IT Hardware Check-out enters pending state, not immediate Assigned | 1. Select an Available asset whose Asset Category is IT Hardware. 2. As an IT/Admin user, select an employee. 3. Click Assign (the same trigger used for the general rule). | 1 Available IT Hardware-category asset, 1 employee | The asset does **not** immediately become Assigned. It enters state `PENDING_RECIPIENT_CONFIRMATION` and its displayed status badge shows a pending-approval indicator (e.g., "Assignment Pending — Awaiting Recipient Confirmation"), not "Assigned." | No — **PASS**, formally executed 2026-09-02 against the real running Docker stack (backend + Postgres), API-level (§10 scope note 1; no frontend UI yet). Confirmed: `POST /assets/:id/assign` on an IT Hardware asset now returns HTTP 409 with a `nextStep` hint directing to `POST /assets/:id/handover`; calling `POST /assets/:id/handover` (Stage 1 Initiate) creates a handover in `PENDING_RECIPIENT_CONFIRMATION` and the asset stays "Available" — confirmed it does **not** flip early during the entire pending workflow, only Stage 4 approval flips it to "Assigned." Also covered by unit tests in `service/assetHandoverService_test.go`. Handover codes confirmed sequential per year (`AHO-2026-001` etc.), year-scoped (a code-review finding caught and fixed a bug where the sequence was not year-scoped). `InitiateHandover` also validates `employeeId`/`employeeName` are non-empty (HTTP 400 if missing). |
-| TC-OPS-002-05 | Recipient confirms receipt, advances to IT Processing | 1. Start from an IT Hardware-category asset in state `PENDING_RECIPIENT_CONFIRMATION` for a given recipient employee. 2. As that recipient employee, open the "My Pending Assignments" UI surface. 3. Select Confirm Receipt. | 1 asset in `PENDING_RECIPIENT_CONFIRMATION`, 1 recipient employee | The asset transitions to state `PENDING_IT_PROCESSING`. No decline action and no e-signature/acknowledgment-text capture is asserted — neither exists in the Prototype. | No — **PASS**, formally executed 2026-09-02 against the real running Docker stack, API-level via `POST /handovers/:code/confirm` (§10 scope note 1; no "My Pending Assignments" UI exists yet). Confirmed: a matching recipient's confirm transitions the handover to `PENDING_IT_PROCESSING`; confirming with a mismatched or empty `recipientId` is correctly rejected (`ErrHandoverWrongRecipient`) — this identity check closes a gap a code review found where an empty recipient could otherwise bypass Stage 2. This case does not test, and must not be read as confirming, a recipient-decline path or a signature/acknowledgment-text element — both remain genuinely NOT TESTABLE YET per `RAISE-ACCEPTANCE-CRITERIA.md` §11's own note and are out of scope for any test case until PRD §16's `## NEEDS_PRD_CONFIRMATION` note is resolved (untouched by this update). |
-| TC-OPS-002-06 | IT_STAFF processes and forwards for approval | 1. Start from an IT Hardware-category asset in state `PENDING_IT_PROCESSING`. 2. As a user with the `IT_STAFF` role, open the IT Processing Queue. 3. Select Process / Forward for Approval. | 1 asset in `PENDING_IT_PROCESSING`, 1 `IT_STAFF` user | The asset transitions to state `PENDING_IT_SUPERVISOR_APPROVAL`. | No — **PASS** on the state-transition scope, formally executed 2026-09-02 against the real running Docker stack, API-level via `POST /handovers/:code/process` (§10 scope note 1; no IT Processing Queue UI exists yet). Confirmed the handover transitions `PENDING_IT_PROCESSING` → `PENDING_IT_SUPERVISOR_APPROVAL`. The `IT_STAFF` role gate itself was **not** verified as backend-enforced (§10 scope note 2) — consistent with this codebase's existing project-wide MVP decision that RBAC is UI-only/client-side, not a gap specific to this feature. |
-| TC-OPS-002-07 | IT_MANAGER approval is the only action that flips status to Assigned | 1. Start from an IT Hardware-category asset in state `PENDING_IT_SUPERVISOR_APPROVAL`. 2. As a user with the `IT_MANAGER` role, open the IT Supervisor Approval Queue. 3. Select Approve. 4. Separately, confirm no earlier stage transition (Stage 1 Initiation, Stage 2 Recipient Confirmation, or Stage 3 IT Processing) ever set status to Assigned. | 1 asset in `PENDING_IT_SUPERVISOR_APPROVAL`, 1 `IT_MANAGER` user | The asset transitions to state `ASSIGNED` and its status becomes **Assigned** — confirmed as the **only** action in the 4-stage workflow that does so; no earlier stage transition sets status to Assigned. | No — **PASS** on the state-transition scope, formally executed 2026-09-02 against the real running Docker stack, API-level via `POST /handovers/:code/decision` (§10 scope note 1; no IT Supervisor Approval Queue UI exists yet). Confirmed: Approve from `PENDING_IT_SUPERVISOR_APPROVAL` flips the asset's status to "Assigned," and only that action does so — the asset stayed "Available" through Stages 1–3 (`TC-OPS-002-04`/`-05`/`-06`), confirming no earlier stage sets status to Assigned. Also confirmed Approve attempted before reaching Stage 4 (`PENDING_IT_SUPERVISOR_APPROVAL`) is correctly rejected. The `IT_MANAGER` role gate itself was **not** verified as backend-enforced (§10 scope note 2), same caveat as `TC-OPS-002-06`. |
-| TC-OPS-002-08 | Rejection at Stage 3 or 4 is terminal and returns the asset to Available | 1. Start from an IT Hardware-category asset in state `PENDING_IT_PROCESSING` (Stage 3). 2. As the acting `IT_STAFF` user, select Reject instead of Process. 3. Repeat separately starting from state `PENDING_IT_SUPERVISOR_APPROVAL` (Stage 4), with the acting `IT_MANAGER` user selecting Reject instead of Approve. 4. Confirm no path reopens either rejected Assignment Approval Request. | 1 asset in `PENDING_IT_PROCESSING`, 1 asset in `PENDING_IT_SUPERVISOR_APPROVAL`, 1 `IT_STAFF` user, 1 `IT_MANAGER` user | In both cases, the asset's status returns **immediately to Available**, the flow ends, and no path reopens the rejected Assignment Approval Request — matching the existing P-009 Maintenance `REJECTED_BY_DEPT` terminal-state precedent (`TC-MAINT-001`, §11). | No — **PASS**, formally executed 2026-09-02 against the real running Docker stack, API-level via `POST /handovers/:code/decision` with a Reject decision (§10 scope note 1). Confirmed both cases: reject from Stage 3 (`PENDING_IT_PROCESSING`) and reject from Stage 4 (`PENDING_IT_SUPERVISOR_APPROVAL`) both move the handover to `REJECTED` and the asset returns to/stays "Available"; confirmed terminal — a second decision attempted on an already-rejected handover is correctly rejected with `ErrHandoverWrongStage`, so no path reopens it. Role-gate caveat same as `TC-OPS-002-06`/`-07` (§10 scope note 2). |
-| TC-OPS-002-09 | Non-IT-Hardware Check-out remains the unaffected general rule (regression guard) | 1. Select an Available asset whose Asset Category is **not** IT Hardware (Mobile, Office Equipment, Infrastructure, or Media Equipment). 2. As any authenticated user (no role restriction), select Check-out. 3. Identify a holder. 4. Confirm. | 1 Available non-IT-Hardware asset (e.g., Mobile), 1 holder identity | The asset's custody state updates **immediately** to reflect the new holder exactly as in `TC-OPS-002-01` — no pending state, no 4-stage approval workflow, and no `IT_STAFF`/`IT_MANAGER` role requirement is introduced for any category other than IT Hardware. | No — **PASS**, formally executed 2026-09-02 against the real running Docker stack, API-level (§10 scope note 1). Confirmed: `POST /assets/:id/assign` on an Office Equipment asset (non-IT-Hardware) still assigns immediately, with no 409 and no pending/handover state introduced — regression-safe against the new IT Hardware-only branching added in `AssetService.AssignAsset`. This is a new execution result distinct from `TC-OPS-002-01`'s 2026-08-28 execution (that one predates the IT Hardware branching entirely); this row is the first execution to specifically confirm the regression guard now that the branching code exists. |
+| TC-OPS-002-04 | IT Hardware Check-out enters pending state, not immediate Assigned | 1. Select an Available asset whose Asset Category is IT Hardware. 2. As an IT/Admin user, select an employee. 3. Click Assign (the same trigger used for the general rule). | 1 Available IT Hardware-category asset, 1 employee | The asset does **not** immediately become Assigned. It enters state `PENDING_RECIPIENT_CONFIRMATION` and its displayed status badge shows a pending-approval indicator (e.g., "Assignment Pending — Awaiting Recipient Confirmation"), not "Assigned." | No — **PASS**, formally executed 2026-09-02 against the real running Docker stack (backend + Postgres), both API-level and, once PR #74 shipped the same day, **live end-to-end through the real UI** (§10 Status Note). Confirmed: `POST /assets/:id/assign` on an IT Hardware asset now returns HTTP 409 with a `nextStep` hint directing to `POST /assets/:id/handover`; calling `POST /assets/:id/handover` (Stage 1 Initiate) creates a handover in `PENDING_RECIPIENT_CONFIRMATION` and the asset stays "Available" — confirmed it does **not** flip early during the entire pending workflow, only Stage 4 approval flips it to "Assigned." Live-UI pass confirmed clicking Assign on an IT Hardware asset in `AssetDetail` routes through the new handover flow instead of assigning immediately, and the header badge shows "Assignment Pending — Awaiting Recipient Confirmation" during the pending window. Also covered by unit tests in `service/assetHandoverService_test.go` and by frontend automated tests (47 test files / 196 tests passing). Handover codes confirmed sequential per year (`AHO-2026-001` etc.), year-scoped (a code-review finding caught and fixed a bug where the sequence was not year-scoped). `InitiateHandover` also validates `employeeId`/`employeeName` are non-empty (HTTP 400 if missing). The `IT_STAFF`/`IT_MANAGER` role gate for Stages 3–4 remains client-side/UI-only, not backend-enforced (§10 scope note 1; not exercised by this Stage-1 case in any case). |
+| TC-OPS-002-05 | Recipient confirms receipt, advances to IT Processing | 1. Start from an IT Hardware-category asset in state `PENDING_RECIPIENT_CONFIRMATION` for a given recipient employee. 2. As that recipient employee, open the "My Pending Assignments" UI surface. 3. Select Confirm Receipt. | 1 asset in `PENDING_RECIPIENT_CONFIRMATION`, 1 recipient employee | The asset transitions to state `PENDING_IT_PROCESSING`. No decline action and no e-signature/acknowledgment-text capture is asserted — neither exists in the Prototype. | No — **PASS**, formally executed 2026-09-02 against the real running Docker stack, both via `POST /handovers/:code/confirm` and, once PR #74 shipped the same day, **live through the real `MyPendingAssignments` UI page** (§10 Status Note). Confirmed: a matching recipient's confirm transitions the handover to `PENDING_IT_PROCESSING`; confirming with a mismatched or empty `recipientId` is correctly rejected (`ErrHandoverWrongRecipient`) — this identity check closes a gap a code review found where an empty recipient could otherwise bypass Stage 2. Live-UI pass clicked "Confirm Receipt" on `MyPendingAssignments` and confirmed the transition. This case does not test, and must not be read as confirming, a recipient-decline path or a signature/acknowledgment-text element — both remain genuinely NOT TESTABLE YET per `RAISE-ACCEPTANCE-CRITERIA.md` §11's own note and are out of scope for any test case until PRD §16's `## NEEDS_PRD_CONFIRMATION` note is resolved (untouched by this update). Also note: recipient matching on `MyPendingAssignments` is name-string-based (no `employeeId` link exists between the User/auth model and Employee/recipient model anywhere in this codebase) — a documented, accepted MVP limitation, not resolved by this update. |
+| TC-OPS-002-06 | IT_STAFF processes and forwards for approval | 1. Start from an IT Hardware-category asset in state `PENDING_IT_PROCESSING`. 2. As a user with the `IT_STAFF` role, open the IT Processing Queue. 3. Select Process / Forward for Approval. | 1 asset in `PENDING_IT_PROCESSING`, 1 `IT_STAFF` user | The asset transitions to state `PENDING_IT_SUPERVISOR_APPROVAL`. | No — **PASS**, formally executed 2026-09-02 against the real running Docker stack, both via `POST /handovers/:code/process` and, once PR #74 shipped the same day, **live through the real `ITProcessingQueue` UI page** (§10 Status Note). Confirmed the handover transitions `PENDING_IT_PROCESSING` → `PENDING_IT_SUPERVISOR_APPROVAL`. Live-UI pass clicked "Process / Forward for Approval" on `ITProcessingQueue` and confirmed the transition, plus confirmed the page is client-side role-gated to `IT_STAFF`/`ADMIN`. The `IT_STAFF` role gate itself was **not** verified as *backend*-enforced (§10 scope note 1) — consistent with this codebase's existing project-wide MVP decision that RBAC is UI-only/client-side and not backend-enforced anywhere else in the app either, not a gap specific to this feature. |
+| TC-OPS-002-07 | IT_MANAGER approval is the only action that flips status to Assigned | 1. Start from an IT Hardware-category asset in state `PENDING_IT_SUPERVISOR_APPROVAL`. 2. As a user with the `IT_MANAGER` role, open the IT Supervisor Approval Queue. 3. Select Approve. 4. Separately, confirm no earlier stage transition (Stage 1 Initiation, Stage 2 Recipient Confirmation, or Stage 3 IT Processing) ever set status to Assigned. | 1 asset in `PENDING_IT_SUPERVISOR_APPROVAL`, 1 `IT_MANAGER` user | The asset transitions to state `ASSIGNED` and its status becomes **Assigned** — confirmed as the **only** action in the 4-stage workflow that does so; no earlier stage transition sets status to Assigned. | No — **PASS**, formally executed 2026-09-02 against the real running Docker stack, both via `POST /handovers/:code/decision` and, once PR #74 shipped the same day, **live through the real `ITSupervisorApprovalQueue` UI page** (§10 Status Note). Confirmed: Approve from `PENDING_IT_SUPERVISOR_APPROVAL` flips the asset's status to "Assigned," and only that action does so — the asset stayed "Available" through Stages 1–3 (`TC-OPS-002-04`/`-05`/`-06`), confirming no earlier stage sets status to Assigned. Live-UI pass clicked "Approve" on `ITSupervisorApprovalQueue` and confirmed the flip, plus confirmed the 4-stage governance indicator on `HandoverDetail` correctly marked all 4 stages Done. Also confirmed Approve attempted before reaching Stage 4 (`PENDING_IT_SUPERVISOR_APPROVAL`) is correctly rejected. The `IT_MANAGER` role gate itself was **not** verified as *backend*-enforced (§10 scope note 1), same caveat as `TC-OPS-002-06`. |
+| TC-OPS-002-08 | Rejection at Stage 3 or 4 is terminal and returns the asset to Available | 1. Start from an IT Hardware-category asset in state `PENDING_IT_PROCESSING` (Stage 3). 2. As the acting `IT_STAFF` user, select Reject instead of Process. 3. Repeat separately starting from state `PENDING_IT_SUPERVISOR_APPROVAL` (Stage 4), with the acting `IT_MANAGER` user selecting Reject instead of Approve. 4. Confirm no path reopens either rejected Assignment Approval Request. | 1 asset in `PENDING_IT_PROCESSING`, 1 asset in `PENDING_IT_SUPERVISOR_APPROVAL`, 1 `IT_STAFF` user, 1 `IT_MANAGER` user | In both cases, the asset's status returns **immediately to Available**, the flow ends, and no path reopens the rejected Assignment Approval Request — matching the existing P-009 Maintenance `REJECTED_BY_DEPT` terminal-state precedent (`TC-MAINT-001`, §11). | No — **PASS**, formally executed 2026-09-02 against the real running Docker stack, both via `POST /handovers/:code/decision` with a Reject decision and, once PR #74 shipped the same day, **live through the real UI** on both `ITProcessingQueue` and `ITSupervisorApprovalQueue` (§10 Status Note). Confirmed both cases: reject from Stage 3 (`PENDING_IT_PROCESSING`) and reject from Stage 4 (`PENDING_IT_SUPERVISOR_APPROVAL`) both move the handover to `REJECTED` and the asset returns to/stays "Available"; confirmed terminal — a second decision attempted on an already-rejected handover is correctly rejected with `ErrHandoverWrongStage`, so no path reopens it. Live-UI pass clicked "Reject" at both stages through a reason-entry modal and confirmed the `HandoverDetail` governance indicator attributes the "Rejected" label to the actual stage where rejection happened. Role-gate caveat same as `TC-OPS-002-06`/`-07` (§10 scope note 1). |
+| TC-OPS-002-09 | Non-IT-Hardware Check-out remains the unaffected general rule (regression guard) | 1. Select an Available asset whose Asset Category is **not** IT Hardware (Mobile, Office Equipment, Infrastructure, or Media Equipment). 2. As any authenticated user (no role restriction), select Check-out. 3. Identify a holder. 4. Confirm. | 1 Available non-IT-Hardware asset (e.g., Mobile), 1 holder identity | The asset's custody state updates **immediately** to reflect the new holder exactly as in `TC-OPS-002-01` — no pending state, no 4-stage approval workflow, and no `IT_STAFF`/`IT_MANAGER` role requirement is introduced for any category other than IT Hardware. | No — **PASS**, formally executed 2026-09-02 against the real running Docker stack, both API-level and, once PR #74 shipped the same day, **live through the real UI's `AssetDetail` Assign button** (§10 Status Note). Confirmed: `POST /assets/:id/assign` on an Office Equipment asset (non-IT-Hardware) still assigns immediately, with no 409 and no pending/handover state introduced — regression-safe against the new IT Hardware-only branching added in `AssetService.AssignAsset`. Live-UI pass, plus an automated frontend regression test, confirmed a different-category asset's Assign flow on `AssetDetail` is completely unaffected by the new client-side IT Hardware interception logic. This is a new execution result distinct from `TC-OPS-002-01`'s 2026-08-28 execution (that one predates the IT Hardware branching entirely); this row is the first execution to specifically confirm the regression guard now that the branching code exists, and now the first to confirm it holds through the UI as well as the API. |
 
 ---
 
@@ -807,6 +847,23 @@ BLOCKED (pending implementation) marking has **zero active occurrences**.
 | TS-AI-DOC-004 | 1 | 0 | 0 | 1 | 0 |
 | **Total** | **72** | **47** | **20** | **4** | **1** |
 
+**TS-OPS-002 updated a fourth time 2026-09-02 (frontend UI shipped — PR #74 — and formally
+re-executed live through the real UI the same day; real PASS execution on a fuller scope, not a
+scope/spec correction):** row is **unchanged**, `9 | 9 | 0 | 0 | 0` — `TC-OPS-002-04` through
+`TC-OPS-002-09` were already fully testable and PASS on the backend/API-level scope confirmed by
+the previous update; this update does not move any case between columns, since no case was
+BLOCKED going into it. It records that all six cases were re-executed **live end to end through
+the real UI** (`MyPendingAssignments`, `ITProcessingQueue`, `ITSupervisorApprovalQueue`,
+`HandoverDetail`, and `AssetDetail`'s Assign-button interception), closing the former
+"backend/API-level execution only" caveat while leaving the still-genuinely-open items untouched
+and unresolved: the `IT_STAFF`/`IT_MANAGER` role gates remain client-side/UI-only, not
+backend-enforced; recipient matching on `MyPendingAssignments` remains name-string-based (no
+`employeeId` link exists between the User/auth model and Employee/recipient model anywhere in
+this codebase); and the two Stage 2 sub-points (e-signature/acknowledgment-text capture,
+recipient-decline path) remain NOT TESTABLE YET, blocked on a still-open business decision. Grand
+**Total** row is **unchanged**, `72 | 47 | 20 | 4 | 1` (no test case added, removed, or
+reclassified between columns — six existing rows' evidence text is updated only).
+
 **TS-OPS-002 updated a third time 2026-09-02 (backend implemented and formally re-executed the
 same day the six cases were added — real PASS execution, not a scope/spec correction):** row
 moves from `9 | 3 | 6 | 0 | 0` to `9 | 9 | 0 | 0 | 0`. `TC-OPS-002-04` through `TC-OPS-002-09`
@@ -1049,17 +1106,61 @@ Suite ID → TC ID) into one master table for compliance review.
 
 ## Document Status
 
-**Version:** 0.15 (2026-09-02 — formal execution update, no earlier-layer document touched: the
-IT Hardware Assignment Approval Workflow backend was implemented in `go-template-main` and
-formally re-executed end-to-end against the real running Docker stack (backend + Postgres), plus
-18 new Go unit tests, all passing. `TC-OPS-002-04` through `TC-OPS-002-09` move from BLOCKED
-(pending implementation) to **PASS** on the testable-now scope: the 4-stage state machine, the
+**Version:** 0.16 (2026-09-02 — formal execution update, no earlier-layer document touched: the
+IT Hardware Assignment Approval Workflow's frontend UI shipped (PR #74) and was formally
+re-executed live end-to-end through the real running UI, on top of the backend already confirmed
+in v0.15. `TC-OPS-002-04` through `TC-OPS-002-09` remain **PASS**, now on a fuller scope: the
+former "backend/API-level execution only" caveat is closed, since the 4-stage state machine, the
 category-scoped exception, the regression guard for non-IT-Hardware assets, and the
-terminal-rejection behavior. Frontend UI for this workflow remains a separate, not-yet-started
-follow-up, and role-gate backend enforcement remains unverified, consistent with this codebase's
-project-wide UI-only RBAC MVP decision. The two genuinely open Stage 2 sub-points (e-signature/
+terminal-rejection behavior were all re-confirmed through real button clicks against
+`MyPendingAssignments`, `ITProcessingQueue`, `ITSupervisorApprovalQueue`, and `HandoverDetail`.
+Role-gate backend enforcement remains unverified (client-side/UI-only, consistent with this
+codebase's project-wide RBAC MVP decision), recipient matching remains name-string-based (no
+`employeeId` link exists), and the two genuinely open Stage 2 sub-points (e-signature/
 acknowledgment-text capture; recipient-decline path) remain untouched and NOT TESTABLE YET. See
 the Change Log entry below and §10's Status Note for full detail)
+
+**Change Log — v0.15 → v0.16 (2026-09-02, real test execution reporting a fuller PASS on the
+now-fully-implemented scope, not a scope/spec correction — no earlier layer touched):**
+
+1. **Root cause / trigger.** The IT Hardware Assignment Approval Workflow's frontend UI was built
+   and merged this session (PR #74, `frontend/src/`): `types/handover.ts`,
+   `services/handover-repository.ts` (Mock + Http), `services/handover-service.ts`,
+   `hooks/useHandover(s).ts`, three new pages (`MyPendingAssignments`, `ITProcessingQueue`,
+   `ITSupervisorApprovalQueue`) plus `HandoverDetail` (a 4-stage governance indicator with a full
+   audit timeline), and `AssetDetail`'s existing Assign button now intercepts IT Hardware-category
+   assets client-side and routes through this flow, with every other category unaffected
+   (regression-verified). 47 test files / 196 automated tests passing; `tsc --noEmit` and `eslint`
+   both clean. All six cases were formally re-executed live end-to-end through the real running UI
+   against the real running Docker stack, walking a handover through all 4 stages via real button
+   clicks, confirming the asset stays "Available" through Stages 1–3 and only flips to "Assigned"
+   at Stage 4, confirming the pending-window header badge, confirming rejection at both Stage 3
+   and Stage 4 through the UI with a reason-entry modal, confirming the governance indicator's
+   Done/Current/Pending/Rejected attribution, and confirming the non-IT-Hardware regression guard.
+   A self-initiated 5-agent code-review pass found and fixed 3 real bugs before merging (mock
+   repository not completing assignment on Approve; pending badge not category-scoped; Custody
+   Lifecycle row contradicting the header badge during a pending handover) — see §10 Status Note
+   for full detail.
+2. **§1 note updated** to record the frontend closure alongside the existing backend closure,
+   with the still-open items (role-gate backend enforcement, e-signature/acknowledgment-text
+   capture, recipient-decline path, name-string-based recipient matching) explicitly carried
+   forward as unaffected and unresolved.
+3. **§10 TS-OPS-002 — new Status Note added** recording the frontend implementation and the live
+   UI execution evidence, replacing the former "backend/API-level execution only" scope boundary
+   with a single remaining scope boundary (role gates not backend-enforced). All six rows
+   (`TC-OPS-002-04` through `-09`) have their Blocked column updated to cite live-UI execution
+   evidence in addition to the existing backend/API evidence, while keeping every still-open item
+   (RBAC backend enforcement, e-signature, decline path, name-based recipient matching) explicitly
+   noted as unaffected/unresolved.
+4. **§19 Test Case Summary** — a new dated summary paragraph is added recording this update;
+   the `TS-OPS-002` row and the grand **Total** row are both **unchanged** (`9 | 9 | 0 | 0 | 0`
+   and `72 | 47 | 20 | 4 | 1` respectively) — no case was BLOCKED going into this update, so none
+   moves between columns; this is evidence enrichment on six already-fully-testable, already-PASS
+   rows, not a reclassification.
+5. **No earlier-layer document touched.** `RAISE-TEST-PLAN.md` and `RAISE-ACCEPTANCE-CRITERIA.md`
+   remain untouched by this update, per instruction — this is a formal execution/evidence update
+   to this document only, not a scope/spec correction.
+6. **No other suite required changes.**
 
 **Change Log — v0.14 → v0.15 (2026-09-02, real test execution reporting PASS on the
 testable-now scope, not a scope/spec correction — no earlier layer touched):**

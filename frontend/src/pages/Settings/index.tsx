@@ -54,14 +54,14 @@ export function SettingsPage() {
 
   if (loading || !draft) {
     return (
-      <AppShell current="settings" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'RAISE' }, { label: 'System Settings' }]}>
+      <AppShell current="settings" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'System Settings' }]}>
         <div className="flex items-center justify-center py-24 text-body text-surface-400">Loading settings...</div>
       </AppShell>
     );
   }
 
   return (
-    <AppShell current="settings" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'RAISE' }, { label: 'System Settings' }]}>
+    <AppShell current="settings" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'System Settings' }]}>
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
         <div className="lg:col-span-1">
           <div className="flex lg:flex-col gap-1 overflow-x-auto no-scrollbar">

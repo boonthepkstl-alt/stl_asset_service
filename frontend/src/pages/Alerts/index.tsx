@@ -50,7 +50,7 @@ export function AlertsPage() {
   ];
 
   return (
-    <AppShell current="notifications" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'RAISE' }, { label: 'Alerts' }]}>
+    <AppShell current="notifications" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'Alerts' }]}>
       <div className="space-y-6">
         <div>
           <h1 className="text-xl md:text-2xl font-bold text-surface-900">Alerts</h1>

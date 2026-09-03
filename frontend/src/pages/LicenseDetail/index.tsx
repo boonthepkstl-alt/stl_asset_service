@@ -63,13 +63,13 @@ export function LicenseDetailPage() {
   const inactiveSeats = useMemo(() => (license ? license.allocatedSeats.filter((s) => s.usageStatus === 'Inactive (>30d)') : []), [license]);
 
   if (loading) {
-    return <AppShell current="licenses" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'RAISE' }, { label: 'License Details' }]}><div className="flex items-center justify-center py-24 text-body text-surface-400">Loading license...</div></AppShell>;
+    return <AppShell current="licenses" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'License Details' }]}><div className="flex items-center justify-center py-24 text-body text-surface-400">Loading license...</div></AppShell>;
   }
   if (error) {
-    return <AppShell current="licenses" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'RAISE' }, { label: 'License Details' }]}><EmptyState icon={<AlertTriangle className="h-6 w-6" />} title="Unable to load license" description={error} action={<Button onClick={refetch}>Retry</Button>} /></AppShell>;
+    return <AppShell current="licenses" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'License Details' }]}><EmptyState icon={<AlertTriangle className="h-6 w-6" />} title="Unable to load license" description={error} action={<Button onClick={refetch}>Retry</Button>} /></AppShell>;
   }
   if (notFound || !license) {
-    return <AppShell current="licenses" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'RAISE' }, { label: 'License Details' }]}><EmptyState icon={<KeyRound className="h-6 w-6" />} title="License not found" description="This license may have been removed or the link is out of date." action={<Button onClick={() => navigate('/licenses')}>Back to Software Licenses</Button>} /></AppShell>;
+    return <AppShell current="licenses" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'License Details' }]}><EmptyState icon={<KeyRound className="h-6 w-6" />} title="License not found" description="This license may have been removed or the link is out of date." action={<Button onClick={() => navigate('/licenses')}>Back to Software Licenses</Button>} /></AppShell>;
   }
 
   const utilizationPct = Math.round((license.seatsUsed / license.seatsPurchased) * 100);
@@ -154,7 +154,7 @@ export function LicenseDetailPage() {
   ];
 
   return (
-    <AppShell current="licenses" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'RAISE' }, { label: 'Software Licenses', href: '/licenses' }, { label: license.product }]}>
+    <AppShell current="licenses" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'Software Licenses', href: '/licenses' }, { label: license.product }]}>
       <div className="space-y-6">
         <button onClick={() => navigate('/licenses')} className="inline-flex items-center gap-1.5 text-body text-surface-500 hover:text-surface-800 transition-colors w-fit">
           <ArrowLeft className="h-4 w-4" /> Back to Software Licenses

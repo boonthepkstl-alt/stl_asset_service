@@ -183,7 +183,7 @@ export function LicensesPage() {
   ];
 
   return (
-    <AppShell current="licenses" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'RAISE' }, { label: 'Software Licenses' }]}>
+    <AppShell current="licenses" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'Software Licenses' }]}>
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>

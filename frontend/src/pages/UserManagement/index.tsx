@@ -61,7 +61,7 @@ export function UserManagementPage() {
   ];
 
   return (
-    <AppShell current="administration" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'RAISE' }, { label: 'Administration', href: '/administration' }, { label: 'User Management' }]}>
+    <AppShell current="administration" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'Administration', href: '/administration' }, { label: 'User Management' }]}>
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-2">

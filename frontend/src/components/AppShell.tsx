@@ -31,6 +31,12 @@ interface AppShellProps {
   current: string;
   onNavigate: (id: string) => void;
   children: ReactNode;
+  /**
+   * The breadcrumb trail *within* the app, excluding the root: AppShell renders the
+   * "Home" crumb itself (navigating to the dashboard via onNavigate) and appends these
+   * after it. A crumb with an `href` (an absolute path like `/employees`) renders as a
+   * clickable back-link; the last crumb is always plain text since it is the current page.
+   */
   breadcrumb: { label: string; href?: string }[];
   /**
    * Ported from ESAPS src/components/AppShell.tsx, which imported notifications directly
@@ -52,6 +58,10 @@ export function AppShell({ current, onNavigate, children, breadcrumb, notificati
 
   const unreadCount = notifications.filter((n) => !n.read).length;
   const meta = pageTitles[current] ?? { title: 'RAISE', subtitle: '' };
+
+  // AppShell owns the root crumb so no page has to repeat (or mislabel) it. ROUTES.HOME ('/')
+  // only redirects to ROUTES.DASHBOARD, so navigate straight to 'dashboard' to skip the hop.
+  const crumbs: { label: string; href?: string }[] = [{ label: 'Home', href: '/dashboard' }, ...breadcrumb];
 
   const profileItems: DropdownItem[] = [
     { label: 'View Profile', icon: <UserIcon className="h-4 w-4" />, onClick: () => onNavigate('profile') },
@@ -230,12 +240,27 @@ export function AppShell({ current, onNavigate, children, breadcrumb, notificati
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div className="min-w-0">
               <nav className="flex items-center gap-1.5 text-caption mb-1">
-                {breadcrumb.map((b, i) => (
-                  <span key={i} className="flex items-center gap-1.5">
-                    {i > 0 && <span className="text-surface-300">/</span>}
-                    <span className={cn(i === breadcrumb.length - 1 ? 'text-surface-900 font-medium' : 'text-surface-500')}>{b.label}</span>
-                  </span>
-                ))}
+                {crumbs.map((b, i) => {
+                  const isLast = i === crumbs.length - 1;
+                  // The last crumb is the current page, so it is never a link.
+                  const target = !isLast && b.href ? b.href.replace(/^\//, '') : undefined;
+                  return (
+                    <span key={i} className="flex items-center gap-1.5">
+                      {i > 0 && <span className="text-surface-300">/</span>}
+                      {target ? (
+                        <button
+                          type="button"
+                          onClick={() => onNavigate(target)}
+                          className="text-surface-500 hover:text-brand-600 hover:underline transition-colors"
+                        >
+                          {b.label}
+                        </button>
+                      ) : (
+                        <span className={cn(isLast ? 'text-surface-900 font-medium' : 'text-surface-500')}>{b.label}</span>
+                      )}
+                    </span>
+                  );
+                })}
               </nav>
               <h1 className="text-heading font-bold text-surface-900 tracking-tight">{meta.title}</h1>
               <p className="text-body text-surface-500 mt-0.5">{meta.subtitle}</p>

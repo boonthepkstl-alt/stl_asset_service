@@ -84,7 +84,7 @@ export function CreateAssetPage() {
   };
 
   return (
-    <AppShell current="assets" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'RAISE' }, { label: 'Asset Management', href: '/assets' }, { label: 'Create Asset' }]}>
+    <AppShell current="assets" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'Asset Management', href: '/assets' }, { label: 'Create Asset' }]}>
       <div className="max-w-3xl mx-auto flex flex-col gap-4">
         <SectionCard title="Basic Information" description="Enter the core details for this asset">
           <div className="flex flex-col gap-5">

@@ -2,7 +2,18 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document Type:** Product Requirements Document
-**Version:** 0.14 Draft — `RAISE-FR-OPS-002` (Check-in/Check-out): a new **category-scoped exception** confirmed 2026-09-02 — assigning (Check-out) an asset in the **IT Hardware** category now requires a **4-stage approval workflow** (Initiation → Recipient Confirmation → IT Processing → IT Supervisor Approval, using existing `IT_STAFF`/`IT_MANAGER` roles, no new role), sourced from a real Singer Thailand company document (IT Equipment Processing Form, Version 2024) and confirmed via multiple `AskUserQuestion` rounds in a live session — this **narrows, and does not reverse,** v0.13's general Check-in/Check-out resolution below, which remains the rule for Check-in (all categories) and Check-out (every category except IT Hardware); see [§16 Resolved Question 43](#16-open-questions), cross-referenced both directions with [§16 Resolved Question 42](#16-open-questions). Prior (v0.13): `RAISE-FR-OPS-002` (Check-in/Check-out) and `RAISE-FR-ASSET-003` (Custody History) resolved: Check-in/Check-out confirmed as an **immediate state-change operation** with **no approval/exception-handling workflow** (deliberately simpler than `RAISE-FR-MAINT-001`'s 4-stage workflow); permission gate confirmed as **any authenticated user, no role restriction**; holder data model confirmed as a **direct 1:1 link to an Employee record** — resolving §16 Open Questions 11–13 / Open Finding F-02 (§16 Resolved Question 42), matching already-built/already-tested `frontend/` behavior. Prior: `RAISE-FR-WARRANTY-001`'s "Expiring" warranty threshold confirmed **per-Asset-Category configurable** (default 90 days for all 5 current categories, admin-adjustable via Settings UI), not a single global constant (§16 Resolved Question 41) — already implemented and verified end-to-end. Prior: warranty field list confirmed **`warrantyExpiry` only for MVP** (§16 Resolved Question 40); target organization confirmed: **RAISE is developed for direct use by Singer (Thailand)** (§16 Resolved Question 39), not a generic platform — a branding/identity fact, no functional scope change. All six `## NEEDS_PRD_CONFIRMATION` items from `docs/template-analysis/FRONTEND-FOUNDATION-BASELINE.md` §4 remain closed out (RAISE-FR-MAINT-001 4-stage workflow business-confirmed; License Management confirmed **Roadmap-only** — `RAISE-FR-LICENSE-001` added; six ESAPS-reference-only pages confirmed **out of scope**; RAISE-AI-RECOMMEND-001 re-confirmed **Roadmap-only, no MVP subset**; Oracle FA Reconciliation "Phase 6" code-comment label confirmed **not a PRD phase** (the separate `ReconciliationPage`↔`RAISE-FR-ORACLE-001` mapping question remains **unanswered** — carried forward as Open Question 10a); `RAISE-NFR-SEC-RBAC-001` MVP enforcement level confirmed **UI-only/client-side, backend deferred to Roadmap**). See Document Status change log at the bottom of this file for full history, including a correction to an earlier inaccurate draft of License Management's scope.
+**Version:** 0.15 Draft — `RAISE-FR-ALERT-001` (Alerts): five MVP **alert trigger
+conditions** confirmed 2026-09-04 (Warranty EXPIRED/EXPIRING, Maintenance ticket
+OVERDUE/ON_HOLD, IT Hardware Handover PENDING — none new to the data model), with a fixed
+3-level (High/Medium/Low) severity assigned **per condition type** (not by
+days-overdue, asset value, or a nonexistent asset-criticality field); MVP channel scope
+re-affirmed as **single-channel, in-app only** (Email/Teams/LINE Notify remain Phase 2
+Roadmap — this was already the requirement's Scope line, not a new decision); the header
+bell-icon dropdown (`NotificationCenter.tsx`) in/out-of-scope contradiction is explicitly
+**left open**, not resolved by this change — see
+[§16 Resolved Question 44](#16-open-questions), resolving Open Finding F-05 in
+`OPEN-FINDINGS.md` (that file updated separately, not by this edit). Prior (v0.14):
+`RAISE-FR-OPS-002` (Check-in/Check-out): a new **category-scoped exception** confirmed 2026-09-02 — assigning (Check-out) an asset in the **IT Hardware** category now requires a **4-stage approval workflow** (Initiation → Recipient Confirmation → IT Processing → IT Supervisor Approval, using existing `IT_STAFF`/`IT_MANAGER` roles, no new role), sourced from a real Singer Thailand company document (IT Equipment Processing Form, Version 2024) and confirmed via multiple `AskUserQuestion` rounds in a live session — this **narrows, and does not reverse,** v0.13's general Check-in/Check-out resolution below, which remains the rule for Check-in (all categories) and Check-out (every category except IT Hardware); see [§16 Resolved Question 43](#16-open-questions), cross-referenced both directions with [§16 Resolved Question 42](#16-open-questions). Prior (v0.13): `RAISE-FR-OPS-002` (Check-in/Check-out) and `RAISE-FR-ASSET-003` (Custody History) resolved: Check-in/Check-out confirmed as an **immediate state-change operation** with **no approval/exception-handling workflow** (deliberately simpler than `RAISE-FR-MAINT-001`'s 4-stage workflow); permission gate confirmed as **any authenticated user, no role restriction**; holder data model confirmed as a **direct 1:1 link to an Employee record** — resolving §16 Open Questions 11–13 / Open Finding F-02 (§16 Resolved Question 42), matching already-built/already-tested `frontend/` behavior. Prior: `RAISE-FR-WARRANTY-001`'s "Expiring" warranty threshold confirmed **per-Asset-Category configurable** (default 90 days for all 5 current categories, admin-adjustable via Settings UI), not a single global constant (§16 Resolved Question 41) — already implemented and verified end-to-end. Prior: warranty field list confirmed **`warrantyExpiry` only for MVP** (§16 Resolved Question 40); target organization confirmed: **RAISE is developed for direct use by Singer (Thailand)** (§16 Resolved Question 39), not a generic platform — a branding/identity fact, no functional scope change. All six `## NEEDS_PRD_CONFIRMATION` items from `docs/template-analysis/FRONTEND-FOUNDATION-BASELINE.md` §4 remain closed out (RAISE-FR-MAINT-001 4-stage workflow business-confirmed; License Management confirmed **Roadmap-only** — `RAISE-FR-LICENSE-001` added; six ESAPS-reference-only pages confirmed **out of scope**; RAISE-AI-RECOMMEND-001 re-confirmed **Roadmap-only, no MVP subset**; Oracle FA Reconciliation "Phase 6" code-comment label confirmed **not a PRD phase** (the separate `ReconciliationPage`↔`RAISE-FR-ORACLE-001` mapping question remains **unanswered** — carried forward as Open Question 10a); `RAISE-NFR-SEC-RBAC-001` MVP enforcement level confirmed **UI-only/client-side, backend deferred to Roadmap**). See Document Status change log at the bottom of this file for full history, including a correction to an earlier inaccurate draft of License Management's scope.
 **Status:** Draft for Requirement Review
 **Primary Source:** RAISE — Enterprise Asset Intelligence Platform — Final(1).pdf, ADT-RAISE Hackathon Pitch Day, 26 July 2026 (via `RAISE-PRD.md` v0.1 draft supplied 2026-08-20)
 **Source of Truth:** RAISE Hackathon Proposal / RAISE business objectives and MVP scope
@@ -579,11 +590,11 @@ confirmation (see [§16 Q21–Q23](#16-open-questions)). **MVP enforcement level
 | User/Actor | IT Asset, Finance |
 | Priority | P0 |
 | Scope | MVP (single-channel; multi-channel is Roadmap) |
-| Acceptance Criteria | Relevant conditions can trigger an alert; alert information is visible to an authorized user. |
-| Dependencies | RAISE-FR-WARRANTY-001, RAISE-FR-MAINT-001 |
-| Source Reference | v0.1 draft §6.9 |
+| Acceptance Criteria | **Resolved 2026-09-04** (business confirmation via direct chat session — see [§16 Resolved Question 44](#16-open-questions)): exactly **five** alert trigger conditions for MVP, each derived only from fields that already exist in the built data model (no new field, no data-model change): (1) **Warranty EXPIRED** — an asset whose `warrantyExpiry` is in the past (already implemented/tested as the scoped condition; see `RAISE-FR-WARRANTY-001` and F-32/R-16). (2) **Maintenance ticket OVERDUE** — a `RAISE-FR-MAINT-001` ticket whose `targetResolutionDate` has passed and whose status is not `DONE`. (3) **Warranty EXPIRING** — an asset inside its Asset Category's configurable "Expiring" threshold (default 90 days) — this **reuses**, and does not duplicate, the threshold already confirmed for `RAISE-FR-WARRANTY-001` ([§16 Resolved Question 41](#16-open-questions)). (4) **Maintenance ticket ON HOLD** — a `RAISE-FR-MAINT-001` ticket whose status is `ON_HOLD`. (5) **IT Hardware handover PENDING** — a handover record still awaiting action at any stage of the 4-stage IT Hardware Assignment Approval Workflow (`RAISE-FR-OPS-002`, [§16 Resolved Question 43](#16-open-questions)). No alert condition beyond these five is in MVP scope — in particular, no preventive-maintenance-due condition (no next-service-date field exists) and no software-license-expiry condition (`RAISE-FR-LICENSE-001` remains Roadmap; its relationship to alerting is separately TBD). **Severity** is a fixed 3-level scale — **High / Medium / Low** — assigned **per condition type** (not derived from days-overdue, asset value, or an asset-criticality field, which does not exist in the data model): Warranty EXPIRED → High; Ticket OVERDUE → High; Warranty EXPIRING → Medium; Ticket ON_HOLD → Medium; Handover PENDING → Low. Rationale (business-stated): already past its deadline = High; approaching a deadline or stalled = Medium; merely waiting in a queue = Low. Alert information (condition, severity, and the affected asset/ticket/handover) is visible to an authorized user. No acknowledgement, dismissal, read/unread, or snooze behavior is defined — not in MVP scope. **Channels — no new decision, restating existing scope:** this requirement's own Scope line already establishes MVP as single-channel, **in-app only**; multi-channel (Email/Teams/LINE Notify) was already Phase 2 Roadmap before this resolution and remains so — see [§16 Resolved Question 44](#16-open-questions) for why "channels are TBD" is removed rather than re-decided. |
+| Dependencies | RAISE-FR-WARRANTY-001 (Warranty EXPIRED, Warranty EXPIRING — reuses its per-Asset-Category Expiring threshold), RAISE-FR-MAINT-001 (Ticket OVERDUE via `targetResolutionDate`, Ticket ON_HOLD via ticket status), RAISE-FR-OPS-002 (Handover PENDING via the 4-stage IT Hardware Assignment Approval Workflow) |
+| Source Reference | v0.1 draft §6.9; five trigger conditions, fixed-per-condition severity mapping, and channel-scope clarification confirmed via direct chat session, 2026-09-04, see [§16 Resolved Question 44](#16-open-questions) |
 | Traceability ID | RAISE-FR-ALERT-001 |
-| Open Question | Exact alert rules and channels for MVP are TBD. Multi-channel alerts (Email/Teams/LINE Notify) are explicitly Phase 2 Roadmap, not MVP. |
+| Open Question | **Resolved 2026-09-04** — the five MVP trigger conditions and the fixed-per-condition High/Medium/Low severity mapping are now confirmed (see Acceptance Criteria above and [§16 Resolved Question 44](#16-open-questions)). Channel scope was **not** newly decided — MVP was already single-channel/in-app per this requirement's Scope line; multi-channel (Email/Teams/LINE Notify) remains explicitly Phase 2 Roadmap. **Still open, not addressed by this resolution:** alert acknowledgement/dismissal/read-unread/snooze behavior; alert delivery, scheduling, or digesting; a notification-preference model; and whether the header bell-icon dropdown in `AppShell` (`NotificationCenter.tsx`) is in scope for this requirement at all — that is a **separate, still-unresolved contradiction** between [§16 Resolved Question 35](#16-open-questions) (which lists `NotificationCenter.tsx` as confirmed entirely out of RAISE scope) and `docs/project-foundation-baseline/ESAPS-UI-FOUNDATION-BASELINE.md` (which maps `NotificationCenter.tsx` to `RAISE-FR-ALERT-001` as EXTEND) — **not resolved here, carried forward.** |
 
 ---
 
@@ -1154,6 +1165,86 @@ recorded here explicitly so it is not mistaken for a resolved item alongside 29�
     and the [§17 Requirement Traceability Matrix](#17-requirement-traceability-matrix)
     row for `RAISE-FR-OPS-002`.
 
+44. **What are the exact alert trigger conditions, severity model, and channel scope for
+    `RAISE-FR-ALERT-001` (Alerts)?** — Raised as the requirement's own Open Question
+    ("Exact alert rules and channels for MVP are TBD") and tracked as Open Finding F-05 in
+    `OPEN-FINDINGS.md` (that file is maintained separately and is not edited by this
+    resolution). Business confirmed, **2026-09-04, via direct chat confirmation:**
+
+    **(a) Trigger conditions — exactly five, no others.** Every condition is detectable
+    from fields that already exist in the built app; this decision introduces **no new
+    field and no data-model change**:
+    - Warranty **EXPIRED** — an asset whose `warrantyExpiry` is in the past (already
+      implemented/tested as the single scoped condition; see F-32/R-16).
+    - Maintenance ticket **OVERDUE** — a ticket whose `targetResolutionDate` has passed
+      and whose status is not `DONE`.
+    - Warranty **EXPIRING** — an asset inside its Asset Category's configurable
+      "Expiring" threshold (default 90 days) — this **reuses** the same threshold already
+      confirmed and shipped for `RAISE-FR-WARRANTY-001` ([Resolved Question 41]
+      (#16-open-questions)); it does not introduce a second threshold.
+    - Maintenance ticket **ON HOLD** — a ticket whose status is `ON_HOLD`.
+    - IT Hardware handover **PENDING** — a handover record still awaiting action at any
+      stage of the 4-stage IT Hardware Assignment Approval Workflow (`RAISE-FR-OPS-002`,
+      [Resolved Question 43](#16-open-questions)).
+
+    **(b) Severity scale — exactly three levels: High, Medium, Low.**
+
+    **(c) Severity assignment rule — fixed per condition type**, explicitly **not**
+    derived from how overdue something is, and explicitly **not** derived from asset
+    value or an asset-criticality field (the business was offered both alternatives and
+    chose fixed-per-condition; an asset-criticality field does not exist in the data
+    model and is not introduced here):
+
+    | Condition | Severity |
+    |---|---|
+    | Warranty EXPIRED | High |
+    | Ticket OVERDUE | High |
+    | Warranty EXPIRING | Medium |
+    | Ticket ON_HOLD | Medium |
+    | Handover PENDING | Low |
+
+    Business-stated rationale: already past its deadline = High; approaching a deadline
+    or stalled = Medium; merely waiting in a queue = Low.
+
+    **(d) Channels — not a new decision.** `RAISE-FR-ALERT-001` already stated
+    `Scope | MVP (single-channel; multi-channel is Roadmap)`, and its Open Question
+    already stated multi-channel (Email/Teams/LINE Notify) is Phase 2 Roadmap. MVP
+    therefore **remains single-channel, in-app only** — Email/Teams/LINE are **not**
+    added to MVP scope by this resolution. The only change is removing the "channels are
+    TBD" wording, because the channel question was in fact already answered by the
+    requirement's own Scope line; this is stated explicitly so it is not misread as a
+    fresh decision.
+
+    **Explicitly NOT part of this decision (not to be inferred or invented):**
+    - No alert condition beyond the five above — in particular, **no** "maintenance due"
+      / preventive-maintenance-schedule condition (there is no next-service-date field
+      anywhere in the data model), and **no** software-license-expiry condition
+      (`RAISE-FR-LICENSE-001` remains Roadmap; its relationship to alerting is
+      separately TBD, per Open Question 15a).
+    - No new severity levels, no numeric risk scores, no per-condition configurable
+      severity.
+    - No alert acknowledgement, dismissal, read/unread, or snooze behavior — never
+      discussed.
+    - No alert delivery, scheduling, digesting, or notification-preference model.
+    - No new Employee, Asset, or Ticket fields.
+
+    **Explicitly left open, not resolved here:** the header bell-icon dropdown in
+    `AppShell` (`NotificationCenter.tsx`) is a **separate, still-unresolved question**.
+    There is an unreconciled contradiction between [Resolved Question 35]
+    (#16-open-questions) (which lists `NotificationCenter.tsx` as "confirmed explicitly
+    out of RAISE scope entirely" and distinct from `RAISE-FR-ALERT-001`) and
+    `docs/project-foundation-baseline/ESAPS-UI-FOUNDATION-BASELINE.md` (which maps
+    `NotificationCenter.tsx` **to** `RAISE-FR-ALERT-001` as EXTEND). This resolution does
+    **not** decide whether the bell is in scope and does not pick a side — it is surfaced
+    here, still open, for a future business confirmation round.
+
+    Updated in §6 (`RAISE-FR-ALERT-001` Acceptance Criteria/Dependencies/Source
+    Reference/Open Question), §16 (this entry), the [§17 Requirement Traceability Matrix]
+    (#17-requirement-traceability-matrix) row for `RAISE-FR-ALERT-001`, and the
+    [Pre-Finalization Quality Pass](#pre-finalization-quality-pass) (Ambiguous
+    Requirements). `OPEN-FINDINGS.md` Open Finding F-05 should be checked and updated to
+    reflect this resolution in a separate pass — not edited by this change.
+
 ---
 
 ## 17. Requirement Traceability Matrix
@@ -1169,7 +1260,7 @@ recorded here explicitly so it is not mistaken for a resolved item alongside 29�
 | RAISE-FR-WARRANTY-001 | Warranty | MVP | P0 | APPROVED — field list confirmed 2026-08-29: `warrantyExpiry` only; Expiring-threshold per-Asset-Category configurability (default 90 days, admin Settings UI) confirmed 2026-09-01 and implemented | v0.1 §6.7; field list confirmed 2026-08-29 (§16 Resolved Question 40); Expiring-threshold configurability confirmed 2026-09-01 (§16 Resolved Question 41) |
 | RAISE-FR-LICENSE-001 | Software / SaaS License Management | Roadmap | Not MVP-confirmed | ROADMAP — identity/scope confirmed 2026-08-21; field model/alert rules/vendor-cost tracking TBD | New requirement, not in v0.1 draft; added 2026-08-21, confirmed Roadmap-only |
 | RAISE-FR-ORACLE-001 | Oracle FA Integration | MVP | P0 | TBD (integration design) | v0.1 §6.8 |
-| RAISE-FR-ALERT-001 | Alerts | MVP | P0 | TBD (rules/channels) | v0.1 §6.9 |
+| RAISE-FR-ALERT-001 | Alerts | MVP | P0 | APPROVED — five MVP trigger conditions (Warranty EXPIRED/EXPIRING, Ticket OVERDUE/ON_HOLD, IT Hardware Handover PENDING) and fixed-per-condition High/Medium/Low severity confirmed 2026-09-04; MVP channel scope re-affirmed as single-channel/in-app (no new decision) | v0.1 §6.9; trigger conditions/severity/channel-scope clarification confirmed 2026-09-04 (§16 Resolved Question 44) |
 | RAISE-FR-AUDIT-001 | Immutable Audit Log | MVP | P0 | TBD (retention/taxonomy) | v0.1 §6.10 |
 | RAISE-FR-EXEC-001 | Executive Dashboard | MVP | P0 | TBD (KPI formulas) | v0.1 §8.1 |
 | RAISE-AI-SEARCH-001 | Natural Language Search | MVP | P0 | APPROVED | v0.1 §7.3 |
@@ -1281,8 +1372,17 @@ Per instructions, ambiguity and gaps are surfaced here, not silently resolved.
   workflow remain **fully TBD** and should be treated as a design-phase input
   requirement, not a fully specified requirement. Do not infer behavior from
   RAISE-AI-DOC-001/002/003's resolution pattern.
-- **RAISE-FR-ALERT-001 (Alerts):** "relevant conditions" and "authorized user" are
-  undefined — no rule set or role given.
+- **RAISE-FR-ALERT-001 (Alerts):** ~~"relevant conditions" and "authorized user" are
+  undefined — no rule set or role given.~~ **Resolved 2026-09-04** — the five MVP trigger
+  conditions and the fixed-per-condition High/Medium/Low severity mapping are now
+  confirmed (see [§6](#6-functional-requirements) and
+  [§16 Resolved Question 44](#16-open-questions)). "Authorized user" (who may view
+  alerts) remains unspecified beyond the general MVP RBAC enforcement-level decision
+  ([§11](#11-security--rbac)) — not addressed by this resolution. The header bell-icon
+  dropdown (`NotificationCenter.tsx`) in/out-of-scope contradiction
+  ([Resolved Question 35](#16-open-questions) vs.
+  `docs/project-foundation-baseline/ESAPS-UI-FOUNDATION-BASELINE.md`) also remains
+  unresolved — explicitly not decided by Resolved Question 44.
 - **RAISE-FR-MAINT-001 (Maintenance):** ~~complete workflow undefined~~ **Partially
   resolved 2026-08-21** — the 4-stage workflow shape is now confirmed (see
   [§16 Resolved Question 33](#16-open-questions)). SLA per stage, vendor model
@@ -1413,9 +1513,50 @@ implements the requirement; Test Case passes; Requirement Compliance Review pass
 
 ## Document Status
 
-**Version:** 0.14 (Draft for Requirement Review)
+**Version:** 0.15 (Draft for Requirement Review)
 **Status:** Draft for Requirement Review
 **Primary Source:** RAISE — Enterprise Asset Intelligence Platform — Final(1).pdf, ADT-RAISE Hackathon Pitch Day, 26 July 2026
+
+**Change Log — v0.14 → v0.15 (2026-09-04, business confirmation via direct chat
+conversation, live session):**
+
+1. **`RAISE-FR-ALERT-001` (Alerts): alert trigger conditions, severity model, and
+   channel scope resolved** (new [§16 Resolved Question 44](#16-open-questions),
+   resolving the requirement's own Open Question and Open Finding F-05 in
+   `OPEN-FINDINGS.md`, which is maintained/updated separately and was not edited by this
+   change). **Five trigger conditions, no others**, each detectable from existing
+   fields (no new field, no data-model change): Warranty EXPIRED (`warrantyExpiry` in
+   the past), Maintenance ticket OVERDUE (`targetResolutionDate` passed, status not
+   `DONE`), Warranty EXPIRING (reuses the existing per-Asset-Category "Expiring"
+   threshold from [Resolved Question 41](#16-open-questions)), Maintenance ticket
+   ON_HOLD, and IT Hardware Handover PENDING (any stage of the 4-stage approval workflow
+   from [Resolved Question 43](#16-open-questions)). **Severity** is a fixed 3-level
+   scale (High/Medium/Low) assigned **per condition type** — Warranty EXPIRED and Ticket
+   OVERDUE → High; Warranty EXPIRING and Ticket ON_HOLD → Medium; Handover PENDING →
+   Low — explicitly not derived from days-overdue, asset value, or an asset-criticality
+   field (which does not exist in the data model and is not introduced). **Channels —
+   not a new decision:** MVP remains single-channel/in-app only, as this requirement's
+   Scope line already stated; multi-channel (Email/Teams/LINE Notify) was already Phase 2
+   Roadmap. **Explicitly left open:** whether the header bell-icon dropdown
+   (`NotificationCenter.tsx` in `AppShell`) is in scope for `RAISE-FR-ALERT-001` — an
+   unreconciled contradiction between [Resolved Question 35](#16-open-questions) (out of
+   scope entirely) and `docs/project-foundation-baseline/ESAPS-UI-FOUNDATION-BASELINE.md`
+   (maps it to `RAISE-FR-ALERT-001` as EXTEND) is surfaced but **not decided** by this
+   change. Updated in §6 (`RAISE-FR-ALERT-001` Acceptance Criteria/Dependencies/Source
+   Reference/Open Question), §16 (new Resolved Question 44), §17 (Traceability Matrix
+   row), and the Pre-Finalization Quality Pass (Ambiguous Requirements).
+2. **Impact on downstream documents:** `RAISE-DESIGN.md`, `RAISE-PROTOTYPE.md`,
+   `RAISE-ACCEPTANCE-CRITERIA.md`, `RAISE-TEST-PLAN.md`, `RAISE-TEST-CASES.md`, and
+   `RAISE-TRACEABILITY-MATRIX.md` currently reflect `RAISE-FR-ALERT-001` as an
+   unspecified-rules MVP alert capability and must be checked/updated for the five
+   confirmed trigger conditions and fixed severity mapping. **This PRD update was scoped
+   to `RAISE-PRD.md` only** per this task's explicit boundary — the downstream documents
+   above were not edited by this change, nor was `OPEN-FINDINGS.md` (F-05 should be
+   updated there in a separate pass). Downstream synchronization (`/sync-design`,
+   `/sync-prototype`, `/sync-acceptance-criteria`, `/sync-test-plan`,
+   `/sync-test-cases`, `/sync-traceability-matrix`) should be run in a subsequent pass.
+   The bell-icon (`NotificationCenter.tsx`) scope question remains open and should not be
+   assumed resolved by any downstream document as a result of this change.
 
 **Change Log — v0.13 → v0.14 (2026-09-02, business confirmation via direct chat
 conversation, live session, multiple `AskUserQuestion` rounds):**

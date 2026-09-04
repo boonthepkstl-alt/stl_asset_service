@@ -2,11 +2,19 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Prototype Specification
-**Version:** 0.13 Draft
+**Version:** 0.14 Draft
 **Status:** Draft for Prototype Review
-**Source:** [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.14 + [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.12 (§23 Prototype Preparation, §9A Document Intelligence Capabilities, §4.2 Custody & Asset Operations — Check-in/Check-out workflow/permission/holder-model resolved, plus the new "IT Hardware Assignment Approval Workflow" category-scoped exception, §5.1 Maintenance Domain, §5.2 Warranty Domain — 3-state status model + per-Asset-Category Expiring threshold resolved, §5.3 License Domain, §5.4 Settings Domain, §4.1B Settings / Platform Configuration, §6.4 ReconciliationPage / "Phase 6" Label, §13 Executive Intelligence — corrected to as-built, §16 Security Architecture — MVP Enforcement Level, §16A Other Non-Functional Requirements — Design Backlog, §15/§22 Out of Scope)
+**Source:** [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.15 + [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.13 (§23 Prototype Preparation, §9A Document Intelligence Capabilities, §4.2 Custody & Asset Operations — Check-in/Check-out workflow/permission/holder-model resolved, plus the new "IT Hardware Assignment Approval Workflow" category-scoped exception, §5.1 Maintenance Domain, §5.2 Warranty Domain — 3-state status model + per-Asset-Category Expiring threshold resolved, §5.3 License Domain, §5.4 Settings Domain, §4.1B Settings / Platform Configuration, §6.4 ReconciliationPage / "Phase 6" Label, §13 Executive Intelligence — corrected to as-built, §14 Alert Architecture — five MVP trigger conditions and fixed-per-condition severity resolved, §16 Security Architecture — MVP Enforcement Level, §16A Other Non-Functional Requirements — Design Backlog, §15/§22 Out of Scope)
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
+
+**Version note (2026-09-04 re-sync, v0.13 → v0.14, PRD §16 Resolved Question 44 /
+Design §14 "Alert Architecture"):** `RAISE-PRD.md` §16 Resolved Question 44 and
+`RAISE-DESIGN.md` v0.13 §14 jointly confirm the five MVP alert trigger conditions and
+their fixed-per-condition High/Medium/Low severity for `RAISE-FR-ALERT-001` — see
+**[§18 P-012 Alerts](#18-p-012-alerts)** below, rewritten accordingly. This is scoped to
+`RAISE-FR-ALERT-001` only; no other requirement, screen, or row is touched by this pass.
+See the dedicated Change Log entry near the end of this document for the full delta.
 
 **Version note (2026-09-02 re-sync, v0.12 → v0.13, PRD §16 Resolved Question 43 /
 Design §4.2 "IT Hardware Assignment Approval Workflow"):** `RAISE-PRD.md` §16 Resolved
@@ -394,7 +402,7 @@ not from a permission matrix).
 | P-009 | Maintenance | P0 | RAISE-FR-MAINT-001 |
 | P-010 | Warranty | P0 | RAISE-FR-WARRANTY-001 |
 | P-011 | Oracle FA / Financial View | P0 | RAISE-FR-ORACLE-001 |
-| P-012 | Alerts | P0 | RAISE-FR-ALERT-001 |
+| P-012 | Alerts | P0 | RAISE-FR-ALERT-001 — five MVP trigger conditions and fixed-per-condition severity confirmed 2026-09-04 |
 | P-013 | Audit Log | P0 | RAISE-FR-AUDIT-001 |
 | P-014 | Executive Dashboard | P0 | RAISE-FR-EXEC-001 |
 | P-015 | AI Assistant | P0 / Current AI | RAISE-AI-SEARCH-001 |
@@ -1479,29 +1487,115 @@ The actual integration mechanism remains TBD.
 
 # 18. P-012 Alerts
 
+## Status Note — Updated 2026-09-04 to Reflect Confirmed Trigger Conditions/Severity (PRD §16 Resolved Question 44; Design §14)
+
+**This entry previously showed the scoped-down first cut of this screen: the only
+trigger condition was Warranty EXPIRED, and severity was rendered honestly as "Not yet
+defined" because no severity model had been decided.** PRD v0.15 §16 Resolved Question
+44 and Design v0.13 §14 ("Alert Architecture") now confirm **five** MVP trigger
+conditions and a fixed 3-level (High/Medium/Low) severity scale assigned **per
+condition type** — this entry is rewritten to reflect that. This is a spec update to
+match a newly-confirmed business decision, not a reinterpretation of
+`RAISE-FR-ALERT-001`'s existing scope.
+
+**Read-time derivation, no stored Alert record (Design §14).** Nothing below implies an
+Alert table, an Alert entity, or a persisted alert state (e.g., no read/unread, no
+acknowledge/dismiss, no snooze). Every row on this screen is the output of evaluating
+current Asset, Maintenance ticket, and IT Hardware Assignment Approval Request state at
+the moment the screen is displayed.
+
 ## Purpose
 
-Display relevant asset alerts.
+Display, at read time, the five confirmed MVP alert conditions derived from
+already-existing Asset, Maintenance ticket, and IT Hardware Assignment Approval Request
+state — with severity and the affected record — to an authorized user (role/permission
+detail for alert visibility remains TBD, see Open Question below).
+
+## Five MVP Trigger Conditions and Severity (confirmed 2026-09-04)
+
+| Condition | Derived From | Severity | Affected Record Type |
+|---|---|---|---|
+| Warranty **EXPIRED** | `Asset.warrantyExpiry` in the past | High | Asset |
+| Maintenance ticket **OVERDUE** | Ticket `targetResolutionDate` passed AND status != `DONE` | High | Maintenance ticket |
+| Warranty **EXPIRING** | `Asset.warrantyExpiry` inside the existing per-Asset-Category Expiring threshold (default 90 days, see P-010 Warranty / P-018 Settings) | Medium | Asset |
+| Maintenance ticket **ON_HOLD** | Ticket status is `ON_HOLD` | Medium | Maintenance ticket |
+| IT Hardware handover **PENDING** | Assignment Approval Request is at any non-terminal stage of the P-008 4-stage IT Hardware Assignment Approval Workflow | Low | Handover (Assignment Approval Request) |
+
+No condition beyond these five, and no severity level beyond High/Medium/Low, is shown
+on this screen. Severity is fixed per condition type — it is **not** computed from
+days-overdue, asset value, or any asset-criticality field (no such field exists in the
+data model).
 
 ## Prototype
 
 ```text
 Alerts
-──────────────────────────────────────────────
-Severity   Alert                  Asset
-──────────────────────────────────────────────
-High       Warranty Expiring     Asset A
-Medium     Maintenance Due       Asset B
+──────────────────────────────────────────────────────────────────
+Severity   Condition                    Affected Record
+──────────────────────────────────────────────────────────────────
+High       Warranty Expired             Asset A          → Asset Detail (P-004)
+High       Maintenance Ticket Overdue   Ticket MR-0042    → Maintenance Request
+                                                             Detail (P-009)
+Medium     Warranty Expiring            Asset B          → Asset Detail (P-004)
+Medium     Maintenance Ticket On Hold   Ticket MR-0031    → Maintenance Request
+                                                             Detail (P-009)
+Low        IT Hardware Handover Pending Asset C           → Assignment Approval
+                                                             Request Detail (P-008)
+──────────────────────────────────────────────────────────────────
 ```
 
-Exact MVP alert rules are TBD.
+Each row shows the condition, its fixed severity, and the affected record. Selecting a
+row navigates to the record's existing detail view — there is no dedicated "Alert
+Detail" destination screen, and none is invented here:
 
-Email / Teams / LINE Notify should not be represented as mandatory MVP
-delivery channels because they are roadmap capabilities.
+- **Warranty EXPIRED / EXPIRING** rows link to **[P-004 Asset Detail](#10-p-004-asset-detail)**
+  (the asset whose `warrantyExpiry` triggered the condition) — this matches the linking
+  behavior already shown in the prior version of this screen.
+- **Maintenance ticket OVERDUE / ON_HOLD** rows link to the **Maintenance Request Detail
+  View** within **[P-009 Maintenance](#15-p-009-maintenance)** ("Prototype — 4-Stage
+  Workflow (Request Detail View)") — the closest existing screen that shows a single
+  ticket's stage/status.
+- **IT Hardware Handover PENDING** rows link to the **Assignment Approval Request**
+  detail/stage-progress view within **[P-008 Check-in / Check-out](#14-p-008-check-in--check-out)**
+  ("IT Hardware Assignment Approval Workflow" subsection) — the closest existing screen
+  that shows a single handover's stage/status.
+
+**Not a new screen:** the affected record is no longer always an Asset (as it was when
+Warranty EXPIRED was the only condition) — it is now an Asset, a Maintenance ticket, or
+a Handover depending on condition type. This is handled by pointing each condition at
+the existing detail screen for its record type, per the three bullets above, not by
+introducing a new "Ticket Detail" or "Handover Detail" screen ID.
+
+Email / Teams / LINE Notify remain Phase 2 / Enterprise Roadmap and are not shown as
+MVP delivery channels — carried forward unchanged from the prior version of this
+entry, per `RAISE-FR-ALERT-001`'s own Scope line and PRD §16 Resolved Question 44
+(channel scope was not a new decision).
+
+## Open Questions — Left Open, Not Decided Here
+
+- **Header bell-icon dropdown (`NotificationCenter.tsx` in `AppShell`) — still
+  unreconciled.** PRD §16 Resolved Question 35 lists it as confirmed **entirely out of
+  RAISE scope** and distinct from `RAISE-FR-ALERT-001`, while
+  [`ESAPS-UI-FOUNDATION-BASELINE.md`](../project-foundation-baseline/ESAPS-UI-FOUNDATION-BASELINE.md)
+  line 88 maps it **to** `RAISE-FR-ALERT-001` as EXTEND. PRD v0.15 §16 Resolved Question
+  44 and Design v0.13 §14 both explicitly decline to resolve this contradiction. This
+  entry (P-012, the Alerts screen/page) does **not** speak to the bell icon's contents
+  or scope either way — it remains open for a future business confirmation round.
+- **"Authorized user"** (who may view this screen) is unspecified beyond the general MVP
+  RBAC enforcement-level decision (UI-only/client-side, backend deferred to Roadmap —
+  see P-001 Login's Traceability note); PRD §16 Q22 / Open Finding F-08 tracks this
+  separately and is unaffected by this update.
+- Alert acknowledgement, dismissal, read/unread, snooze, delivery/scheduling/digesting,
+  and notification preferences are all out of MVP scope and are not shown on this
+  screen — consistent with Design §14's "Explicitly Not Designed Here."
 
 ## Traceability
 
-`RAISE-FR-ALERT-001`
+`RAISE-FR-ALERT-001` — five MVP trigger conditions (Warranty EXPIRED/EXPIRING,
+Maintenance ticket OVERDUE/ON_HOLD, IT Hardware Handover PENDING) and fixed-per-condition
+High/Medium/Low severity confirmed 2026-09-04 (PRD §16 Resolved Question 44; Design §14
+Alert Architecture). Dependencies (unchanged from PRD §6): `RAISE-FR-WARRANTY-001`,
+`RAISE-FR-MAINT-001`, `RAISE-FR-OPS-002`.
 
 ---
 
@@ -2286,7 +2380,7 @@ not be treated as approved MVP functionality.
 | P-009 Maintenance | RAISE-FR-MAINT-001 | Planned — 4-stage workflow shape reflected (confirmed 2026-08-21); SLA/vendor/cost model TBD |
 | P-010 Warranty | RAISE-FR-WARRANTY-001 | Planned — field list resolved 2026-08-29 (PRD §16 Resolved Question 40; Design §5.2): `warrantyExpiry` only for MVP; 7-field draft explicitly rejected. Expiring-threshold shape resolved 2026-09-01 (PRD §16 Resolved Question 41; Design §5.2/§5.4): 3-state Active/Expiring/Expired status, per-Asset-Category configurable threshold (default 90 days, admin-adjustable via P-018 Settings) — implemented end-to-end |
 | P-011 Oracle FA | RAISE-FR-ORACLE-001 | Planned |
-| P-012 Alerts | RAISE-FR-ALERT-001 | Planned |
+| P-012 Alerts | RAISE-FR-ALERT-001 | Planned — five MVP trigger conditions (Warranty EXPIRED/EXPIRING, Maintenance ticket OVERDUE/ON_HOLD, IT Hardware Handover PENDING) and fixed-per-condition High/Medium/Low severity resolved 2026-09-04 (PRD §16 Resolved Question 44; Design §14 Alert Architecture); read-time derivation, no persisted Alert entity, no new detail screen — links to existing P-004 Asset Detail / P-009 Maintenance Request Detail / P-008 Assignment Approval Request detail by condition type. Header bell-icon dropdown (`NotificationCenter.tsx`) in/out-of-scope contradiction (Resolved Question 35 vs. `ESAPS-UI-FOUNDATION-BASELINE.md`) remains open, not decided by this row |
 | P-013 Audit | RAISE-FR-AUDIT-001 | Planned |
 | P-014 Executive | RAISE-FR-EXEC-001 | Planned — corrected 2026-08-31 to match as-built dashboard (Open Finding F-22); same built page as P-002 Main Dashboard; NBV/Risk/Utilization KPIs remain a separate, not-yet-scheduled enhancement |
 | P-015 AI Assistant | RAISE-AI-SEARCH-001 | Planned |
@@ -2491,6 +2585,57 @@ The next artifact should be **Acceptance Criteria**, not source code.
 
 **Version:** 0.13 (2026-09-02, PRD v0.14 §16 Resolved Question 43 / Design v0.12 §4.2
 "IT Hardware Assignment Approval Workflow")
+
+**Change Log — v0.13 → v0.14 (2026-09-04, PRD §16 Resolved Question 44 / Design §14
+"Alert Architecture", per explicit business confirmation):**
+
+1. **Root confirmation.** PRD v0.15 §16 Resolved Question 44 and Design v0.13 §14
+   jointly confirm exactly **five** MVP `RAISE-FR-ALERT-001` trigger conditions, each
+   derivable from fields that already exist (no new field, no data-model change):
+   Warranty EXPIRED (`Asset.warrantyExpiry` in the past, High), Maintenance ticket
+   OVERDUE (`targetResolutionDate` passed AND status != `DONE`, High), Warranty
+   EXPIRING (existing per-Asset-Category threshold, default 90 days, Medium),
+   Maintenance ticket ON_HOLD (Medium), and IT Hardware handover PENDING (any
+   non-terminal stage of the P-008 4-stage workflow, Low). Severity is a fixed 3-level
+   scale assigned **per condition type** — explicitly not by days-overdue, asset value,
+   or an asset-criticality field. Alerts remain a **read-time derivation** with no
+   persisted Alert entity (Design §14).
+2. **[§18 P-012 Alerts](#18-p-012-alerts)** rewritten: replaces the prior scoped-down
+   first cut (Warranty EXPIRED only, severity honestly marked "Not yet defined") with
+   all five conditions and the confirmed severity mapping. The affected-record column is
+   generalized from "always an Asset" to Asset / Maintenance ticket / Handover depending
+   on condition type, each linking to its existing detail view — **P-004 Asset Detail**
+   (Warranty EXPIRED/EXPIRING), the Maintenance Request Detail View within **P-009
+   Maintenance** (Ticket OVERDUE/ON_HOLD), and the Assignment Approval Request
+   detail/stage-progress view within **P-008 Check-in / Check-out** (Handover PENDING).
+   **No new destination screen is introduced** — no "Ticket Detail" or "Handover
+   Detail" screen ID is created; each condition is grounded in a screen that already
+   exists in this document.
+3. **Left open, not decided by this pass** (carried forward unchanged): whether the
+   header bell-icon dropdown (`NotificationCenter.tsx` in `AppShell`) is in scope for
+   `RAISE-FR-ALERT-001` — the unreconciled contradiction between PRD §16 Resolved
+   Question 35 (out of scope entirely) and
+   `docs/project-foundation-baseline/ESAPS-UI-FOUNDATION-BASELINE.md` (maps it to
+   `RAISE-FR-ALERT-001` as EXTEND) is restated as open on P-012, not resolved. The
+   "authorized user" access-gate detail (PRD §16 Q22 / Open Finding F-08) is likewise
+   unaffected. Channel scope (single-channel, in-app only) was already the requirement's
+   own Scope line, not a new decision, and is not presented as one.
+4. **Explicitly not invented:** no sixth trigger condition (no preventive-maintenance-due
+   condition — no next-service-date field exists; no software-license-expiry condition —
+   `RAISE-FR-LICENSE-001` remains Roadmap and its relationship to alerting is separately
+   TBD); no alert acknowledgement/dismissal/read-unread/snooze; no delivery/scheduling/
+   digesting/notification-preference model.
+5. **§5 Screen Inventory and §27 Prototype Traceability Matrix** — P-012 rows updated to
+   note the five confirmed trigger conditions and fixed-per-condition severity.
+6. **No other screen, requirement ID, or row is added, removed, or changed.** P-004,
+   P-008, and P-009's own specs are unchanged — they are only cited/linked from P-012 as
+   already-existing destination screens.
+7. **`RAISE-PRD.md` and `RAISE-DESIGN.md` are not modified by this pass.** No
+   `## NEEDS_PRD_CONFIRMATION` signal is raised — every trigger condition, severity
+   value, and link target used here already exists in the PRD/Design sources cited.
+8. Header metadata updated: Version bumped to 0.14; PRD Source updated to v0.15
+   (advanced from v0.14); Design Source updated to v0.13 (advanced from v0.12), with the
+   new §14 "Alert Architecture" section added to the cited section list.
 
 **Change Log — v0.12 → v0.13 (2026-09-02, PRD §16 Resolved Question 43 / Design §4.2,
 per explicit business confirmation, sourced from a real Singer Thailand company IT

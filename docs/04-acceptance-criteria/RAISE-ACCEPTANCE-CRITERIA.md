@@ -2,9 +2,9 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Acceptance Criteria
-**Version:** 0.11 Draft
+**Version:** 0.12 Draft
 **Status:** Draft for Acceptance Review
-**Source:** [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.13 §27 (Prototype Traceability Matrix) + §5, §7–§23, §23A, §25A (per-screen specs / P-018 Settings / AI Scope Boundary / NFR Backlog Prototype Note) + §14's new "IT Hardware Assignment Approval Workflow — Category-Scoped Exception" subsection, cross-checked against [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.14 and [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.12
+**Source:** [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.14 §27 (Prototype Traceability Matrix) + §5, §7–§23, §23A, §25A (per-screen specs / P-018 Settings / AI Scope Boundary / NFR Backlog Prototype Note) + §14's "IT Hardware Assignment Approval Workflow — Category-Scoped Exception" subsection + §18's rewritten P-012 Alerts (five confirmed MVP trigger conditions and fixed-per-condition severity), cross-checked against [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.15 and [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.13
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
 
@@ -60,7 +60,7 @@ detail is "TBD" or "conceptual," the corresponding criterion is marked
 | [AC-MAINT-001](#12-ac-maint-001--p-009-maintenance) | P-009 | RAISE-FR-MAINT-001 | Partially testable (workflow shape testable; SLA/vendor/cost NOT TESTABLE YET) |
 | [AC-WARRANTY-001](#13-ac-warranty-001--p-010-warranty--p-018-settings) | P-010, P-018 | RAISE-FR-WARRANTY-001 | Testable (field list resolved 2026-08-29; per-category configurable threshold resolved 2026-09-01) |
 | [AC-ORACLE-001](#14-ac-oracle-001--p-011-oracle-fa--financial-view) | P-011 | RAISE-FR-ORACLE-001 | Partially testable |
-| [AC-ALERT-001](#15-ac-alert-001--p-012-alerts) | P-012 | RAISE-FR-ALERT-001 | Partially testable |
+| [AC-ALERT-001](#15-ac-alert-001--p-012-alerts) | P-012 | RAISE-FR-ALERT-001 | Testable for the five confirmed trigger conditions and fixed-per-condition severity (resolved 2026-09-04, PRD §16 Resolved Question 44; closes Open Finding F-05's trigger-rules cause) — only Warranty EXPIRED is actually implemented as of this date, the other four are not yet built (verification deferred to Test Case execution, not decided here); "authorized user" access gate remains NOT TESTABLE YET (PRD §16 Q22 / Open Finding F-08) |
 | [AC-AUDIT-001](#16-ac-audit-001--p-013-audit-log) | P-013 | RAISE-FR-AUDIT-001 | Partially testable |
 | [AC-EXEC-001](#17-ac-exec-001--p-014-executive-dashboard) | P-014 | RAISE-FR-EXEC-001 | Testable (rewritten 2026-08-31 to match as-built dashboard, Open Finding F-22; NBV/Risk NOT TESTABLE YET) |
 | [AC-AI-SEARCH-001](#18-ac-ai-search-001--p-015-ai-assistant) | P-015 | RAISE-AI-SEARCH-001 | Partially testable |
@@ -728,25 +728,128 @@ mapping is assumed here.
 
 **Requirement:** `RAISE-FR-ALERT-001` · **Screen:** P-012
 
+**Status Note — Updated 2026-09-04 to Reflect Confirmed Trigger Conditions and
+Severity (PRD §16 Resolved Question 44; Design v0.13 §14 "Alert Architecture";
+Prototype v0.14 §18; closes Open Finding F-05's trigger-rules-and-severity cause)**
+
+This group previously carried a blanket **NOT TESTABLE YET** note because the MVP
+alert-triggering rules and severity mapping were entirely undefined (PRD §6.9 Open
+Question; tracked as Open Finding F-05). PRD v0.15 §16 Resolved Question 44 and Design
+v0.13 §14 now confirm **exactly five** MVP trigger conditions with a fixed 3-level
+(High/Medium/Low) severity assigned **per condition type** — not by days-overdue, not
+by asset value or criticality (no such field exists in the data model). That cause of
+the prior blanket note is closed; the criteria below replace it. AC-ALERT-001-01 (below)
+already tested the structural display (severity / description / affected record) and
+had passed on that narrower basis — it is extended, not contradicted, by the new
+criteria.
+
+**Read-time derivation, no persisted Alert record (Design §14).** None of the criteria
+below imply an Alert table, Alert entity, or stored alert state — no read/unread, no
+acknowledge/dismiss, no snooze. Each criterion is phrased as "given the underlying
+Asset / Maintenance ticket / Assignment Approval Request is in state X, when Alerts is
+opened, then a row for that condition is shown" — the row's existence is entirely
+derived from currently-queried state, not a stored record.
+
+**Implementation status (not a testability question — recorded so this section is not
+overstated):** as of 2026-09-04, only the Warranty EXPIRED condition is actually
+implemented. The other four confirmed conditions (Maintenance ticket OVERDUE, Warranty
+EXPIRING, Maintenance ticket ON_HOLD, IT Hardware Handover PENDING) are specified here
+but **not yet built**. The criteria below are written because the *scope* is now
+confirmed and derivable from the Prototype, not because any of the five have been
+verified passing — whether each criterion actually passes is decided at
+`RAISE-TEST-CASES.md` on real test execution, not in this document.
+
 - **AC-ALERT-001-01** — Given an alert-triggering condition has occurred,
   when an authorized user opens Alerts, then the alert is listed with a
-  severity, description, and associated asset.
+  severity, description, and affected record.
 - **AC-ALERT-001-02** — Given no multi-channel delivery is in MVP scope,
   when Alerts are displayed, then only in-app / on-screen alert
   presentation is verified — Email, Teams, and LINE Notify delivery are
   explicitly out of scope for this criterion (PRD §14 Enterprise
-  Roadmap).
+  Roadmap; unchanged, not a new decision).
+- **AC-ALERT-001-03** — Given an Asset's `warrantyExpiry` date is in the
+  past, when an authorized user opens Alerts, then a row is shown with
+  severity **High**, condition "Warranty Expired," and the affected
+  Asset — and selecting the row navigates to that Asset's
+  [P-004 Asset Detail](../03-prototype/RAISE-PROTOTYPE.md#10-p-004-asset-detail).
+- **AC-ALERT-001-04** — Given a Maintenance ticket's
+  `targetResolutionDate` has passed and its status is not `DONE`, when
+  an authorized user opens Alerts, then a row is shown with severity
+  **High**, condition "Maintenance Ticket Overdue," and the affected
+  ticket — and selecting the row navigates to that ticket's Maintenance
+  Request Detail View within
+  [P-009 Maintenance](../03-prototype/RAISE-PROTOTYPE.md#15-p-009-maintenance).
+- **AC-ALERT-001-05** — Given an Asset's `warrantyExpiry` date falls
+  inside its Asset Category's configured Expiring threshold (default 90
+  days, per-category configurable via P-018 Settings, PRD §16 Resolved
+  Question 41), when an authorized user opens Alerts, then a row is
+  shown with severity **Medium**, condition "Warranty Expiring," and
+  the affected Asset — and selecting the row navigates to that Asset's
+  P-004 Asset Detail.
+- **AC-ALERT-001-06** — Given a Maintenance ticket's status is
+  `ON_HOLD`, when an authorized user opens Alerts, then a row is shown
+  with severity **Medium**, condition "Maintenance Ticket On Hold," and
+  the affected ticket — and selecting the row navigates to that
+  ticket's Maintenance Request Detail View within P-009 Maintenance.
+- **AC-ALERT-001-07** — Given an IT Hardware Assignment Approval
+  Request is at any non-terminal stage of the P-008 4-stage workflow
+  (Initiation / Recipient Confirmation / IT Processing / IT Supervisor
+  Approval), when an authorized user opens Alerts, then a row is shown
+  with severity **Low**, condition "IT Hardware Handover Pending," and
+  the affected Handover (Assignment Approval Request) — and selecting
+  the row navigates to that request's Assignment Approval Request
+  detail/stage-progress view within
+  [P-008 Check-in / Check-out](../03-prototype/RAISE-PROTOTYPE.md#14-p-008-check-in--check-out).
+- **AC-ALERT-001-08** — Given severity is fixed per condition type (per
+  the table in AC-ALERT-001-03..07), when Alerts are displayed, then no
+  row's severity is computed from days-overdue, asset value, or any
+  asset-criticality field — no such derivation or field exists in the
+  data model, and none should be inferred.
+- **AC-ALERT-001-09** — Given no Alert row is a stored record (Design
+  §14 read-time derivation), when the underlying Asset, Maintenance
+  ticket, or Assignment Approval Request state changes such that a
+  condition listed in AC-ALERT-001-03..07 no longer holds (e.g., the
+  ticket moves to `DONE`, or the handover reaches a terminal stage),
+  then the corresponding row no longer appears on Alerts the next time
+  it is opened — there is nothing to acknowledge, dismiss, or mark
+  read, consistent with Prototype §18's "Open Questions — Left Open,
+  Not Decided Here" list explicitly excluding those behaviors from MVP
+  scope.
+- **AC-ALERT-001-10** — Given only these five conditions are confirmed
+  MVP scope, when Alerts are displayed, then no other condition (e.g.,
+  preventive-maintenance-due or software-license-expiry) appears as a
+  row — `RAISE-FR-LICENSE-001` is Roadmap and its alerting relationship
+  is separately TBD; no next-service-date field exists for a
+  preventive-maintenance condition.
 
-**NOT TESTABLE YET:** the exact MVP alert-triggering rules (which
-conditions generate which severity) are undefined (PRD §6.9 Open
-Question; Prototype §18) — the "Warranty Expiring / High" and
-"Maintenance Due / Medium" pairings shown in the Prototype are
-illustrative examples only, not confirmed rules. Separately,
-AC-ALERT-001-01's "authorized user" gate cannot be fully verified either,
-since the role/permission model is undefined (PRD §16 Q22) — this
-criterion is testable only for the structural behavior (an alert lists
-severity/description/asset when opened), not for whether the correct
-roles are actually gated.
+**NOT TESTABLE YET:**
+
+- AC-ALERT-001-01's "authorized user" gate cannot be fully verified: the
+  role/permission model for who may view Alerts is undefined beyond the
+  general MVP RBAC enforcement-level decision (UI-only/client-side,
+  backend deferred to Roadmap — PRD §16 Resolved Question 38), which is a
+  decision about *where* enforcement happens, not *what* the roles are
+  (PRD §16 Q22, Open Finding F-08). AC-ALERT-001-01 is testable only for
+  the structural behavior (an alert lists severity/description/affected
+  record when opened), not for whether the correct roles are actually
+  gated.
+
+**Left open, not decided here (do not write criteria for these):**
+
+- **Header bell-icon dropdown (`NotificationCenter.tsx` in `AppShell`)** —
+  whether it is in scope for `RAISE-FR-ALERT-001` at all remains an
+  unreconciled contradiction: PRD §16 Resolved Question 35 states it is
+  entirely out of RAISE scope and distinct from this requirement, while
+  [`ESAPS-UI-FOUNDATION-BASELINE.md`](../project-foundation-baseline/ESAPS-UI-FOUNDATION-BASELINE.md)
+  line 88 maps it to `RAISE-FR-ALERT-001` as EXTEND. PRD v0.15, Design
+  v0.13, and Prototype v0.14 all carry this contradiction forward as
+  still open. No criterion above tests the bell icon; none should be
+  inferred from AC-ALERT-001-01..10.
+- Alert acknowledgement, dismissal, read/unread, snooze,
+  delivery/scheduling/digesting, and notification preferences remain out
+  of MVP scope entirely and are not addressed by any criterion above
+  (Prototype §18 "Open Questions — Left Open, Not Decided Here"; Design
+  §14 "Explicitly Not Designed Here").
 
 ---
 
@@ -1077,6 +1180,25 @@ them as final:
 No criterion in this document silently resolves these — each affected
 criterion above carries its own **NOT TESTABLE YET** note.
 
+**Resolved since last revision (2026-09-04, PRD §16 Resolved Question 44, per
+confirmed business decision — closes Open Finding F-05):** F-05's cause (alert
+trigger rules and severity mapping entirely undefined) is resolved. PRD v0.15 §16
+Resolved Question 44 and Design v0.13 §14 confirm five MVP trigger conditions
+(Warranty EXPIRED/EXPIRING, Maintenance ticket OVERDUE/ON_HOLD, IT Hardware Handover
+PENDING) with a fixed High/Medium/Low severity assigned per condition type.
+AC-ALERT-001 (§15) is rewritten: the prior blanket NOT TESTABLE YET note (which cited
+undefined trigger rules) is replaced by AC-ALERT-001-03..10, each testing one
+confirmed condition/severity pairing or a cross-cutting rule (fixed-not-computed
+severity; no persisted Alert record; no sixth condition). AC-ALERT-001-01's
+"authorized user" gate remains separately NOT TESTABLE YET (PRD §16 Q22, Open
+Finding F-08 — unaffected by this resolution, still listed in the table above). The
+bell-icon-dropdown scope contradiction (PRD §16 Resolved Question 35 vs.
+`ESAPS-UI-FOUNDATION-BASELINE.md` line 88) also remains unresolved and is called out
+by name in §15, not decided here. Only Warranty EXPIRED is actually implemented as of
+2026-09-04 — the other four confirmed conditions are specification-complete but not
+yet built; this is an implementation-status note, not a new testability blocker, and
+does not change any criterion's Given/When/Then wording.
+
 **Resolved since last revision (2026-08-31, Open Finding F-22 as-built
 correction):** AC-DASH-01/-02 (§5) and AC-EXEC-001-01/-02 (§17) previously
 tested a wireframe (Total Assets/NBV/Risk/Warranty Expiry or NBV/Risk/
@@ -1251,6 +1373,17 @@ Before moving to Test Plan:
       the Stage 2 recipient-decline path and e-signature/acknowledgment-text capture are
       explicitly marked NOT TESTABLE YET rather than invented, per the Prototype's own
       open-question framing
+- [x] AC-ALERT-001 (§15) tests exactly the five confirmed MVP trigger conditions and
+      their fixed-per-condition High/Medium/Low severity (PRD §16 Resolved Question 44;
+      Design §14; closes Open Finding F-05's trigger-rules cause), without inventing a
+      sixth condition, a days-overdue/asset-value/criticality severity formula, or a
+      persisted Alert record (Design §14 read-time derivation); AC-ALERT-001-01's
+      "authorized user" gate remains explicitly NOT TESTABLE YET (PRD §16 Q22, Open
+      Finding F-08); the header bell-icon dropdown scope contradiction (PRD §16 Resolved
+      Question 35 vs. `ESAPS-UI-FOUNDATION-BASELINE.md` line 88) is named but left
+      unresolved, with no criterion written for it; only Warranty EXPIRED is noted as
+      actually implemented as of 2026-09-04, without any criterion claiming the other
+      four have been verified
 
 ---
 
@@ -1284,9 +1417,65 @@ as blocked pending business confirmation.
 
 ## Document Status
 
-**Version:** 0.11 (re-synced against `RAISE-PROTOTYPE.md` v0.13, `RAISE-PRD.md` v0.14, and
-`RAISE-DESIGN.md` v0.12, 2026-09-02 — PRD §16 Resolved Question 43 / `RAISE-FR-OPS-002`
-IT Hardware Assignment Approval Workflow, category-scoped exception, resolved)
+**Version:** 0.12 (re-synced against `RAISE-PROTOTYPE.md` v0.14 §18, `RAISE-PRD.md` v0.15,
+and `RAISE-DESIGN.md` v0.13 §14, 2026-09-04 — PRD §16 Resolved Question 44 /
+`RAISE-FR-ALERT-001` five MVP trigger conditions and fixed-per-condition severity,
+resolved; closes Open Finding F-05's trigger-rules cause)
+
+**Change Log — v0.11 → v0.12 (2026-09-04, PRD §16 Resolved Question 44, per confirmed
+business decision):**
+
+1. **Root cause.** `RAISE-PRD.md` §16 Resolved Question 44 and `RAISE-DESIGN.md` v0.13
+   §14 ("Alert Architecture") confirmed **five** MVP alert trigger conditions — Warranty
+   EXPIRED (High), Maintenance ticket OVERDUE (High), Warranty EXPIRING (Medium),
+   Maintenance ticket ON_HOLD (Medium), IT Hardware Handover PENDING (Low) — with
+   severity fixed **per condition type**, not computed from days-overdue, asset value,
+   or asset-criticality. `RAISE-PROTOTYPE.md` v0.14 §18 (P-012) was rewritten first to
+   reflect this; this document is corrected to match. This closes the trigger-rules and
+   severity-mapping cause of Open Finding F-05 (the "Trigger rules and channels" entry
+   in `OPEN-FINDINGS.md` still tracks channels separately, which is unaffected — MVP
+   remains single-channel in-app, not a new decision).
+2. **AC-ALERT-001 (§15) rewritten and expanded.** A new Status Note explains the
+   resolution and explicitly states that AC-ALERT-001-01 (structural display — severity /
+   description / affected record) already passed on that narrower basis and is extended,
+   not contradicted. The prior blanket **NOT TESTABLE YET** note (which cited undefined
+   trigger rules as its sole cause) is removed and replaced with eight new criteria:
+   **AC-ALERT-001-03..07** (one per confirmed condition/severity/affected-record/
+   navigation-destination pairing — Warranty EXPIRED/EXPIRING and Maintenance ticket
+   OVERDUE/ON_HOLD link to their existing P-004/P-009 detail views; IT Hardware Handover
+   PENDING links to the Assignment Approval Request detail/stage-progress view within
+   P-008 — no new screen is invented), **AC-ALERT-001-08** (severity is fixed per
+   condition type, not computed from days-overdue/value/criticality),
+   **AC-ALERT-001-09** (read-time derivation — a row disappears once its underlying
+   condition no longer holds, with no acknowledge/dismiss/read-unread state to manage,
+   per Design §14's no-persisted-Alert-record architecture), and **AC-ALERT-001-10** (no
+   sixth condition — explicitly excludes preventive-maintenance-due and
+   software-license-expiry). AC-ALERT-001-01's "authorized user" gate NOT TESTABLE YET
+   note is kept, unchanged, since PRD §16 Q22 / Open Finding F-08 is unaffected by this
+   resolution. A new "Left open, not decided here" block names the bell-icon-dropdown
+   scope contradiction (PRD §16 Resolved Question 35 vs.
+   `ESAPS-UI-FOUNDATION-BASELINE.md` line 88) and the acknowledge/dismiss/delivery
+   exclusions, so neither is silently assumed resolved.
+3. **Implementation status recorded, not overstated.** Per the Status Note in §15, only
+   the Warranty EXPIRED condition is actually implemented as of 2026-09-04; the other
+   four are specification-complete but not yet built. This is noted explicitly so this
+   revision does not imply verification — whether each criterion passes is left to
+   `RAISE-TEST-CASES.md` execution, not decided in this document.
+4. **AC Index (§3)** — AC-ALERT-001 row's Status updated to record the resolution, the
+   remaining NOT TESTABLE YET gate, and the implementation-status caveat.
+5. **Not-Yet-Testable Summary (§20)** — a new "Resolved since last revision (2026-09-04,
+   ... closes Open Finding F-05)" note added; the existing Q22 row (already scoped to
+   AC-ALERT-001-01 only) required no change.
+6. **Acceptance Criteria Review Checklist (§21)** gained a new checklist item confirming
+   the five-condition scope, the retained NOT TESTABLE YET gate, the still-open bell-icon
+   contradiction, and the implementation-status caveat.
+7. No other AC group required a correction — this revision touches only the document
+   header, §3 (index row), §15 (AC-ALERT-001), §20 (Not-Yet-Testable Summary), and §21
+   (checklist). `RAISE-PROTOTYPE.md` and earlier layers were **not** modified by this
+   pass, per this document's own scope boundary. The Login/Asset/Ops/Maintenance/
+   Warranty/Oracle/Audit/Executive/AI-Search/AI-Doc groups were checked against the
+   corresponding Prototype v0.14 sections and found unchanged in substance — Prototype
+   v0.13 → v0.14's only content change was the P-012 Alerts rewrite itself.
 
 **Change Log — v0.10 → v0.11 (2026-09-02, PRD §16 Resolved Question 43, per confirmed
 business decision):**

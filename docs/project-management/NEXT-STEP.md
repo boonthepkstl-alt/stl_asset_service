@@ -7,9 +7,11 @@ old copy of this file as still valid; re-run the recalculation first.
 **Run date:** 2026-09-04, first written after `CHECKPOINT-2026-09-04-002`
 (PR #89 — the first CI pipeline), then **updated after
 `CHECKPOINT-2026-09-04-003`** (PR #91 — route-level code splitting, merge
-commit `02ae966`), which **shipped this file's own previous
-recommendation**. F-18 is now Resolved (R-21) and **F-19 is the only 🟢
-candidate left**; the conclusion below is otherwise unchanged. The
+commit `02ae966`) and again after **`CHECKPOINT-2026-09-04-004`** (PR #93
+— 5xx error hygiene, merge commit `449a751`). Each update shipped this
+file's own previous recommendation: F-18 → **R-21**, F-19 → **R-22**.
+**There is now no 🟢 candidate left at all**, which sharpens rather than
+changes the conclusion below. The
 previous copy of this file dated 2026-09-03 and pre-dated PRs #78–#89
 (12 merged PRs), so it was stale in both its state summary and its
 recommendation.
@@ -73,7 +75,7 @@ engineering debt will keep the repo tidy; it will not move the product.
 
 | Field | **F-19 — backend error-response hygiene** |
 |---|---|
-| **Status** | 🟢 |
+| **Status** | ✅ **SHIPPED** — PR #93, merge `449a751`, Resolved as **R-22**. All 18 5xx sites cleaned (0 remain), proved on the wire, guarded by a mutation-tested invariant test. Its validation surfaced **F-41** (some 4xx bodies also carry raw driver errors), which is **not** buildable-now: it needs a per-site audit to separate sentinels from wrapped driver errors. Kept here for one revision so the recommendation and its outcome stay side by side. |
 | **Requirement source** | None. `OPEN-FINDINGS.md` F-19; `RAISE-DETAILED-DESIGN.md` §7. Security NFRs are undefined (F-17). |
 | **Current state** | Verified: **46 `err.Error()` occurrences across 8 controllers** put raw Go error strings into JSON responses. |
 | **Why buildable** | Not leaking internal error text needs no business rule. |
@@ -122,40 +124,38 @@ engineering debt will keep the repo tidy; it will not move the product.
 
 ## Recommendation
 
-**Recommended Next Task:** **Stop implementing and obtain a business
-decision — specifically F-05 (alert trigger rules and channels) or F-03
-(NBV/Risk KPI formulas).**
+**Recommended Next Task:** **Obtain a business decision — F-05 (alert
+trigger rules and channels) or F-03 (NBV/Risk KPI formulas). There is no
+implementation task to recommend.**
 
-The previous recommendation here (F-18) shipped in PR #91. The only 🟢
-task still standing is **F-19 — backend error-response hygiene** (46
-`err.Error()` occurrences across 8 controllers leaking raw Go error
-strings into JSON responses). It is genuinely buildable and needs no
-decision, so it is available if implementation must continue — but it is
-recommended **second**, not first, for two honest reasons: no deployment
-exists yet (**F-13**), so the benefit is currently theoretical; and like
-F-18 before it, it moves **no requirement, no AC and no traceability
-coverage**.
+> **No 🟢 buildable task is currently available. The next action should be
+> requirements/business decision resolution rather than implementation.**
 
-**Reason:** the last two 🟢 tasks (F-14 in PR #89, F-18 in PR #91) were
-both worth doing and both advanced **zero** requirement coverage. That is
-not a selection failure — it is the shape of the backlog. The
-traceability matrix is closed at **v1.8 with all 15 gaps closed**, and
-**every** non-`PASS` row in the Compliance Review is waiting on an answer
-rather than on code. Continuing to pick 🟢 items will keep the repo tidy
-while the product stands still.
+**Reason:** this is now demonstrated rather than argued. The 2026-09-04
+discovery found exactly three 🟢 items and **all three have shipped** —
+**F-14** (CI, PR #89), **F-18** (code splitting, PR #91) and **F-19**
+(5xx error hygiene, PR #93). Each was worth doing. **Each advanced zero
+requirement, AC, compliance and traceability coverage.** Three for three
+is no longer a coincidence to explain away: the traceability matrix is
+closed at **v1.8 with all 15 gaps closed**, and **every** non-`PASS` row
+in the Compliance Review waits on an answer, not on code. There is
+nothing further to build that would move the product.
+
+The only remaining engineering item, **F-41**, is deliberately **not**
+offered as a substitute: it needs a per-site audit to separate genuine
+sentinels from wrapped driver errors before it can even be scoped, and
+it would advance no coverage either.
 
 **Required Decisions Before It:** **F-05** — which conditions raise an
 alert, at what severity, over which channels (would move
 `RAISE-FR-ALERT-001` off `PASS (partial)` and is the prerequisite for the
-header-bell question and its documentation conflict). **Or F-03** — the
-NBV and Risk KPI formulas and thresholds (would complete
-`RAISE-FR-EXEC-001` and the Dashboard). Either unlocks more than every
-remaining 🟢 task combined.
+header-bell question and its unresolved PRD-vs-baseline documentation
+conflict). **Or F-03** — the NBV and Risk KPI formulas and thresholds
+(would complete `RAISE-FR-EXEC-001` and the Dashboard). Either unlocks
+more than the entire 🟢 backlog did.
 
-**Proposed Implementation Phase:** none until a decision lands. If
-implementation must continue regardless, **F-19** sits in Phase 1 —
-Foundation (continuous) as backend engineering debt, and like F-18
-**must not be recorded as phase progress.**
+**Proposed Implementation Phase:** **none.** No phase should be advanced
+and no implementation started until one of those decisions lands.
 
 > **Read this before treating the above as "the plan."** F-18 is the best
 > *buildable* task, not the most *valuable* action. The project is

@@ -36,6 +36,16 @@ changes user-visible or API-visible behavior. Pure documentation-sync PRs
   than always saying "Current Admin".
 
 ### Fixed
+- **Server errors no longer expose internal detail to API callers** — when
+  something fails on the server (a 500 response), the reply used to
+  include the raw underlying error text, which could contain database
+  driver messages, internal hostnames or connection details. It now
+  returns only the plain description of what failed, e.g. `{"message":
+  "Failed to retrieve assets"}`. The full detail is still written to the
+  server log, so nothing is lost for diagnosing problems. **API note:**
+  5xx responses no longer carry an `error` field. Validation errors
+  (4xx) are unchanged for now — some of those still include raw
+  database text and are tracked separately.
 - **A duplicate phone number can no longer slip through unnoticed** —
   when editing an employee, the check for "this phone number already
   belongs to someone else" used to pass silently if the employee list

@@ -3448,6 +3448,51 @@ Commit: `6f92774`, merged to `main` via [PR #91](https://github.com/boonthepkstl
 
 ---
 
+## CHECKPOINT-2026-09-04-004
+
+**Phase:** Phase 1 — Foundation (continuous; backend security hygiene, not a product capability)
+**Feature:** Backend error responses
+**Task:** Close **F-19** — raw Go error text in 5xx response bodies. The last 🟢 item in the backlog after F-14 (PR #89) and F-18 (PR #91)
+
+**Objective:** stop 5xx responses handing internal detail to the caller. Eighteen handlers across 7 controllers put `err.Error()` straight into the JSON body beside a human-readable `message`; those errors originate in the database layer, so a response could carry driver text, SQL fragments, schema names or connection detail.
+
+**What was implemented:** the `"error": err.Error()` field was removed from all **18** 5xx responses in `assetController`, `assetHandoverController`, `auditController`, `dashboardController`, `employeeController`, `sampleController` and `ticketController`. Each keeps its existing human-readable `message`. **0 5xx `err.Error()` sites remain** on `main`.
+**What was added:** `controller/internalErrorLeak_test.go` — a source-level invariant test asserting no 5xx JSON body contains `err.Error()`.
+**What was deliberately not changed:** the **28** 4xx sites. F-19's own wording scopes it to 5xx, and many 4xx bodies carry sentinel errors from the service layer (`ErrAssetNotITHardware`, `ErrHandoverWrongStage`, ...) whose text is meaningful, expected validation feedback — removing those would degrade the API rather than harden it.
+
+**Files changed:** 8 (`+6/-19` in 7 controllers, plus the new test) — `go-template-main/controller/{asset,assetHandover,audit,dashboard,employee,sample,ticket}Controller.go` and `controller/internalErrorLeak_test.go`.
+**Database changes:** None. **Frontend changes:** None. **API changes:** 5xx response bodies no longer include an `error` field — a response-shape change, verified safe (below).
+
+**Why this was safe for the frontend, verified rather than assumed:** `frontend/src/types/api.ts` declares `APIError` with an `error` field, but **nothing in `frontend/src` reads it** — the `api-client.ts` response interceptor branches only on status 401. Confirmed by grep before the change.
+
+**Validation:**
+- Backend: `go build ./...`, `go vet ./...`, `go test ./...` all clean on merged `main`. `gofmt` clean on every changed file (checked on LF copies, since the repo stores Go sources with CRLF — the pre-existing repo-wide condition recorded against the CI work).
+- Frontend (unchanged by this PR, re-run anyway): `tsc`/lint clean, **48 test files / 235 tests**.
+- **CI on `main` itself:** run `33851908649`, event `push`, sha `449a751` — both jobs green.
+- **Live E2E against the real Docker stack — the evidence this checkpoint rests on.** The database container was stopped to force a genuine 500 on `GET /api/assets`. Before this change that body would have carried `dial tcp: lookup db on 127.0.0.11:53: server misbehaving`; it now returns exactly `{"message":"Failed to retrieve assets"}`. The **server log still records the full error** (`[ERRO] [assetController.go] [ListAssets] ListAssets service error: dial tcp: ...`), so nothing was lost diagnostically. The happy path (200) was confirmed unaffected before and after, 4xx behaviour was confirmed unchanged, and the stack was restored and re-verified.
+- Every one of the 18 sites was checked individually to confirm it already logged the error before responding — including the two that delegate to `mapHandoverError`, whose two callers both log first.
+- **Mutation-tested**, per the discipline set in `CHECKPOINT-2026-09-03-010`: re-adding the field to `dashboardController` fails the new test with the exact file and line (`dashboardController.go:38 returns a http.StatusInternalServerError body containing the raw error text`). The implementation was restored and the suite re-run clean.
+
+**Note on the guard's design:** the test checks source rather than HTTP responses, and says so in its own header comment. The existing controller harness needs live MSSQL/Postgres/Tarantool handles and a signed token before it can serve a request, so driving all 18 sites through real 500s would cost far more than the invariant is worth. The trade — it checks the code as written, not the bytes on the wire — is recorded rather than glossed. It also asserts it scanned **at least 15** sites, so it cannot pass vacuously if the controllers are later refactored behind a shared error helper.
+
+**Requirement Traceability:**
+PRD: **N/A — no governing FR.** Design: `RAISE-DETAILED-DESIGN.md` §7 records the leak, which is what this closes. Acceptance Criteria: N/A. Test Case: N/A. Security NFRs remain undefined (**F-17**), so this closes a recorded finding, **not** a stated NFR. No chain document was touched — `RAISE-TRACEABILITY-MATRIX.md` stays at v1.8, all 15 gaps closed.
+
+**Findings resolved:** **F-19** → Resolved (**R-22**).
+
+**Findings discovered during validation:** **F-41** — and it **partly contradicts the assumption this PR's own scoping rested on**, so it is recorded rather than quietly absorbed. The 5xx/4xx split was justified on the basis that 4xx bodies carry *sentinels*; live verification showed that is not uniformly true. `GET /api/assets/does-not-exist` returns `{"error":"sql: no rows in result set","message":"Asset not found"}` — a raw `database/sql` error in a 4xx body, where `message` already says everything the caller needs. **Deliberately not fixed here:** the 28 remaining 4xx sites mix genuine sentinels (whose text should stay) with wrapped driver errors (which should go), so it needs a per-site audit, not a sweep — widening this PR would have meant guessing which messages are load-bearing. Lower severity than F-19 was, since `sql: no rows` is far less sensitive than connection detail.
+
+**Git:**
+Branch: `fix/no-raw-errors-in-5xx-responses`
+Commit: `0b1c191`, merged to `main` via [PR #93](https://github.com/boonthepkstl-alt/stl_asset_service/pull/93) (merge commit `449a751`), 2026-09-04.
+
+**Status:** ✅ Complete for its confirmed scope — F-19's 5xx scope is fully closed and guarded. Not to be read as "error responses are now clean": **F-41 is open** on the 4xx half.
+**Known Issues:** F-41 (above). Also worth stating plainly: no deployment exists yet (**F-13**), so this fix is preventative — it removes an exposure that had no public surface to leak through yet.
+**Remaining Work:** None for F-19.
+**Next Step:** **No 🟢 task remains.** F-14, F-18 and F-19 — every buildable item in the backlog — are now closed, and **all three advanced zero requirement coverage**, which is the backlog's shape rather than a selection failure. The traceability matrix is closed at v1.8 and every non-`PASS` row in the Compliance Review waits on a business answer. The next action is a decision, not implementation: **F-05** (alert trigger rules and channels) or **F-03** (NBV/Risk KPI formulas). F-41 is the only remaining engineering item and needs a per-site audit before it can be scoped.
+
+---
+
 ## Level 2 — Feature Checkpoints
 
 ### FEATURE-CHECKPOINT-project-tracking-governance

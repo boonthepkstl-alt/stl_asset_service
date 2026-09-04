@@ -3553,6 +3553,82 @@ Commit: `65de552`, merged to `main` via [PR #95](https://github.com/boonthepkstl
 
 ---
 
+## CHECKPOINT-2026-09-04-006
+
+**Phase:** Phase 3 — Asset Management
+**Feature:** Alerts (`RAISE-FR-ALERT-001`)
+**Task:** Implement **Gap 16** — the four alert conditions that PR #95 specified but left unbuilt — and then **formally execute** `TC-ALERT-001-03..10` against the running app
+
+**What was implemented (PR #97, merge commit `c2e6b76`):** all five confirmed conditions now derive, replacing the single warranty-expired condition and the literal `"Not yet defined"` severity placeholder:
+
+| Condition | Detection | Severity |
+|---|---|---|
+| Warranty EXPIRED | `warrantyExpiry` in the past | High |
+| Ticket OVERDUE | `targetResolutionDate` passed AND status ≠ `DONE` | High |
+| Warranty EXPIRING | inside the per-Asset-Category threshold | Medium |
+| Ticket ON_HOLD | status is `ON_HOLD` | Medium |
+| Handover PENDING | non-terminal stage of the 4-stage workflow | Low |
+
+**What was added:** `frontend/src/lib/alerts.ts` — the derivation, placed beside the warranty helper it reuses per Design v0.13 §14. A pure function over already-fetched lists: **no Alert entity, no table, no persisted record, no new field, no data-model change.** The severity mapping lives in a single `Record` so it cannot drift across call sites, and `asOf` is injectable so tests never depend on the clock. Plus `lib/alerts.test.ts` (12 unit tests).
+**What was modified:** `pages/Alerts/index.tsx` (consumes the derivation; three link targets instead of one) and its test.
+
+**Files changed:** 4 — 2 new, 2 modified. **Database changes:** None. **API changes:** None. **Backend changes:** None.
+
+**Two judgement calls, both settled by reading the spec rather than choosing:**
+- A ticket that is `ON_HOLD` **and** past its target date emits **both** alerts. Resolved Question 44 defines five *independent* conditions and no precedence between them, so suppressing one would have been inventing a rule. Visible in the seeded data: `REQ-2026-0041` appears twice.
+- The Expiring threshold is read from Settings **per Asset Category**, not hardcoded — 90 is only the seeded default (AC-WARRANTY-001-03 / R-17). A unit test pins this by deriving the same asset under a 90-day and a 10-day threshold and getting different results.
+
+**Tests:** 12 new unit tests covering each condition's positive **and** negative case (an overdue date on a `DONE` ticket raises nothing; terminal handover stages raise nothing), plus the rules the decision fixed explicitly. Per-rule tests build their own fixtures rather than the shared module-level seed data — that coupling is **F-40** — with one deliberate exception running the derivation over the real seed data, since the page test cannot see past pagination. Suite went **48 files / 235 tests → 49 / 250**.
+
+**Validation on merged `main` (`c2e6b76`):** frontend `npx tsc --noEmit` clean, `npm run lint` clean (0 warnings), `npm run build` clean, **49 test files / 250 tests passing**; backend `go build ./...`, `go vet ./...`, `go test ./...` all clean. CI green on the PR.
+
+### Formal test execution — 2026-09-04, merged `main` `c2e6b76`, signed in as ADMIN
+
+Executed against the real running app, not the feature branch. Seeded data produced **19 alerts**, paginated 10 per page. **Result: 7 PASS, 1 BLOCKED.**
+
+| Case | Result | Evidence |
+|---|---|---|
+| `TC-ALERT-001-03` | **PASS** | `High` / "Warranty Expired" / "Surface Pro 9 AST-0015" → `/assets/a15` |
+| `TC-ALERT-001-04` | **PASS** | `High` / "Maintenance Ticket Overdue" / REQ-2026-0042 → `/maintenance/REQ-2026-0042` |
+| `TC-ALERT-001-05` | **PASS** | `Medium` / "Warranty Expiring" / AST-0012 → `/assets/a12` |
+| `TC-ALERT-001-06` | **PASS** | `Medium` / "Maintenance Ticket On Hold" / REQ-2026-0041 → `/maintenance/REQ-2026-0041` |
+| `TC-ALERT-001-07` | **PASS** | `Low` / "IT Hardware Handover Pending" / AHO-2026-001 → `/handovers/AHO-2026-001` |
+| `TC-ALERT-001-08` | **PASS** | Warranties expired **2024-03-15** (~2.5 yrs) and **2026-07-22** (~6 wks) both render `High`; all 3 handovers `Low` |
+| `TC-ALERT-001-09` | 🔴 **BLOCKED** | Not executable as written — see below |
+| `TC-ALERT-001-10` | **PASS** | All 19 rows read across both pages; every one is one of the five confirmed conditions |
+
+Each navigation leg was verified to reach the destination **and render the named record**, not merely change the URL.
+
+**`TC-ALERT-001-01`/`-02` were not touched** — their genuine 2026-09-01 PASS stands as historical evidence, including that the severity observed *then* read "Not yet defined", which was true at that time.
+
+### Why `TC-ALERT-001-09` is blocked, and what kind of defect it is
+
+Its step 2 reads *"Edit that Asset's `warrantyExpiry` to a future date"*. **The product has no asset-edit capability at all** — verified in source before concluding: `services/asset-repository.ts` exposes only `create`, `assign` and `checkIn`; there is no `updateAsset` and no edit-asset UI. An asset's `warrantyExpiry` can be set at creation and never changed.
+
+This is a **test-case defect** — not an implementation defect and not a specification defect. `AC-ALERT-001-09` is sound and the implementation satisfies it. That was checked rather than assumed: lowering the IT Hardware "Expiring" threshold 90 → 3 through the real Settings UI removed the Warranty Expiring row and took the alert total **19 → 18**, restoring to 19 on reset — proving the derivation is read-time and the alert vanishes when its condition stops holding, with no acknowledge step and no persisted record.
+
+That evidence was recorded as **supporting only**. It exercises a different trigger than the case specifies, so the case was left **BLOCKED rather than marked PASS**, and its steps were deliberately **not** rewritten during the execution pass — editing a test's procedure while executing it would destroy the evidence that the procedure as written was unrunnable. Recorded as **F-42** and as **Gap 18**.
+
+**Requirement Traceability:** `RAISE-FR-ALERT-001` (P0/MVP) → AC-ALERT-001-03..10 → TS-ALERT-001 → TC-ALERT-001-03..10. Chain re-verified after execution: **PRD 0.15, Design 0.13, Prototype 0.14, AC 0.12 and Test Plan 0.12 all unchanged** — the evidence required no requirement change. Only the two execution-layer documents moved: Test Cases 0.17 → **0.18**, Traceability Matrix 1.9 → **2.0**.
+
+**Findings resolved:** none. **Findings opened:** **F-42** (Gap 18) — the `TC-ALERT-001-09` procedure defect.
+
+**Git:**
+Branch: `feature/gap-16-alert-conditions`
+Commit: `eb2a373`, merged to `main` via [PR #97](https://github.com/boonthepkstl-alt/stl_asset_service/pull/97) (merge commit `c2e6b76`), 2026-09-04.
+
+**Status:** 🟡 **Partial — deliberately not ✅.** The build half of Gap 16 is done and verified: four conditions implemented, seven of eight cases passing against the real app. But **Gap 16 stays OPEN** and **`RAISE-FR-ALERT-001` stays `PASS (partial)`**, because one case in the gap's scope is unexecuted. Reporting this as complete would breach Rule 14.
+
+**Known Issues:**
+- **F-42 / Gap 18** — `TC-ALERT-001-09` unexecutable as written. The single item keeping Gap 16 open.
+- **F-08** — the "authorized user" access gate on `AC-ALERT-001-01` remains **NOT TESTABLE YET**; this execution did not address it and it is a second, independent reason the requirement is not a full `PASS`.
+- **Gap 17** — the `NotificationCenter.tsx` bell-icon scope contradiction, untouched, no side picked.
+
+**Remaining Work:** Correct `TC-ALERT-001-09`'s procedure to use a state change the product supports (e.g. completing a maintenance ticket to `DONE`, which should clear its Overdue/On Hold rows), then execute it. That closes Gap 16.
+**Next Step:** Fix and execute `TC-ALERT-001-09` — it needs **no business decision**, only a deliberate test-case edit, and it is the one thing standing between the current state and Gap 16's closure.
+
+---
+
 ## Level 2 — Feature Checkpoints
 
 ### FEATURE-CHECKPOINT-project-tracking-governance

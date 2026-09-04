@@ -16,6 +16,15 @@ changes user-visible or API-visible behavior. Pure documentation-sync PRs
 
 ## 2026-09-04
 
+### Added
+- **Alerts now cover five situations, not just expired warranties** — the
+  Alerts screen also flags maintenance tickets past their target
+  resolution date, tickets left on hold, warranties approaching expiry,
+  and IT hardware handovers still waiting on someone. Each row now shows
+  a real severity — **High**, **Medium** or **Low** — instead of the
+  placeholder "Not yet defined" it used to show, and clicking a row
+  opens the asset, ticket or handover it refers to.
+
 ### Changed
 - **The app loads faster on first open** — it used to download every
   screen in the product before showing you the login page, including

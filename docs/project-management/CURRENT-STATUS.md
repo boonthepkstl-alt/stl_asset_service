@@ -9,23 +9,28 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-09-04, after `CHECKPOINT-2026-09-04-001` (PR #87 — the
+**As of:** 2026-09-04, after `CHECKPOINT-2026-09-04-002` (PR #89 — **the
+project's first CI pipeline**, closing **F-14** as **R-20**). The
+preceding milestone was `CHECKPOINT-2026-09-04-001` (PR #87 — the
 Edit Identity modal converted to a full page, **completing the
 modal→full-page conversion begun in PR #78: no record-creation or
 record-editing form in the app is a modal any more**). **The most recent
-work is the PR #78–#87 series covering the Employee form and a round of
-user-driven UI/IA corrections — see the dedicated paragraph at the end of
+work is the PR #78–#89 series covering the Employee form, a round of
+user-driven UI/IA corrections, and the CI pipeline — see the dedicated paragraph at the end of
 this preamble, which is the newest item here.** Re-verified live this
-close-out pass, on merged `main` at `152a394`: frontend
+close-out pass, on merged `main` at `103e069`: frontend
 `npx tsc --noEmit` clean, `npm run lint` clean (0 warnings),
 `npm run build` clean, `npm run test` — **48 test files / 235 tests
-passing**. **PR #86/#87 touched frontend only** — no Go file changed in
-that range (`git diff --stat 359361e..HEAD`), so the backend's last
-verified state is the one recorded at PR #80: `go build ./...`,
-`go vet ./...`, `go test ./...` all clean
-(`gofmt -l` lists files only because the repo stores Go sources with
-CRLF line endings — a pre-existing repo-wide condition confirmed by
-`gofmt -d`, not a formatting defect in any file this series touched).
+passing**; backend `go build ./...`, `go vet ./...`, `go test ./...` all
+clean. **This is now verified automatically as well**: the CI workflow
+PR #89 added ran green on `main` itself (run `33843149477`, event
+`push`, sha `103e069`, both jobs, zero annotations) — not merely on the
+PR branch, which is the evidence F-14's closure rests on. **`gofmt` is
+deliberately not part of either the local or the CI gate**: the repo
+stores Go sources with CRLF line endings and has no `.gitattributes`, so
+`gofmt -l` lists every file in the module — a pre-existing repo-wide
+condition confirmed by `gofmt -d`, not a formatting defect in any file
+this series touched.
 The immediately preceding milestone was `CHECKPOINT-2026-09-03-002`
 (PR #76 — IT Hardware Assignment Approval Workflow's 3 handover nav
 items consolidated into one "Asset Handovers" page with role-aware tabs,
@@ -414,8 +419,34 @@ paragraph, which is a summary of a summary and can drift.
 Triaged against [`RAISE-TRACEABILITY-MATRIX.md`](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md)
 §3–§5 — re-check that file before picking an item, it may have changed.
 
-**Buildable now:** **None.** The one item listed here on 2026-09-03 — a
-focused `AppShell` breadcrumb test — **shipped in PR #86**
+**Buildable now:** **Two, both pure engineering debt — and neither
+advances a requirement.** Re-derived from scratch on 2026-09-04 after
+PR #89 merged, by re-reading the PRD, Design, AC, Test Plan, Traceability
+Matrix and Compliance Review against the actual source tree, not by
+inheriting the previous run's answer. Full candidate table with
+classifications in [`NEXT-STEP.md`](NEXT-STEP.md).
+
+- **F-18 — route-level code splitting.** Verified on `main` at
+  `103e069`: the production build emits a **single 710 KB JS chunk** and
+  `App.tsx` uses `React.lazy` **zero** times across **27** routes. Vite's
+  own build warns about it. No business rule required; the fix is the
+  standard one already named in the finding.
+- **F-19 — backend error-response hygiene.** Verified: **46
+  `err.Error()` occurrences across 8 controllers** put raw Go error
+  strings into JSON responses. No business rule required, though the
+  replacement contract must be chosen and frontend consumers checked, so
+  it is slightly more entangled than F-18.
+
+**Neither moves compliance or traceability coverage**, and that is not a
+selection failure — it is the actual state: the **traceability matrix is
+at v1.8 with all 15 gaps closed**, and *every* non-`PASS` row in the
+Compliance Review is blocked on a business decision rather than on
+engineering. **The highest-leverage next action is obtaining decisions
+(F-05 and F-03 unlock the most), not writing code.**
+
+**F-14 (CI) was the last 🟢 item with real leverage and it is now shipped
+(R-20).** The earlier 2026-09-03 entry here — a focused `AppShell`
+breadcrumb test — **shipped in PR #86**
 (`CHECKPOINT-2026-09-03-010`): 6 tests, each mutation-tested against the
 original dead-`href` bug to prove it actually fails, plus the
 `aria-label="Breadcrumb"` landmark they need to distinguish the trail
@@ -480,8 +511,22 @@ changes: make the spec fields editable, or remove the button. There is
 `RAISE-FR-EMP-*` requirement at all — so this is a genuine product
 decision and **must not be picked unilaterally**.
 
-**Deferred technical debt (not a decision, not buildable-now):** **F-38**,
-added 2026-09-04 by PR #87 — Employee audit entries have no backend at
+**Resolved this pass:** **F-14** (no CI pipeline) → **Resolved, R-20**,
+by PR #89 (merge commit `103e069`) — closed only on evidence that CI runs
+green on `main` itself (run `33843149477`, event `push`), not merely that
+a workflow file exists. **F-14's image-build/push half is explicitly left
+open**: CI validates source only, builds and publishes no images, and
+**F-13 (hosting) is untouched**.
+
+**Deferred technical debt (not a decision, not buildable-now):** **F-40**,
+added 2026-09-04 — flaky navigate-away assertions, where a test waits for
+a success toast and then asserts the form's unmount *synchronously*
+although the toast and route change commit independently. Found three
+separate times (PR #87's review in `EditEmployee`; **CI on PR #89** in
+`CreateEmployee`; then `CreateAsset` by grepping for the same shape).
+All three sites are fixed; kept open as a **pattern to watch**, since
+nothing prevents reintroduction and no lint rule covers it. Also
+**F-38**, added 2026-09-04 by PR #87 — Employee audit entries have no backend at
 all. `pages/EditEmployee` records them by mutating the module-level
 `employeeAuditLogs` fixture (correctly gated to `!EMPLOYEE_API_ENABLED`),
 and `pages/EmployeeDetail:71` holds that same array as state, so its

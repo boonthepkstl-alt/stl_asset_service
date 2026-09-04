@@ -3629,6 +3629,58 @@ Commit: `eb2a373`, merged to `main` via [PR #97](https://github.com/boonthepkstl
 
 ---
 
+## CHECKPOINT-2026-09-04-007
+
+**Phase:** Phase 3 — Asset Management
+**Feature:** Alerts (`RAISE-FR-ALERT-001`)
+**Task:** Correct `TC-ALERT-001-09`'s unexecutable procedure (**F-42 / Gap 18**), execute it, and — if it passed — close **Gap 16**
+
+**Objective:** `TC-ALERT-001-09` verifies `AC-ALERT-001-09`: an alert disappears once its underlying condition stops holding — the read-time-derivation property, with no persisted Alert record (Design v0.13 §14). Its written step 2 said *"edit that Asset's `warrantyExpiry` to a future date"*, which **the product cannot do**: `frontend/src/services/asset-repository.ts` exposes only `create`, `assign` and `checkIn`; there is no `updateAsset` and no edit-asset UI. It was the single case keeping Gap 16 open.
+
+**What was done, and the order matters:**
+
+1. **Verified the replacement trigger actually exists before writing anything.** Ticket Detail (inside P-009) exposes a real **Update Status** control with a `Done` option, wired to `ticketService.updateExecutionStatus`, which maps `Done` → status `DONE` (`pages/TicketDetail/index.tsx`, `services/ticket-repository.ts`). Asserting a capability without checking is precisely the mistake that produced F-42 in the first place; repeating it would have been worse than the original.
+2. **Corrected the procedure first and left it unexecuted** (`RAISE-TEST-CASES.md` v0.19). Re-pointed at completing seeded ticket `REQ-2026-0041` to `DONE`. **The correction landed before the execution deliberately, so the steps could not be shaped around whatever happened to pass.**
+3. **Executed the corrected procedure** (v0.20) against merged `main` at `30f176c`, signed in as ADMIN.
+
+### Execution result — PASS
+
+| Step | Observed |
+|---|---|
+| 1 | Alerts total **19**. `REQ-2026-0041` present as **two** rows — `High` "Maintenance Ticket Overdue" (target 2026-08-16 passed) and `Medium` "Maintenance Ticket On Hold" |
+| 2 | Completed that ticket to `DONE` via the real Update Status control — Status select → `Done`, Resolution Notes (the field the UI reveals only for `Done`), "Save Update"; app confirmed "Updated" |
+| 3 | Alerts total **17** — a drop of exactly **2**. Zero rows referencing `REQ-2026-0041` across both pages |
+
+**Additional confirmation the procedure requires:** a scan of every button rendered on the Alerts screen found **no** acknowledge / dismiss / clear / mark-read / snooze affordance. The rows vanished purely because both conditions stopped holding — not because anything was cleared. No console errors.
+
+The whole path went through the product's own service call. No test-only hook, no direct data manipulation, and **no production code was changed to make the test pass**.
+
+**Worth recording:** the corrected procedure tests the property **more strongly** than the original would have. `REQ-2026-0041` satisfied *two* conditions simultaneously, so a single state change cleared **two different alert rows at once** — where the original warranty-based procedure would have cleared one.
+
+**Files changed:** 2 chain documents + project-management. `RAISE-TEST-CASES.md` 0.18 → 0.19 (procedure corrected) → **0.20** (result recorded); `RAISE-TRACEABILITY-MATRIX.md` 2.0 → **2.1**.
+**Database changes:** None. **API changes:** None. **Code changes:** **None** — this was a test-procedure correction and an execution.
+
+**Validation:** merged `main` `30f176c` — frontend `tsc`/lint/build clean, **49 test files / 250 tests passing**; backend `go build`/`vet`/`test` clean; CI green.
+
+**Gaps closed:**
+- **Gap 18** — the test-case defect. The corrected procedure proved runnable.
+- **Gap 16** — now legitimate: **all 10 `TC-ALERT-001-*` cases are executed and PASS** (`-01`/`-02` on 2026-09-01, `-03..-10` on 2026-09-04). Gap 16's own discipline was that no gap closes while a case in its scope is unexecuted; that condition is now met. Verified against Test Cases v0.20 before closing.
+
+**Findings resolved:** **F-42** → Resolved (**R-24**).
+
+**Requirement Traceability:** `RAISE-FR-ALERT-001` → `AC-ALERT-001-09` → `TS-ALERT-001` → `TC-ALERT-001-09`. `AC-ALERT-001-09` was **not** changed — the criterion was always sound; only the test's procedure was wrong. PRD 0.15, Design 0.13, Prototype 0.14, AC 0.12 and Test Plan 0.12 all **unchanged**: the evidence required no requirement change.
+
+**Status:** ✅ Complete for its confirmed scope.
+
+**Known Issues — and this is the part not to misread:** **`RAISE-FR-ALERT-001` remains `PASS (partial)` and was deliberately NOT upgraded to a full `PASS`.** Its partial status rested on two independent reasons; this work removed one of them. The other stands: the **"authorized user" access gate** on `AC-ALERT-001-01` is still **NOT TESTABLE YET**, blocked on PRD §16 Q22 / Open Finding **F-08** (role/permission matrix content) — a business decision nobody has made, which this execution did not touch and could not. Closing two gaps must not be read as the requirement being complete. **Every test case in its scope now passes; the remaining partiality is a decision gap, not an engineering or coverage gap.**
+
+Also still open: **Gap 17** — the `NotificationCenter.tsx` bell-icon scope contradiction (PRD §16 Resolved Question 35 vs `ESAPS-UI-FOUNDATION-BASELINE.md` line 88). Untouched, no side picked.
+
+**Remaining Work:** None for Alerts within engineering's reach. `RAISE-FR-ALERT-001` is as far along as it can go without **F-08**.
+**Next Step:** The project returns to being **decision-limited**. **F-03** (Dashboard NBV/Risk formulas) and **F-08** (role/permission matrix content) are the highest-leverage moves — F-08 doubly so, since it is the last thing standing between `RAISE-FR-ALERT-001` and a full `PASS`.
+
+---
+
 ## Level 2 — Feature Checkpoints
 
 ### FEATURE-CHECKPOINT-project-tracking-governance

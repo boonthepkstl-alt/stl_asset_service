@@ -2,9 +2,9 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Acceptance Criteria
-**Version:** 0.12 Draft
+**Version:** 0.13 Draft
 **Status:** Draft for Acceptance Review
-**Source:** [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.14 §27 (Prototype Traceability Matrix) + §5, §7–§23, §23A, §25A (per-screen specs / P-018 Settings / AI Scope Boundary / NFR Backlog Prototype Note) + §14's "IT Hardware Assignment Approval Workflow — Category-Scoped Exception" subsection + §18's rewritten P-012 Alerts (five confirmed MVP trigger conditions and fixed-per-condition severity), cross-checked against [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.15 and [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.13
+**Source:** [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.15 §27 (Prototype Traceability Matrix) + §5, §7–§23, §23A, §25A (per-screen specs / P-018 Settings / AI Scope Boundary / NFR Backlog Prototype Note) + §14's "IT Hardware Assignment Approval Workflow — Category-Scoped Exception" subsection + §18's P-012 Alerts (five confirmed MVP trigger conditions and fixed-per-condition severity; access gate confirmed 2026-09-04), cross-checked against [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.16 and [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.14
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
 
@@ -60,7 +60,7 @@ detail is "TBD" or "conceptual," the corresponding criterion is marked
 | [AC-MAINT-001](#12-ac-maint-001--p-009-maintenance) | P-009 | RAISE-FR-MAINT-001 | Partially testable (workflow shape testable; SLA/vendor/cost NOT TESTABLE YET) |
 | [AC-WARRANTY-001](#13-ac-warranty-001--p-010-warranty--p-018-settings) | P-010, P-018 | RAISE-FR-WARRANTY-001 | Testable (field list resolved 2026-08-29; per-category configurable threshold resolved 2026-09-01) |
 | [AC-ORACLE-001](#14-ac-oracle-001--p-011-oracle-fa--financial-view) | P-011 | RAISE-FR-ORACLE-001 | Partially testable |
-| [AC-ALERT-001](#15-ac-alert-001--p-012-alerts) | P-012 | RAISE-FR-ALERT-001 | Testable for the five confirmed trigger conditions and fixed-per-condition severity (resolved 2026-09-04, PRD §16 Resolved Question 44; closes Open Finding F-05's trigger-rules cause) — only Warranty EXPIRED is actually implemented as of this date, the other four are not yet built (verification deferred to Test Case execution, not decided here); "authorized user" access gate remains NOT TESTABLE YET (PRD §16 Q22 / Open Finding F-08) |
+| [AC-ALERT-001](#15-ac-alert-001--p-012-alerts) | P-012 | RAISE-FR-ALERT-001 | Testable for the five confirmed trigger conditions and fixed-per-condition severity (resolved 2026-09-04, PRD §16 Resolved Question 44; closes Open Finding F-05's trigger-rules cause), and now also testable for the access gate itself (resolved 2026-09-04, PRD §16 Resolved Question 45 — any authenticated user, all four roles; partially resolves Open Finding F-08 for this screen only) — only Warranty EXPIRED is actually implemented as of this date, the other four are not yet built (verification deferred to Test Case execution, not decided here); per-user filtering of alert rows is a separate, newly-raised, still-open question (PRD §16 Q22a) with no criterion written for it |
 | [AC-AUDIT-001](#16-ac-audit-001--p-013-audit-log) | P-013 | RAISE-FR-AUDIT-001 | Partially testable |
 | [AC-EXEC-001](#17-ac-exec-001--p-014-executive-dashboard) | P-014 | RAISE-FR-EXEC-001 | Testable (rewritten 2026-08-31 to match as-built dashboard, Open Finding F-22; NBV/Risk NOT TESTABLE YET) |
 | [AC-AI-SEARCH-001](#18-ac-ai-search-001--p-015-ai-assistant) | P-015 | RAISE-AI-SEARCH-001 | Partially testable |
@@ -413,10 +413,14 @@ authenticated user may Check-out/Check-in (no role restriction), and the operati
 an immediate state change with no approval step or exception-handling workflow. This
 resolution is scoped **narrowly to this one permission gate** (Check-in/Check-out's
 own "appropriate permission" language) — it does **not** resolve the general
-role-model/permission-matrix content question for other domains (Audit, Alerts,
-Warranty admin access, etc.), which remains **NOT TESTABLE YET** per PRD §16 Q21–Q22
-(tracked in Open Finding F-08; see AC-LOGIN, AC-ALERT-001, AC-AUDIT-001,
-AC-WARRANTY-001-06, and AC-MAINT-001's own RBAC-dependency notes).
+role-model/permission-matrix content question for other domains (Audit, Warranty admin
+access, etc.), which remains **NOT TESTABLE YET** per PRD §16 Q21–Q22 (tracked in Open
+Finding F-08; see AC-LOGIN, AC-AUDIT-001, AC-WARRANTY-001-06, and AC-MAINT-001's own
+RBAC-dependency notes). **Alerts (AC-ALERT-001) is the one exception**: its own access
+gate was separately confirmed 2026-09-04 (PRD §16 Resolved Question 45) as any
+authenticated user — see AC-ALERT-001's Status Note (§15) — while the general
+role/permission-matrix content question for every other screen, including Alerts'
+newly-raised per-user-filtering question (PRD §16 Q22a), remains open.
 
 **Not resolved by this change:** whether Check-in/Check-out is the *exclusive*
 mechanism that writes Custody History (AC-ASSET-003), or whether other events (e.g.,
@@ -743,6 +747,26 @@ already tested the structural display (severity / description / affected record)
 had passed on that narrower basis — it is extended, not contradicted, by the new
 criteria.
 
+**Status Note — Updated 2026-09-04 to Reflect Confirmed Access Gate (PRD v0.16 §16
+Resolved Question 45; Design v0.14 §16 "Alerts Screen Access Gate"; Prototype v0.15
+§18)**
+
+AC-ALERT-001-01 previously carried a **NOT TESTABLE YET** note on its access-gate half
+because "authorized user" was undefined (PRD §16 Q22, Open Finding F-08). That specific
+sub-question is now resolved: PRD v0.16 §16 Resolved Question 45 and Design v0.14 §16
+confirm **any authenticated user** — all four roles, `EMPLOYEE`, `IT_STAFF`,
+`IT_MANAGER`, `ADMIN` — may open Alerts; none is excluded. Enforcement is declared
+per-route in code (`ProtectedRoute allowedRoles`), and the Alerts route sits in the
+unrestricted block. AC-ALERT-001-01 is rewritten below to test this directly, and a new
+criterion, AC-ALERT-001-11, tests the negative case (unauthenticated visitor redirected
+to Login). This partially resolves Open Finding F-08 — exactly this one sub-question,
+not F-08 as a whole: the role/permission matrix content for every screen other than
+Alerts remains **NOT TESTABLE YET** (PRD §16 Q22), and the authentication mechanism
+itself (PRD §16 Q21) is untouched. A separate, distinct, newly-raised question —
+whether alert rows should eventually be filtered to only those "relevant" to the
+viewing user (PRD §16 Q22a) — is **not** decided by this resolution; see the NOT
+TESTABLE YET / left-open notes below.
+
 **Read-time derivation, no persisted Alert record (Design §14).** None of the criteria
 below imply an Alert table, Alert entity, or stored alert state — no read/unread, no
 acknowledge/dismiss, no snooze. Each criterion is phrased as "given the underlying
@@ -759,8 +783,10 @@ confirmed and derivable from the Prototype, not because any of the five have bee
 verified passing — whether each criterion actually passes is decided at
 `RAISE-TEST-CASES.md` on real test execution, not in this document.
 
-- **AC-ALERT-001-01** — Given an alert-triggering condition has occurred,
-  when an authorized user opens Alerts, then the alert is listed with a
+- **AC-ALERT-001-01** — Given an alert-triggering condition has occurred and the user
+  is authenticated as any of the four roles (`EMPLOYEE`, `IT_STAFF`, `IT_MANAGER`,
+  `ADMIN` — none excluded, PRD §16 Resolved Question 45; Design §16 "Alerts Screen
+  Access Gate"), when that user opens Alerts, then the alert is listed with a
   severity, description, and affected record.
 - **AC-ALERT-001-02** — Given no multi-channel delivery is in MVP scope,
   when Alerts are displayed, then only in-app / on-screen alert
@@ -821,18 +847,31 @@ verified passing — whether each criterion actually passes is decided at
   row — `RAISE-FR-LICENSE-001` is Roadmap and its alerting relationship
   is separately TBD; no next-service-date field exists for a
   preventive-maintenance condition.
+- **AC-ALERT-001-11** — Given a visitor is not authenticated, when they attempt to
+  open Alerts, then they are redirected to Login — existing `ProtectedRoute` behavior;
+  the Alerts route carries no route-specific role restriction (PRD §16 Resolved
+  Question 45; Design §16 "Alerts Screen Access Gate").
+
+**RESOLVED (was: NOT TESTABLE YET — AC-ALERT-001-01's "authorized user" gate):**
+PRD v0.16 §16 Resolved Question 45 and Design v0.14 §16 confirm "authorized user," for
+this screen, means **any authenticated user** — all four roles, none excluded. This is
+now tested directly by AC-ALERT-001-01 (positive case) and AC-ALERT-001-11 (negative
+case). This resolves this one sub-question of Open Finding F-08 for the Alerts screen
+only — the role/permission matrix content for every screen other than Alerts remains
+**NOT TESTABLE YET** (PRD §16 Q22), and the authentication mechanism itself (PRD §16
+Q21) is untouched.
 
 **NOT TESTABLE YET:**
 
-- AC-ALERT-001-01's "authorized user" gate cannot be fully verified: the
-  role/permission model for who may view Alerts is undefined beyond the
-  general MVP RBAC enforcement-level decision (UI-only/client-side,
-  backend deferred to Roadmap — PRD §16 Resolved Question 38), which is a
-  decision about *where* enforcement happens, not *what* the roles are
-  (PRD §16 Q22, Open Finding F-08). AC-ALERT-001-01 is testable only for
-  the structural behavior (an alert lists severity/description/affected
-  record when opened), not for whether the correct roles are actually
-  gated.
+- **Per-user filtering of alert rows (PRD §16 Q22a, newly raised, not decided).** Today
+  every authenticated user sees all matching alerts, regardless of role or which
+  employee they are. Whether a user should eventually see only alerts "relevant" to
+  them is raised but not decided, and is not yet specifiable: there is no link between
+  the authenticated `User` and an `Employee` record (`User` carries only
+  `id`/`username`/`fullName`/`role`) — the Handovers screen (P-008) matches recipients
+  by comparing `fullName` strings as a documented MVP limitation, not a reusable
+  identity link. No criterion above tests per-user filtering, and none should be
+  inferred from AC-ALERT-001-01..11.
 
 **Left open, not decided here (do not write criteria for these):**
 
@@ -841,15 +880,18 @@ verified passing — whether each criterion actually passes is decided at
   unreconciled contradiction: PRD §16 Resolved Question 35 states it is
   entirely out of RAISE scope and distinct from this requirement, while
   [`ESAPS-UI-FOUNDATION-BASELINE.md`](../project-foundation-baseline/ESAPS-UI-FOUNDATION-BASELINE.md)
-  line 88 maps it to `RAISE-FR-ALERT-001` as EXTEND. PRD v0.15, Design
-  v0.13, and Prototype v0.14 all carry this contradiction forward as
+  line 88 maps it to `RAISE-FR-ALERT-001` as EXTEND. PRD v0.16, Design
+  v0.14, and Prototype v0.15 all carry this contradiction forward as
   still open. No criterion above tests the bell icon; none should be
-  inferred from AC-ALERT-001-01..10.
+  inferred from AC-ALERT-001-01..11.
 - Alert acknowledgement, dismissal, read/unread, snooze,
   delivery/scheduling/digesting, and notification preferences remain out
   of MVP scope entirely and are not addressed by any criterion above
   (Prototype §18 "Open Questions — Left Open, Not Decided Here"; Design
   §14 "Explicitly Not Designed Here").
+- **Per-user filtering of alert rows (PRD §16 Q22a)** — see the NOT TESTABLE YET note
+  above; not decided by the access-gate resolution, and no `employeeId` field or other
+  `User`↔`Employee` link is proposed here.
 
 ---
 
@@ -1164,7 +1206,8 @@ them as final:
 | Q3 NBV/Risk KPI formulas (Utilization definition itself resolved — Resolved Question 27) | AC-DASH-03, AC-EXEC-001 NBV/Risk note (§17) — tracked further as Open Finding F-03 |
 | Q4 Definition of Risk | AC-DASH-03, AC-EXEC-001 NBV/Risk note (§17) — tracked further as Open Finding F-03 |
 | Q6–Q10 Oracle integration design | AC-ORACLE-001-01..04 |
-| Q22 Roles and permissions required (Check-in/Check-out's own permission gate resolved — Resolved Question 42; general role/permission-matrix content for other domains remains open) | AC-LOGIN-01..03, AC-ALERT-001-01, AC-AUDIT-001-03, AC-MAINT-001-04..08 |
+| Q22 Roles and permissions required (Check-in/Check-out's own permission gate resolved — Resolved Question 42; Alerts' own access gate resolved — Resolved Question 45; general role/permission-matrix content for other domains remains open) | AC-LOGIN-01..03, AC-AUDIT-001-03, AC-MAINT-001-04..08 |
+| Q22a Per-user filtering of Alerts rows (newly raised, not decided by Resolved Question 45 — no `User`↔`Employee` link exists) | AC-ALERT-001's NOT TESTABLE YET note (§15) |
 | Q13 Holder data model | AC-ASSET-003-01..03 |
 | Custody-writing-events ambiguity (RAISE-FR-ASSET-003 vs. RAISE-FR-OPS-002 — PRD Pre-Finalization Quality Pass, "Duplicated / Overlapping Requirements," needs business confirmation) | AC-ASSET-003-03 (scope note only) |
 | Q14 Maintenance fields / SLA / vendor model / cost model (workflow shape and state model now confirmed — Resolved Question 33; only SLA, vendor model, cost model, and delegated-approver configuration remain open) | AC-MAINT-001-01, -02 (fields); AC-MAINT-001-05 (Reject/Request Info resulting state); delegated-approver rule note under AC-MAINT-001 |
@@ -1198,6 +1241,23 @@ by name in §15, not decided here. Only Warranty EXPIRED is actually implemented
 2026-09-04 — the other four confirmed conditions are specification-complete but not
 yet built; this is an implementation-status note, not a new testability blocker, and
 does not change any criterion's Given/When/Then wording.
+
+**Resolved since last revision (2026-09-04, PRD v0.16 §16 Resolved Question 45, per
+confirmed business decision — partially resolves Open Finding F-08):** AC-ALERT-001-01's
+"authorized user" access-gate NOT TESTABLE YET note (unaffected by the F-05 resolution
+above) is now itself resolved, for this screen only. PRD v0.16 §16 Resolved Question 45
+and Design v0.14 §16 confirm any authenticated user — all four roles, `EMPLOYEE`,
+`IT_STAFF`, `IT_MANAGER`, `ADMIN` — may open Alerts, enforced per-route in code
+(`ProtectedRoute allowedRoles`). AC-ALERT-001-01 (§15) is rewritten to test this
+directly, and a new criterion, AC-ALERT-001-11, tests the negative case (unauthenticated
+redirect to Login). This resolves exactly this one sub-question of Open Finding F-08 —
+the Q22 table row above is updated to remove AC-ALERT-001-01 accordingly. It does
+**not** resolve: the general role/permission-matrix content question for every screen
+other than Alerts (Q22, still open, tracked under AC-LOGIN/AC-AUDIT-001/AC-MAINT-001
+above); the authentication mechanism itself (Q21); or a newly-raised, separate,
+still-open question — whether alert rows should eventually be filtered to only those
+"relevant" to the viewing user (Q22a, new row above) — which is not specifiable today
+because no link exists between the authenticated `User` and an `Employee` record.
 
 **Resolved since last revision (2026-08-31, Open Finding F-22 as-built
 correction):** AC-DASH-01/-02 (§5) and AC-EXEC-001-01/-02 (§17) previously
@@ -1259,9 +1319,13 @@ confirmed that a UI-only/client-side permission check is acceptable for MVP, bac
 enforcement deferred to Enterprise Roadmap. This is a narrow decision about *where*
 enforcement happens, not *what* the roles/permissions are — it does not resolve Q22
 (roles and permissions required), which continues to block AC-LOGIN-01..03,
-AC-ALERT-001-01, AC-AUDIT-001-03, and (newly) AC-MAINT-001-04..08 as
-listed in the table above. No role list, permission matrix, or authentication
-mechanism is assumed anywhere in this document as a result of this confirmation.
+AC-AUDIT-001-03, and (newly) AC-MAINT-001-04..08 as listed in the table above. No role
+list, permission matrix, or authentication mechanism is assumed anywhere in this
+document as a result of this confirmation. **Alerts' own access gate is a separate,
+narrow exception**, resolved 2026-09-04 by PRD §16 Resolved Question 45 (any
+authenticated user, all four roles) — see AC-ALERT-001's Status Note (§15) and the Q22a
+row above for the distinct, still-open per-user-filtering question that resolution does
+not decide.
 
 **Resolved since last revision (2026-09-01):** Q11 (Check-in/Check-out workflow) and Q12
 (who can assign/transfer an asset) — `RAISE-PRD.md` §16 Resolved Question 42 confirmed
@@ -1378,12 +1442,17 @@ Before moving to Test Plan:
       Design §14; closes Open Finding F-05's trigger-rules cause), without inventing a
       sixth condition, a days-overdue/asset-value/criticality severity formula, or a
       persisted Alert record (Design §14 read-time derivation); AC-ALERT-001-01's
-      "authorized user" gate remains explicitly NOT TESTABLE YET (PRD §16 Q22, Open
-      Finding F-08); the header bell-icon dropdown scope contradiction (PRD §16 Resolved
-      Question 35 vs. `ESAPS-UI-FOUNDATION-BASELINE.md` line 88) is named but left
-      unresolved, with no criterion written for it; only Warranty EXPIRED is noted as
-      actually implemented as of 2026-09-04, without any criterion claiming the other
-      four have been verified
+      "authorized user" gate is now resolved and testable (PRD §16 Resolved Question 45;
+      Design §16 — any authenticated user, all four roles; AC-ALERT-001-11 tests the
+      unauthenticated-redirect negative case), partially resolving Open Finding F-08 for
+      this screen only — the general role/permission-matrix content for every other
+      screen remains NOT TESTABLE YET (PRD §16 Q22), and per-user filtering of alert
+      rows (PRD §16 Q22a, newly raised) is explicitly left open with no criterion
+      written for it and no `employeeId`/`User`↔`Employee` link proposed; the header
+      bell-icon dropdown scope contradiction (PRD §16 Resolved Question 35 vs.
+      `ESAPS-UI-FOUNDATION-BASELINE.md` line 88) is named but left unresolved, with no
+      criterion written for it; only Warranty EXPIRED is noted as actually implemented
+      as of 2026-09-04, without any criterion claiming the other four have been verified
 
 ---
 
@@ -1417,10 +1486,50 @@ as blocked pending business confirmation.
 
 ## Document Status
 
-**Version:** 0.12 (re-synced against `RAISE-PROTOTYPE.md` v0.14 §18, `RAISE-PRD.md` v0.15,
-and `RAISE-DESIGN.md` v0.13 §14, 2026-09-04 — PRD §16 Resolved Question 44 /
-`RAISE-FR-ALERT-001` five MVP trigger conditions and fixed-per-condition severity,
-resolved; closes Open Finding F-05's trigger-rules cause)
+**Version:** 0.13 (re-synced against `RAISE-PROTOTYPE.md` v0.15 §18, `RAISE-PRD.md` v0.16,
+and `RAISE-DESIGN.md` v0.14 §16, 2026-09-04 — PRD §16 Resolved Question 45 /
+`RAISE-FR-ALERT-001` Alerts screen access gate (any authenticated user), resolved;
+partially resolves Open Finding F-08 for this screen only)
+
+**Change Log — v0.12 → v0.13 (2026-09-04, PRD §16 Resolved Question 45, per confirmed
+business decision):**
+
+1. **Root cause.** `RAISE-PRD.md` v0.16 §16 Resolved Question 45 and `RAISE-DESIGN.md`
+   v0.14 §16 ("Alerts Screen Access Gate") confirmed that the "authorized user" gate on
+   P-012 Alerts means **any authenticated user** — all four roles, `EMPLOYEE`,
+   `IT_STAFF`, `IT_MANAGER`, `ADMIN` — with none excluded, enforced per-route in code
+   (`ProtectedRoute allowedRoles`). `RAISE-PROTOTYPE.md` v0.15 §18 (P-012) was updated
+   first to reflect this; this document is corrected to match.
+2. **AC-ALERT-001 (§15) updated.** A new Status Note explains the resolution.
+   AC-ALERT-001-01 is rewritten to state the access-gate condition explicitly (any
+   authenticated user, all four roles) instead of the previously-undefined "authorized
+   user." A new criterion, **AC-ALERT-001-11**, tests the negative case — an
+   unauthenticated visitor is redirected to Login, existing `ProtectedRoute` behavior.
+   AC-ALERT-001-02 through -10 are unchanged. The prior **NOT TESTABLE YET** note on
+   AC-ALERT-001-01's access-gate half is replaced with a **RESOLVED** note, and a new
+   **NOT TESTABLE YET** note is added for the separate, newly-raised, still-open
+   question of per-user filtering of alert rows (PRD §16 Q22a) — explicitly not
+   specifiable today (no `User`↔`Employee` link exists) and explicitly not given a
+   criterion or a proposed `employeeId` field.
+3. **General RBAC narrowing notes updated.** The AC-OPS-002 background note (§11), the
+   §20 RBAC MVP-enforcement-level note, and the §20 Q22 table row all previously listed
+   AC-ALERT-001-01 among criteria blocked by the general role/permission-matrix content
+   question (PRD §16 Q22). Each is narrowed to remove AC-ALERT-001-01 and to state that
+   Alerts' own access gate is a separate, resolved exception — the general
+   role/permission-matrix content question for every other screen remains open.
+4. **AC Index (§3)** — AC-ALERT-001 row's Status updated to record the access-gate
+   resolution and the newly-raised Q22a per-user-filtering question.
+5. **Not-Yet-Testable Summary (§20)** — a new "Resolved since last revision (2026-09-04,
+   PRD §16 Resolved Question 45)" note added; a new Q22a table row added; the existing
+   Q22 row's "Blocks" column no longer lists AC-ALERT-001-01.
+6. **Acceptance Criteria Review Checklist (§21)** — the AC-ALERT-001 checklist item is
+   updated to record the access-gate resolution, the new negative-case criterion, and
+   the still-open Q22a per-user-filtering question.
+7. No other AC group required a correction — this revision touches only the document
+   header, §3 (index row), §11 (AC-OPS-002 background note, narrowed reference), §15
+   (AC-ALERT-001), §20 (Not-Yet-Testable Summary), and §21 (checklist). No
+   `## NEEDS_PRD_CONFIRMATION` is raised — the decision is already confirmed and
+   recorded (PRD §16 Resolved Question 45; Design §16).
 
 **Change Log — v0.11 → v0.12 (2026-09-04, PRD §16 Resolved Question 44, per confirmed
 business decision):**

@@ -2,7 +2,24 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document Type:** Product Requirements Document
-**Version:** 0.15 Draft — `RAISE-FR-ALERT-001` (Alerts): five MVP **alert trigger
+**Version:** 0.16 Draft — Open Finding **F-08** (PRD §16 Q21–Q22, RBAC authentication
+mechanism and role/permission matrix content) **partially** resolved 2026-09-04 — exactly
+two sub-questions, not F-08 as a whole: (1) **who may view the Alerts screen (P-012)** —
+**any authenticated user**, all four existing roles (`EMPLOYEE`, `IT_STAFF`,
+`IT_MANAGER`, `ADMIN`), none excluded, confirming already-built `ProtectedRoute` behavior
+rather than changing it; (2) **where role enforcement lives** — **declared in code, per
+route**, via the existing `ProtectedRoute allowedRoles` pattern, not data-driven. A
+recorded consequence of decision (2): the already-built Role Management screen
+(`frontend/src/pages/RoleManagement/index.tsx`, a 15-module × 6-action permission matrix
+that persists via `roleService.updatePermissions`) has **no enforcement effect** —
+presentational only, nothing reads it to grant/deny access — this is recorded as current
+truth, not proposed as a future fix. The role/permission matrix **content** for every
+screen other than Alerts, and the authentication mechanism itself (§16 Q21), remain
+**open** — F-08 is not closed. Per-user filtering of alert rows (so a user sees only
+alerts "relevant to them") is a **distinct, separately still-open** question, not decided
+here — see [§16 Resolved Question 45](#16-open-questions) for full detail, resolving
+this narrow slice of F-05/F-08 in `OPEN-FINDINGS.md` (that file updated separately, not
+by this edit). Prior (v0.15): `RAISE-FR-ALERT-001` (Alerts): five MVP **alert trigger
 conditions** confirmed 2026-09-04 (Warranty EXPIRED/EXPIRING, Maintenance ticket
 OVERDUE/ON_HOLD, IT Hardware Handover PENDING — none new to the data model), with a fixed
 3-level (High/Medium/Low) severity assigned **per condition type** (not by
@@ -518,6 +535,16 @@ case — assigning (Check-out) an asset in the **IT Hardware** category now requ
 4-stage approval workflow using the existing `IT_STAFF` and `IT_MANAGER` roles (no new
 role introduced); see [§16 Resolved Question 43](#16-open-questions). Check-in and
 Check-out of every other asset category are unaffected.
+**Note (2026-09-04):** two more sub-questions of the general role model are now resolved,
+but **only** for the Alerts screen (`RAISE-FR-ALERT-001`, P-012) — see
+[§16 Resolved Question 45](#16-open-questions), **partially** resolving Open Finding
+**F-08**: (a) the Alerts screen's access gate is **any authenticated user**, no role
+excluded; (b) enforcement for that gate (and for every other already-role-gated screen)
+is **declared in code, per route**, not data-driven — meaning the built Role Management
+permission-matrix screen has no enforcement effect (see the bullet list below). This does
+**not** resolve the role/permission matrix content for any screen other than Alerts, and
+does **not** touch the authentication-mechanism question (Q21) — both remain open below
+and in [§16 Q21–Q22](#16-open-questions).
 
 A later Security Design must cover, at minimum:
 
@@ -557,8 +584,43 @@ confirmation (see [§16 Q21–Q23](#16-open-questions)). **MVP enforcement level
   minimum" list above remain undefined — this decision only fixes *where* enforcement
   happens for MVP (client-side only), not *what* the roles/permissions are.
 
+**Alerts screen access gate and enforcement mechanism confirmed 2026-09-04** (business
+confirmation via direct chat session — see
+[§16 Resolved Question 45](#16-open-questions), **partially** resolving Open Finding
+**F-08**, [§16 Q21–Q22](#16-open-questions) — two specific sub-questions only, not F-08
+as a whole):
+
+- **Who may view the Alerts screen (P-012, `RAISE-FR-ALERT-001`):** any authenticated
+  user. All four existing roles — `EMPLOYEE`, `IT_STAFF`, `IT_MANAGER`, `ADMIN` — may
+  open it; no role is excluded. This confirms already-built behavior
+  (`frontend/src/App.tsx` registers `ROUTES.NOTIFICATIONS` inside the unrestricted
+  `ProtectedRoute` block) rather than changing it, and is consistent with the existing
+  treatment of Assets, Employees, Maintenance, and Handovers, all open to any
+  authenticated user; only Administration, User Management, Role Management, and
+  Settings are `ADMIN`-gated.
+- **Where enforcement lives:** declared in code, per route, via the existing
+  `ProtectedRoute allowedRoles` pattern — the same mechanism already gating
+  Administration and Settings. It is **not** data-driven.
+- **Recorded consequence (current truth, not a proposed change):** the application
+  already ships a Role Management screen
+  (`frontend/src/pages/RoleManagement/index.tsx`) presenting a permission matrix of
+  **15 modules × 6 actions** (View/Create/Edit/Delete/Approve/Export), editable by an
+  admin, persisted via `roleService.updatePermissions`. Under the code-declared
+  enforcement model above, **that matrix has no enforcement effect whatsoever** —
+  nothing in the application reads it to grant or deny access. It is presentational
+  only. This is recorded so the screen is not mistaken for a working access-control
+  feature; no work to make it authoritative is proposed or scheduled by this decision.
+- **Still open, not touched by this decision:** the role/permission matrix *content* for
+  every screen other than Alerts (F-08 stays open for those); the authentication
+  mechanism itself (§16 Q21 — there is still no real user store, Open Finding **F-11**,
+  and `middleware.RequireRole` is still wired only to the Go template's demo routes,
+  Open Finding **F-12**); and per-user filtering of which alerts a given user sees (a
+  separate, distinct, still-open question — see
+  [§16 Resolved Question 45](#16-open-questions)).
+
 *Source: v0.1 draft §13 (Security & Governance); MVP enforcement-level confirmed via
-`/update-prd` session, 2026-08-21.*
+`/update-prd` session, 2026-08-21; Alerts screen access gate and enforcement mechanism
+confirmed via direct chat session, 2026-09-04.*
 
 ---
 
@@ -590,11 +652,11 @@ confirmation (see [§16 Q21–Q23](#16-open-questions)). **MVP enforcement level
 | User/Actor | IT Asset, Finance |
 | Priority | P0 |
 | Scope | MVP (single-channel; multi-channel is Roadmap) |
-| Acceptance Criteria | **Resolved 2026-09-04** (business confirmation via direct chat session — see [§16 Resolved Question 44](#16-open-questions)): exactly **five** alert trigger conditions for MVP, each derived only from fields that already exist in the built data model (no new field, no data-model change): (1) **Warranty EXPIRED** — an asset whose `warrantyExpiry` is in the past (already implemented/tested as the scoped condition; see `RAISE-FR-WARRANTY-001` and F-32/R-16). (2) **Maintenance ticket OVERDUE** — a `RAISE-FR-MAINT-001` ticket whose `targetResolutionDate` has passed and whose status is not `DONE`. (3) **Warranty EXPIRING** — an asset inside its Asset Category's configurable "Expiring" threshold (default 90 days) — this **reuses**, and does not duplicate, the threshold already confirmed for `RAISE-FR-WARRANTY-001` ([§16 Resolved Question 41](#16-open-questions)). (4) **Maintenance ticket ON HOLD** — a `RAISE-FR-MAINT-001` ticket whose status is `ON_HOLD`. (5) **IT Hardware handover PENDING** — a handover record still awaiting action at any stage of the 4-stage IT Hardware Assignment Approval Workflow (`RAISE-FR-OPS-002`, [§16 Resolved Question 43](#16-open-questions)). No alert condition beyond these five is in MVP scope — in particular, no preventive-maintenance-due condition (no next-service-date field exists) and no software-license-expiry condition (`RAISE-FR-LICENSE-001` remains Roadmap; its relationship to alerting is separately TBD). **Severity** is a fixed 3-level scale — **High / Medium / Low** — assigned **per condition type** (not derived from days-overdue, asset value, or an asset-criticality field, which does not exist in the data model): Warranty EXPIRED → High; Ticket OVERDUE → High; Warranty EXPIRING → Medium; Ticket ON_HOLD → Medium; Handover PENDING → Low. Rationale (business-stated): already past its deadline = High; approaching a deadline or stalled = Medium; merely waiting in a queue = Low. Alert information (condition, severity, and the affected asset/ticket/handover) is visible to an authorized user. No acknowledgement, dismissal, read/unread, or snooze behavior is defined — not in MVP scope. **Channels — no new decision, restating existing scope:** this requirement's own Scope line already establishes MVP as single-channel, **in-app only**; multi-channel (Email/Teams/LINE Notify) was already Phase 2 Roadmap before this resolution and remains so — see [§16 Resolved Question 44](#16-open-questions) for why "channels are TBD" is removed rather than re-decided. |
-| Dependencies | RAISE-FR-WARRANTY-001 (Warranty EXPIRED, Warranty EXPIRING — reuses its per-Asset-Category Expiring threshold), RAISE-FR-MAINT-001 (Ticket OVERDUE via `targetResolutionDate`, Ticket ON_HOLD via ticket status), RAISE-FR-OPS-002 (Handover PENDING via the 4-stage IT Hardware Assignment Approval Workflow) |
+| Acceptance Criteria | **Resolved 2026-09-04** (business confirmation via direct chat session — see [§16 Resolved Question 44](#16-open-questions)): exactly **five** alert trigger conditions for MVP, each derived only from fields that already exist in the built data model (no new field, no data-model change): (1) **Warranty EXPIRED** — an asset whose `warrantyExpiry` is in the past (already implemented/tested as the scoped condition; see `RAISE-FR-WARRANTY-001` and F-32/R-16). (2) **Maintenance ticket OVERDUE** — a `RAISE-FR-MAINT-001` ticket whose `targetResolutionDate` has passed and whose status is not `DONE`. (3) **Warranty EXPIRING** — an asset inside its Asset Category's configurable "Expiring" threshold (default 90 days) — this **reuses**, and does not duplicate, the threshold already confirmed for `RAISE-FR-WARRANTY-001` ([§16 Resolved Question 41](#16-open-questions)). (4) **Maintenance ticket ON HOLD** — a `RAISE-FR-MAINT-001` ticket whose status is `ON_HOLD`. (5) **IT Hardware handover PENDING** — a handover record still awaiting action at any stage of the 4-stage IT Hardware Assignment Approval Workflow (`RAISE-FR-OPS-002`, [§16 Resolved Question 43](#16-open-questions)). No alert condition beyond these five is in MVP scope — in particular, no preventive-maintenance-due condition (no next-service-date field exists) and no software-license-expiry condition (`RAISE-FR-LICENSE-001` remains Roadmap; its relationship to alerting is separately TBD). **Severity** is a fixed 3-level scale — **High / Medium / Low** — assigned **per condition type** (not derived from days-overdue, asset value, or an asset-criticality field, which does not exist in the data model): Warranty EXPIRED → High; Ticket OVERDUE → High; Warranty EXPIRING → Medium; Ticket ON_HOLD → Medium; Handover PENDING → Low. Rationale (business-stated): already past its deadline = High; approaching a deadline or stalled = Medium; merely waiting in a queue = Low. Alert information (condition, severity, and the affected asset/ticket/handover) is visible to an authorized user — **"authorized" now has a concrete meaning for this screen, resolved 2026-09-04 (see [§16 Resolved Question 45](#16-open-questions), partially resolving Open Finding F-08): authorized = authenticated.** Any authenticated user, regardless of role (`EMPLOYEE`, `IT_STAFF`, `IT_MANAGER`, `ADMIN`), may view the Alerts screen; no role is excluded. Enforcement is declared in code, per route (`ProtectedRoute allowedRoles`), not data-driven — the built Role Management permission matrix has no effect on this or any other route's access. This access-gate resolution is scoped to the Alerts screen only; it does not resolve the role/permission-matrix content for any other screen, and it does not decide per-user filtering of which alert rows a given user sees (a separate, distinct, still-open question). No acknowledgement, dismissal, read/unread, or snooze behavior is defined — not in MVP scope. **Channels — no new decision, restating existing scope:** this requirement's own Scope line already establishes MVP as single-channel, **in-app only**; multi-channel (Email/Teams/LINE Notify) was already Phase 2 Roadmap before this resolution and remains so — see [§16 Resolved Question 44](#16-open-questions) for why "channels are TBD" is removed rather than re-decided. |
+| Dependencies | RAISE-FR-WARRANTY-001 (Warranty EXPIRED, Warranty EXPIRING — reuses its per-Asset-Category Expiring threshold), RAISE-FR-MAINT-001 (Ticket OVERDUE via `targetResolutionDate`, Ticket ON_HOLD via ticket status), RAISE-FR-OPS-002 (Handover PENDING via the 4-stage IT Hardware Assignment Approval Workflow), RAISE-NFR-SEC-RBAC-001 (access gate — any authenticated user, confirmed 2026-09-04, see [§16 Resolved Question 45](#16-open-questions)) |
 | Source Reference | v0.1 draft §6.9; five trigger conditions, fixed-per-condition severity mapping, and channel-scope clarification confirmed via direct chat session, 2026-09-04, see [§16 Resolved Question 44](#16-open-questions) |
 | Traceability ID | RAISE-FR-ALERT-001 |
-| Open Question | **Resolved 2026-09-04** — the five MVP trigger conditions and the fixed-per-condition High/Medium/Low severity mapping are now confirmed (see Acceptance Criteria above and [§16 Resolved Question 44](#16-open-questions)). Channel scope was **not** newly decided — MVP was already single-channel/in-app per this requirement's Scope line; multi-channel (Email/Teams/LINE Notify) remains explicitly Phase 2 Roadmap. **Still open, not addressed by this resolution:** alert acknowledgement/dismissal/read-unread/snooze behavior; alert delivery, scheduling, or digesting; a notification-preference model; and whether the header bell-icon dropdown in `AppShell` (`NotificationCenter.tsx`) is in scope for this requirement at all — that is a **separate, still-unresolved contradiction** between [§16 Resolved Question 35](#16-open-questions) (which lists `NotificationCenter.tsx` as confirmed entirely out of RAISE scope) and `docs/project-foundation-baseline/ESAPS-UI-FOUNDATION-BASELINE.md` (which maps `NotificationCenter.tsx` to `RAISE-FR-ALERT-001` as EXTEND) — **not resolved here, carried forward.** |
+| Open Question | **Resolved 2026-09-04** — the five MVP trigger conditions and the fixed-per-condition High/Medium/Low severity mapping are now confirmed (see Acceptance Criteria above and [§16 Resolved Question 44](#16-open-questions)). Channel scope was **not** newly decided — MVP was already single-channel/in-app per this requirement's Scope line; multi-channel (Email/Teams/LINE Notify) remains explicitly Phase 2 Roadmap. **Also resolved 2026-09-04** (separate business confirmation, same day — see [§16 Resolved Question 45](#16-open-questions), partially resolving Open Finding F-08): the "authorized user" access gate — **any authenticated user**, no role excluded, enforced per-route in code (`ProtectedRoute allowedRoles`), matching already-built behavior; the Role Management permission-matrix screen has no bearing on this or any access decision. **Still open, not addressed by either resolution:** alert acknowledgement/dismissal/read-unread/snooze behavior; alert delivery, scheduling, or digesting; a notification-preference model; **per-user filtering of which alerts a given user sees** (a distinct, separately still-open question — today every authenticated user sees all matching alerts; see [§16 Resolved Question 45](#16-open-questions) for what would need to be defined first); and whether the header bell-icon dropdown in `AppShell` (`NotificationCenter.tsx`) is in scope for this requirement at all — that is a **separate, still-unresolved contradiction** between [§16 Resolved Question 35](#16-open-questions) (which lists `NotificationCenter.tsx` as confirmed entirely out of RAISE scope) and `docs/project-foundation-baseline/ESAPS-UI-FOUNDATION-BASELINE.md` (which maps `NotificationCenter.tsx` to `RAISE-FR-ALERT-001` as EXTEND) — **not resolved here, carried forward.** |
 
 ---
 
@@ -815,8 +877,26 @@ this PRD.
     treat as resolved; carry forward to the next business confirmation round.
 
 **Security**
-21. What authentication mechanism will be used?
-22. What roles and permissions are required?
+21. What authentication mechanism will be used? — **Still fully open.** There is still
+    no real user store (Open Finding **F-11**) and `middleware.RequireRole` is still
+    wired only to the Go template's demo routes (Open Finding **F-12**); neither is
+    touched by [Resolved Question 45](#16-open-questions).
+22. What roles and permissions are required? — **Partially resolved 2026-09-04 for the
+    Alerts screen (P-012) only**, see [Resolved Question 45](#16-open-questions),
+    partially resolving Open Finding **F-08**: any authenticated user may view Alerts;
+    enforcement is declared per-route in code (`ProtectedRoute allowedRoles`), not
+    data-driven. The role/permission matrix **content** for every screen other than
+    Alerts remains fully open — F-08 is not closed by this.
+22a. Should the Alerts screen eventually filter alert rows to show only those "relevant"
+    to the viewing user, rather than all matching alerts to every authenticated user as
+    it does today? — Raised 2026-09-04 alongside [Resolved Question 45]
+    (#16-open-questions) but **explicitly not decided there** — it is a distinct,
+    separate question, not a sub-part of Q22. Not yet specified: needs (a) a way to link
+    the authenticated `User` to an `Employee` record (no such link exists today — `User`
+    has only `id`/`username`/`fullName`/`role`; the Handovers screen currently matches
+    recipients by comparing `fullName` strings, a documented MVP limitation) and (b) a
+    definition of "relevant to me" per alert condition and per role. Today, every
+    authenticated user sees all matching alerts regardless of role or assignment.
 23. What data is sensitive?
 24. What audit events must be immutable?
 25. What retention period is required?
@@ -1245,6 +1325,74 @@ recorded here explicitly so it is not mistaken for a resolved item alongside 29�
     Requirements). `OPEN-FINDINGS.md` Open Finding F-05 should be checked and updated to
     reflect this resolution in a separate pass — not edited by this change.
 
+45. **Of Open Finding F-08's two open sub-questions (authentication mechanism, §16 Q21;
+    role/permission matrix content, §16 Q22) — is either resolved, even partially?** —
+    Raised as [Open Questions 21–22](#16-open-questions), tracked as Open Finding **F-08**
+    in `OPEN-FINDINGS.md` (that file is maintained separately and is not edited by this
+    resolution). Business confirmed, **2026-09-04, via direct chat confirmation, explicit
+    Q&A:**
+
+    **This resolves exactly two specific sub-questions — it does not resolve F-08 as a
+    whole.** The role/permission matrix *content* for every screen other than Alerts
+    remains open, and the authentication mechanism itself (Q21) is untouched.
+
+    **(a) Who may view the Alerts screen (P-012, `RAISE-FR-ALERT-001`)?** — **Any
+    authenticated user.** All four existing roles — `EMPLOYEE`, `IT_STAFF`,
+    `IT_MANAGER`, `ADMIN` — may open the Alerts screen; no role is excluded. This
+    **confirms the behavior already built** rather than changing it:
+    `frontend/src/App.tsx` registers `ROUTES.NOTIFICATIONS` inside the unrestricted
+    `ProtectedRoute` block, so it is already reachable by every signed-in role. It is
+    consistent with the existing treatment of Assets, Employees, Maintenance, and
+    Handovers, all of which are open to any authenticated user; only Administration,
+    User Management, Role Management, and Settings are `ADMIN`-gated. This gives
+    `RAISE-FR-ALERT-001`'s Acceptance Criteria phrase "alert information is visible to an
+    authorized user" a concrete meaning for this screen: **authorized = authenticated.**
+    The access-gate half of AC-ALERT-001-01, previously NOT TESTABLE YET because
+    "authorized" was undefined, becomes testable.
+
+    **(b) Where does role enforcement live?** — **Declared in code, per route**, using
+    the existing `ProtectedRoute allowedRoles` pattern — the same mechanism already
+    gating Administration and Settings. It is **not** driven by data.
+
+    **A recorded consequence, stated plainly rather than implied:** the application
+    already ships a **Role Management screen**
+    (`frontend/src/pages/RoleManagement/index.tsx`) presenting a permission matrix of
+    **15 modules × 6 actions** (View/Create/Edit/Delete/Approve/Export) which an admin
+    can edit and which **persists** via `roleService.updatePermissions`. Under decision
+    (b), that matrix **has no enforcement effect whatsoever** — nothing in the
+    application reads it to grant or deny access. It is presentational only. This is
+    recorded as the current truth so the screen is not read as a working access-control
+    feature. **No work to make it authoritative is proposed or scheduled by this
+    decision.**
+
+    **Explicitly left open, not resolved here:**
+    - **The role/permission matrix content for every screen other than Alerts.** F-08
+      stays open for those.
+    - **The authentication mechanism itself** ([Open Question 21](#16-open-questions))
+      — untouched by this decision; there is still no real user store (**F-11**) and
+      `middleware.RequireRole` is still wired only to the Go template's demo routes
+      (**F-12**).
+    - **Per-user filtering of alert rows.** The business separately indicated that a
+      user should eventually see only the alerts relevant to them, but that is **not**
+      recorded as a decision here because it is not yet specified: it needs (a) a way to
+      link the authenticated `User` to an `Employee` — no such link exists; `User` has
+      only `id`/`username`/`fullName`/`role`, and the Handovers screen currently matches
+      recipients by comparing `fullName` strings as a documented MVP limitation — and
+      (b) a definition of "relevant to me" per condition and per role. This is a
+      **distinct, still-open question** (see [Open Question 22a](#16-open-questions)):
+      the Alerts screen today shows all matching alerts to every authenticated user, and
+      the eventual filtering decision has not been made. Neither half is invented here.
+
+    Updated in §11 (Security & RBAC — new 2026-09-04 note and bullet list), §6
+    (`RAISE-FR-ALERT-001` Acceptance Criteria/Open Question), §16 (this entry; Open
+    Questions 21–22 annotated, new Open Question 22a added), the
+    [§17 Requirement Traceability Matrix](#17-requirement-traceability-matrix) rows for
+    `RAISE-NFR-SEC-RBAC-001` and `RAISE-FR-ALERT-001`, and the
+    [Pre-Finalization Quality Pass](#pre-finalization-quality-pass) (Ambiguous
+    Requirements, Requirements Needing Business Confirmation). `OPEN-FINDINGS.md` F-08
+    should be checked and updated to reflect this **partial** resolution in a separate
+    pass — not edited by this change.
+
 ---
 
 ## 17. Requirement Traceability Matrix
@@ -1260,7 +1408,7 @@ recorded here explicitly so it is not mistaken for a resolved item alongside 29�
 | RAISE-FR-WARRANTY-001 | Warranty | MVP | P0 | APPROVED — field list confirmed 2026-08-29: `warrantyExpiry` only; Expiring-threshold per-Asset-Category configurability (default 90 days, admin Settings UI) confirmed 2026-09-01 and implemented | v0.1 §6.7; field list confirmed 2026-08-29 (§16 Resolved Question 40); Expiring-threshold configurability confirmed 2026-09-01 (§16 Resolved Question 41) |
 | RAISE-FR-LICENSE-001 | Software / SaaS License Management | Roadmap | Not MVP-confirmed | ROADMAP — identity/scope confirmed 2026-08-21; field model/alert rules/vendor-cost tracking TBD | New requirement, not in v0.1 draft; added 2026-08-21, confirmed Roadmap-only |
 | RAISE-FR-ORACLE-001 | Oracle FA Integration | MVP | P0 | TBD (integration design) | v0.1 §6.8 |
-| RAISE-FR-ALERT-001 | Alerts | MVP | P0 | APPROVED — five MVP trigger conditions (Warranty EXPIRED/EXPIRING, Ticket OVERDUE/ON_HOLD, IT Hardware Handover PENDING) and fixed-per-condition High/Medium/Low severity confirmed 2026-09-04; MVP channel scope re-affirmed as single-channel/in-app (no new decision) | v0.1 §6.9; trigger conditions/severity/channel-scope clarification confirmed 2026-09-04 (§16 Resolved Question 44) |
+| RAISE-FR-ALERT-001 | Alerts | MVP | P0 | APPROVED — five MVP trigger conditions (Warranty EXPIRED/EXPIRING, Ticket OVERDUE/ON_HOLD, IT Hardware Handover PENDING) and fixed-per-condition High/Medium/Low severity confirmed 2026-09-04; MVP channel scope re-affirmed as single-channel/in-app (no new decision); "authorized user" access gate confirmed 2026-09-04 = any authenticated user, per-route code enforcement (§16 Resolved Question 45, partially resolving F-08) — per-user alert filtering still open (§16 Q22a) | v0.1 §6.9; trigger conditions/severity/channel-scope clarification confirmed 2026-09-04 (§16 Resolved Question 44); access-gate clarification confirmed 2026-09-04 (§16 Resolved Question 45) |
 | RAISE-FR-AUDIT-001 | Immutable Audit Log | MVP | P0 | TBD (retention/taxonomy) | v0.1 §6.10 |
 | RAISE-FR-EXEC-001 | Executive Dashboard | MVP | P0 | TBD (KPI formulas) | v0.1 §8.1 |
 | RAISE-AI-SEARCH-001 | Natural Language Search | MVP | P0 | APPROVED | v0.1 §7.3 |
@@ -1271,7 +1419,7 @@ recorded here explicitly so it is not mistaken for a resolved item alongside 29�
 | RAISE-AI-RISK-001 | Risk Scoring | Pilot | Not MVP-confirmed | PILOT | v0.1 §7.4 |
 | RAISE-AI-LIFECYCLE-001 | Lifecycle Prediction | Pilot | Not MVP-confirmed | PILOT | v0.1 §7.5 |
 | RAISE-AI-RECOMMEND-001 | AI Recommendation | Roadmap | Not MVP | ROADMAP | v0.1 §7.6 |
-| RAISE-NFR-SEC-RBAC-001 | Security & RBAC | MVP (enforcement level only) | TBD | MVP enforcement level confirmed 2026-08-21 (UI-only, backend deferred to Roadmap) — role list/permission matrix/authentication mechanism still TBD | v0.1 §13; MVP enforcement level confirmed 2026-08-21 |
+| RAISE-NFR-SEC-RBAC-001 | Security & RBAC | MVP (enforcement level only) | TBD | MVP enforcement level confirmed 2026-08-21 (UI-only, backend deferred to Roadmap); Alerts screen (P-012) access gate confirmed 2026-09-04 (any authenticated user, per-route code enforcement — `ProtectedRoute allowedRoles`; Role Management permission matrix has no enforcement effect), **partially** resolving Open Finding F-08 — role list/permission matrix content for every other screen and the authentication mechanism itself remain TBD | v0.1 §13; MVP enforcement level confirmed 2026-08-21; Alerts screen access gate confirmed 2026-09-04 (§16 Resolved Question 45) |
 | RAISE-FR-LIFE-001 | Asset Lifecycle Connectivity | MVP (foundation) | P0 | APPROVED | v0.1 §9 |
 
 **Downstream sync status for newly-added IDs (2026-08-21, updated in v0.4/v0.5):** This
@@ -1376,13 +1524,18 @@ Per instructions, ambiguity and gaps are surfaced here, not silently resolved.
   undefined — no rule set or role given.~~ **Resolved 2026-09-04** — the five MVP trigger
   conditions and the fixed-per-condition High/Medium/Low severity mapping are now
   confirmed (see [§6](#6-functional-requirements) and
-  [§16 Resolved Question 44](#16-open-questions)). "Authorized user" (who may view
-  alerts) remains unspecified beyond the general MVP RBAC enforcement-level decision
-  ([§11](#11-security--rbac)) — not addressed by this resolution. The header bell-icon
+  [§16 Resolved Question 44](#16-open-questions)). ~~"Authorized user" (who may view
+  alerts) remains unspecified~~ **Resolved 2026-09-04** — see
+  [§16 Resolved Question 45](#16-open-questions), partially resolving Open Finding F-08:
+  authorized = any authenticated user (no role excluded), enforced per-route in code
+  (`ProtectedRoute allowedRoles`), not by the Role Management permission matrix (which
+  has no enforcement effect). **Still open, not addressed by either resolution:**
+  per-user filtering of which alert rows a given user sees (see
+  [Open Question 22a](#16-open-questions)). The header bell-icon
   dropdown (`NotificationCenter.tsx`) in/out-of-scope contradiction
   ([Resolved Question 35](#16-open-questions) vs.
   `docs/project-foundation-baseline/ESAPS-UI-FOUNDATION-BASELINE.md`) also remains
-  unresolved — explicitly not decided by Resolved Question 44.
+  unresolved — explicitly not decided by Resolved Question 44 or 45.
 - **RAISE-FR-MAINT-001 (Maintenance):** ~~complete workflow undefined~~ **Partially
   resolved 2026-08-21** — the 4-stage workflow shape is now confirmed (see
   [§16 Resolved Question 33](#16-open-questions)). SLA per stage, vendor model
@@ -1412,6 +1565,17 @@ Per instructions, ambiguity and gaps are surfaced here, not silently resolved.
   [§16 Resolved Question 38](#16-open-questions)). This resolves only *where*
   enforcement happens for MVP; the role list, permission matrix contents, and
   authentication mechanism (Open Questions 21–23) remain fully undefined.
+  **Further partially resolved 2026-09-04, for the Alerts screen only** — see
+  [§16 Resolved Question 45](#16-open-questions), partially resolving Open Finding F-08:
+  Alerts (P-012) access gate = any authenticated user; enforcement mechanism = declared
+  per-route in code (`ProtectedRoute allowedRoles`), confirmed as the general pattern
+  used across already-role-gated screens (Administration, Settings). **Engineering
+  note, recorded not proposed:** the built Role Management screen
+  (`frontend/src/pages/RoleManagement/index.tsx`, 15 modules × 6 actions, persisted via
+  `roleService.updatePermissions`) has **no enforcement effect** under this model — it
+  is presentational only, not a working access-control feature. The role/permission
+  matrix content for every screen other than Alerts, and the authentication mechanism
+  itself, remain fully undefined — F-08 stays open.
 - **RAISE-FR-ORACLE-001 (Oracle FA Integration):** the "Phase 6" code-comment label on
   `frontend/`'s `ReconciliationPage` has been confirmed meaningless as a PRD scope signal
   (**Resolved 2026-08-21**, [§16 Resolved Question 37](#16-open-questions)), but whether
@@ -1434,7 +1598,15 @@ Per instructions, ambiguity and gaps are surfaced here, not silently resolved.
   [§16 Resolved Question 42](#16-open-questions)); the *enforcement level* question
   (backend vs. UI-only for MVP) is now resolved — see `RAISE-NFR-SEC-RBAC-001` above and
   [§16 Resolved Question 38](#16-open-questions) — but the actual role/permission
-  *content* is still fully open and belongs here.
+  *content* is still fully open and belongs here. **`RAISE-FR-ALERT-001`'s "authorized
+  user" gate is also now specifically resolved (2026-09-04, any authenticated user, no
+  role restriction, enforced per-route in code — see
+  [§16 Resolved Question 45](#16-open-questions))** — this is the third domain-specific
+  gate resolved after Check-in/Check-out and (implicitly) the general UI-only
+  enforcement level; it partially resolves Open Finding F-08 but does **not** close it —
+  the role/permission matrix content for every screen other than Alerts remains open
+  here, and per-user filtering of alert rows is a separate still-open question
+  ([§16 Q22a](#16-open-questions)).
 - Whether the **Oracle FA integration** is intended to be one-way (import only, as
   stated) or eventually bidirectional — the Roadmap lists "Real-time ERP Integration"
   separately, implying MVP Oracle integration is batch/one-way import only, but this is
@@ -1513,9 +1685,70 @@ implements the requirement; Test Case passes; Requirement Compliance Review pass
 
 ## Document Status
 
-**Version:** 0.15 (Draft for Requirement Review)
+**Version:** 0.16 (Draft for Requirement Review)
 **Status:** Draft for Requirement Review
 **Primary Source:** RAISE — Enterprise Asset Intelligence Platform — Final(1).pdf, ADT-RAISE Hackathon Pitch Day, 26 July 2026
+
+**Change Log — v0.15 → v0.16 (2026-09-04, business confirmation via direct chat
+conversation, live session, explicit Q&A):**
+
+1. **Open Finding F-08 (PRD §16 Q21–Q22, RBAC authentication mechanism and
+   role/permission matrix content) partially resolved** (new
+   [§16 Resolved Question 45](#16-open-questions)) — **exactly two specific
+   sub-questions, not F-08 as a whole:**
+   - **(a) Who may view the Alerts screen (P-012, `RAISE-FR-ALERT-001`)?** — **Any
+     authenticated user.** All four existing roles (`EMPLOYEE`, `IT_STAFF`,
+     `IT_MANAGER`, `ADMIN`) may open it; no role is excluded. This **confirms
+     already-built behavior** — `frontend/src/App.tsx` registers `ROUTES.NOTIFICATIONS`
+     inside the unrestricted `ProtectedRoute` block — rather than changing it, and is
+     consistent with the existing treatment of Assets, Employees, Maintenance, and
+     Handovers (open to any authenticated user; only Administration, User Management,
+     Role Management, and Settings are `ADMIN`-gated). This gives
+     `RAISE-FR-ALERT-001`'s "alert information is visible to an authorized user"
+     phrase a concrete meaning for this screen: **authorized = authenticated.**
+   - **(b) Where does role enforcement live?** — **Declared in code, per route**, via
+     the existing `ProtectedRoute allowedRoles` pattern (the same mechanism already
+     gating Administration and Settings). **Not** data-driven.
+   - **Recorded consequence, stated plainly:** the already-built Role Management screen
+     (`frontend/src/pages/RoleManagement/index.tsx`, a 15-module × 6-action permission
+     matrix editable by an admin and persisted via `roleService.updatePermissions`) has
+     **no enforcement effect whatsoever** under decision (b) — presentational only,
+     nothing reads it to grant or deny access. Recorded as current truth; **no work to
+     make it authoritative is proposed or scheduled.**
+   - **Explicitly left open, not closed by this decision:** the role/permission matrix
+     *content* for every screen other than Alerts (F-08 stays open for those); the
+     authentication mechanism itself (§16 Q21 — still no real user store, Open Finding
+     **F-11**; `middleware.RequireRole` still wired only to the Go template's demo
+     routes, Open Finding **F-12**); and **per-user filtering of alert rows** — recorded
+     as a **distinct, separately still-open question** (new
+     [§16 Open Question 22a](#16-open-questions)), not decided here because it needs
+     (a) a `User`↔`Employee` link that does not yet exist (`User` has only
+     `id`/`username`/`fullName`/`role`; Handovers currently matches recipients by
+     comparing `fullName` strings as a documented MVP limitation) and (b) a definition
+     of "relevant to me" per condition and per role — neither half is invented.
+   Updated in §11 (Security & RBAC — new 2026-09-04 note and bullet list), §6
+   (`RAISE-FR-ALERT-001` Acceptance Criteria/Open Question), §16 (Open Questions 21–22
+   annotated, new Open Question 22a, new Resolved Question 45), §17 (Traceability
+   Matrix rows for `RAISE-NFR-SEC-RBAC-001` and `RAISE-FR-ALERT-001`), and the
+   Pre-Finalization Quality Pass (Ambiguous Requirements, Requirements Needing Business
+   Confirmation).
+2. **Impact on downstream documents:** `RAISE-DESIGN.md`, `RAISE-PROTOTYPE.md`,
+   `RAISE-ACCEPTANCE-CRITERIA.md`, `RAISE-TEST-PLAN.md`, `RAISE-TEST-CASES.md`, and
+   `RAISE-TRACEABILITY-MATRIX.md` currently reflect `RAISE-FR-ALERT-001`'s access gate
+   ("authorized user") and `RAISE-NFR-SEC-RBAC-001`'s Alerts-screen sub-question as
+   undefined/TBD and should be checked/updated to reflect this partial resolution — in
+   particular, `RAISE-ACCEPTANCE-CRITERIA.md`'s AC-ALERT-001-01, previously
+   NOT TESTABLE YET for the access-gate half because "authorized" was undefined, can
+   now be marked testable (authorized = authenticated). **This PRD update was scoped to
+   `RAISE-PRD.md` only** per this task's explicit boundary — the downstream documents
+   above were not edited by this change, nor was `OPEN-FINDINGS.md` (F-08 should be
+   updated there, as a partial resolution only, in a separate pass). Downstream
+   synchronization (`/sync-design`, `/sync-prototype`, `/sync-acceptance-criteria`,
+   `/sync-test-plan`, `/sync-test-cases`, `/sync-traceability-matrix`) should be run in
+   a subsequent pass. The role/permission matrix content for screens other than Alerts,
+   the authentication mechanism, and per-user alert filtering all remain open and
+   should not be assumed resolved by any downstream document as a result of this
+   change.
 
 **Change Log — v0.14 → v0.15 (2026-09-04, business confirmation via direct chat
 conversation, live session):**

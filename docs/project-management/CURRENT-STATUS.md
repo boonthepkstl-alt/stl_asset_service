@@ -9,7 +9,15 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-09-04, after `CHECKPOINT-2026-09-04-005` (PR #95 —
+**As of:** 2026-09-04, after `CHECKPOINT-2026-09-04-006` (PR #97 — **Gap
+16 implemented and formally executed**: all five alert conditions now
+derive with their confirmed severities, and `TC-ALERT-001-03..10` were
+executed against the real running app on merged `main` `c2e6b76` with
+**7 PASS, 1 BLOCKED**). **`RAISE-FR-ALERT-001` remains `PASS (partial)`
+and Gap 16 remains OPEN** — not because anything is unbuilt, but because
+`TC-ALERT-001-09` proved unexecutable as written (**F-42 / Gap 18**), and
+no gap closes while a case in its scope is unexecuted. The preceding
+milestone was `CHECKPOINT-2026-09-04-005` (PR #95 —
 **F-05 resolved (R-23)**: alert trigger rules and severity confirmed by
 business and propagated through all seven chain documents; PRD 0.15 →
 Matrix 1.9). **This is the first work in several sessions that advances
@@ -35,9 +43,9 @@ work is the PR #78–#93 series covering the Employee form, a round of
 user-driven UI/IA corrections, the CI pipeline, route-level code
 splitting, and backend error-response hygiene — see the dedicated paragraph at the end of
 this preamble, which is the newest item here.** Re-verified live this
-close-out pass, on merged `main` at `ae56120`: frontend
+close-out pass, on merged `main` at `c2e6b76`: frontend
 `npx tsc --noEmit` clean, `npm run lint` clean (0 warnings),
-`npm run build` clean, `npm run test` — **48 test files / 235 tests
+`npm run build` clean, `npm run test` — **49 test files / 250 tests
 passing**; backend `go build ./...`, `go vet ./...`, `go test ./...` all
 clean. **This is now verified automatically as well**: the CI workflow
 PR #89 added ran green on `main` itself (most recently run
@@ -436,15 +444,21 @@ paragraph, which is a summary of a summary and can drift.
 Triaged against [`RAISE-TRACEABILITY-MATRIX.md`](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md)
 §3–§5 — re-check that file before picking an item, it may have changed.
 
-**Buildable now:** **One, and unlike the last three it actually advances
-the product: Gap 16 — implement the four unbuilt alert conditions.**
-F-05's resolution (R-23, PR #95) confirmed all five trigger conditions
-and their severities, so this needs **no further decision** — it has 10
-acceptance criteria (AC-ALERT-001-01..10) and 8 written test cases
-(TC-ALERT-001-03..10) waiting on it. Only Warranty EXPIRED is built
-today; Ticket OVERDUE, Warranty EXPIRING, Ticket ON_HOLD and Handover
-PENDING are not, and the built one still renders severity as the literal
-"Not yet defined" instead of its confirmed **High**.
+**Buildable now:** **One, and it is small: correct `TC-ALERT-001-09`'s
+procedure and execute it (F-42 / Gap 18).** Gap 16's implementation half
+shipped in PR #97 and seven of its eight cases now PASS against the real
+app. The eighth cannot run as written — its step 2 says "edit that
+Asset's `warrantyExpiry`", but the product has **no asset-edit
+capability at all** (`asset-repository.ts` exposes only `create`,
+`assign`, `checkIn`). That is a **test-case defect**, not an
+implementation or specification defect: the implementation was shown
+correct during the same execution by lowering the Expiring threshold
+90 → 3 via Settings, which took the alert total 19 → 18 and back.
+
+Re-pointing the case at a state change the product *does* support — for
+example completing a maintenance ticket to `DONE` — needs **no business
+decision**, and executing it closes **Gap 16**. It is the single item
+standing between the current state and that closure.
 
 Everything below this line describes the state *before* F-05 was
 resolved and is kept for the contrast it draws:

@@ -2,7 +2,7 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Test Cases
-**Version:** 0.17 Draft
+**Version:** 0.18 Draft
 **Status:** Draft for Test Case Review
 **Source:** [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.12 §7 (Test Suites) + §8 (Blocked Items) + §8.1 (Fully-Blocked Suites — AI Document Intelligence Capabilities) + §3.3 (PRD §10 NFR Backlog — No Suite), expanding [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.12
 **Source of Truth:** RAISE PRD
@@ -656,18 +656,46 @@ matching the distinction already used elsewhere in this document (§1):
 Question 35 vs. `ESAPS-UI-FOUNDATION-BASELINE.md` line 88) — no test case is written for
 it, consistent with the AC document's explicit "Left open, not decided here" instruction.
 
+**Status Note — Formal Execution 2026-09-04 (real running app, merged `main` @ `c2e6b76`,
+PR #97 — Gap 16; signed in as `admin@raise.dev`, ADMIN; 19 seeded alerts total, paginated 10
+per page).** The blocking gap recorded in the 2026-09-04 Status Note above (all five
+conditions still not fully built, none rendering a fixed severity) is now closed by PR #97:
+all five confirmed conditions (Warranty Expired, Maintenance Ticket Overdue, Warranty
+Expiring, Maintenance Ticket On Hold, IT Hardware Handover Pending) are now derived on the
+Alerts screen, each with its fixed per-condition-type severity (no more "Not yet defined"
+placeholder) and correct navigation target. **`TC-ALERT-001-03` through `-08` and
+`TC-ALERT-001-10` were formally executed against this build and each is now marked
+PASS**, moving out of **BLOCKED (pending implementation)** — see each row's Blocked column
+below for the specific evidence recorded. **`TC-ALERT-001-09` could not be executed as
+written and is marked BLOCKED** — not because any AC-ALERT-001-09 behavior is unimplemented
+(the read-time-derivation invariant it targets was separately confirmed to hold, using a
+different, product-supported trigger — see its row below), but because the test case's own
+step 2 ("Edit that Asset's `warrantyExpiry` to a future date") specifies a procedure the
+product has never supported: `frontend/src/services/asset-repository.ts` exposes only
+`create`, `assign`, and `checkIn` — there is no `updateAsset` method, no update endpoint
+consumed, and no edit-asset UI anywhere in `frontend/src/pages/`; an Asset's
+`warrantyExpiry` can be set at creation but never changed afterward. This is classified as a
+**test-case defect** (the written procedure assumes a capability the product has never had),
+**not an implementation defect** (the AC-ALERT-001-09 criterion itself is satisfied) and
+**not a specification defect** (AC-ALERT-001-09 is fully specified and sound as written; only
+this document's step 2 is wrong). Correcting the test case's steps to use a
+product-supported trigger (e.g., completing a Maintenance ticket to `DONE`, which should
+clear its Overdue/On Hold rows) is deliberately **not** done in this pass — this update
+records the execution result and its cause faithfully, without silently rewriting the
+procedure.
+
 | TC ID | Title | Steps | Test Data | Expected Result | Blocked |
 |---|---|---|---|---|---|
 | TC-ALERT-001-01 | Triggered alert displays with severity/asset | 1. Trigger an alert-worthy condition. 2. Open Alerts. | 1 asset meeting an alert condition | Alert shown with severity, description, associated asset | No — **PASS on the display mechanism**, fully testable against the as-built Alerts screen (P-012), scoped to `AC-ALERT-001-01`'s structural-display criterion (`RAISE-ACCEPTANCE-CRITERIA.md` §15): an alert lists severity/description/asset when opened. Which specific severity/trigger-rule values are correct remains **NOT TESTABLE YET** (PRD §6.9 Open Question, Open Finding F-05) — a separate, still-unresolved question this case does not claim to close. The "authorized user" gate remains testable only structurally since the role/permission model is undefined (PRD §16 Q22), unaffected by this update. **Formally executed 2026-09-01 against the real running app — PASS:** navigated to `/notifications` (previously 404'd; now renders the Alerts screen with 11 rows, matching the Dashboard's "Expired Warranty: 11" tile exactly); confirmed the row for AST-0013 (Dell OptiPlex 7090) displays Severity "Not yet defined," Description "Warranty expired 2024-03-15," and the associated Asset as a clickable link; clicking it navigated correctly to that asset's Asset Detail page. Also covered by an automated test in `frontend/src/pages/Alerts/index.test.tsx`. |
 | TC-ALERT-001-02 | Only in-app presentation verified | 1. Open Alerts screen. | ≥1 alert | Alert shown on-screen only; no Email/Teams/LINE delivery attempted | No — **formally executed 2026-09-01 against the real running app — PASS:** confirmed the Alerts screen (`/notifications`, P-012) presents all 11 alert rows purely as an in-app table, with no Email/Teams/LINE or other delivery-channel UI anywhere on the page. Also covered by an automated test in `frontend/src/pages/Alerts/index.test.tsx`. |
-| TC-ALERT-001-03 | Warranty Expired alert row shows High severity and navigates to Asset Detail | 1. Set an Asset's `warrantyExpiry` date to a past date. 2. Open Alerts (P-012). 3. Select that row. | 1 Asset with `warrantyExpiry` in the past | A row is shown with severity **High**, condition "Warranty Expired," and the affected Asset; selecting the row navigates to that Asset's Asset Detail (P-004) | **BLOCKED (pending implementation)** — the row, description, and Asset Detail navigation for this condition are already built and were confirmed working by `TC-ALERT-001-01` (2026-09-01 PASS), but the fixed **High** severity value is not yet assigned: the app currently renders the literal placeholder "Not yet defined" instead of a computed/fixed severity. Not driven by any open PRD question (severity mapping is confirmed, PRD §16 Resolved Question 44) — solely an implementation gap. No PASS claimed; re-execute once fixed per-condition-type severity is implemented. |
-| TC-ALERT-001-04 | Maintenance Ticket Overdue alert row shows High severity and navigates to Maintenance Request detail | 1. Set a Maintenance ticket's `targetResolutionDate` to a past date with status not `DONE`. 2. Open Alerts (P-012). 3. Select that row. | 1 Maintenance ticket, `targetResolutionDate` passed, status ≠ `DONE` | A row is shown with severity **High**, condition "Maintenance Ticket Overdue," and the affected ticket; selecting the row navigates to that ticket's Maintenance Request detail view within P-009 | **BLOCKED (pending implementation)** — condition, severity, and navigation target are all confirmed by business decision (PRD §16 Resolved Question 44), but none of this exists in the app yet: Alerts (P-012) does not read Maintenance ticket state at all as of 2026-09-04. No PASS claimed. |
-| TC-ALERT-001-05 | Warranty Expiring alert row shows Medium severity and navigates to Asset Detail | 1. Set an Asset's `warrantyExpiry` date inside its Asset Category's configured Expiring threshold (default 90 days). 2. Open Alerts (P-012). 3. Select that row. | 1 Asset with `warrantyExpiry` inside its category's Expiring threshold | A row is shown with severity **Medium**, condition "Warranty Expiring," and the affected Asset; selecting the row navigates to that Asset's Asset Detail (P-004) | **BLOCKED (pending implementation)** — confirmed by business decision (PRD §16 Resolved Question 44, per-category threshold per PRD §16 Resolved Question 41), but not built: Alerts (P-012) as of 2026-09-04 derives only the Warranty Expired condition (`isWarrantyExpired`), not the separate Expiring-threshold condition already used elsewhere (Asset Registry/Detail Warranty badge, `TC-WARRANTY-001-03`). No PASS claimed. |
-| TC-ALERT-001-06 | Maintenance Ticket On Hold alert row shows Medium severity and navigates to Maintenance Request detail | 1. Set a Maintenance ticket's status to `ON_HOLD`. 2. Open Alerts (P-012). 3. Select that row. | 1 Maintenance ticket, status `ON_HOLD` | A row is shown with severity **Medium**, condition "Maintenance Ticket On Hold," and the affected ticket; selecting the row navigates to that ticket's Maintenance Request detail view within P-009 | **BLOCKED (pending implementation)** — confirmed by business decision (PRD §16 Resolved Question 44), but not built: Alerts (P-012) does not read Maintenance ticket state at all as of 2026-09-04. No PASS claimed. |
-| TC-ALERT-001-07 | IT Hardware Handover Pending alert row shows Low severity and navigates to the Assignment Approval Request detail view | 1. Place an IT Hardware Assignment Approval Request at any non-terminal stage of the P-008 4-stage workflow (Initiation / Recipient Confirmation / IT Processing / IT Supervisor Approval). 2. Open Alerts (P-012). 3. Select that row. | 1 IT Hardware Assignment Approval Request at a non-terminal stage | A row is shown with severity **Low**, condition "IT Hardware Handover Pending," and the affected Handover; selecting the row navigates to that request's Assignment Approval Request detail/stage-progress view within P-008 | **BLOCKED (pending implementation)** — confirmed by business decision (PRD §16 Resolved Question 44), and the underlying 4-stage handover workflow itself is built and PASS (`TC-OPS-002-04`..`-09`), but Alerts (P-012) does not yet read handover state at all as of 2026-09-04 — no row of any kind is derived from it. No PASS claimed. |
-| TC-ALERT-001-08 | No alert severity is computed from days-overdue, asset value, or criticality | 1. Trigger each of the five confirmed conditions with varying degrees of overdue-ness / value, where applicable (e.g., a ticket 1 day overdue and one 100 days overdue). 2. Open Alerts (P-012) and compare severities within each condition type. | Multiple instances of the same condition type with differing overdue-duration/value | All rows of the same condition type show the identical, fixed severity for that type (per AC-ALERT-001-03..07's table) regardless of how overdue or how valuable the underlying record is — no such derivation or field exists in the data model | **BLOCKED (pending implementation)** — not driven by an open PRD question (the "fixed per type, not computed" rule is confirmed, PRD §16 Resolved Question 44), but not yet verifiable: no condition currently renders a fixed severity value at all (Warranty Expired shows the placeholder "Not yet defined," §14 2026-09-01 Status Note; the other four conditions have no row at all). No PASS claimed. |
-| TC-ALERT-001-09 | Alert row disappears once the underlying condition no longer holds | 1. Set an Asset's `warrantyExpiry` to a past date; open Alerts (P-012) and confirm a row appears for it. 2. Edit that Asset's `warrantyExpiry` to a future date. 3. Re-open Alerts. | 1 Asset, `warrantyExpiry` changed from a past date to a future date | The row for that Asset no longer appears on Alerts once its `warrantyExpiry` is updated to a future date — there is nothing to acknowledge, dismiss, or mark read, consistent with no persisted Alert record (Design §14 read-time derivation) | No — not blocked, not yet executed. Testable now against the currently-implemented Warranty Expired condition alone, with no dependency on the four not-yet-built conditions (`TC-ALERT-001-04`..`-07`); has not yet been formally executed against the real running app. |
-| TC-ALERT-001-10 | No condition beyond the five confirmed appears as a row | 1. Open Alerts (P-012). 2. Review every row shown, including its condition label. | Existing seeded Assets/tickets/Assignment Approval Requests | No row's condition is anything other than one of the five confirmed (Warranty Expired, Maintenance Ticket Overdue, Warranty Expiring, Maintenance Ticket On Hold, IT Hardware Handover Pending) — specifically, no preventive-maintenance-due row (no next-service-date field exists) and no software-license-expiry row (`RAISE-FR-LICENSE-001` is Roadmap) appears | No — not blocked, not yet executed. Testable now against the currently-implemented Alerts screen as-shipped; has not yet been formally executed against the real running app. |
+| TC-ALERT-001-03 | Warranty Expired alert row shows High severity and navigates to Asset Detail | 1. Set an Asset's `warrantyExpiry` date to a past date. 2. Open Alerts (P-012). 3. Select that row. | 1 Asset with `warrantyExpiry` in the past | A row is shown with severity **High**, condition "Warranty Expired," and the affected Asset; selecting the row navigates to that Asset's Asset Detail (P-004) | No — **formally executed 2026-09-04 against the real running app (merged `main` @ `c2e6b76`, PR #97) — PASS:** row shows severity `High`, condition "Warranty Expired," description "Warranty expired 2026-07-22," affected record "Surface Pro 9 AST-0015"; selecting it navigated to `/assets/a15`, which rendered that asset. 11 Warranty Expired rows were present in total (AST-0003 through -0010, -0013, -0014, -0015), all `High`. |
+| TC-ALERT-001-04 | Maintenance Ticket Overdue alert row shows High severity and navigates to Maintenance Request detail | 1. Set a Maintenance ticket's `targetResolutionDate` to a past date with status not `DONE`. 2. Open Alerts (P-012). 3. Select that row. | 1 Maintenance ticket, `targetResolutionDate` passed, status ≠ `DONE` | A row is shown with severity **High**, condition "Maintenance Ticket Overdue," and the affected ticket; selecting the row navigates to that ticket's Maintenance Request detail view within P-009 | No — **formally executed 2026-09-04 against the real running app (merged `main` @ `c2e6b76`, PR #97) — PASS:** row shows severity `High`, condition "Maintenance Ticket Overdue," description "Target resolution date 2026-08-17 has passed," affected record "MacBook Pro Display Flickering & Battery Overheating REQ-2026-0042"; selecting it navigated to `/maintenance/REQ-2026-0042`, which rendered that ticket. 3 Overdue rows were present in total (REQ-2026-0041, -0042, -0045). |
+| TC-ALERT-001-05 | Warranty Expiring alert row shows Medium severity and navigates to Asset Detail | 1. Set an Asset's `warrantyExpiry` date inside its Asset Category's configured Expiring threshold (default 90 days). 2. Open Alerts (P-012). 3. Select that row. | 1 Asset with `warrantyExpiry` inside its category's Expiring threshold | A row is shown with severity **Medium**, condition "Warranty Expiring," and the affected Asset; selecting the row navigates to that Asset's Asset Detail (P-004) | No — **formally executed 2026-09-04 against the real running app (merged `main` @ `c2e6b76`, PR #97) — PASS:** row shows severity `Medium`, condition "Warranty Expiring," description "Warranty expires 2026-09-12," affected record "ThinkPad X1 Carbon Gen 11 AST-0012"; selecting it navigated to `/assets/a12`, which rendered that asset. The per-Asset-Category threshold was additionally confirmed live (not hardcoded): lowering the IT Hardware "Expiring" threshold from 90 to 3 days via the real Settings UI (P-018) removed this row (alert total 19 → 18); restoring the default returned it to 19 — see the supporting evidence recorded under `TC-ALERT-001-09` below. |
+| TC-ALERT-001-06 | Maintenance Ticket On Hold alert row shows Medium severity and navigates to Maintenance Request detail | 1. Set a Maintenance ticket's status to `ON_HOLD`. 2. Open Alerts (P-012). 3. Select that row. | 1 Maintenance ticket, status `ON_HOLD` | A row is shown with severity **Medium**, condition "Maintenance Ticket On Hold," and the affected ticket; selecting the row navigates to that ticket's Maintenance Request detail view within P-009 | No — **formally executed 2026-09-04 against the real running app (merged `main` @ `c2e6b76`, PR #97) — PASS:** row shows severity `Medium`, condition "Maintenance Ticket On Hold," description "Ticket is on hold," affected record "Data Center Core Switch SFP+ Fiber Module Replacement REQ-2026-0041"; selecting it navigated to `/maintenance/REQ-2026-0041`, which rendered that ticket. |
+| TC-ALERT-001-07 | IT Hardware Handover Pending alert row shows Low severity and navigates to the Assignment Approval Request detail view | 1. Place an IT Hardware Assignment Approval Request at any non-terminal stage of the P-008 4-stage workflow (Initiation / Recipient Confirmation / IT Processing / IT Supervisor Approval). 2. Open Alerts (P-012). 3. Select that row. | 1 IT Hardware Assignment Approval Request at a non-terminal stage | A row is shown with severity **Low**, condition "IT Hardware Handover Pending," and the affected Handover; selecting the row navigates to that request's Assignment Approval Request detail/stage-progress view within P-008 | No — **formally executed 2026-09-04 against the real running app (merged `main` @ `c2e6b76`, PR #97) — PASS:** row shows severity `Low`, condition "IT Hardware Handover Pending," description "Awaiting action for Priya Patel," affected record "MacBook Air M2 AHO-2026-001"; selecting it navigated to `/handovers/AHO-2026-001`, which rendered that handover. 3 Pending rows were present in total (AHO-2026-001, -002, -003), all `Low`. |
+| TC-ALERT-001-08 | No alert severity is computed from days-overdue, asset value, or criticality | 1. Trigger each of the five confirmed conditions with varying degrees of overdue-ness / value, where applicable (e.g., a ticket 1 day overdue and one 100 days overdue). 2. Open Alerts (P-012) and compare severities within each condition type. | Multiple instances of the same condition type with differing overdue-duration/value | All rows of the same condition type show the identical, fixed severity for that type (per AC-ALERT-001-03..07's table) regardless of how overdue or how valuable the underlying record is — no such derivation or field exists in the data model | No — **formally executed 2026-09-04 against the real running app (merged `main` @ `c2e6b76`, PR #97) — PASS:** severity is fixed per condition type, not computed. Direct evidence from the same screen: Warranty Expired rows dated 2024-03-15 (≈2.5 years overdue) and 2026-07-22 (≈6 weeks overdue) both render `High`; all three Handover Pending rows render `Low` regardless of stage or asset. No row's severity varied within its condition type across all 19 seeded rows. |
+| TC-ALERT-001-09 | Alert row disappears once the underlying condition no longer holds | 1. Set an Asset's `warrantyExpiry` to a past date; open Alerts (P-012) and confirm a row appears for it. 2. Edit that Asset's `warrantyExpiry` to a future date. 3. Re-open Alerts. | 1 Asset, `warrantyExpiry` changed from a past date to a future date | The row for that Asset no longer appears on Alerts once its `warrantyExpiry` is updated to a future date — there is nothing to acknowledge, dismiss, or mark read, consistent with no persisted Alert record (Design §14 read-time derivation) | **BLOCKED — test-case defect, execution attempted 2026-09-04 against the real running app (merged `main` @ `c2e6b76`, PR #97).** Step 2 as written ("Edit that Asset's `warrantyExpiry` to a future date") cannot be performed: the application has no asset-edit capability at all. Verified in source on `main`: `frontend/src/services/asset-repository.ts` exposes only `create`, `assign`, and `checkIn` — no `updateAsset` method, no update endpoint consumed, and no edit-asset UI anywhere in `frontend/src/pages/`; an Asset's `warrantyExpiry` can be set at creation but never changed afterward. This is a defect in this test case's written procedure, not in the implementation and not in AC-ALERT-001-09's specification — the criterion itself is sound and the implementation satisfies it. **Supporting evidence, recorded here but explicitly not a substitute for the specified procedure:** the underlying invariant was separately demonstrated using a trigger the app does support — lowering the IT Hardware "Expiring" threshold from 90 to 3 days through the real Settings UI (P-018) removed the "Warranty Expiring" row for AST-0012, and the alert total fell 19 → 18; restoring the default returned it to 19. This confirms read-time derivation with no acknowledge/dismiss step and no persisted record, but it exercises a different trigger than the one this case specifies, so no PASS is claimed. The case remains executable once its steps are corrected to use a trigger the product actually supports (e.g., completing a Maintenance ticket to `DONE`, which should clear its Overdue/On Hold rows) — that correction is deliberately not made in this pass. |
+| TC-ALERT-001-10 | No condition beyond the five confirmed appears as a row | 1. Open Alerts (P-012). 2. Review every row shown, including its condition label. | Existing seeded Assets/tickets/Assignment Approval Requests | No row's condition is anything other than one of the five confirmed (Warranty Expired, Maintenance Ticket Overdue, Warranty Expiring, Maintenance Ticket On Hold, IT Hardware Handover Pending) — specifically, no preventive-maintenance-due row (no next-service-date field exists) and no software-license-expiry row (`RAISE-FR-LICENSE-001` is Roadmap) appears | No — **formally executed 2026-09-04 against the real running app (merged `main` @ `c2e6b76`, PR #97) — PASS:** all 19 seeded rows across both pages (10 per page) were read. Every row's condition was one of the five confirmed (Warranty Expired ×11, Maintenance Ticket Overdue ×3, Warranty Expiring ×1, Maintenance Ticket On Hold ×1, IT Hardware Handover Pending ×3). No sixth condition appeared; in particular no preventive-maintenance-due and no software-license-expiry row. |
 
 ---
 
@@ -872,8 +900,16 @@ execution confirmed the built behavior against it (§7). It was re-opened
 `TC-OPS-002-09` (§10) — for the IT Hardware Assignment Approval Workflow
 (PRD §16 Resolved Question 43), and **closed again the same day** once the
 backend was implemented and formally re-executed against the real running
-Docker stack (§10 Status Note). As of this document's current version, the
-BLOCKED (pending implementation) marking has **zero active occurrences**.
+Docker stack (§10 Status Note). It was re-opened again 2026-09-04 with six
+occurrences — `TC-ALERT-001-03` through `-08` (§14) — for the AC-ALERT-001
+extension (PRD §16 Resolved Question 44), and **closed later the same day**
+once PR #97 (Gap 16) shipped the remaining alert conditions/severities and
+formal execution against the real running app confirmed the built behavior
+(§14 Status Note — Formal Execution 2026-09-04). As of this document's
+current version, the BLOCKED (pending implementation) marking has **zero
+active occurrences**; `TC-ALERT-001-09` remains BLOCKED under the plain
+**BLOCKED** marking (§1), for an unrelated reason (a test-case defect in
+its own written procedure, not an unbuilt behavior).
 
 | Suite | Total TCs | Fully Testable | Partially Blocked | Blocked (Full) | Out of Scope |
 |---|---|---|---|---|---|
@@ -889,7 +925,7 @@ BLOCKED (pending implementation) marking has **zero active occurrences**.
 | TS-MAINT-001 | 9 | 3 | 6 | 0 | 0 |
 | TS-WARRANTY-001 | 6 | 6 | 0 | 0 | 0 |
 | TS-ORACLE-001 | 4 | 3 | 1 | 0 | 0 |
-| TS-ALERT-001 | 10 | 4 | 6 | 0 | 0 |
+| TS-ALERT-001 | 10 | 9 | 1 | 0 | 0 |
 | TS-AUDIT-001 | 3 | 1 | 2 | 0 | 0 |
 | TS-EXEC-001 | 2 | 2 | 0 | 0 | 0 |
 | TS-AI-SEARCH-001 | 3 | 2 | 1 | 0 | 0 |
@@ -898,7 +934,7 @@ BLOCKED (pending implementation) marking has **zero active occurrences**.
 | TS-AI-DOC-002 | 1 | 0 | 0 | 1 | 0 |
 | TS-AI-DOC-003 | 1 | 0 | 0 | 1 | 0 |
 | TS-AI-DOC-004 | 1 | 0 | 0 | 1 | 0 |
-| **Total** | **80** | **49** | **26** | **4** | **1** |
+| **Total** | **80** | **54** | **21** | **4** | **1** |
 
 **TS-ALERT-001 updated 2026-09-04 (AC document v0.12 / Test Plan v0.12, PRD §16 Resolved
 Question 44 — AC-ALERT-001 extended from 2 to 10 criteria; see §14 Status Note for full
@@ -920,6 +956,24 @@ or reclassified). `AC-ALERT-001-01`'s "authorized user" gate (PRD §16 Q22, Open
 F-08) remains NOT TESTABLE YET, unaffected by this update. The header bell-icon dropdown
 contradiction (PRD §16 Resolved Question 35 vs. `ESAPS-UI-FOUNDATION-BASELINE.md` line 88)
 remains carried forward, unresolved; no test case is written for it.
+
+**TS-ALERT-001 updated a second time 2026-09-04 (real formal test execution against merged
+`main` @ `c2e6b76`, PR #97 which implemented Gap 16 — no earlier-layer document touched;
+see §14's new Status Note for full detail):** row moves from `10 | 4 | 6 | 0 | 0` to
+`10 | 9 | 1 | 0 | 0`. `TC-ALERT-001-03` through `-08` and `TC-ALERT-001-10` (seven cases)
+were formally executed against the real running app and are each now marked **PASS**,
+moving out of BLOCKED (pending implementation)/not-yet-executed into Fully Testable; all
+five confirmed alert conditions now render with their fixed per-condition-type severity and
+correct navigation target, and 19 seeded alerts were confirmed across the paginated Alerts
+screen. `TC-ALERT-001-09` was attempted and could not be executed as written — its step 2
+specifies editing an Asset's `warrantyExpiry`, a capability the product does not have — and
+is reclassified from "not blocked, not yet executed" to **BLOCKED**, on grounds of a
+test-case defect in its own written procedure (not an implementation or specification
+defect); it remains in the Partially Blocked column. `TC-ALERT-001-01`/`-02` are
+**unchanged**, still PASS on their original 2026-09-01 scope. Grand **Total** row moves
+from `80 | 49 | 26 | 4 | 1` to `80 | 54 | 21 | 4 | 1` (zero test cases added or removed;
+seven move from Partially Blocked to Fully Testable, zero move any other direction). No
+other suite's row is affected by this update.
 
 **TS-OPS-002 updated a fourth time 2026-09-02 (frontend UI shipped — PR #74 — and formally
 re-executed live through the real UI the same day; real PASS execution on a fuller scope, not a
@@ -1179,6 +1233,90 @@ Suite ID → TC ID) into one master table for compliance review.
 ---
 
 ## Document Status
+
+**Version:** 0.18 (2026-09-04 — real formal test execution against merged `main` @ `c2e6b76`
+(PR #97, Gap 16), not a scope/spec correction, no earlier-layer document touched: signed in as
+`admin@raise.dev` (ADMIN), 19 seeded alerts confirmed across the paginated Alerts screen (P-012).
+`TC-ALERT-001-03` through `-08` and `TC-ALERT-001-10` (seven cases) were formally executed and
+are each now marked **PASS**, closing the BLOCKED (pending implementation) marking opened by
+v0.17. `TC-ALERT-001-09` was attempted and could not be executed as written — its step 2
+("Edit that Asset's `warrantyExpiry` to a future date") specifies a capability the product does
+not have — and is marked **BLOCKED** as a test-case defect in its own written procedure, not an
+implementation or specification defect; supporting evidence for the underlying invariant, using
+a different product-supported trigger, is recorded on its row but does not substitute for a PASS.
+`TC-ALERT-001-01`/`-02`'s existing 2026-09-01 PASS results are left exactly as recorded,
+unaltered and un-downgraded. See the Change Log entry below and §14's new Status Note for full
+detail)
+
+**Change Log — v0.17 → v0.18 (2026-09-04, real formal test execution against merged `main` —
+no earlier-layer document touched):**
+
+1. **Root cause / trigger.** PR #97 (merged to `main` at `c2e6b76`) implemented Gap 16: all five
+   MVP alert-triggering conditions confirmed by PRD §16 Resolved Question 44 (Warranty Expired,
+   Maintenance Ticket Overdue, Warranty Expiring, Maintenance Ticket On Hold, IT Hardware
+   Handover Pending) are now derived on the Alerts screen (P-012), each with its fixed
+   per-condition-type severity and correct navigation target, closing the implementation gap
+   `TC-ALERT-001-03` through `-08` were BLOCKED on in v0.17. A formal execution session was run
+   the same day against the real running app, signed in as `admin@raise.dev` (ADMIN), against 19
+   seeded alerts paginated 10 per page.
+2. **§14 TS-ALERT-001 — new Status Note added** ("Formal Execution 2026-09-04"), recording the
+   closure of the six BLOCKED (pending implementation) cases and the execution/blockage outcome
+   for `TC-ALERT-001-09`/`-10`, without altering the two prior Status Notes (2026-09-01,
+   2026-09-04 sync) or `TC-ALERT-001-01`/`-02`.
+3. **`TC-ALERT-001-03` through `-08` — each re-executed and now marked PASS.** Concrete evidence
+   recorded per row: Warranty Expired → `High` (AST-0015, "Warranty expired 2026-07-22" →
+   `/assets/a15`; 11 rows total, all `High`); Maintenance Ticket Overdue → `High` (REQ-2026-0042,
+   "Target resolution date 2026-08-17 has passed" → `/maintenance/REQ-2026-0042`; 3 rows total);
+   Warranty Expiring → `Medium` (AST-0012, "Warranty expires 2026-09-12" → `/assets/a12`, with
+   the per-Asset-Category threshold additionally confirmed live via the Settings UI, P-018);
+   Maintenance Ticket On Hold → `Medium` (REQ-2026-0041, "Ticket is on hold" →
+   `/maintenance/REQ-2026-0041`); IT Hardware Handover Pending → `Low` (AHO-2026-001, "Awaiting
+   action for Priya Patel" → `/handovers/AHO-2026-001`; 3 rows total, all `Low`); no severity
+   computed from days-overdue/value/criticality — confirmed by rows dated 2024-03-15 and
+   2026-07-22 both rendering `High`, and all three Handover Pending rows rendering `Low`
+   regardless of stage.
+4. **`TC-ALERT-001-10` — re-executed and now marked PASS.** All 19 seeded rows across both pages
+   were read; every condition matched one of the five confirmed (Warranty Expired ×11,
+   Maintenance Ticket Overdue ×3, Warranty Expiring ×1, Maintenance Ticket On Hold ×1, IT
+   Hardware Handover Pending ×3); no sixth condition, and specifically no preventive-maintenance-
+   due or software-license-expiry row, appeared.
+5. **`TC-ALERT-001-09` — execution attempted, blocked, and reclassified.** Step 2 of the written
+   procedure ("Edit that Asset's `warrantyExpiry` to a future date") cannot be performed: the
+   application has no asset-edit capability. Verified in source on `main`:
+   `frontend/src/services/asset-repository.ts` exposes only `create`, `assign`, and `checkIn` —
+   no `updateAsset` method, no update endpoint consumed, and no edit-asset UI anywhere in
+   `frontend/src/pages/`. Classified as a **test-case defect** (the written procedure assumes a
+   capability the product has never had) — explicitly **not** an implementation defect (the
+   underlying AC-ALERT-001-09 criterion is satisfied) and **not** a specification defect
+   (AC-ALERT-001-09 itself is sound and fully specified). Reclassified from "No — not blocked,
+   not yet executed" to **BLOCKED**, remaining in the Partially Blocked column. Supporting, not
+   substituting, evidence is recorded on its row: lowering the IT Hardware "Expiring" threshold
+   from 90 to 3 days through the real Settings UI (P-018) removed the Warranty Expiring row for
+   AST-0012 (alert total 19 → 18), restoring to 19 when reverted — confirming the same read-time-
+   derivation invariant via a different, product-supported trigger. The test case's steps are
+   **not** rewritten in this pass; only the execution result and its cause are recorded.
+6. **`TC-ALERT-001-01`/`-02` are explicitly left untouched** — their genuine 2026-09-01 PASS
+   results, including the "Not yet defined" severity value that was accurate at that time, stand
+   exactly as recorded.
+7. **§19 Test Case Summary** updated: `TS-ALERT-001` row moves from `10 | 4 | 6 | 0 | 0` to
+   `10 | 9 | 1 | 0 | 0`. Grand **Total** row moves from `80 | 49 | 26 | 4 | 1` to
+   `80 | 54 | 21 | 4 | 1` (zero test cases added or removed; seven cases move from Partially
+   Blocked to Fully Testable — `TC-ALERT-001-03` through `-08` and `-10` — zero move any other
+   direction; `TC-ALERT-001-09` remains in Partially Blocked, now under the plain **BLOCKED**
+   marking instead of "not blocked, not yet executed"). The §19 "Note on columns" paragraph is
+   updated to record the BLOCKED (pending implementation) marking's 2026-09-04 re-open/close
+   cycle for `TC-ALERT-001-03` through `-08`, reaffirming it has zero active occurrences as of
+   this version.
+8. **No other suite required changes.** `TC-LOGIN-*`, `TC-DASH-*`, `TC-ASSET-001-*`,
+   `TC-ASSET-001-D-*`, `TC-LIFE-001-*`, `TC-ASSET-002-*`, `TC-ASSET-003-*`, `TC-OPS-001-*`,
+   `TC-OPS-002-*`, `TC-MAINT-001-*`, `TC-WARRANTY-001-*`, `TC-ORACLE-001-*`, `TC-AUDIT-001-*`,
+   `TC-EXEC-001-*`, `TC-AI-SEARCH-001-*`, `TC-AI-STATES-*`, and `TC-AI-DOC-001-01`–
+   `TC-AI-DOC-004-01` retain their prior status and wording verbatim.
+9. **No earlier-layer document touched.** `RAISE-TEST-PLAN.md`, `RAISE-ACCEPTANCE-CRITERIA.md`,
+   and `RAISE-TRACEABILITY-MATRIX.md` remain untouched by this update, per instruction — this is
+   a formal execution/evidence update to this document only.
+
+---
 
 **Version:** 0.17 (2026-09-04 — sync update, not a formal execution update: AC document v0.12 /
 Test Plan v0.12 extended AC-ALERT-001 from 2 to 10 criteria, PRD §16 Resolved Question 44. Eight

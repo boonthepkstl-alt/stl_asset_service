@@ -1,0 +1,102 @@
+name: CI
+
+# Runs the same checks SESSION-CLOSEOUT-PROTOCOL.md step 3 requires every session to run
+# by hand ("actually run them -- don't assume they still pass because they passed last
+# time"). Until now that was enforced only by discipline, across 88 merged PRs verified
+# locally; this makes it evidence attached to the PR instead.
+#
+# Deliberately NOT path-filtered. This repo merges a lot of docs-only PRs (#73, #75, #77,
+# #85, #88), and skipping the jobs for those would save a few minutes -- but a job skipped
+# by a `paths` filter never reports a status, so the moment anyone turns on branch
+# protection with these as required checks, docs PRs would sit un-mergeable forever. The
+# wasted minutes are the cheaper side of that trade.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# A new push to the same branch makes the in-flight run obsolete; don't pay for both.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  frontend:
+    name: Frontend (raise-frontend)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # Vite 6 + Vitest 2 support 18/20/22; 22 is the current LTS.
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Ordered cheapest-to-most-expensive so an obvious failure reports fast.
+      # Each step runs even if an earlier one failed, so a single run reports every
+      # problem at once rather than making you fix-push-wait to discover the next.
+      - name: Lint
+        if: '!cancelled()'
+        run: npm run lint
+
+      - name: Type check
+        if: '!cancelled()'
+        run: npx tsc --noEmit
+
+      - name: Test
+        if: '!cancelled()'
+        run: npm run test
+
+      # `npm run build` is `tsc && vite build`, so this re-runs the type check. Kept
+      # anyway: it is the only step that exercises the production Rollup build, which
+      # can fail on things tsc cannot see (bad dynamic import, asset resolution).
+      - name: Build
+        if: '!cancelled()'
+        run: npm run build
+
+  backend:
+    name: Backend (go-template-main)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: go-template-main
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          # Read the version from go.mod (currently 1.23.0) so this file never drifts
+          # from the module's own declared toolchain.
+          go-version-file: go-template-main/go.mod
+          cache-dependency-path: go-template-main/go.sum
+
+      - name: Build
+        if: '!cancelled()'
+        run: go build ./...
+
+      - name: Vet
+        if: '!cancelled()'
+        run: go vet ./...
+
+      - name: Test
+        if: '!cancelled()'
+        run: go test ./...
+
+      # NOTE: `gofmt` is deliberately NOT a gate here. This repo has no .gitattributes
+      # and its Go sources are committed with CRLF line endings, so `gofmt -l` lists
+      # every file in the module on a Linux runner -- a repo-wide storage condition,
+      # not a formatting defect in any given file (confirmed with `gofmt -d`). Gating on
+      # it would make CI red on arrival for reasons unrelated to code quality. Fixing it
+      # properly means normalising line endings across the repo, which is its own change.

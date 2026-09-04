@@ -3493,6 +3493,66 @@ Commit: `0b1c191`, merged to `main` via [PR #93](https://github.com/boonthepkstl
 
 ---
 
+## CHECKPOINT-2026-09-04-005
+
+**Phase:** Phase 3 — Asset Management (requirements/spec work, not implementation)
+**Feature:** Alerts (`RAISE-FR-ALERT-001`)
+**Task:** Resolve **F-05** — alert trigger rules and severity — and propagate it through the full deliverable chain. F-05 was one of the two findings the three preceding close-outs each identified as unlocking more than the entire remaining 🟢 backlog combined
+
+**Objective:** the shipped Alerts screen had exactly **one** trigger condition (expired warranty) and rendered severity as the literal string **"Not yet defined"**, because `RAISE-FR-ALERT-001`'s Acceptance Criteria said only "relevant conditions can trigger an alert" and had never been made concrete. That honesty was correct but not a destination.
+
+**What was decided (business Q&A with the project owner, 2026-09-04):** exactly **five** MVP trigger conditions with a fixed 3-level severity assigned **per condition type**:
+
+| Condition | Detection | Severity | Record |
+|---|---|---|---|
+| Warranty EXPIRED | `Asset.warrantyExpiry` in the past | **High** | Asset |
+| Ticket OVERDUE | `targetResolutionDate` passed AND status ≠ `DONE` | **High** | Ticket |
+| Warranty EXPIRING | inside the existing per-Asset-Category threshold (default 90 days) | **Medium** | Asset |
+| Ticket ON_HOLD | ticket status is `ON_HOLD` | **Medium** | Ticket |
+| Handover PENDING | non-terminal stage of the 4-stage IT Hardware workflow | **Low** | Handover |
+
+**How the decision was obtained, which matters for its trustworthiness:** every option put to the user was grounded in a field that already exists in the built app — the candidate list was derived by reading `types/asset.ts`, `requisitionData.ts` and `lib/warranty.ts` first, so no option could have introduced a data-model change. The two alternative severity rules (derive from days-overdue; derive from asset value/criticality) were **explicitly offered and rejected** by the user, and the asset-criticality option was labelled as requiring a field that does not exist. **No business rule was invented at any point.**
+
+**A correction to the finding's own premise, recorded rather than glossed:** F-05 was worded "trigger rules **and channels**". The channels half was **never actually open** — `RAISE-FR-ALERT-001`'s own Scope line already read *"MVP (single-channel; multi-channel is Roadmap)"*. Only stale "channels are TBD" wording was removed. The chain says so explicitly rather than implying the user made a channel decision they were never asked for.
+
+**What was changed:** all seven chain documents, in order, each verified against the real file before the next was started:
+
+| Document | Version | Change |
+|---|---|---|
+| `RAISE-PRD.md` | 0.14 → **0.15** | §16 Resolved Question 44; `RAISE-FR-ALERT-001` Acceptance Criteria/Dependencies/Open Question rewritten; §17 row `TBD (rules/channels)` → `APPROVED` |
+| `RAISE-DESIGN.md` | 0.12 → **0.13** | §14 Alert Architecture: alerts are a **read-time derivation** over existing Asset/Ticket/Handover state — **no Alert entity, table or persisted record**, explicitly contrasted with Maintenance tickets, which do persist |
+| `RAISE-PROTOTYPE.md` | 0.13 → **0.14** | P-012 rewritten: five conditions, real severities, three link targets (Asset Detail P-004 / Maintenance detail in P-009 / Assignment Approval detail in P-008) — no new screen invented |
+| `RAISE-ACCEPTANCE-CRITERIA.md` | 0.11 → **0.12** | AC-ALERT-001 extended **2 → 10** criteria |
+| `RAISE-TEST-PLAN.md` | 0.11 → **0.12** | TS-ALERT-001 blocked-item note "trigger rules TBD" → "Partial" |
+| `RAISE-TEST-CASES.md` | 0.16 → **0.17** | 8 new cases TC-ALERT-001-03..10, **none marked PASS** |
+| `RAISE-TRACEABILITY-MATRIX.md` | 1.8 → **1.9** | **Gap 16** and **Gap 17** opened, both left open |
+
+**Database changes:** None. **API changes:** None. **Code changes:** **None — this checkpoint is specification only.**
+
+**Validation:**
+- Merged `main` at `ae56120` re-verified for real in this close-out: frontend `npx tsc --noEmit` clean, `npm run lint` clean (0 warnings), **48 test files / 235 tests passing**; backend `go build ./...`, `go vet ./...`, `go test ./...` all clean. CI green on the PR.
+- Chain versions confirmed **on `main`**, read from the merged blobs rather than the working tree: PRD 0.15 · Design 0.13 · Prototype 0.14 · AC 0.12 · Test Plan 0.12 · Test Cases 0.17 · Matrix 1.9. `RAISE-FR-ALERT-001`'s §17 row confirmed `APPROVED`.
+- Each chain layer was gate-checked before the next ran, per `run-full-chain`'s sequential rule — including a check that the 11 `NEEDS_PRD_CONFIRMATION` occurrences in `RAISE-DESIGN.md` were all historical change-log lines stating *no* signal was raised, not an unhandled signal that should have halted the pipeline.
+
+**Requirement Traceability:** `RAISE-FR-ALERT-001` (P0/MVP). PRD §16 Resolved Question 44 → Design §14 → Prototype P-012 → AC-ALERT-001-01..10 → TS-ALERT-001 → TC-ALERT-001-01..10 → Matrix §3 row. This is the **first work in several sessions that advances requirement coverage at all** — F-14, F-18 and F-19 each advanced none.
+
+**Findings resolved:** **F-05** → Resolved (**R-23**) — **specification only.**
+
+**Two things deliberately NOT done, and they are the point of this checkpoint:**
+1. **`RAISE-FR-ALERT-001` was NOT upgraded to a full `PASS`.** F-05 is resolved, but only one of the five conditions is actually built. The *reason* for the partial status changed — from "trigger rules undefined" to "rules defined, four of five conditions unimplemented" — it did not disappear. That build gap is **Gap 16**, opened and left open because the code does not exist yet. `TC-ALERT-001-01/-02` keep their genuine 2026-09-01 PASS; none of the 8 new cases claims one.
+2. **The header bell-icon question was not decided.** `RAISE-PRD.md` §16 Resolved Question 35 lists `NotificationCenter.tsx` as confirmed entirely out of RAISE scope and *distinct from* this requirement, while `ESAPS-UI-FOUNDATION-BASELINE.md` line 88 maps it **to** this requirement as **EXTEND**. Recorded as **Gap 17**, an unreconciled contradiction; no side was picked.
+
+**Git:**
+Branch: `docs/alerts-f05-chain-sync`
+Commit: `65de552`, merged to `main` via [PR #95](https://github.com/boonthepkstl-alt/stl_asset_service/pull/95) (merge commit `ae56120`), 2026-09-04.
+
+**Status:** ✅ Complete for its confirmed scope — **the specification**. Explicitly **not** to be read as "Alerts is done": four of five conditions are unbuilt.
+**Known Issues:** **Gap 16** (four conditions unimplemented) and **Gap 17** (bell-icon scope contradiction), both open by design. The "authorized user" access gate stays **NOT TESTABLE YET** (**F-08**), unaffected.
+**Remaining Work:** Implement Gap 16 — the four unbuilt conditions plus real severity values on the Alerts screen, against AC-ALERT-001-03..10 and TC-ALERT-001-03..10.
+**Next Step:** **Gap 16 implementation.** Unlike the previous three 🟢 items, this one **does** advance requirement coverage: it has 10 acceptance criteria and 8 written test cases waiting on it, and needs no further decision — the spec is complete and every rule is confirmed.
+
+---
+
 ## Level 2 — Feature Checkpoints
 
 ### FEATURE-CHECKPOINT-project-tracking-governance

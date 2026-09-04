@@ -9,14 +9,20 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-09-03, after `CHECKPOINT-2026-09-03-009` (PR #84 —
-clickable breadcrumbs with a "Home" root). **The most recent work is the
-PR #78–#84 series covering the Employee form and a round of user-driven
-UI/IA corrections — see the dedicated paragraph at the end of this
-preamble, which is the newest item here.** Re-verified live this
-close-out pass: frontend `npx tsc --noEmit` clean, `npm run lint` clean
-(0 warnings), `npm run test` — **46 test files / 221 tests passing**;
-backend `go build ./...`, `go vet ./...`, `go test ./...` all clean
+**As of:** 2026-09-04, after `CHECKPOINT-2026-09-04-001` (PR #87 — the
+Edit Identity modal converted to a full page, **completing the
+modal→full-page conversion begun in PR #78: no record-creation or
+record-editing form in the app is a modal any more**). **The most recent
+work is the PR #78–#87 series covering the Employee form and a round of
+user-driven UI/IA corrections — see the dedicated paragraph at the end of
+this preamble, which is the newest item here.** Re-verified live this
+close-out pass, on merged `main` at `152a394`: frontend
+`npx tsc --noEmit` clean, `npm run lint` clean (0 warnings),
+`npm run build` clean, `npm run test` — **48 test files / 235 tests
+passing**. **PR #86/#87 touched frontend only** — no Go file changed in
+that range (`git diff --stat 359361e..HEAD`), so the backend's last
+verified state is the one recorded at PR #80: `go build ./...`,
+`go vet ./...`, `go test ./...` all clean
 (`gofmt -l` lists files only because the repo stores Go sources with
 CRLF line endings — a pre-existing repo-wide condition confirmed by
 `gofmt -d`, not a formatting defect in any file this series touched).
@@ -285,9 +291,9 @@ backend RBAC enforcement, or Custody History write-timing across the 4
 stages, all of which remain outside the confirmed scope, not gaps in what
 was promised. See `CHECKPOINT-2026-09-02-005`/`-006` and
 `CHECKPOINT-2026-09-03-001`/`-002` for the full per-PR record.
-**Employee form capability + user-driven UI/IA corrections, PRs #78–#84
-(2026-09-03, `CHECKPOINT-2026-09-03-003` through `-009`)** — two arcs in
-one session. **Arc 1 (#78–#81), Create Employee:** the modal became a
+**Employee form capability + user-driven UI/IA corrections, PRs #78–#87
+(2026-09-03 → 2026-09-04, `CHECKPOINT-2026-09-03-003` through
+`-2026-09-04-001`)** — three arcs. **Arc 1 (#78–#81), Create Employee:** the modal became a
 full page (#78), gained duplicate-checking on Work Email and Phone (#79),
 gained an optional Employee Code field (#80), and gained real format
 validation for that code (#81). Three things from this arc matter beyond
@@ -319,8 +325,28 @@ button was removed from the app header (#83); and breadcrumbs became
 clickable with a "Home" root (#84), which **surfaced a latent bug** —
 `href` had been in the breadcrumb prop type all along and ~9 pages were
 passing real values, but the renderer ignored it entirely, so every one
-of those hrefs was dead code. Every PR in both arcs was live-verified
-against the real running Docker stack through the actual UI before
+of those hrefs was dead code. **Arc 3 (#86–#87), closing the loops the
+first two left open:** #84's fix had **no test coverage** — the very gap
+that let those hrefs go dead — so #86 added 6 breadcrumb regression
+tests, each **mutation-tested** against the original bug to prove it
+genuinely fails, plus the `aria-label="Breadcrumb"` landmark those tests
+need to distinguish the trail from identically-labelled sidebar items.
+#87 then converted the **Edit Identity & Organization** modal into a full
+page at `/employees/:id/edit`, **completing the modal→full-page
+conversion #78 began — no record-creation or record-editing form in the
+app is a modal any more**. #87's own max-effort code review produced
+**9 findings, 7 fixed before merge**, two of them substantive rather than
+cosmetic: audit rows were being written into the demo fixture **even with
+`EMPLOYEE_API_ENABLED` on** (which would have shown client-invented
+entries indistinguishable from real backend ones), and the phone
+duplicate check treated a **failed** employee-list request as "no
+duplicate found", silently disabling the validation. The remaining 2 were
+**deliberately not fixed** and are tracked as **F-38** (deferred tech
+debt — the Employee audit trail is a mock-mode fixture shim; the real fix
+is a backend endpoint, not hardening scaffolding) and **F-39**
+(**product decision required** — "Modify Specs" routes to a page with no
+spec fields; add the fields or remove the button, undecided). Every PR
+across all three arcs was live-verified through the actual UI before
 merge. **No `RAISE-FR-EMP-*` requirement exists in the PRD at all** —
 Employee appears only incidentally under `RAISE-FR-ASSET-003` and
 `RAISE-FR-OPS-002` — so most of this session's work traces to **no
@@ -369,7 +395,7 @@ paragraph, which is a summary of a summary and can drift.
 | Asset Registry | `RAISE-FR-ASSET-001` | ✅ Built, **PASS on all 6 test cases** per formal test execution 2026-08-26/-27 — list/search/row-click/detail-isolation, the Category filter (F-23), and Asset Detail's Financial/Lifecycle sections (F-24) all fixed and verified |
 | Category & Hierarchy | `RAISE-FR-ASSET-002` | ✅ Built, **PASS** per formal test execution 2026-08-26 and 2026-09-01 — category *display* is consistent across screens, and the "By Category" tab inside Asset Management (`/assets`) now nests 2 levels deep: Category → Type → individual assets (**F-27 resolved, R-14**: sub-category = the existing `type` field, no new field/data model). Expanding a category reveals its real Type sub-groups (e.g. "IT Hardware" → Laptop/Monitor/Headphones); expanding a Type reveals its individual assets |
 | Asset Assign / Check-in | `RAISE-FR-ASSET-003` / `RAISE-FR-OPS-002` | ✅ Built, **PASS on all test cases for both requirements, full stack** — `RAISE-FR-ASSET-003` (3/3, 2026-08-26/-27, F-26 fixed: History tab renders from the same audit trail `RAISE-FR-AUDIT-001` builds, append-only) and `RAISE-FR-OPS-002` (9/9, 2026-09-02/-03: base Assign/Check-in 3/3 as before, plus a category-scoped 4-stage approval workflow for IT Hardware assets only — `TC-OPS-002-04..09` PASS, **backend (PR #72) and frontend (PR #74) both implemented and live-verified** against the real Docker stack through the actual UI). **F-02 resolved (R-19, 2026-09-01)**: workflow shape (immediate state-change, no approval step), permission gate (any authenticated user), and holder data model (direct Employee link) all confirmed for the general case — matched already-built behavior exactly, no code change. **PRD §16 Resolved Question 43 (2026-09-02)** confirmed a real 4-stage approval exception scoped only to IT Hardware category assignment; backend shipped PR #72, frontend UI shipped PR #74, deliverable chain synced PR #75, and the 3-page navigation consolidated into one "Asset Handovers" page with role-aware tabs PR #76 (2026-09-03, per direct user feedback on the sidebar's IA). **Out of confirmed scope, not gaps**: backend RBAC enforcement (UI-only/client-side is the explicit pre-existing MVP decision), Stage 2 e-signature (user explicitly dismissed this question), and the Stage 2 recipient-decline path (never asked). Custody History write-path exclusivity (F-10) and general RBAC role content (F-08) remain separately open |
-| Employee | supports `RAISE-FR-ASSET-003` | 🟡 Built — CRUD backend plus a full Create Employee page (`/employees/create`, PR #78, flattened to a single-page form in PR #82) with duplicate-checking on Work Email/Phone (PR #79) and an optional Employee Code (PR #80, which also fixed a backend parity gap: `CreateEmployee` previously discarded any client-supplied code, unlike `CreateAsset`). **Not ✅**: the Employee ID convention confirmed 2026-09-03 (8 digits, first 2 = Gregorian join year, remaining 6 HR-issued and non-derivable by RAISE) is **enforced on input but contradicted by the app's own data** — seed fixtures and the backend auto-generation fallback still emit the legacy `EMP-…` form, which the new check rejects (**F-36**, open). Employee login provisioning is deferred (**F-37**). **No `RAISE-FR-EMP-*` requirement exists** in the PRD to trace any of this to — Employee appears only incidentally under `RAISE-FR-ASSET-003`/`RAISE-FR-OPS-002`, so this domain has **no AC and no `TC-*` coverage**; its only automated coverage is component tests |
+| Employee | supports `RAISE-FR-ASSET-003` | 🟡 Built — CRUD backend plus a full Create Employee page (`/employees/create`, PR #78, flattened to a single-page form in PR #82) with duplicate-checking on Work Email/Phone (PR #79) and an optional Employee Code (PR #80, which also fixed a backend parity gap: `CreateEmployee` previously discarded any client-supplied code, unlike `CreateAsset`), and a full Edit Employee page (`/employees/:id/edit`, PR #87) that replaced the last record-editing modal in the app — same field set and payload as the modal it replaced, exclude-self phone duplicate check preserved. Two items from PR #87's code review are tracked rather than fixed: **F-38** (the Employee audit trail is a mock-mode fixture shim with no backend, and Employee Detail aliases it as state — deferred tech debt) and **F-39** ("Modify Specs" routes to a page with no spec fields — **product decision required**). **Not ✅**: the Employee ID convention confirmed 2026-09-03 (8 digits, first 2 = Gregorian join year, remaining 6 HR-issued and non-derivable by RAISE) is **enforced on input but contradicted by the app's own data** — seed fixtures and the backend auto-generation fallback still emit the legacy `EMP-…` form, which the new check rejects (**F-36**, open). Employee login provisioning is deferred (**F-37**). **No `RAISE-FR-EMP-*` requirement exists** in the PRD to trace any of this to — Employee appears only incidentally under `RAISE-FR-ASSET-003`/`RAISE-FR-OPS-002`, so this domain has **no AC and no `TC-*` coverage**; its only automated coverage is component tests |
 | Warranty | `RAISE-FR-WARRANTY-001` | ✅ Built, **full unqualified PASS** per formal test execution 2026-09-01 — field list resolved (F-01), Expiring-threshold configurability resolved (R-17), and the Settings admin-only access gate resolved (R-18, a real defect found and fixed on execution). 3-state Active/Expiring/Expired badge on Assets Registry/Asset Detail, per-Asset-Category configurable threshold (default 90 days) via Settings (P-018), now correctly ADMIN-gated. `TC-WARRANTY-001-01..06` all **PASS** |
 | Maintenance / Ticket | `RAISE-FR-MAINT-001` | ✅ Built, **PASS on all 9 test cases** per formal test execution 2026-08-28 — all 4 stage transitions (submit/approve/reject/dispatch/status-update/complete) work correctly, the record list shows date/cost per record (F-28 fixed), and the stage-progress indicator now visually distinguishes Current from Pending (F-29 fixed). SLA/vendor/cost model remain separately TBD |
 | Auth | supports `RAISE-NFR-SEC-RBAC-001` | 🟡 Built, demo-only — backend is a hardcoded single user, no real user store (Roadmap-confirmed, F-11/F-12). Frontend **PASS on all 3 test cases** per formal test execution 2026-08-29/2026-09-01 — `TC-LOGIN-03` (access-denied) PASS; `TC-LOGIN-01`/`-02` (valid/invalid login) now **PASS** (F-30 resolved, R-15) via a new `MockAuthRepository` (4 demo accounts, one per Role) gated by `AUTH_API_ENABLED`. This resolves the infrastructure/testability gap only — the production auth mechanism and role/permission matrix content (PRD §16 Q21–Q22) remain undefined |
@@ -388,13 +414,17 @@ paragraph, which is a summary of a summary and can drift.
 Triaged against [`RAISE-TRACEABILITY-MATRIX.md`](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md)
 §3–§5 — re-check that file before picking an item, it may have changed.
 
-**Buildable now:** One item, added 2026-09-03 by the PR #78–#84 series —
-**a focused `AppShell` breadcrumb test** (root crumb present, intermediate
-crumbs navigate, last crumb inert). PR #84 fixed breadcrumb rendering and
-live-verified it, but added no automated coverage; that missing coverage
-is exactly what let ~9 pages carry dead `href` props unnoticed for a long
-time, and nothing currently prevents the regression from recurring. This
-needs no business decision. Otherwise — `TC-WARRANTY-001-06` (F-34) has been
+**Buildable now:** **None.** The one item listed here on 2026-09-03 — a
+focused `AppShell` breadcrumb test — **shipped in PR #86**
+(`CHECKPOINT-2026-09-03-010`): 6 tests, each mutation-tested against the
+original dead-`href` bug to prove it actually fails, plus the
+`aria-label="Breadcrumb"` landmark they need to distinguish the trail
+from identically-labelled sidebar items. Nothing has replaced it in this
+category. The two findings opened by PR #87 are deliberately **not**
+buildable-now: **F-38** is deferred technical debt whose real fix is a
+backend audit endpoint (hardening the mock shim in isolation would be
+work aimed at code that should be deleted), and **F-39** is a **product
+decision**, not an engineering task. Otherwise — `TC-WARRANTY-001-06` (F-34) has been
 executed (R-18, 2026-09-01), which caught and fixed a real defect
 (Settings wasn't actually ADMIN-gated). Otherwise none remaining — F-22 (R-13, 2026-08-31), F-27
 (R-14, 2026-09-01), F-30 (R-15, 2026-09-01), F-32 (R-16, 2026-09-01),
@@ -438,7 +468,29 @@ is dropping auto-generation entirely). **F-37** — username/password
 provisioning for employees, raised and deferred: `User` and `Employee`
 are deliberately unlinked, the auth mechanism is TBD (**F-08**), no user
 table exists (**F-11**), and the existing invite-based User Management
-flow is the safer pattern to extend when this is picked up.
+flow is the safer pattern to extend when this is picked up. **One further
+finding added 2026-09-04** by PR #87: **F-39** — Employee Detail's
+"Modify Specs" button routes to a page containing **no** workstation/OS
+spec fields, so it cannot change anything on the card it belongs to. The
+mislabel is pre-existing (the old modal was wired to the same handler and
+was equally unable to edit specs) but PR #87 made it costlier, turning an
+instant modal into a full route change. Exactly two options, both scope
+changes: make the spec fields editable, or remove the button. There is
+**no governing requirement to derive either from** — the PRD has no
+`RAISE-FR-EMP-*` requirement at all — so this is a genuine product
+decision and **must not be picked unilaterally**.
+
+**Deferred technical debt (not a decision, not buildable-now):** **F-38**,
+added 2026-09-04 by PR #87 — Employee audit entries have no backend at
+all. `pages/EditEmployee` records them by mutating the module-level
+`employeeAuditLogs` fixture (correctly gated to `!EMPLOYEE_API_ENABLED`),
+and `pages/EmployeeDetail:71` holds that same array as state, so its
+`useMemo` can never recompute from a write. Behaviour is correct today
+because writes only happen while the detail page is unmounted. The
+resolution is a real Employee-field audit endpoint — `go-template-main`
+has an `auditController` for the Asset domain (`AUDIT_API_ENABLED`) but
+nothing equivalent for Employee — **not** hardening the shim, which
+should be deleted rather than improved.
 
 **Explicitly out of scope (Roadmap/Pilot):** License Management, AI
 Decision Center, Risk Scoring, Lifecycle Prediction, Asset Disposal,

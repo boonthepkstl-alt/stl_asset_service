@@ -14,6 +14,29 @@ changes user-visible or API-visible behavior. Pure documentation-sync PRs
 
 ---
 
+## 2026-09-04
+
+### Changed
+- **Editing an employee's details is now its own page, not a pop-up** —
+  "Edit Identity" on an employee's profile now opens a full page at its
+  own address instead of a dialog box on top of the profile. The fields
+  are exactly the same ones as before — job title, phone, status,
+  department, location, desk and reporting manager — and Cancel still
+  discards your changes. This was the last form in the app that still
+  edited a record in a pop-up; adding an asset and adding an employee had
+  already moved to full pages.
+- **Changes to an employee now show who actually made them** — entries on
+  an employee's Audit tab are credited to the person signed in, rather
+  than always saying "Current Admin".
+
+### Fixed
+- **A duplicate phone number can no longer slip through unnoticed** —
+  when editing an employee, the check for "this phone number already
+  belongs to someone else" used to pass silently if the employee list
+  couldn't be loaded, which meant a genuine duplicate could be saved with
+  no warning at all. It now tells you it couldn't check, and doesn't
+  save, instead of quietly assuming there was no clash.
+
 ## 2026-09-03
 
 ### Added
@@ -65,6 +88,11 @@ changes user-visible or API-visible behavior. Pure documentation-sync PRs
   for each stage — only the tabs relevant to your role show up, and the
   page opens on the tab that matches what you'd normally act on. No
   change to what the workflow itself does.
+- **Breadcrumb trails are now announced properly by screen readers** —
+  the trail at the top of each page is now labelled as a breadcrumb
+  landmark, so assistive technology can identify and jump to it instead
+  of treating it as unlabelled navigation. No visual change. (The rest of
+  that PR was test coverage, which isn't listed here.)
 
 ## 2026-09-02
 

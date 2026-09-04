@@ -3263,6 +3263,87 @@ Commit: `e88c919`, merged to `main` via [PR #84](https://github.com/boonthepkstl
 
 ---
 
+## CHECKPOINT-2026-09-03-010
+
+**Phase:** Cross-cutting — app shell / navigation
+**Feature:** Breadcrumbs
+**Task:** Close the coverage gap `CHECKPOINT-2026-09-03-009` recorded as its own Remaining Work — add the regression test that would have caught PR #84's dead-`href` bug
+
+**What was implemented:** `frontend/src/components/AppShell.breadcrumb.test.tsx` — 6 tests pinning the three rules PR #84's bug violated: the `Home` root crumb is prepended by `AppShell` and navigates to the dashboard; an intermediate crumb carrying an `href` renders as a navigating button and calls `onNavigate` with the **bare nav id** (not the `/`-prefixed path, since every call site implements `onNavigate` as `navigate('/' + id)`); the last crumb is never linked even when it carries an `href`. Two edge cases are also pinned: an intermediate crumb *without* an `href` stays plain text, and `Home` goes inert when the trail is empty (it is then itself the current page).
+**What was modified:** `AppShell.tsx` — the breadcrumb `<nav>` gained `aria-label="Breadcrumb"`.
+**What was fixed:** The missing landmark label was **not cosmetic**: the sidebar renders nav items with the same labels ("Employee Management", "Asset Management"), so an unscoped query matched both the sidebar and the breadcrumb. The label makes the trail addressable as a landmark so the tests can scope to it with `within(...)`, and it is the WAI-ARIA breadcrumb pattern's own requirement.
+**What was added:** See above. **What was removed:** None.
+
+**Files changed:** 2 (`+79/-2`) — `frontend/src/components/AppShell.breadcrumb.test.tsx` (new), `frontend/src/components/AppShell.tsx`.
+**Database changes:** None. **API changes:** None. **Frontend changes:** One accessibility attribute; no behavioural change.
+
+**Tests:**
+- Unit Test: **6 new** (`AppShell.breadcrumb.test.tsx`)
+- Integration Test: None new
+- E2E Test: None — this PR *is* the automated replacement for PR #84's manual-only verification
+- **Mutation-tested:** each new test was re-run against the original bug (breadcrumb rendering every crumb as a plain `<span>`) and confirmed to **fail**, so the suite genuinely guards the regression rather than merely passing alongside it
+
+**Validation:**
+- Build: Pass · Lint: Pass (0 warnings) · Type Check: Pass
+- Test: Pass — **47 test files / 227 tests** (was 46/221), re-measured directly at merge commit `1122c9f` in an isolated `git worktree` during this close-out, not derived from arithmetic
+
+**Requirement Traceability:**
+PRD: **N/A — no governing FR.** Design: N/A. Acceptance Criteria: N/A. Test Case: N/A. Breadcrumb behaviour is not specified anywhere in the chain; these are engineering regression tests, not chain-traced test cases, and are deliberately **not** added to `RAISE-TEST-CASES.md`.
+
+**Git:**
+Branch: `frontend/breadcrumb-tests`
+Commit: `c8ab4d2`, merged to `main` via [PR #86](https://github.com/boonthepkstl-alt/stl_asset_service/pull/86) (merge commit `1122c9f`), 2026-09-03 21:49+07:00.
+
+**Status:** ✅ Complete for its confirmed scope — this closes `CHECKPOINT-2026-09-03-009`'s stated Remaining Work exactly as written.
+**Known Issues:** None.
+**Remaining Work:** None for breadcrumbs. The broader pattern this exposed — UI behaviour with no chain-level test case, so a prop can go dead unnoticed — is not itself resolved and still applies to other shell-level behaviour.
+**Next Step:** See `CHECKPOINT-2026-09-04-001` (PR #87), which was taken up next at the user's direction.
+
+---
+
+## CHECKPOINT-2026-09-04-001
+
+**Phase:** Phase 5 — Employee & custody surfaces (cross-cutting UI consistency)
+**Feature:** Employee record editing
+**Task:** User asked to make Employee Detail "a full page in the same style." Employee Detail **already was** a full page — investigation found the request's real target was the last record-editing form still living in a modal, and the user confirmed that reading before any code was written
+
+**What was implemented:** `frontend/src/pages/EditEmployee/index.tsx` — the former "Edit Identity & Organization" modal as a full page at `ROUTES.EMPLOYEE_EDIT` (`/employees/:employeeId/edit`), mirroring `CreateEmployee`'s post-PR-#82 single-page layout: stacked `SectionCard`s, sticky bottom action bar (Cancel left → back to the detail page, Save Changes right), breadcrumb `Home / Employee Management / <name> / Edit`.
+**What was modified:** `EmployeeDetail/index.tsx` shed `isEditProfileModalOpen`, 8 `edit*` state variables, the duplicate-check/save handlers and the `<Modal>` itself (**−118 lines**); both "Edit Identity" and "Modify Specs" now navigate. `test-utils.tsx`'s `renderWithProviders` gained an `extraRoutes` option. `App.tsx`/`constants.ts` registered the route.
+**What was preserved deliberately:** **exactly** the modal's editable field set (Job Title, Phone, Status, Department, Location Campus, Physical Desk, Reporting Manager) and its `updateEmployee` payload — no field added, removed or renamed — and the phone duplicate check **including its exclude-self behaviour** from PR #79. The Assign Equipment and Create IT Requisition modals on the same page were left untouched.
+**What was fixed:** A self-initiated code review (max effort, 8 finder angles) produced **9 findings; 7 were fixed in-PR** before merge, of which the substantive ones were: **(1)** audit rows were written into the shared fixture **even with `EMPLOYEE_API_ENABLED` on**, which would have put client-invented entries on the Audit tab that exist nowhere server-side and look identical to real ones — now gated to mock mode; **(2)** the phone duplicate check read `useEmployees`' empty array as "no duplicate found" while discarding that hook's `loading`/`error` flags, so a failed list request **silently disabled the validation entirely** — the check now distinguishes "ok" from "could not verify" and refuses to save on the latter; **(3)** the audit actor was hardcoded to `'Current Admin'` rather than the signed-in user, despite `services/audit-repository.ts` already establishing the convention for this; **(4)** two genuine test flakes reproduced during review — typing before the pre-fill `useEffect` had flushed (the save then persisted the *seeded* value; observed as `expected 'Desk S-999', got 'Desk S-204'`), and asserting the form's removal synchronously off the success toast when the toast and the route change commit independently; **(5)** the test file was **order-dependent** — `MockEmployeeRepository` is a module-level singleton, so the exclude-self test left `e1` renamed and the pre-fill test passed only by running first.
+**What was removed:** The Edit Identity modal. With it, the modal→full-page conversion begun in PR #78 is complete: **no record-creation or record-editing form in the app is a modal any more.**
+
+**Files changed:** 8 across two commits (`+415/-108`) — `pages/EditEmployee/index.tsx` + `index.test.tsx` (new), `pages/EmployeeDetail/index.tsx` + `index.test.tsx`, `config/constants.ts`, `App.tsx`, `test/test-utils.tsx`.
+**Database changes:** None. **API changes:** None — the same `updateEmployee` payload the modal already sent. **Frontend changes:** See above.
+
+**Tests:**
+- Unit Test: **7 new** in `EditEmployee/index.test.tsx` (pre-fill, not-found, Cancel-discards, duplicate phone blocks, exclude-self allows, persist-and-navigate, **plus a new regression test for the unverifiable-phone path** added by the review)
+- Integration Test: 1 new in `EmployeeDetail/index.test.tsx` — the Edit button routes to `/employees/e1/edit` instead of opening a dialog
+- E2E Test: None automated — live-verified through the real UI
+- **Order-independence verified:** three consecutive `--sequence.shuffle` runs of the `EditEmployee` file, all green, after adding snapshot/restore around the shared mock repository
+
+**Validation:**
+- Build: Pass · Lint: Pass (0 warnings) · Type Check: Pass
+- Test: Pass — **48 test files / 235 tests** (was 47/227), re-run on merged `main` during this close-out
+- Live E2E (Vite dev server, through the actual UI): pre-fill correct; save persists, toasts and returns to the detail page with the new value; Cancel discards; a phone matching **another** employee blocks; the employee's **own** phone does not falsely block; and after the fix the Audit tab's new row is attributed to **"Demo Admin"** (the signed-in user) with **no** spurious desk-location row alongside it
+
+**Requirement Traceability:**
+PRD: **N/A — no governing FR.** The PRD has **no `RAISE-FR-EMP-*` requirement at all**, the same gap already recorded against PRs #78–#82. Design: N/A. Acceptance Criteria: N/A. Test Case: N/A. This is UI-consistency work on an existing capability, not a new chain-traced one — `RAISE-TEST-CASES.md` and `RAISE-TRACEABILITY-MATRIX.md` were correctly **not** touched.
+
+**Git:**
+Branch: `frontend/edit-employee-modal-to-full-page`
+Commits: `82db72c` (conversion), `489250a` (review fixes), merged to `main` via [PR #87](https://github.com/boonthepkstl-alt/stl_asset_service/pull/87) (merge commit `152a394`), 2026-09-04 08:35+07:00.
+
+**Status:** ✅ Complete for its confirmed scope — the conversion is functionally verified end-to-end, and no acceptance criterion is being claimed, because none governs this work.
+**Known Issues:** Two findings from the same review were **deliberately not fixed**, and are now tracked rather than left in conversation:
+- **F-38** (deferred technical debt) — Employee audit entries have no backend; `EditEmployee` records them by mutating the module-level `employeeAuditLogs` fixture, and `EmployeeDetail:71` aliases that same array as state, so its `useMemo` can never recompute from a write. Harmless today (writes happen while the page is unmounted) and correct as demo scaffolding; the fix is a real audit endpoint, not hardening the shim.
+- **F-39** (product decision required) — Employee Detail's "Modify Specs" button routes to a page with **no** workstation/OS spec fields. Pre-existing (the modal had the same defect) but costlier now that it is a full route change. The two options — add spec fields, or remove the button — are both scope changes with no requirement to derive them from. **Not decided; do not pick one without asking.**
+
+**Remaining Work:** None for the modal→full-page conversion itself; it is finished across all three forms (Create Asset, Create Employee, Edit Employee). What remains is F-38 and F-39 above, neither of which is this feature's own work.
+**Next Step:** See `CURRENT-STATUS.md` §4. The recommended next task remains **F-36**'s open half (seed fixtures / backend auto-generation vs. the confirmed 8-digit Employee ID convention) — the same recommendation `CHECKPOINT-2026-09-03-009` made and which the last two sessions bypassed at the user's direction. It is the only buildable-now item whose blocking half is already answered; **F-39** is the natural alternative but needs a product answer first.
+
+---
+
 ## Level 2 — Feature Checkpoints
 
 ### FEATURE-CHECKPOINT-project-tracking-governance

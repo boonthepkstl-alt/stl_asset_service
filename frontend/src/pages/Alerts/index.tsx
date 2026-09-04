@@ -5,45 +5,82 @@ import { AppShell } from '@/components/AppShell';
 import { Card, Badge, EmptyState } from '@/components/ui';
 import { DataTable, type Column } from '@/components/DataTable';
 import { useAssets } from '@/hooks/useAssets';
-import { isWarrantyExpired } from '@/lib/warranty';
-import type { Asset } from '@/types/asset';
+import { useTickets } from '@/hooks/useTickets';
+import { useHandovers } from '@/hooks/useHandovers';
+import { useSettings } from '@/hooks/useSettings';
+import { deriveAlerts, type Alert, type AlertSeverity } from '@/lib/alerts';
 
-interface AlertRow {
-  id: string;
-  asset: Asset;
-  description: string;
-}
+// RAISE-FR-ALERT-001 / Prototype P-012. The five trigger conditions and their fixed
+// severities were confirmed by business on 2026-09-04 (PRD v0.15 §16 Resolved Question 44,
+// closing Open Finding F-05 as R-23) and this page implements Gap 16 -- the four conditions
+// that were still unbuilt, plus the real severity values, replacing the honest "Not yet
+// defined" placeholder the earlier scoped-down cut showed.
+//
+// The derivation itself lives in lib/alerts.ts, alongside the warranty helper it reuses,
+// per RAISE-DESIGN.md v0.13 §14. Alerts are read-time only: no alert entity, table or
+// persisted record exists, and this page holds no alert state of its own.
+//
+// Still deliberately NOT implemented here: the header bell-icon dropdown (Gap 17 -- an
+// unreconciled contradiction between PRD §16 Resolved Question 35 and
+// ESAPS-UI-FOUNDATION-BASELINE.md line 88 about whether it belongs to this requirement at
+// all), and any acknowledge/dismiss/read-unread/snooze behaviour, which is out of MVP scope.
 
-// RAISE-FR-ALERT-001 / Prototype P-012 (F-32, OPEN-FINDINGS.md, resolved 2026-09-01): per
-// explicit business decision, this scoped first cut derives alerts from the one condition
-// already confirmed elsewhere in the app -- an asset's warrantyExpiry being in the past
-// (the same check the Assets list's Warranty column and the Dashboard's Expired Warranty
-// tile already use). Trigger rules for any other condition, and severity levels for any
-// alert, remain undefined (PRD Section 6.9 Open Question, tracked as F-05) -- severity is
-// therefore rendered honestly as "Not yet defined" rather than an invented High/Medium/Low.
+const SEVERITY_VARIANT: Record<AlertSeverity, 'error' | 'warning' | 'neutral'> = {
+  High: 'error',
+  Medium: 'warning',
+  Low: 'neutral',
+};
+
 export function AlertsPage() {
   const navigate = useNavigate();
-  const { assets, loading } = useAssets({});
+  const { assets, loading: assetsLoading } = useAssets({});
+  const { tickets, loading: ticketsLoading } = useTickets({});
+  const { handovers, loading: handoversLoading } = useHandovers({});
+  const { settings: platformSettings } = useSettings();
 
-  const alerts = useMemo<AlertRow[]>(
+  const loading = assetsLoading || ticketsLoading || handoversLoading;
+
+  const alerts = useMemo<Alert[]>(
     () =>
-      assets
-        .filter((a) => isWarrantyExpired(a.warrantyExpiry))
-        .map((asset) => ({ id: asset.id, asset, description: `Warranty expired ${asset.warrantyExpiry}` })),
-    [assets]
+      deriveAlerts({
+        assets,
+        tickets,
+        handovers,
+        // Same lookup the Assets list and Asset Detail use -- 90 is the seeded default, not a
+        // hardcoded rule (AC-WARRANTY-001-03 / R-17).
+        warrantyThresholdFor: (category) =>
+          platformSettings?.warranty.expiringThresholdDaysByCategory[category] ?? 90,
+      }),
+    [assets, tickets, handovers, platformSettings]
   );
 
-  const columns: Column<AlertRow>[] = [
-    { key: 'severity', header: 'Severity', render: () => <Badge variant="neutral">Not yet defined</Badge> },
-    { key: 'description', header: 'Alert', render: (r) => <span className="text-surface-800">{r.description}</span> },
+  const columns: Column<Alert>[] = [
     {
-      key: 'asset',
-      header: 'Asset',
-      sortable: true,
-      sortValue: (r) => r.asset.name,
+      key: 'severity',
+      header: 'Severity',
+      render: (r) => <Badge variant={SEVERITY_VARIANT[r.severity]}>{r.severity}</Badge>,
+    },
+    {
+      key: 'label',
+      header: 'Condition',
       render: (r) => (
-        <button onClick={() => navigate(`/assets/${r.asset.id}`)} className="font-medium text-brand-600 hover:text-brand-700 transition-colors text-left">
-          {r.asset.name} <span className="text-caption text-surface-400 font-mono">{r.asset.code}</span>
+        <div>
+          <p className="font-medium text-surface-800">{r.label}</p>
+          <p className="text-caption text-surface-500">{r.description}</p>
+        </div>
+      ),
+    },
+    {
+      key: 'record',
+      header: 'Affected Record',
+      sortable: true,
+      sortValue: (r) => r.record.name,
+      render: (r) => (
+        <button
+          onClick={() => navigate(r.record.href)}
+          className="font-medium text-brand-600 hover:text-brand-700 transition-colors text-left"
+        >
+          {r.record.name} <span className="text-caption text-surface-400 font-mono">{r.record.code}</span>
         </button>
       ),
     },
@@ -55,19 +92,27 @@ export function AlertsPage() {
         <div>
           <h1 className="text-xl md:text-2xl font-bold text-surface-900">Alerts</h1>
           <p className="text-body-sm text-surface-500">
-            Warranty-expired assets. Other alert conditions (maintenance due, etc.) and severity levels are not yet defined (Open Finding F-05) — see the Warranty column on{' '}
-            <button onClick={() => navigate('/assets')} className="underline hover:text-brand-600">
-              Asset Registry
-            </button>{' '}
-            for the same expiry data.
+            Expired and expiring warranties, overdue and on-hold maintenance tickets, and IT
+            hardware handovers awaiting action. Severity is fixed per condition type.
           </p>
         </div>
 
         <Card className="p-6">
           {alerts.length === 0 && !loading ? (
-            <EmptyState icon={<Bell className="h-10 w-10 text-surface-400" />} title="No alerts" description="No assets currently have an expired warranty." />
+            <EmptyState
+              icon={<Bell className="h-10 w-10 text-surface-400" />}
+              title="No alerts"
+              description="No asset, maintenance ticket or handover currently meets an alert condition."
+            />
           ) : (
-            <DataTable columns={columns} data={alerts} loading={loading} searchable={false} pageSize={10} onRowClick={(row) => navigate(`/assets/${row.asset.id}`)} />
+            <DataTable
+              columns={columns}
+              data={alerts}
+              loading={loading}
+              searchable={false}
+              pageSize={10}
+              onRowClick={(row) => navigate(row.record.href)}
+            />
           )}
         </Card>
       </div>

@@ -41,10 +41,26 @@ jobs:
         with:
           # Vite 6 + Vitest 2 support 18/20/22; 22 is the current LTS.
           node-version: '22'
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
+
+      # setup-node's own `cache: npm` caches the npm *download* cache, which measured at
+      # only ~3 minutes off a 7-minute install: `npm ci` deletes and rebuilds node_modules
+      # from scratch every run regardless, and writing that tree is the actual cost.
+      # Caching the built tree instead takes the install to near-zero on the common case
+      # (a PR that doesn't touch dependencies).
+      #
+      # Exact key only, no `restore-keys`: a partial match would give a node_modules that
+      # doesn't correspond to the lockfile. Any miss falls through to a full `npm ci`,
+      # which is also what happens whenever package-lock.json changes -- so the lockfile
+      # is still validated by npm on every change to it.
+      - name: Restore node_modules
+        id: node-modules-cache
+        uses: actions/cache@v4
+        with:
+          path: frontend/node_modules
+          key: node-modules-${{ runner.os }}-node22-${{ hashFiles('frontend/package-lock.json') }}
 
       - name: Install dependencies
+        if: steps.node-modules-cache.outputs.cache-hit != 'true'
         run: npm ci
 
       # Ordered cheapest-to-most-expensive so an obvious failure reports fast.

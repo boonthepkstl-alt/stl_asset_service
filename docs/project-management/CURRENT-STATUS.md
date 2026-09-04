@@ -9,11 +9,20 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-09-04, after `CHECKPOINT-2026-09-04-004` (PR #93 — raw
-Go error text removed from all 5xx response bodies, closing **F-19** as
-**R-22**). **With it, every 🟢 buildable item in the backlog is now
+**As of:** 2026-09-04, after `CHECKPOINT-2026-09-04-005` (PR #95 —
+**F-05 resolved (R-23)**: alert trigger rules and severity confirmed by
+business and propagated through all seven chain documents; PRD 0.15 →
+Matrix 1.9). **This is the first work in several sessions that advances
+requirement coverage** — but it is **specification only**, and
+`RAISE-FR-ALERT-001` deliberately stays `PASS (partial)` because four of
+the five confirmed conditions are still unbuilt (**Gap 16**, open). The
+preceding milestone was `CHECKPOINT-2026-09-04-004` (PR #93 — raw Go
+error text removed from all 5xx response bodies, closing **F-19** as
+**R-22**). **At that point every 🟢 item then in the backlog was
 closed** — F-14 (CI), F-18 (bundle size) and F-19 (error hygiene) — and
-all three advanced **zero** requirement coverage. The preceding
+all three advanced **zero** requirement coverage. That is no longer the
+current state: resolving F-05 opened **Gap 16**, which *is* buildable and
+*does* advance coverage. The preceding
 milestone was `CHECKPOINT-2026-09-04-003` (PR #91 — route-level code
 splitting, closing **F-18** as **R-21**; entry chunk 694 KiB → 305 KiB,
 −56%), and before that
@@ -26,7 +35,7 @@ work is the PR #78–#93 series covering the Employee form, a round of
 user-driven UI/IA corrections, the CI pipeline, route-level code
 splitting, and backend error-response hygiene — see the dedicated paragraph at the end of
 this preamble, which is the newest item here.** Re-verified live this
-close-out pass, on merged `main` at `449a751`: frontend
+close-out pass, on merged `main` at `ae56120`: frontend
 `npx tsc --noEmit` clean, `npm run lint` clean (0 warnings),
 `npm run build` clean, `npm run test` — **48 test files / 235 tests
 passing**; backend `go build ./...`, `go vet ./...`, `go test ./...` all
@@ -427,7 +436,18 @@ paragraph, which is a summary of a summary and can drift.
 Triaged against [`RAISE-TRACEABILITY-MATRIX.md`](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md)
 §3–§5 — re-check that file before picking an item, it may have changed.
 
-**Buildable now:** **None — and this time the list is genuinely empty.**
+**Buildable now:** **One, and unlike the last three it actually advances
+the product: Gap 16 — implement the four unbuilt alert conditions.**
+F-05's resolution (R-23, PR #95) confirmed all five trigger conditions
+and their severities, so this needs **no further decision** — it has 10
+acceptance criteria (AC-ALERT-001-01..10) and 8 written test cases
+(TC-ALERT-001-03..10) waiting on it. Only Warranty EXPIRED is built
+today; Ticket OVERDUE, Warranty EXPIRING, Ticket ON_HOLD and Handover
+PENDING are not, and the built one still renders severity as the literal
+"Not yet defined" instead of its confirmed **High**.
+
+Everything below this line describes the state *before* F-05 was
+resolved and is kept for the contrast it draws:
 All three 🟢 items found by the 2026-09-04 discovery have shipped:
 **F-14** (CI, PR #89, R-20), **F-18** (code splitting, PR #91, R-21) and
 **F-19** (5xx error hygiene, PR #93, R-22). **All three advanced zero

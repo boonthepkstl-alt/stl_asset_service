@@ -3344,6 +3344,56 @@ Commits: `82db72c` (conversion), `489250a` (review fixes), merged to `main` via 
 
 ---
 
+## CHECKPOINT-2026-09-04-002
+
+**Phase:** Phase 1 — Foundation (continuous; infrastructure/process, not a product phase)
+**Feature:** CI/CD pipeline
+**Task:** Close **F-14** — neither stack had any automated build/test pipeline. Selected by a Next Work Discovery pass over the whole backlog as the **only** candidate buildable without a business or product decision
+
+**Objective:** make the checks `SESSION-CLOSEOUT-PROTOCOL.md` step 3 requires every session to run by hand — "actually run them, don't assume they still pass because they passed last time" — into evidence attached to each PR. Before this, all 88 merged PRs were verified locally only, by hand, with multiple sessions working the same directory concurrently (`CLAUDE.md`) and no mechanism to catch a skipped check or a machine-specific failure.
+
+**What was implemented:** `.github/workflows/ci.yml` — two parallel jobs on every `pull_request` and every `push` to `main`:
+- **frontend** — `npm ci` → lint → `tsc --noEmit` → vitest → production build
+- **backend** — `go build ./...` → `go vet ./...` → `go test ./...`
+
+**What was added:** `TestCreateEmployee_EmployeeCode` in `go-template-main/service/employeeService_test.go`, closing the hole `DEVELOPMENT-LOG.md` recorded against PR #80 ("No Go unit test covers the newly-honoured path" — verified live only; confirmed still true, `TestCreateEmployee_RespectsSuppliedOptionalFields` never passed an `EmployeeCode` at all). Covers both branches: a supplied code survives verbatim, a blank one falls back to the generated `EMP-<8>` form — asserted **by shape**, so if F-36 is ever resolved by changing that fallback this test fails and forces the decision to surface rather than letting it slip through.
+**What was fixed:** two flaky navigate-away assertions CI itself caught (see Findings discovered, below).
+
+**Files changed:** 4 — `.github/workflows/ci.yml` (new), `go-template-main/service/employeeService_test.go`, `frontend/src/pages/CreateEmployee/index.test.tsx`, `frontend/src/pages/CreateAsset/index.test.tsx`.
+**Database changes:** None. **API changes:** None. **Frontend changes:** test-only. **Backend changes:** test-only.
+
+**Design decisions (each has a trap behind it, so they are recorded rather than left implicit):**
+- **`gofmt` is deliberately not a gate.** No `.gitattributes` exists and Go sources are committed with **CRLF**, so `gofmt -l` lists every file in the module on a Linux runner. Confirmed with `gofmt -d` that the diff is line endings only, not a formatting defect. Gating on it would make CI red on arrival for a repo-wide storage condition. Normalising line endings is its own change.
+- **No `paths` filter**, despite this repo merging many docs-only PRs (#73, #75, #77, #85, #88). A job skipped by a `paths` filter never reports a status, so enabling branch protection later with these as required checks would leave docs PRs permanently un-mergeable.
+- **`if: '!cancelled()'` on every step**, so one run reports every failure instead of fix-push-wait.
+- **Go version read from `go.mod`** (`go-version-file`), so the workflow cannot drift from the module's declared toolchain. Node pinned to 22 (LTS; Vite 6 + Vitest 2 support 18/20/22).
+- **Actions pinned to current majors** (checkout/setup-node/setup-go v7, cache v6) — v4/v5 target Node 20 and annotated every run.
+
+**Performance, measured rather than assumed:** the first run was 8m17s (frontend) + 1m31s (backend). Step timings showed `npm ci` alone was **7m02s cold and still 4m12s** with `setup-node`'s `cache: npm` warm — that option caches only npm's *download* cache, while `npm ci` deletes and rebuilds `node_modules` from scratch every run regardless, which is the actual cost. Caching the built tree instead (exact lockfile key, **no `restore-keys`**, since a partial match would give a `node_modules` not corresponding to the lockfile) and skipping the install on a hit brought the frontend job to **1m10s**, verified by re-running the same SHA and confirming `Install dependencies: skipped`.
+
+**Validation:**
+- **CI on `main` itself, not merely on the PR branch** — run `33843149477`, event `push`, `head_branch=main`, sha `103e069`: Backend green 1m15s, Frontend green 4m52s, **zero annotations**. (Frontend was slower than the PR branch's 1m10s because GitHub scopes caches per ref: `main`'s first run could not read the cache written on the PR branch. Later `main` runs will hit it.)
+- Locally re-verified on merged `main` in the same pass: frontend `npx tsc --noEmit` clean, `npm run lint` clean (0 warnings), **48 test files / 235 tests passing**, `npm run build` clean; backend `go build ./...`, `go vet ./...`, `go test ./...` all clean.
+- **Mutation-tested**, per the discipline set in `CHECKPOINT-2026-09-03-010`: reverting PR #80's fix makes `TestCreateEmployee_EmployeeCode` fail with `"EMP-10274830" should not contain "EMP-"`. The implementation was restored and the backend suite re-run clean afterwards.
+
+**Requirement Traceability:**
+PRD: **N/A — no governing FR.** Design: `RAISE-HIGH-LEVEL-ARCHITECTURE.md` §6 records the absence of a pipeline as a gap (F-14), which is what this closes. Acceptance Criteria: N/A. Test Case: N/A. This is infrastructure/process work; the PRD does not scope CI/CD, and **no chain document was touched** — `RAISE-TRACEABILITY-MATRIX.md` stays at v1.8 with all 15 gaps closed, and this work neither adds nor removes coverage.
+
+**Findings resolved:** **F-14** → Resolved (**R-20**) — but only on the evidence above that CI actually *runs green on `main`*, not merely that the workflow file exists. F-14's **image build/push half is explicitly left open**: CI validates source only; it does not build or publish the Docker images, and **F-13 (hosting) is untouched**.
+
+**Findings discovered during validation:** **F-40** — flaky navigate-away assertions. On its fourth run, before merge, CI failed on `CreateEmployee/index.test.tsx:70` with `expect(element).not.toBeInTheDocument()` / `found <input id="name" value="Test Employee" />`. The test waited for the success toast and then asserted the form's unmount **synchronously**; the toast and the route change commit independently, so on a differently-scheduled machine the toast renders first. **The code under test was correct — the assertion was racing.** It had passed every local run and the three CI runs before it. Grepping for the same shape found `CreateAsset/index.test.tsx:81` with the identical defect. Both now wrap the removal in `waitFor`, matching the fix PR #87's review had already applied to `EditEmployee`. **This is the concrete demonstration that the pipeline provides real regression detection: it caught, before merge, a pre-existing flake that 88 PRs of local-only verification never surfaced.**
+
+**Git:**
+Branch: `ci/github-actions-build-test`
+Commits: `4151613` (workflow + Go test), `43d638e` (pin actions past the Node 20 deprecation), `f73a673` (cache `node_modules`), `738d546` (bump `actions/cache`), `dd62694` (fix the two flakes CI caught) — merged to `main` via [PR #89](https://github.com/boonthepkstl-alt/stl_asset_service/pull/89), **merge commit `103e069`**, 2026-09-04 13:08+07:00.
+
+**Status:** ✅ Complete for its confirmed scope.
+**Known Issues:** A stale 399 MiB Go cache written by `setup-go@v5` during the first run caused a recurring `Failed to restore: "/usr/bin/tar" failed with error: exit code 2` warning; it was deleted and a fresh v7-written cache does not reproduce it. Nothing outstanding from it. **F-40** stays recorded as a pattern to watch — all three known sites are fixed, but nothing prevents the shape being reintroduced and there is no lint rule for it.
+**Remaining Work:** None for F-14's source-validation scope. Not attempted and not in scope here: image build/push, deployment (F-13), and CI for anything beyond the two stacks' own checks.
+**Next Step:** See `CURRENT-STATUS.md` §4 and `NEXT-STEP.md`. The Next Work Discovery run in this same close-out found **no 🟢 buildable candidate remaining** — the "Buildable now" list is empty, and the next action is a business/product decision, not implementation.
+
+---
+
 ## Level 2 — Feature Checkpoints
 
 ### FEATURE-CHECKPOINT-project-tracking-governance

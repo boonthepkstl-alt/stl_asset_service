@@ -3,6 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { AlertTriangle, User } from 'lucide-react';
 import { AppShell } from '@/components/AppShell';
 import { Button, EmptyState, Input, Select, SectionCard, useToast } from '@/components/ui';
+import { EMPLOYEE_API_ENABLED } from '@/config/featureFlags';
+import { useAuth } from '@/contexts/AuthContext';
 import { departments, locations, employeeAuditLogs as fixtureAudit, type EmployeeAuditLog } from '@/data/fixtures/mockData';
 import { useEmployee } from '@/hooks/useEmployee';
 import { useEmployees } from '@/hooks/useEmployees';
@@ -20,7 +22,8 @@ export function EditEmployeePage() {
   const navigate = useNavigate();
   const { push } = useToast();
   const { employee, loading, error, notFound, refetch } = useEmployee(employeeId);
-  const { employees: allEmployees } = useEmployees({});
+  const { employees: allEmployees, loading: employeesLoading, error: employeesError } = useEmployees({});
+  const { user } = useAuth();
 
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({
@@ -58,19 +61,31 @@ export function EditEmployeePage() {
   // employee currently being edited (matching your own existing phone is not a duplicate). No
   // new repository method, no backend change; email isn't editable here (see
   // UpdateEmployeeInput), so only phone is checked.
-  const checkPhoneDuplicate = (phone: string): string | undefined => {
+  //
+  // 'unverified' matters: useEmployees returns an empty array both when there genuinely are no
+  // other employees and when the list request is still in flight or failed outright. Treating
+  // that empty array as "no duplicate found" would silently disable the check whenever the list
+  // endpoint is down, so the two cases are kept distinct and submit refuses to guess.
+  type PhoneCheck = { status: 'ok' } | { status: 'duplicate'; message: string } | { status: 'unverified'; message: string };
+
+  const checkPhoneDuplicate = (phone: string): PhoneCheck => {
     const trimmed = phone.trim();
-    if (!trimmed || !employee) return undefined;
+    if (!trimmed || !employee) return { status: 'ok' };
+    if (employeesLoading || employeesError) {
+      return { status: 'unverified', message: 'Cannot check this phone number for duplicates right now. Please retry in a moment.' };
+    }
     return allEmployees.some((emp) => emp.id !== employee.id && emp.phone && emp.phone.trim() === trimmed)
-      ? 'An employee with this phone number already exists'
-      : undefined;
+      ? { status: 'duplicate', message: 'An employee with this phone number already exists' }
+      : { status: 'ok' };
   };
 
   const handlePhoneBlur = () => {
     setErrors((prev) => {
       const next = { ...prev };
-      const dup = checkPhoneDuplicate(form.phone);
-      if (dup) next.phone = dup;
+      const check = checkPhoneDuplicate(form.phone);
+      // Only a confirmed duplicate is a field-level error on blur -- an unverified check is
+      // reported at submit time instead, so a slow list request doesn't flag a valid number.
+      if (check.status === 'duplicate') next.phone = check.message;
       else delete next.phone;
       return next;
     });
@@ -78,9 +93,9 @@ export function EditEmployeePage() {
 
   const submit = async () => {
     if (!employee) return;
-    const phoneDup = checkPhoneDuplicate(form.phone);
-    if (phoneDup) {
-      setErrors({ phone: phoneDup });
+    const phoneCheck = checkPhoneDuplicate(form.phone);
+    if (phoneCheck.status !== 'ok') {
+      setErrors({ phone: phoneCheck.message });
       return;
     }
     setSubmitting(true);
@@ -89,15 +104,24 @@ export function EditEmployeePage() {
       // Same audit entries the modal recorded. The modal pushed them into EmployeeDetail's local
       // state (lost on navigation anyway); from a separate page the only way to keep them visible
       // on the detail page's Audit tab is to prepend to the shared fixture array it reads from.
+      //
+      // Mock mode only. With EMPLOYEE_API_ENABLED the backend owns the audit trail, and writing
+      // client-invented rows into the fixture would put entries on the Audit tab that exist
+      // nowhere server-side while looking exactly like real ones.
+      const actor = user?.fullName || user?.username || 'Unknown user';
+      const stamp = Date.now();
       const changes: EmployeeAuditLog[] = [];
       if (form.jobTitle !== employee.jobTitle) {
-        changes.push({ id: `aud-${Date.now()}-title`, employeeId: employee.id, action: 'Position Change', actor: 'Current Admin', timestamp: new Date().toLocaleString(), field: 'Job Title', oldValue: employee.jobTitle, newValue: form.jobTitle });
+        changes.push({ id: `aud-${stamp}-title`, employeeId: employee.id, action: 'Position Change', actor, timestamp: new Date().toLocaleString(), field: 'Job Title', oldValue: employee.jobTitle, newValue: form.jobTitle });
       }
       if (form.department !== employee.department) {
-        changes.push({ id: `aud-${Date.now()}-dept`, employeeId: employee.id, action: 'Department Change', actor: 'Current Admin', timestamp: new Date().toLocaleString(), field: 'Department', oldValue: employee.department, newValue: form.department });
+        changes.push({ id: `aud-${stamp}-dept`, employeeId: employee.id, action: 'Department Change', actor, timestamp: new Date().toLocaleString(), field: 'Department', oldValue: employee.department, newValue: form.department });
       }
-      if (form.deskLocation !== employee.deskLocation) {
-        changes.push({ id: `aud-${Date.now()}-desk`, employeeId: employee.id, action: 'Location Update', actor: 'Current Admin', timestamp: new Date().toLocaleString(), field: 'Physical Desk Workspace', oldValue: employee.deskLocation || 'None', newValue: form.deskLocation });
+      // Compare against the same `|| ''` normalization the form was seeded with -- comparing a
+      // normalized '' against a raw undefined would log a bogus "None -> ''" change on every save
+      // for any record whose deskLocation the backend omits.
+      if (form.deskLocation !== (employee.deskLocation || '')) {
+        changes.push({ id: `aud-${stamp}-desk`, employeeId: employee.id, action: 'Location Update', actor, timestamp: new Date().toLocaleString(), field: 'Physical Desk Workspace', oldValue: employee.deskLocation || 'None', newValue: form.deskLocation });
       }
 
       await employeeService.updateEmployee(employee.id, {
@@ -110,7 +134,7 @@ export function EditEmployeePage() {
         status: form.status,
       });
 
-      if (changes.length > 0) fixtureAudit.unshift(...changes);
+      if (changes.length > 0 && !EMPLOYEE_API_ENABLED) fixtureAudit.unshift(...changes);
 
       push({ variant: 'success', title: 'Profile Updated', message: `${employee.name}'s profile has been updated.` });
       navigate(`/employees/${employee.id}`);

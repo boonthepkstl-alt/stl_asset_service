@@ -1,8 +1,5 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { MemoryRouter, Routes, Route } from 'react-router-dom';
+import { screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { AuthProvider } from '@/contexts/AuthContext';
-import { ToastProvider } from '@/components/ui';
 import { renderWithProviders } from '@/test/test-utils';
 import { EmployeeDetailPage } from './index';
 
@@ -31,18 +28,11 @@ describe('EmployeeDetailPage', () => {
   // "Edit Identity & Organization" is a full page now (pages/EditEmployee), not a modal — this
   // asserts the button routes there instead of opening a dialog in place.
   it('navigates to the edit page instead of opening an edit modal', async () => {
-    render(
-      <MemoryRouter initialEntries={['/employees/e1']}>
-        <AuthProvider>
-          <ToastProvider>
-            <Routes>
-              <Route path="/employees/:employeeId" element={<EmployeeDetailPage />} />
-              <Route path="/employees/:employeeId/edit" element={<div>EDIT EMPLOYEE ROUTE</div>} />
-            </Routes>
-          </ToastProvider>
-        </AuthProvider>
-      </MemoryRouter>
-    );
+    renderWithProviders(<EmployeeDetailPage />, {
+      route: '/employees/e1',
+      path: '/employees/:employeeId',
+      extraRoutes: [{ path: '/employees/:employeeId/edit', element: <div>EDIT EMPLOYEE ROUTE</div> }],
+    });
 
     await waitFor(() => expect(screen.getByRole('button', { name: 'Edit Identity' })).toBeInTheDocument());
     fireEvent.click(screen.getByRole('button', { name: 'Edit Identity' }));

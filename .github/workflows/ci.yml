@@ -11,6 +11,9 @@ name: CI
 # protection with these as required checks, docs PRs would sit un-mergeable forever. The
 # wasted minutes are the cheaper side of that trade.
 
+# Actions are pinned to their latest majors: checkout/setup-node/setup-go v4-v5 target
+# Node 20, which GitHub-hosted runners now force onto Node 24 with a deprecation warning
+# on every run.
 on:
   pull_request:
   push:
@@ -32,9 +35,9 @@ jobs:
       run:
         working-directory: frontend
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           # Vite 6 + Vitest 2 support 18/20/22; 22 is the current LTS.
           node-version: '22'
@@ -73,9 +76,9 @@ jobs:
       run:
         working-directory: go-template-main
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v7
         with:
           # Read the version from go.mod (currently 1.23.0) so this file never drifts
           # from the module's own declared toolchain.

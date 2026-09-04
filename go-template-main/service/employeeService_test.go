@@ -147,3 +147,43 @@ func TestListEmployees_ReturnsDataAndTotal(t *testing.T) {
 	assert.Equal(t, 2, resp.Total)
 	assert.Len(t, resp.Data, 2)
 }
+
+// Regression guard for the backend parity fix shipped in PR #80. Before it,
+// CreateEmployee always overwrote input.EmployeeCode with a generated value, so the
+// optional "Employee Code" field on the Create Employee form was silently discarded
+// server-side -- the frontend field would have been purely cosmetic. That fix was
+// verified live against the running stack but never covered by a unit test (recorded in
+// DEVELOPMENT-LOG.md #80 as "No Go unit test covers the newly-honoured path"), which is
+// what this closes. Mirrors AssetService.CreateAsset's supplied-code behaviour.
+func TestCreateEmployee_EmployeeCode(t *testing.T) {
+	t.Run("honours a supplied code verbatim", func(t *testing.T) {
+		svc := NewEmployeeService(newMockEmployeeRepository())
+
+		// 8 digits, first 2 = Gregorian join year -- the company's real convention,
+		// confirmed 2026-09-03 and enforced by the frontend since PR #81 (F-36).
+		created, err := svc.CreateEmployee(model.CreateEmployeeRequest{
+			Name:         "Priya Raman",
+			Email:        "priya@example.com",
+			EmployeeCode: "26725898",
+		})
+
+		assert.NoError(t, err)
+		assert.Equal(t, "26725898", created.EmployeeCode)
+		assert.NotContains(t, created.EmployeeCode, "EMP-", "a supplied code must not be replaced by a generated one")
+	})
+
+	t.Run("generates a code when none is supplied", func(t *testing.T) {
+		svc := NewEmployeeService(newMockEmployeeRepository())
+
+		created, err := svc.CreateEmployee(model.CreateEmployeeRequest{
+			Name:  "Priya Raman",
+			Email: "priya@example.com",
+		})
+
+		assert.NoError(t, err)
+		// Asserting the shape, not just non-emptiness: the fallback is what F-36 records as
+		// still emitting the legacy EMP-<8> form the frontend's own 8-digit check rejects.
+		// If that is ever changed, this test should fail and force the decision to surface.
+		assert.Regexp(t, `^EMP-[0-9a-f]{8}$`, created.EmployeeCode)
+	})
+}

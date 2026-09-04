@@ -2,9 +2,9 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** System / Product Design
-**Version:** 0.12 Draft
+**Version:** 0.13 Draft
 **Status:** Draft for Design Review
-**Design Source:** [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.14
+**Design Source:** [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.15
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
 
@@ -242,6 +242,17 @@ This is a narrower addition than License Management: no MVP-vs-Roadmap
 question applies here, since the underlying requirement
 (`RAISE-FR-WARRANTY-001`) is already MVP/APPROVED and this capability has
 already been implemented and verified (see §5.4).
+
+**Traceability note on the Alerts node (`A7`) (updated 2026-09-04 against PRD
+v0.15, §16 Resolved Question 44):** unlike every other Application/Domain
+Layer node above, `A7` (Alerts) has **no corresponding node in the Data
+Layer**, and this is intentional, not an oversight. `RAISE-FR-ALERT-001` is
+now confirmed as a **read-time derivation** over already-existing Asset
+(`D1`/`D5`), Maintenance (`D4`), and the IT Hardware Assignment Approval
+Request state (part of `D1`, see [§4.2](#42-custody--asset-operations)) — no
+Alert table, Alert entity, or persisted Alert record is introduced. See
+[§14 Alert Architecture](#14-alert-architecture) for the full derivation
+design.
 
 ---
 
@@ -781,6 +792,19 @@ Asset ── category ──► Asset Category
   (per-category, default 90, admin-adjustable) — this design does not add any
   further threshold dimension (e.g., per-department, per-location) beyond
   per-Asset-Category, since none is stated in the PRD.
+
+### Consumed by Alert Derivation (added 2026-09-04, PRD §16 Resolved Question 44)
+
+The `getWarrantyStatus(warrantyExpiry, thresholdDays, asOf)` helper above is
+now also the source of two of the five MVP alert trigger conditions confirmed
+for `RAISE-FR-ALERT-001` — **Warranty EXPIRED** and **Warranty EXPIRING**. No
+second helper, no duplicate threshold, and no separate warranty-status
+computation is introduced for alerting: Alert derivation reads the same
+Active/Expiring/Expired output this helper already computes, at the same read
+time, rather than the Alert layer re-deriving warranty status independently.
+See [§14 Alert Architecture](#14-alert-architecture) for how this composes
+with the Maintenance and IT Hardware Assignment Approval Workflow domains
+into the full alert list.
 
 ### Future AI Use
 
@@ -1579,24 +1603,163 @@ Requirement:
 
 `RAISE-FR-ALERT-001`
 
-## MVP
+**Status:** trigger conditions, severity model, and channel-scope wording
+**resolved 2026-09-04** (PRD v0.15, §16 Resolved Question 44, resolving Open
+Finding F-05 and this requirement's own prior Open Question). This section
+replaces the prior "exact MVP alert rules and channels are TBD" placeholder
+below with the confirmed design.
 
-The system needs an alert capability.
+## MVP — Read-Time Derivation, No New Entity
+
+**Alerts are a read-time derivation over already-existing Asset, Maintenance
+ticket, and IT Hardware Assignment Approval Request state — not a new stored
+entity.** This is the key architectural decision for this requirement, and it
+is what distinguishes Alerts from `RAISE-FR-MAINT-001` (which *does* persist
+a Maintenance ticket record, [§5.1](#51-maintenance-domain)) and from the new
+Assignment Approval Request entity introduced for IT Hardware Check-out
+([§4.2](#42-custody--asset-operations), which also persists a record): **no
+Alert table, no Alert entity, and no persisted Alert record is introduced by
+this design.** An alert exists only as the output of evaluating current
+Asset/Ticket/Handover state at the moment it is read/displayed; there is
+nothing to write, migrate, or reconcile for an "Alert" as its own object.
 
 ```text
-Business Event
-     │
-     ▼
-Rule Evaluation
-     │
-     ▼
-Alert Created
-     │
-     ▼
-Authorized User
+Asset.warrantyExpiry ──┐
+Asset.category ────────┤
+WarrantySettings[cat] ──┴──► getWarrantyStatus() [§5.2] ──► EXPIRED / EXPIRING
+                                                                    │
+Ticket.targetResolutionDate ──┐                                    │
+Ticket.status ─────────────────┴──► ticket state check ──► OVERDUE / ON_HOLD
+                                                                    │
+Assignment Approval Request                                        │
+  .status (PENDING_*) ──────────────► handover state check ──► PENDING
+                                                                    │
+                                                                    ▼
+                                                      deriveAlerts() — composes
+                                                      the three reads above at
+                                                      read time (no storage)
+                                                                    │
+                                                                    ▼
+                                                      Alert list: condition,
+                                                      fixed severity, and the
+                                                      affected asset / ticket /
+                                                      handover record
+                                                                    │
+                                                                    ▼
+                                                            Authorized User
 ```
 
-Exact MVP alert rules and channels are TBD.
+### Placement — Sibling to the Existing Warranty-Status Helper, Not a New Subsystem
+
+Per PRD §16 Resolved Question 44(a), every trigger condition is detectable
+from fields that already exist; this decision introduces **no new field and
+no data-model change**. Consistently, this design places the derivation logic
+**alongside** the layer that already computes warranty status — the
+`getWarrantyStatus()` helper the Assets list and Asset Detail already share
+(see [§5.2 Warranty Domain, "Warranty Status Model"](#warranty-status-model--3-state-computed-resolved-2026-09-01))
+— rather than inventing a new subsystem. `deriveAlerts()` is a thin
+composition layer over reads that already exist for other purposes; it does
+not become a new domain, service, or persistence boundary in its own right.
+
+### Five MVP Trigger Conditions (confirmed 2026-09-04)
+
+Exactly five, no others:
+
+| # | Condition | Source Field(s) | Owning Domain |
+|---|---|---|---|
+| 1 | Warranty **EXPIRED** | `Asset.warrantyExpiry` (past) | Warranty ([§5.2](#52-warranty-domain)) — already implemented/tested |
+| 2 | Maintenance ticket **OVERDUE** | `Ticket.targetResolutionDate` (past) AND `Ticket.status != DONE` | Maintenance ([§5.1](#51-maintenance-domain)) |
+| 3 | Warranty **EXPIRING** | `Asset.warrantyExpiry` inside `WarrantySettings[category].thresholdDays` (default 90) | Warranty ([§5.2](#52-warranty-domain)) — **reuses** the `RAISE-FR-WARRANTY-001` threshold; no second threshold is introduced |
+| 4 | Maintenance ticket **ON_HOLD** | `Ticket.status == ON_HOLD` | Maintenance ([§5.1](#51-maintenance-domain)) |
+| 5 | IT Hardware handover **PENDING** | Assignment Approval Request status is any non-terminal stage (`PENDING_RECIPIENT_CONFIRMATION` / `PENDING_IT_PROCESSING` / `PENDING_IT_SUPERVISOR_APPROVAL`) | IT Hardware Assignment Approval Workflow ([§4.2](#it-hardware-assignment-approval-workflow--category-scoped-exception-confirmed-2026-09-02-prd-v014-16-resolved-question-43)) |
+
+No condition beyond these five is in MVP design scope. In particular, per PRD
+§16 Resolved Question 44's explicit non-decisions, this design does **not**
+add a preventive-maintenance-due condition (no next-service-date field exists
+anywhere in the data model, see [§18](#18-logical-data-model)) or a
+software-license-expiry condition (`RAISE-FR-LICENSE-001` remains Roadmap;
+its relationship to alerting is separately TBD, see
+[§5.3, "Relationship to Alerts"](#relationship-to-alerts-open)) — a sixth
+condition is not invented here.
+
+### Severity — Fixed Per Condition Type
+
+A fixed 3-level scale, assigned **per condition type**, explicitly **not**
+derived from days-overdue, asset value, or an asset-criticality field (no
+such field exists in the data model, and none is introduced by this design):
+
+| Condition | Severity |
+|---|---|
+| Warranty EXPIRED | High |
+| Ticket OVERDUE | High |
+| Warranty EXPIRING | Medium |
+| Ticket ON_HOLD | Medium |
+| Handover PENDING | Low |
+
+No numeric risk score and no per-condition configurable severity are
+introduced.
+
+### Cross-Domain Composition — No New Dependency Beyond What Already Exists
+
+Alerts span three domains — Asset/Warranty, Maintenance, and the IT Hardware
+Assignment Approval Workflow (itself part of the Custody/Asset Operations
+domain, [§4.2](#42-custody--asset-operations)). `deriveAlerts()` composes
+reads across these three already-established domains at the point of
+display; it does **not** create a new cross-domain coupling beyond the
+dependencies each domain has already declared independently of Alerts:
+`RAISE-FR-WARRANTY-001` ([§5.2](#52-warranty-domain)), `RAISE-FR-MAINT-001`
+([§5.1](#51-maintenance-domain)), and `RAISE-FR-OPS-002`'s IT Hardware
+Assignment Approval Workflow ([§4.2](#42-custody--asset-operations)) each
+already exist and are each already read elsewhere in the system (Assets
+list/Detail, Maintenance views, and the handover workflow UI respectively).
+Alert derivation is an additional read-time consumer of those existing
+reads, not a new producer/writer relationship between domains.
+
+### Channels — Not a New Decision
+
+`RAISE-FR-ALERT-001`'s own Scope line already stated `MVP (single-channel;
+multi-channel is Roadmap)` before this resolution. **MVP remains
+single-channel, in-app only.** The prior version of this section stated
+"Exact MVP alert rules and channels are TBD" — that wording is now corrected,
+not because a new channel decision was made, but because the channel
+question was already answered by the requirement's own Scope line; this
+correction removes stale TBD wording, it does not present in-app delivery as
+a freshly decided design choice. Email/Teams/LINE Notify multi-channel
+delivery remains Phase 2 / Enterprise Roadmap exactly as it already was (see
+"Roadmap" below).
+
+### Explicitly Not Designed Here (per PRD's own non-decisions)
+
+Consistent with PRD §16 Resolved Question 44's explicit non-decisions, this
+design does **not** add:
+
+- Alert acknowledgement, dismissal, read/unread, or snooze behavior — never
+  discussed, not MVP scope.
+- Alert delivery, scheduling, digesting, or a notification-preference model.
+- A sixth trigger condition (see above).
+- New severity levels, numeric risk scores, or per-condition configurable
+  severity.
+- Any new Employee, Asset, or Ticket field.
+
+**"Authorized user" (who may view alerts) is not further defined here.**
+Beyond the general MVP RBAC enforcement-level decision
+([§16 Security Architecture, "MVP Enforcement Level"](#16-security-architecture)),
+this resolution does not specify a role list or permission matrix for alert
+visibility — carried forward as open, not invented.
+
+**Open, not resolved by this design (must stay open):** whether the header
+bell-icon dropdown in `AppShell` (`NotificationCenter.tsx`) is in scope for
+`RAISE-FR-ALERT-001` at all. There is an unreconciled contradiction between
+PRD §16 Resolved Question 35 (which lists `NotificationCenter.tsx` as
+confirmed **entirely out of RAISE scope** and distinct from
+`RAISE-FR-ALERT-001` — see also [§22, "Out of
+Scope"](#out-of-scope-no-design-area--by-business-decision)) and
+`docs/project-foundation-baseline/ESAPS-UI-FOUNDATION-BASELINE.md` (which
+maps `NotificationCenter.tsx` **to** `RAISE-FR-ALERT-001` as EXTEND). This
+design does **not** pick a side and does **not** assign `NotificationCenter.tsx`
+a design area under this section — it is surfaced here, still open, for a
+future business confirmation round (see
+[§25 Design Open Questions](#25-design-open-questions)).
 
 ## Roadmap
 
@@ -2048,7 +2211,10 @@ Warranty (3-state status; Expiring threshold per-Asset-Category configurable, de
 Settings (Warranty threshold configuration — new design area, 2026-09-01)
 Oracle FA Integration
 NBV / Depreciation
-Alerts
+Alerts (five trigger conditions, fixed per-condition High/Medium/Low
+  severity, read-time derivation over Asset/Ticket/Handover state — no
+  persisted Alert entity — confirmed 2026-09-04; single-channel/in-app
+  restated, not newly decided)
 Immutable Audit Log
 ```
 
@@ -2173,7 +2339,7 @@ treated as mandatory.
 | RAISE-FR-WARRANTY-001 | Warranty (§5.2 — field list resolved 2026-08-29: `warrantyExpiry` only; 3-state status + per-Asset-Category Expiring threshold, default 90 days, resolved 2026-09-01) / Settings (§5.4 — threshold configuration home) |
 | RAISE-FR-LICENSE-001 | License Management — **Roadmap, not MVP** (§4.1A, §5.3; corrected 2026-08-21) |
 | RAISE-FR-ORACLE-001 | Oracle Integration |
-| RAISE-FR-ALERT-001 | Alert Architecture |
+| RAISE-FR-ALERT-001 | Alert Architecture (§14 — five MVP trigger conditions and fixed-per-condition High/Medium/Low severity confirmed 2026-09-04; read-time derivation, no persisted Alert entity) |
 | RAISE-FR-AUDIT-001 | Audit Architecture |
 | RAISE-FR-EXEC-001 | Executive Dashboard |
 | RAISE-FR-LIFE-001 | Lifecycle |
@@ -2231,7 +2397,19 @@ IT-Hardware-category-scoped 4-stage assignment approval workflow. The new
 design-layer addition, the same treatment as the Settings domain and
 Maintenance's ticket entity — it carries no independent PRD Traceability ID
 and is cross-referenced from the `RAISE-FR-OPS-002`/`RAISE-FR-ASSET-003`/
-`RAISE-FR-ASSET-002` rows instead.
+`RAISE-FR-ASSET-002` rows instead. **As of Design v0.13 (PRD v0.15, §16
+Resolved Question 44):** the `RAISE-FR-ALERT-001` row above now covers the
+confirmed five MVP trigger conditions and fixed-per-condition High/Medium/Low
+severity, designed as a read-time derivation over the already-modeled
+Asset/Warranty (§5.2), Maintenance ticket (§5.1), and IT Hardware Assignment
+Approval Request (§4.2) state. No new Traceability ID and no new Data-layer
+node are introduced — see the §3.1 traceability note on the `A7` Alerts node
+and §14 for why this is deliberate. This resolution does not change the
+`RAISE-FR-LICENSE-001` row's Roadmap status or its still-open relationship to
+alerting (§5.3), and does not decide the separate `NotificationCenter.tsx`
+scope contradiction still recorded under [Out of
+Scope](#out-of-scope-no-design-area--by-business-decision) and
+[§25](#25-design-open-questions).
 
 ---
 
@@ -2252,6 +2430,20 @@ design-relevant grouping — not a new set of questions.)
    NBV/Risk KPI formulas remain open.
 4. What is risk?
 5. What business decision should AI support first?
+5a. What are the alert trigger conditions, severity model, and channel scope
+   for `RAISE-FR-ALERT-001`? — **Resolved 2026-09-04** (PRD v0.15, §16
+   Resolved Question 44): exactly five MVP trigger conditions (Warranty
+   EXPIRED/EXPIRING, Ticket OVERDUE/ON_HOLD, Handover PENDING), fixed
+   per-condition High/Medium/Low severity, and single-channel/in-app scope
+   restated (not newly decided) — see [§14 Alert
+   Architecture](#14-alert-architecture). **Still open, not decided by this
+   resolution:** alert acknowledgement/dismissal/read-unread/snooze, alert
+   delivery/scheduling/digesting, a notification-preference model, the
+   "authorized user" viewer role/permission detail (depends on the still-open
+   Security item 22 below), and the unreconciled `NotificationCenter.tsx`
+   scope contradiction (PRD §16 Resolved Question 35 vs.
+   `docs/project-foundation-baseline/ESAPS-UI-FOUNDATION-BASELINE.md` —
+   neither this design nor Resolved Question 44 picks a side).
 
 ## Data
 
@@ -2440,11 +2632,59 @@ RAISE-COMPLIANCE-REVIEW.md
 
 ## Document Status
 
-**Version:** 0.12 (sync with PRD v0.14, §16 Resolved Question 43: new
-IT-Hardware-category-scoped 4-stage assignment approval workflow —
-Initiation → Recipient Confirmation → IT Processing → IT Supervisor
-Approval — narrowing, not reopening, Resolved Question 42's general
-Check-in/Check-out resolution. Documentation-only sync; no code change.)
+**Version:** 0.13 (sync with PRD v0.15, §16 Resolved Question 44: five MVP
+`RAISE-FR-ALERT-001` alert trigger conditions and fixed-per-condition
+High/Medium/Low severity confirmed; MVP channel scope restated as
+single-channel/in-app, not newly decided. Documentation-only sync; no code
+change.)
+
+**Change Log — v0.12 → v0.13 (sync with PRD v0.14 → v0.15: `RAISE-FR-ALERT-001`
+trigger conditions, severity model, and channel-scope wording confirmed; PRD
+§16 Resolved Question 44, resolving Open Finding F-05):**
+
+1. **§14 Alert Architecture rewritten.** Documents the five MVP trigger
+   conditions (Warranty EXPIRED, Ticket OVERDUE, Warranty EXPIRING, Ticket
+   ON_HOLD, Handover PENDING) and their source fields; the fixed
+   per-condition-type High/Medium/Low severity mapping; and, as the central
+   architectural point, that Alerts are a **read-time derivation** over
+   already-existing Asset/Ticket/Handover state — explicitly **no** Alert
+   table, Alert entity, or persisted Alert record is introduced, distinct
+   from `RAISE-FR-MAINT-001`'s ticket entity and the IT Hardware Assignment
+   Approval Request entity, both of which do persist a record. Removed the
+   stale "exact MVP alert rules and channels are TBD" placeholder; corrected
+   channel-scope wording to state single-channel/in-app is restated (already
+   established by the requirement's own Scope line), not a fresh decision.
+   The `NotificationCenter.tsx` in/out-of-scope contradiction (PRD §16
+   Resolved Question 35 vs. `ESAPS-UI-FOUNDATION-BASELINE.md`) is carried
+   forward as explicitly open — this design does not pick a side.
+2. **§5.2 Warranty Domain** — new "Consumed by Alert Derivation" subsection
+   cross-referencing §14: the existing `getWarrantyStatus()` helper is the
+   single source for the Warranty EXPIRED/EXPIRING alert conditions; no
+   second warranty-status computation is introduced.
+3. **§3.1 High-Level Architecture** — new traceability note on the `A7`
+   (Alerts) node explaining why it deliberately has no corresponding
+   Data-layer node (read-time derivation, no persisted entity).
+4. **§22 MVP vs Roadmap Design Boundary** — "Alerts" MVP line annotated with
+   the five conditions, fixed severity, read-time-derivation summary, and the
+   restated (not new) single-channel/in-app scope.
+5. **§24 Design Traceability** — `RAISE-FR-ALERT-001` row text updated;
+   cross-check paragraph notes no new Traceability ID or Data-layer node is
+   introduced, and that `RAISE-FR-LICENSE-001`'s still-open relationship to
+   alerting (§5.3) and the `NotificationCenter.tsx` contradiction are
+   unaffected by this resolution.
+6. **§25 Design Open Questions** — new Business item 5a added (trigger
+   conditions/severity/channel-scope resolved; acknowledgement/dismissal,
+   delivery/scheduling, notification-preference model, "authorized user"
+   role detail, and the `NotificationCenter.tsx` contradiction all recorded
+   as still open).
+7. **No `## NEEDS_PRD_CONFIRMATION` signal raised by this design pass.**
+   Every trigger condition and severity value traces directly to an
+   already-resolved PRD decision (§16 Resolved Question 44) and reuses fields
+   already modeled in the Warranty, Maintenance, and IT Hardware Assignment
+   Approval Workflow domains. No capability was found during this pass that
+   lacks a requirement behind it.
+8. Header metadata updated: Version bumped to 0.13; Design Source updated to
+   reference PRD v0.15.
 
 **Change Log — v0.11 → v0.12 (sync with PRD v0.13 → v0.14: IT Hardware
 Check-out category-scoped 4-stage approval-workflow exception confirmed;

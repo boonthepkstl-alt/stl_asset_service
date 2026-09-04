@@ -9,13 +9,27 @@ import { ToastProvider } from '@/components/ui';
 //
 // `path` lets a test render a page that reads route params (useParams) by mounting it under a
 // real <Route>, e.g. renderWithProviders(<AssetDetailPage/>, { path: '/assets/:assetId', route: '/assets/a1' }).
-export function renderWithProviders(ui: ReactElement, { route = '/', path = '/' }: { route?: string; path?: string } = {}) {
+//
+// `extraRoutes` mounts additional destinations alongside `ui`, for asserting that a page
+// navigates somewhere — give the destination a stub element and check it rendered. Without it a
+// navigation test has to rebuild this whole provider tree by hand and then drifts from it.
+export function renderWithProviders(
+  ui: ReactElement,
+  {
+    route = '/',
+    path = '/',
+    extraRoutes = [],
+  }: { route?: string; path?: string; extraRoutes?: { path: string; element: ReactElement }[] } = {}
+) {
   return render(
     <MemoryRouter initialEntries={[route]}>
       <AuthProvider>
         <ToastProvider>
           <Routes>
             <Route path={path} element={ui} />
+            {extraRoutes.map((r) => (
+              <Route key={r.path} path={r.path} element={r.element} />
+            ))}
           </Routes>
         </ToastProvider>
       </AuthProvider>

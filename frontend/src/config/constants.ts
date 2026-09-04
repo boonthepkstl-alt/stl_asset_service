@@ -13,6 +13,7 @@ export const ROUTES = {
   EMPLOYEES: '/employees',
   EMPLOYEE_CREATE: '/employees/create',
   EMPLOYEE_DETAIL: '/employees/:employeeId',
+  EMPLOYEE_EDIT: '/employees/:employeeId/edit',
   MAINTENANCE: '/maintenance',
   TICKET_DETAIL: '/maintenance/:ticketCode',
   HANDOVERS: '/handovers',

@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { renderWithProviders } from '@/test/test-utils';
 import { EmployeeDetailPage } from './index';
@@ -23,5 +23,20 @@ describe('EmployeeDetailPage', () => {
     await waitFor(() => {
       expect(screen.getByText('Employee not found')).toBeInTheDocument();
     });
+  });
+
+  // "Edit Identity & Organization" is a full page now (pages/EditEmployee), not a modal — this
+  // asserts the button routes there instead of opening a dialog in place.
+  it('navigates to the edit page instead of opening an edit modal', async () => {
+    renderWithProviders(<EmployeeDetailPage />, {
+      route: '/employees/e1',
+      path: '/employees/:employeeId',
+      extraRoutes: [{ path: '/employees/:employeeId/edit', element: <div>EDIT EMPLOYEE ROUTE</div> }],
+    });
+
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Edit Identity' })).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('button', { name: 'Edit Identity' }));
+
+    await waitFor(() => expect(screen.getByText('EDIT EMPLOYEE ROUTE')).toBeInTheDocument());
   });
 });

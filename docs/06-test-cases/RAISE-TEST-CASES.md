@@ -2,7 +2,7 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Test Cases
-**Version:** 0.18 Draft
+**Version:** 0.20 Draft
 **Status:** Draft for Test Case Review
 **Source:** [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.12 §7 (Test Suites) + §8 (Blocked Items) + §8.1 (Fully-Blocked Suites — AI Document Intelligence Capabilities) + §3.3 (PRD §10 NFR Backlog — No Suite), expanding [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.12
 **Source of Truth:** RAISE PRD
@@ -684,6 +684,61 @@ clear its Overdue/On Hold rows) is deliberately **not** done in this pass — th
 records the execution result and its cause faithfully, without silently rewriting the
 procedure.
 
+**Status Note — Procedure Corrected 2026-09-04 (Open Finding F-42 / Gap 18 — `TC-ALERT-001-09`
+only; test-case defect fix, not a re-execution).** This update closes the test-case defect
+recorded immediately above by rewriting `TC-ALERT-001-09`'s Steps, Test Data, and Expected
+Result to a procedure the product genuinely supports, verified in source before writing it:
+`frontend/src/pages/TicketDetail/index.tsx` (inside P-009 Maintenance) exposes a real Status
+control with a "Done" option, wired to `ticketService.updateExecutionStatus`
+(`frontend/src/services/ticket-repository.ts`), which maps `Done` to status `DONE`. Seeded
+ticket `REQ-2026-0041` ("Data Center Core Switch SFP+ Fiber Module Replacement") currently
+satisfies two alert conditions at once — Maintenance Ticket Overdue (`targetResolutionDate`
+2026-08-16 has passed, status not `DONE`) and Maintenance Ticket On Hold (status `ON_HOLD`) —
+so it appears as two separate rows on Alerts; completing it to `DONE` makes both conditions
+stop holding simultaneously, giving a stronger demonstration of the read-time-derivation
+property (Design v0.13 §14, no persisted Alert record) than the original single-row warranty
+case would have. **`AC-ALERT-001-09` itself is unchanged and was never wrong** — only this
+document's procedure was defective, and only this document is touched by this correction; no
+capability was added to the product to enable it, since the Ticket Status → Done control
+already existed. **This is a procedure rewrite only — the case is not executed as part of
+this update.** It moves from the plain **BLOCKED** marking back to **No — not blocked, not
+yet executed**, the same status it held before the 2026-09-04 execution attempt exposed the
+defect; it must not be read as PASS. Execution of the corrected procedure, and its result,
+will be recorded in a subsequent update.
+
+**Status Note — Formal Execution 2026-09-04, Corrected Procedure (real running app, merged
+`main` @ `30f176c`; signed in as `admin@raise.dev`, ADMIN).** The procedure recorded in the
+Status Note immediately above (Open Finding F-42 / Gap 18 correction) is now formally executed
+exactly as written — the correction landed **before** this execution, not tailored to it.
+**Step 1:** Alerts (P-012) showed **19** total alert rows; seeded ticket `REQ-2026-0041` ("Data
+Center Core Switch SFP+ Fiber Module Replacement") appeared as exactly two rows, as the
+procedure predicts — `High` / "Maintenance Ticket Overdue" / "Target resolution date
+2026-08-16 has passed" and `Medium` / "Maintenance Ticket On Hold" / "Ticket is on hold."
+**Step 2:** navigated to that ticket's detail view within P-009 and used the real **Update
+Status** control (Status select offering `Planning / In-Progress / On-Hold / Done`); selected
+`Done`, entered Resolution Notes (the field the UI reveals only for `Done`), and saved via
+"Save Update" — the product's own `ticketService.updateExecutionStatus` path, no test-only
+hook, no direct data manipulation; the dialog closed and the app showed an "Updated"
+confirmation. **Step 3:** returned to Alerts; total alert count was **17** — a drop of exactly
+**2**; both `REQ-2026-0041` rows were gone, confirmed by scanning every row across both pages.
+Consistent with the expected result, nothing was acknowledged, dismissed, cleared, marked read,
+or snoozed anywhere in the procedure — a scan of every button rendered on the Alerts screen
+found no such affordance at all, consistent with there being no persisted Alert record (Design
+v0.13 §14, read-time derivation); the rows disappeared purely because both underlying
+conditions stopped holding once the ticket's status became `DONE`. No console errors were
+produced during the execution. This single state change cleared two different conditions at
+once — `REQ-2026-0041` satisfied both Overdue and On Hold simultaneously — a stronger
+demonstration of the read-time-derivation property than the original (unrunnable)
+warranty-based procedure would have given. **`TC-ALERT-001-09` is now marked PASS**, moving out
+of "No — not blocked, not yet executed." This was the last unexecuted case in `TS-ALERT-001`:
+with it, **all 10 `TC-ALERT-001-*` cases have now been executed** (`-01`/`-02` PASS 2026-09-01;
+`-03` through `-08` and `-10` PASS 2026-09-04; `-09` PASS 2026-09-04, this execution) — and it
+closes the F-42 / Gap 18 test-case defect in substance, since the corrected procedure has now
+been proven runnable, not merely rewritten. §19 Test Case Summary's counts are unaffected
+numerically by this execution (`TC-ALERT-001-09` was already counted as Fully Testable prior to
+it, since "not blocked" and "not yet executed" are distinct from a PASS claim) — a note
+recording the execution is added there.
+
 | TC ID | Title | Steps | Test Data | Expected Result | Blocked |
 |---|---|---|---|---|---|
 | TC-ALERT-001-01 | Triggered alert displays with severity/asset | 1. Trigger an alert-worthy condition. 2. Open Alerts. | 1 asset meeting an alert condition | Alert shown with severity, description, associated asset | No — **PASS on the display mechanism**, fully testable against the as-built Alerts screen (P-012), scoped to `AC-ALERT-001-01`'s structural-display criterion (`RAISE-ACCEPTANCE-CRITERIA.md` §15): an alert lists severity/description/asset when opened. Which specific severity/trigger-rule values are correct remains **NOT TESTABLE YET** (PRD §6.9 Open Question, Open Finding F-05) — a separate, still-unresolved question this case does not claim to close. The "authorized user" gate remains testable only structurally since the role/permission model is undefined (PRD §16 Q22), unaffected by this update. **Formally executed 2026-09-01 against the real running app — PASS:** navigated to `/notifications` (previously 404'd; now renders the Alerts screen with 11 rows, matching the Dashboard's "Expired Warranty: 11" tile exactly); confirmed the row for AST-0013 (Dell OptiPlex 7090) displays Severity "Not yet defined," Description "Warranty expired 2024-03-15," and the associated Asset as a clickable link; clicking it navigated correctly to that asset's Asset Detail page. Also covered by an automated test in `frontend/src/pages/Alerts/index.test.tsx`. |
@@ -694,7 +749,7 @@ procedure.
 | TC-ALERT-001-06 | Maintenance Ticket On Hold alert row shows Medium severity and navigates to Maintenance Request detail | 1. Set a Maintenance ticket's status to `ON_HOLD`. 2. Open Alerts (P-012). 3. Select that row. | 1 Maintenance ticket, status `ON_HOLD` | A row is shown with severity **Medium**, condition "Maintenance Ticket On Hold," and the affected ticket; selecting the row navigates to that ticket's Maintenance Request detail view within P-009 | No — **formally executed 2026-09-04 against the real running app (merged `main` @ `c2e6b76`, PR #97) — PASS:** row shows severity `Medium`, condition "Maintenance Ticket On Hold," description "Ticket is on hold," affected record "Data Center Core Switch SFP+ Fiber Module Replacement REQ-2026-0041"; selecting it navigated to `/maintenance/REQ-2026-0041`, which rendered that ticket. |
 | TC-ALERT-001-07 | IT Hardware Handover Pending alert row shows Low severity and navigates to the Assignment Approval Request detail view | 1. Place an IT Hardware Assignment Approval Request at any non-terminal stage of the P-008 4-stage workflow (Initiation / Recipient Confirmation / IT Processing / IT Supervisor Approval). 2. Open Alerts (P-012). 3. Select that row. | 1 IT Hardware Assignment Approval Request at a non-terminal stage | A row is shown with severity **Low**, condition "IT Hardware Handover Pending," and the affected Handover; selecting the row navigates to that request's Assignment Approval Request detail/stage-progress view within P-008 | No — **formally executed 2026-09-04 against the real running app (merged `main` @ `c2e6b76`, PR #97) — PASS:** row shows severity `Low`, condition "IT Hardware Handover Pending," description "Awaiting action for Priya Patel," affected record "MacBook Air M2 AHO-2026-001"; selecting it navigated to `/handovers/AHO-2026-001`, which rendered that handover. 3 Pending rows were present in total (AHO-2026-001, -002, -003), all `Low`. |
 | TC-ALERT-001-08 | No alert severity is computed from days-overdue, asset value, or criticality | 1. Trigger each of the five confirmed conditions with varying degrees of overdue-ness / value, where applicable (e.g., a ticket 1 day overdue and one 100 days overdue). 2. Open Alerts (P-012) and compare severities within each condition type. | Multiple instances of the same condition type with differing overdue-duration/value | All rows of the same condition type show the identical, fixed severity for that type (per AC-ALERT-001-03..07's table) regardless of how overdue or how valuable the underlying record is — no such derivation or field exists in the data model | No — **formally executed 2026-09-04 against the real running app (merged `main` @ `c2e6b76`, PR #97) — PASS:** severity is fixed per condition type, not computed. Direct evidence from the same screen: Warranty Expired rows dated 2024-03-15 (≈2.5 years overdue) and 2026-07-22 (≈6 weeks overdue) both render `High`; all three Handover Pending rows render `Low` regardless of stage or asset. No row's severity varied within its condition type across all 19 seeded rows. |
-| TC-ALERT-001-09 | Alert row disappears once the underlying condition no longer holds | 1. Set an Asset's `warrantyExpiry` to a past date; open Alerts (P-012) and confirm a row appears for it. 2. Edit that Asset's `warrantyExpiry` to a future date. 3. Re-open Alerts. | 1 Asset, `warrantyExpiry` changed from a past date to a future date | The row for that Asset no longer appears on Alerts once its `warrantyExpiry` is updated to a future date — there is nothing to acknowledge, dismiss, or mark read, consistent with no persisted Alert record (Design §14 read-time derivation) | **BLOCKED — test-case defect, execution attempted 2026-09-04 against the real running app (merged `main` @ `c2e6b76`, PR #97).** Step 2 as written ("Edit that Asset's `warrantyExpiry` to a future date") cannot be performed: the application has no asset-edit capability at all. Verified in source on `main`: `frontend/src/services/asset-repository.ts` exposes only `create`, `assign`, and `checkIn` — no `updateAsset` method, no update endpoint consumed, and no edit-asset UI anywhere in `frontend/src/pages/`; an Asset's `warrantyExpiry` can be set at creation but never changed afterward. This is a defect in this test case's written procedure, not in the implementation and not in AC-ALERT-001-09's specification — the criterion itself is sound and the implementation satisfies it. **Supporting evidence, recorded here but explicitly not a substitute for the specified procedure:** the underlying invariant was separately demonstrated using a trigger the app does support — lowering the IT Hardware "Expiring" threshold from 90 to 3 days through the real Settings UI (P-018) removed the "Warranty Expiring" row for AST-0012, and the alert total fell 19 → 18; restoring the default returned it to 19. This confirms read-time derivation with no acknowledge/dismiss step and no persisted record, but it exercises a different trigger than the one this case specifies, so no PASS is claimed. The case remains executable once its steps are corrected to use a trigger the product actually supports (e.g., completing a Maintenance ticket to `DONE`, which should clear its Overdue/On Hold rows) — that correction is deliberately not made in this pass. |
+| TC-ALERT-001-09 | Alert rows disappear once the underlying condition no longer holds | 1. Open Alerts (P-012) and confirm that seeded ticket `REQ-2026-0041` ("Data Center Core Switch SFP+ Fiber Module Replacement") appears as two separate rows: one with condition "Maintenance Ticket Overdue," one with condition "Maintenance Ticket On Hold." Note the total alert count shown on the page. 2. Navigate to that ticket's Maintenance Request detail view within P-009 (Ticket Detail) and use its Status control to complete the ticket, selecting the "Done" option (wired to `ticketService.updateExecutionStatus`, which maps `Done` to status `DONE`). 3. Return to Alerts (P-012). | Seeded ticket `REQ-2026-0041`, initially with `targetResolutionDate` 2026-08-16 (passed) and status `ON_HOLD` — satisfying both the Maintenance Ticket Overdue and Maintenance Ticket On Hold conditions at once | Both of `REQ-2026-0041`'s rows (Maintenance Ticket Overdue and Maintenance Ticket On Hold) no longer appear on Alerts once its status is `DONE`, and the total alert count has dropped by 2 accordingly — nothing was acknowledged, dismissed, or marked read anywhere in this procedure (no such affordance exists on the Alerts screen), consistent with no persisted Alert record (Design v0.13 §14 read-time derivation) | No — **formally executed 2026-09-04 against the real running app (merged `main` @ `30f176c`), signed in as `admin@raise.dev` (ADMIN) — PASS:** Step 1: Alerts (P-012) showed 19 total alerts; `REQ-2026-0041` appeared as exactly two rows — `High` / "Maintenance Ticket Overdue" / "Target resolution date 2026-08-16 has passed" and `Medium` / "Maintenance Ticket On Hold" / "Ticket is on hold." Step 2: on that ticket's detail view within P-009, used the real Update Status control, selected `Done`, entered the Resolution Notes field the UI reveals only for `Done`, and saved via "Save Update" — the product's own `ticketService.updateExecutionStatus` path, no test-only hook, no direct data manipulation; the app showed an "Updated" confirmation. Step 3: returned to Alerts; total alert count was 17, a drop of exactly 2; a scan of every row across both pages found zero rows referencing `REQ-2026-0041`. Nothing was acknowledged, dismissed, cleared, marked read, or snoozed anywhere — a scan of every button on the Alerts screen found no such affordance at all, consistent with no persisted Alert record (Design v0.13 §14 read-time derivation); the rows disappeared purely because both underlying conditions stopped holding once the ticket's status became `DONE`. No console errors were produced. This single state change cleared two different conditions at once (`REQ-2026-0041` satisfied both Overdue and On Hold simultaneously), a stronger demonstration of the read-time-derivation property than the original, unrunnable warranty-based procedure would have given. This is the last `TC-ALERT-001-*` case to be executed — all 10 are now executed and PASS. **Procedure corrected 2026-09-04 (Open Finding F-42 / Gap 18) — history retained, not silently swapped.** The original step 2 ("Edit that Asset's `warrantyExpiry` to a future date") was attempted and formally found unrunnable on 2026-09-04, because the product has no asset-edit capability anywhere: `frontend/src/services/asset-repository.ts` exposes only `create`, `assign`, and `checkIn` — no `updateAsset` method, no update endpoint consumed, and no edit-asset UI anywhere in `frontend/src/pages/`. That was a defect in this test case's written procedure only — not in the implementation (the underlying AC-ALERT-001-09 read-time-derivation invariant was separately confirmed to hold, via a different, product-supported trigger: lowering the IT Hardware "Expiring" threshold from 90 to 3 days through the real Settings UI, P-018, which removed the Warranty Expiring row for AST-0012 and dropped the alert total 19 → 18, restoring to 19 when reverted) and not in AC-ALERT-001-09's specification (which remains correct as written and is unchanged by this correction). This row's steps, test data, and expected result were rewritten to point at a state change the product genuinely supports — verified in source before writing this correction: `frontend/src/pages/TicketDetail/index.tsx` exposes a real Status control with a "Done" option wired to `ticketService.updateExecutionStatus` (`frontend/src/services/ticket-repository.ts`), which maps `Done` to status `DONE`; seeded ticket `REQ-2026-0041` satisfies both the Overdue and On Hold conditions simultaneously, so completing it to `DONE` is a stronger demonstration of the read-time property than the single-row warranty case would have been (two rows disappear from one state change, with no dismiss/acknowledge step anywhere). No corresponding capability was added to the product to make this correction possible — only the test procedure changed, pointing at a capability (Ticket Status → Done) that already existed. The corrected procedure was executed exactly as written in the pass recorded immediately above, confirming it is genuinely runnable and closing the F-42 / Gap 18 defect in substance. |
 | TC-ALERT-001-10 | No condition beyond the five confirmed appears as a row | 1. Open Alerts (P-012). 2. Review every row shown, including its condition label. | Existing seeded Assets/tickets/Assignment Approval Requests | No row's condition is anything other than one of the five confirmed (Warranty Expired, Maintenance Ticket Overdue, Warranty Expiring, Maintenance Ticket On Hold, IT Hardware Handover Pending) — specifically, no preventive-maintenance-due row (no next-service-date field exists) and no software-license-expiry row (`RAISE-FR-LICENSE-001` is Roadmap) appears | No — **formally executed 2026-09-04 against the real running app (merged `main` @ `c2e6b76`, PR #97) — PASS:** all 19 seeded rows across both pages (10 per page) were read. Every row's condition was one of the five confirmed (Warranty Expired ×11, Maintenance Ticket Overdue ×3, Warranty Expiring ×1, Maintenance Ticket On Hold ×1, IT Hardware Handover Pending ×3). No sixth condition appeared; in particular no preventive-maintenance-due and no software-license-expiry row. |
 
 ---
@@ -907,9 +962,17 @@ once PR #97 (Gap 16) shipped the remaining alert conditions/severities and
 formal execution against the real running app confirmed the built behavior
 (§14 Status Note — Formal Execution 2026-09-04). As of this document's
 current version, the BLOCKED (pending implementation) marking has **zero
-active occurrences**; `TC-ALERT-001-09` remains BLOCKED under the plain
-**BLOCKED** marking (§1), for an unrelated reason (a test-case defect in
-its own written procedure, not an unbuilt behavior).
+active occurrences**. `TC-ALERT-001-09` briefly carried the plain **BLOCKED**
+marking (§1) for an unrelated reason (a test-case defect in its own written
+procedure, not an unbuilt behavior) but was reclassified back to **No —
+not blocked, not yet executed** once its procedure was corrected
+(Open Finding F-42 / Gap 18), and has now (2026-09-04) been formally
+executed against the corrected procedure with a **PASS** result — see §14's
+newest Status Note. This execution does not change any count in the table
+below: `TC-ALERT-001-09` was already counted as Fully Testable before it was
+executed, since "not blocked" and "not yet executed" are distinct from a
+PASS claim. With this execution, **all 10 `TC-ALERT-001-*` cases have now
+been formally executed and are PASS**.
 
 | Suite | Total TCs | Fully Testable | Partially Blocked | Blocked (Full) | Out of Scope |
 |---|---|---|---|---|---|
@@ -925,7 +988,7 @@ its own written procedure, not an unbuilt behavior).
 | TS-MAINT-001 | 9 | 3 | 6 | 0 | 0 |
 | TS-WARRANTY-001 | 6 | 6 | 0 | 0 | 0 |
 | TS-ORACLE-001 | 4 | 3 | 1 | 0 | 0 |
-| TS-ALERT-001 | 10 | 9 | 1 | 0 | 0 |
+| TS-ALERT-001 | 10 | 10 | 0 | 0 | 0 |
 | TS-AUDIT-001 | 3 | 1 | 2 | 0 | 0 |
 | TS-EXEC-001 | 2 | 2 | 0 | 0 | 0 |
 | TS-AI-SEARCH-001 | 3 | 2 | 1 | 0 | 0 |
@@ -934,7 +997,37 @@ its own written procedure, not an unbuilt behavior).
 | TS-AI-DOC-002 | 1 | 0 | 0 | 1 | 0 |
 | TS-AI-DOC-003 | 1 | 0 | 0 | 1 | 0 |
 | TS-AI-DOC-004 | 1 | 0 | 0 | 1 | 0 |
-| **Total** | **80** | **54** | **21** | **4** | **1** |
+| **Total** | **80** | **55** | **20** | **4** | **1** |
+
+**TS-ALERT-001 updated a fourth time 2026-09-04 (formal execution of the corrected
+`TC-ALERT-001-09` procedure, real running app, merged `main` @ `30f176c`; see §14's newest
+Status Note for full detail):** row is numerically unchanged at `10 | 10 | 0 | 0 | 0`, and Grand
+**Total** row is numerically unchanged at `80 | 55 | 20 | 4 | 1` — `TC-ALERT-001-09` was already
+counted as Fully Testable following the v0.19 procedure correction, and executing it does not
+move it between columns, only from unexecuted to PASS. `TC-ALERT-001-09` was formally executed
+exactly as its corrected procedure specifies (signed in as `admin@raise.dev`, ADMIN): completed
+seeded ticket `REQ-2026-0041` to status `DONE` via the real Ticket Detail Status control on
+P-009, which cleared both its Maintenance Ticket Overdue and Maintenance Ticket On Hold rows
+from Alerts (P-012) at once, dropping the total alert count 19 → 17; no
+acknowledge/dismiss/mark-read affordance was found anywhere on the Alerts screen. The case
+moves from **No — not blocked, not yet executed** to **PASS**. With this execution, all 10
+`TC-ALERT-001-*` cases are now formally executed and PASS, and Open Finding F-42 / Gap 18 is
+closed in substance (the corrected procedure has been proven runnable, not merely rewritten).
+
+**TS-ALERT-001 updated a third time 2026-09-04 (Open Finding F-42 / Gap 18 — test-case
+procedure defect fix for `TC-ALERT-001-09` only; no execution reported; see §14's newest
+Status Note for full detail):** row moves from `10 | 9 | 1 | 0 | 0` to `10 | 10 | 0 | 0 | 0`.
+`TC-ALERT-001-09`'s written procedure (step 2, "Edit that Asset's `warrantyExpiry` to a
+future date") was found unrunnable during the 2026-09-04 formal execution sweep recorded
+below, because the product has no asset-edit capability. Its Steps/Test Data/Expected Result
+are rewritten here to a procedure the product supports — completing seeded ticket
+`REQ-2026-0041` to status `DONE` via the real Ticket Detail Status control, which clears both
+its Maintenance Ticket Overdue and Maintenance Ticket On Hold rows from Alerts at once. The
+case moves from the plain **BLOCKED** marking back to **No — not blocked, not yet executed**
+— it is **not** re-executed or marked PASS by this update; only its procedure is corrected.
+`AC-ALERT-001-09` itself is unchanged. Grand **Total** row moves from `80 | 54 | 21 | 4 | 1` to
+`80 | 55 | 20 | 4 | 1` (zero test cases added or removed; one case — `TC-ALERT-001-09` — moves
+from Partially Blocked back to Fully Testable). No other suite's row is affected.
 
 **TS-ALERT-001 updated 2026-09-04 (AC document v0.12 / Test Plan v0.12, PRD §16 Resolved
 Question 44 — AC-ALERT-001 extended from 2 to 10 criteria; see §14 Status Note for full
@@ -1233,6 +1326,140 @@ Suite ID → TC ID) into one master table for compliance review.
 ---
 
 ## Document Status
+
+**Version:** 0.20 (2026-09-04 — real formal test execution of the corrected `TC-ALERT-001-09`
+procedure against merged `main` @ `30f176c`, signed in as `admin@raise.dev` (ADMIN); no
+scope/spec correction, no earlier-layer document touched. Executed the procedure exactly as
+corrected in v0.19: completed seeded ticket `REQ-2026-0041` to status `DONE` via the real
+Ticket Detail Status control (P-009), which cleared both its Maintenance Ticket Overdue and
+Maintenance Ticket On Hold rows from Alerts (P-012) at once, dropping the total alert count
+19 → 17, with no acknowledge/dismiss/mark-read affordance found anywhere. `TC-ALERT-001-09` is
+now marked **PASS**, moving out of "not blocked, not yet executed." With this execution, all
+10 `TC-ALERT-001-*` cases are now formally executed and PASS, and Open Finding F-42 / Gap 18
+is closed in substance. See the Change Log entry below and §14's newest Status Note for full
+detail)
+
+**Change Log — v0.19 → v0.20 (2026-09-04, real formal test execution — no earlier-layer
+document touched):**
+
+1. **Trigger.** The v0.19 procedure correction (Open Finding F-42 / Gap 18) left
+   `TC-ALERT-001-09` unexecuted by design, deferring execution to a subsequent update. This
+   update performs that execution, against the real running app on merged `main` @ `30f176c`,
+   signed in as `admin@raise.dev` (ADMIN), exactly as the v0.19 procedure specifies — the
+   correction landed before execution, not tailored to it.
+2. **Execution result — PASS.** Step 1: Alerts (P-012) showed 19 total alerts; seeded ticket
+   `REQ-2026-0041` appeared as exactly two rows (`High` "Maintenance Ticket Overdue," `Medium`
+   "Maintenance Ticket On Hold"), as predicted. Step 2: on that ticket's detail view within
+   P-009, used the real Update Status control, selected `Done`, entered Resolution Notes, and
+   saved via "Save Update" — the product's own `ticketService.updateExecutionStatus` path, no
+   test-only hook or direct data manipulation. Step 3: returned to Alerts; total alert count
+   was 17, a drop of exactly 2; a scan of every row across both pages found zero rows
+   referencing `REQ-2026-0041`. No acknowledge/dismiss/mark-read/snooze affordance was found
+   anywhere on the Alerts screen, consistent with no persisted Alert record (Design v0.13 §14,
+   read-time derivation). No console errors were produced. This single state change cleared
+   two conditions at once, a stronger demonstration of the read-time-derivation property than
+   the original, unrunnable warranty-based procedure would have given.
+3. **`TC-ALERT-001-09` — Blocked column updated with the execution result.** Moves from
+   **No — not blocked, not yet executed** to a formally executed **PASS**, appended to the
+   existing corrected-procedure history in that column, which is otherwise retained verbatim
+   (not silently swapped) per this document's own convention. The Steps, Test Data, and
+   Expected Result columns are unchanged — the corrected procedure was executed exactly as
+   written.
+4. **§14 TS-ALERT-001 — new Status Note added** ("Formal Execution 2026-09-04, Corrected
+   Procedure"), recording the execution and its result, without altering any of the four prior
+   Status Notes (2026-09-01; 2026-09-04 sync; 2026-09-04 formal execution of `-03..-08`/`-10`;
+   2026-09-04 procedure correction) or any other row. `TC-ALERT-001-01`/`-02`'s 2026-09-01 PASS
+   results and `TC-ALERT-001-03` through `-08`/`-10`'s 2026-09-04 PASS results are all left
+   exactly as recorded, untouched by this update.
+5. **`AC-ALERT-001-09` is unchanged**, as is `RAISE-TEST-PLAN.md`; neither is touched by this
+   update.
+6. **§19 Test Case Summary** — a new dated paragraph ("updated a fourth time") is added
+   recording the execution. Numerically, `TS-ALERT-001`'s row (`10 | 10 | 0 | 0 | 0`) and the
+   Grand **Total** row (`80 | 55 | 20 | 4 | 1`) are **unchanged** — `TC-ALERT-001-09` was
+   already counted as Fully Testable following the v0.19 correction; executing it moves it from
+   unexecuted to PASS within that same column, not between columns. The "Note on columns"
+   paragraph is updated to record that all 10 `TC-ALERT-001-*` cases are now formally executed
+   and PASS.
+7. **No other suite required changes.** `TC-LOGIN-*`, `TC-DASH-*`, `TC-ASSET-001-*`,
+   `TC-ASSET-001-D-*`, `TC-LIFE-001-*`, `TC-ASSET-002-*`, `TC-ASSET-003-*`, `TC-OPS-001-*`,
+   `TC-OPS-002-*`, `TC-MAINT-001-*`, `TC-WARRANTY-001-*`, `TC-ORACLE-001-*`, `TC-AUDIT-001-*`,
+   `TC-EXEC-001-*`, `TC-AI-SEARCH-001-*`, `TC-AI-STATES-*`, and `TC-AI-DOC-001-01`–
+   `TC-AI-DOC-004-01` retain their prior status and wording verbatim, as do
+   `TC-ALERT-001-01`–`-08` and `TC-ALERT-001-10`.
+8. **No earlier-layer document touched.** `RAISE-TEST-PLAN.md`, `RAISE-ACCEPTANCE-CRITERIA.md`,
+   and `RAISE-TRACEABILITY-MATRIX.md` remain untouched by this update, per instruction — this is
+   a real formal test execution recorded in this document only.
+
+---
+
+**Version:** 0.19 (2026-09-04 — test-case procedure defect fix, Open Finding F-42 / Gap 18,
+`TC-ALERT-001-09` only; no execution reported, no earlier-layer document touched. Corrects the
+unrunnable step 2 ("Edit that Asset's `warrantyExpiry` to a future date") recorded as BLOCKED
+in v0.18 to a procedure the product genuinely supports — completing seeded ticket
+`REQ-2026-0041` to status `DONE` via the real Ticket Detail Status control, clearing both its
+Maintenance Ticket Overdue and Maintenance Ticket On Hold rows from Alerts at once. The case
+moves from **BLOCKED** back to **No — not blocked, not yet executed**; it remains unexecuted
+and is not marked PASS by this update. `AC-ALERT-001-09` is unchanged and was not touched — the
+criterion was always sound; only this document's procedure was defective. See the Change Log
+entry below and §14's newest Status Note for full detail)
+
+**Change Log — v0.18 → v0.19 (2026-09-04, test-case procedure defect fix only — no execution
+reported, no earlier-layer document touched):**
+
+1. **Root cause / trigger.** Recorded as Open Finding **F-42** / **Gap 18**: `TC-ALERT-001-09`'s
+   written step 2 ("Edit that Asset's `warrantyExpiry` to a future date") specified a capability
+   the product has never had — `frontend/src/services/asset-repository.ts` exposes only
+   `create`, `assign`, and `checkIn`; there is no `updateAsset` method, no update endpoint
+   consumed, and no edit-asset UI anywhere in `frontend/src/pages/`. This was formally confirmed
+   unrunnable during the 2026-09-04 execution sweep recorded in v0.18, which marked the case
+   **BLOCKED** as a test-case defect (not an implementation or specification defect). This
+   update corrects the procedure only; it does not execute it.
+2. **`TC-ALERT-001-09` — Steps, Test Data, and Expected Result rewritten.** Re-pointed at a
+   state change the product genuinely supports, verified in source before writing the
+   correction: `frontend/src/pages/TicketDetail/index.tsx` (inside P-009 Maintenance) exposes a
+   real Status control with a "Done" option, wired to `ticketService.updateExecutionStatus`
+   (`frontend/src/services/ticket-repository.ts`), which maps `Done` to status `DONE`. Seeded
+   ticket `REQ-2026-0041` ("Data Center Core Switch SFP+ Fiber Module Replacement") currently
+   satisfies two alert conditions at once — Maintenance Ticket Overdue (`targetResolutionDate`
+   2026-08-16 passed, status ≠ `DONE`) and Maintenance Ticket On Hold (status `ON_HOLD`) — so it
+   appears as two separate rows on Alerts (P-012). The corrected steps: (1) open Alerts and
+   confirm both rows are present, noting the total count; (2) complete the ticket to `DONE`
+   through the real Ticket Detail Status control; (3) return to Alerts and confirm both rows are
+   gone and the total count has dropped by 2 — with no acknowledge/dismiss/clear step anywhere,
+   since no such affordance exists. This is a stronger demonstration of the read-time-derivation
+   property (Design v0.13 §14, no persisted Alert record) than the original single-row warranty
+   case would have been, since two rows disappear from one state change.
+3. **`TC-ALERT-001-09` — Blocked column reclassified, not executed.** Moves from the plain
+   **BLOCKED** marking back to **No — not blocked, not yet executed** — the same status it held
+   before the v0.18 execution attempt exposed the defect. This update does **not** run the
+   corrected procedure and does **not** claim a PASS; execution and its result will be recorded
+   in a subsequent update, separately from this procedure correction.
+4. **§14 TS-ALERT-001 — new Status Note added** ("Procedure Corrected 2026-09-04"), recording
+   the defect, the correction, and the reclassification, without altering any of the three prior
+   Status Notes (2026-09-01; 2026-09-04 sync; 2026-09-04 formal execution) or any other row.
+   `TC-ALERT-001-01`/`-02`'s 2026-09-01 PASS results and `TC-ALERT-001-03` through `-08`/`-10`'s
+   2026-09-04 PASS results are all left exactly as recorded, untouched by this update.
+5. **`AC-ALERT-001-09` is unchanged.** `RAISE-ACCEPTANCE-CRITERIA.md` is not touched by this
+   update — the criterion was always sound; only this document's procedure was defective. No
+   asset-edit capability was added to the product, and none is proposed — the fix is to the
+   test, not to the application.
+6. **§19 Test Case Summary** updated: `TS-ALERT-001` row moves from `10 | 9 | 1 | 0 | 0` to
+   `10 | 10 | 0 | 0 | 0`. Grand **Total** row moves from `80 | 54 | 21 | 4 | 1` to
+   `80 | 55 | 20 | 4 | 1` (zero test cases added or removed; one case —`TC-ALERT-001-09`—
+   moves from Partially Blocked back to Fully Testable). The §19 "Note on columns" paragraph is
+   updated to reflect that `TC-ALERT-001-09` no longer carries the plain BLOCKED marking. No
+   other suite's row is affected.
+7. **No other suite required changes.** `TC-LOGIN-*`, `TC-DASH-*`, `TC-ASSET-001-*`,
+   `TC-ASSET-001-D-*`, `TC-LIFE-001-*`, `TC-ASSET-002-*`, `TC-ASSET-003-*`, `TC-OPS-001-*`,
+   `TC-OPS-002-*`, `TC-MAINT-001-*`, `TC-WARRANTY-001-*`, `TC-ORACLE-001-*`, `TC-AUDIT-001-*`,
+   `TC-EXEC-001-*`, `TC-AI-SEARCH-001-*`, `TC-AI-STATES-*`, and `TC-AI-DOC-001-01`–
+   `TC-AI-DOC-004-01` retain their prior status and wording verbatim, as do
+   `TC-ALERT-001-01`–`-08` and `TC-ALERT-001-10`.
+8. **No earlier-layer document touched.** `RAISE-TEST-PLAN.md`, `RAISE-ACCEPTANCE-CRITERIA.md`,
+   and `RAISE-TRACEABILITY-MATRIX.md` remain untouched by this update, per instruction — this is
+   a test-case procedure correction to this document only.
+
+---
 
 **Version:** 0.18 (2026-09-04 — real formal test execution against merged `main` @ `c2e6b76`
 (PR #97, Gap 16), not a scope/spec correction, no earlier-layer document touched: signed in as

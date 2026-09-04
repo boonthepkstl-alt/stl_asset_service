@@ -2,82 +2,68 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Requirement Traceability Matrix (RTM)
-**Version:** 2.0 Draft (`RAISE-FR-ALERT-001` — **Gap 16's nature changes
-this revision, 2026-09-04; Gap 16 itself stays OPEN. New Gap 18 OPENED,
-also left OPEN.** PR #97 (merge commit `c2e6b76`, merged to `main`)
-implements the four alert conditions Gap 16 recorded as unbuilt at v1.9 —
-Maintenance ticket Overdue → High, Warranty Expiring → Medium, Maintenance
-ticket On Hold → Medium, IT Hardware Handover Pending → Low — and the
-already-built Warranty Expired condition now renders its confirmed fixed
-**High** severity instead of the "Not yet defined" placeholder.
-`TC-ALERT-001-03` through `-10` were then **formally executed** against the
-real running app on `main` @ `c2e6b76` (`RAISE-TEST-CASES.md` v0.18, §14):
-**7 of 8 PASS** (`TC-ALERT-001-03..08` and `-10`) and **1 BLOCKED**
-(`TC-ALERT-001-09`). `TC-ALERT-001-01`/`-02` are untouched, keeping their
-genuine 2026-09-01 PASS.
+**Version:** 2.1 Draft (`RAISE-FR-ALERT-001` — **Gap 16 CLOSED this
+revision, 2026-09-04; Gap 18 CLOSED this revision. Gap 17 remains OPEN,
+untouched.** `TC-ALERT-001-09`'s procedure defect (Open Finding F-42 / Gap
+18) was **corrected first** (`RAISE-TEST-CASES.md` v0.19, 2026-09-04) — its
+written step 2 was re-pointed from an asset-edit capability the product does
+not have to completing a Maintenance ticket to `DONE` via Ticket Detail's
+real Update Status control (`ticketService.updateExecutionStatus`) — and
+was deliberately left **unexecuted** at that point, so the correction could
+not be tailored to whatever passed. It was then **formally executed**
+(`RAISE-TEST-CASES.md` v0.20, 2026-09-04) against merged `main` @
+`30f176c`, and **PASSED**: seeded ticket `REQ-2026-0041` appeared as two
+alert rows (`High` "Maintenance Ticket Overdue," `Medium` "Maintenance
+Ticket On Hold") out of 19 total; completing it to `DONE` through the
+product's own Update Status control (no test-only hook, no direct data
+manipulation) dropped the total to 17, with a full scan of both pages
+confirming zero remaining rows referencing that ticket and a scan of every
+button on the Alerts screen confirming no acknowledge/dismiss/mark-read/
+snooze affordance exists anywhere — consistent with no persisted Alert
+record (Design v0.13 §14, read-time derivation). This is the ordering that
+matters: **the correction landed before the execution it was later proven
+by**, not after.
 
-**Why Gap 16 does not close this revision, even though 7 of 8 new cases
-pass:** Gap 16 was opened to record that resolving `RAISE-FR-ALERT-001`'s
-specification (PRD §16 Resolved Question 44) did not resolve its build. The
-build half is now genuinely, formally verified for seven of the eight new
-cases — this is real progress, not a re-assertion of the v1.9 finding — but
-`TC-ALERT-001-09` remains unexecuted (as **BLOCKED**, reclassified this
-revision from "not yet executed" — see below), so Gap 16's own scope is not
-fully covered by passing execution evidence. Per this document's own
-"a business decision or spec correction alone never upgrades a Test Status;
-only a real execution does" discipline (Gap 6/8/9/12), and its converse —
-a gap is not reported closed while any test case in its scope remains
-unexecuted — **Gap 16 stays OPEN**, with its recorded nature updated: from
-*"four of five conditions unbuilt"* to *"implemented and formally verified,
-except `TC-ALERT-001-09`, which is unexecutable as written."*
-`RAISE-FR-ALERT-001`'s row (§3) accordingly **stays `PASS (partial)`** —
-still not upgraded to a full PASS — with its reason updated again: it no
-longer rests on missing implementation (that is now resolved and verified),
-it rests on `TC-ALERT-001-09` being unexecuted, plus the pre-existing,
-separately-open "authorized user" access gate (PRD §16 Q22, Open Finding
-**F-08**), which this execution did not address.
+**Gap 18 is CLOSED this revision.** Its own "what would close this gap" note
+(§6) named exactly this fix — a deliberate edit to `TC-ALERT-001-09`'s step
+2 substituting a product-supported trigger, followed by formal
+re-execution — and both halves are now done, verified directly against
+`RAISE-TEST-CASES.md` v0.20 rather than taken on trust.
 
-**Why `TC-ALERT-001-09` is BLOCKED, and why this is a new, distinct
-finding (Gap 18, OPENED this revision, left OPEN):** its written step 2 —
-*"Edit that Asset's `warrantyExpiry` to a future date"* — specifies a
-capability the product has never had: `frontend/src/services/asset-
-repository.ts` exposes only `create`, `assign`, and `checkIn`; there is no
-`updateAsset` method and no edit-asset UI anywhere in the app. This is a
-**test-case defect** (the written procedure assumes a capability that does
-not exist) — explicitly **not** an implementation defect (`AC-ALERT-001-09`,
-the read-time-derivation-with-no-persisted-record criterion, is satisfied by
-the app as built) and **not** a specification defect (`AC-ALERT-001-09` is
-sound and fully specified as written). Supporting evidence, recorded as
-supporting and **not** as a substitute for the specified procedure: lowering
-the IT Hardware "Expiring" threshold from 90 to 3 days via the real Settings
-UI (P-018) removed the Warranty Expiring row for AST-0012 and the alert
-total fell 19 → 18, restoring to 19 on reset — confirming the same
-invariant via a different, product-supported trigger. Correcting the test
-case requires no business decision, only a deliberate edit to
-`RAISE-TEST-CASES.md`'s step 2, substituting a state change the product
-actually supports (e.g., completing a Maintenance ticket to `DONE`, which
-should clear its Overdue/On Hold rows) — that correction is **not** made in
-this revision, per this document's read-only relationship to every
-upstream chain document; see Gap 18 (§6, OPENED this revision, left OPEN)
-for the record.
+**Gap 16 is CLOSED this revision.** Gap 16's own stated discipline was that
+it could not be reported closed while any test case within its scope
+remained unexecuted. With `TC-ALERT-001-09` now executed and PASSing, **all
+10 `TC-ALERT-001-*` cases have been formally executed and all PASS** —
+`-01`/`-02` on 2026-09-01 (historical, untouched), `-03` through `-08` and
+`-10` on 2026-09-04 (v2.0), and `-09` on 2026-09-04 (this revision, v2.1).
 
-**Also carried forward, deliberately not touched by this revision:** the
-"authorized user" access gate on `AC-ALERT-001-01` (PRD §16 Q22, Open
-Finding F-08) remains **NOT TESTABLE YET**, unaffected by this execution.
-Separately, whether the header bell-icon dropdown in `AppShell`
-(`NotificationCenter.tsx`) is in scope for `RAISE-FR-ALERT-001` at all
-remains an **unreconciled contradiction** between PRD §16 Resolved Question
-35 (which states `NotificationCenter.tsx` is confirmed entirely out of RAISE
-scope and distinct from this requirement) and
+**`RAISE-FR-ALERT-001`'s row (§3) stays `PASS (partial)` — this is
+deliberate, not an oversight.** Its `PASS (partial)` status has always
+rested on two independent reasons. One — `TC-ALERT-001-09` being unexecuted
+— is now gone. **The other is not:** the "authorized user" access gate on
+`AC-ALERT-001-01` remains **NOT TESTABLE YET**, blocked on PRD §16 Q22 /
+Open Finding **F-08** (role/permission matrix content) — a business decision
+nobody has made, and one this execution did not touch. The row's reason is
+updated to cite F-08 alone: every `TC-ALERT-001-*` test case in scope now
+PASSes, and the remaining partiality is a decision gap, not an engineering
+or coverage gap. **This row is explicitly NOT upgraded to a full PASS.**
+
+**Also carried forward, deliberately not touched by this revision:**
+whether the header bell-icon dropdown in `AppShell` (`NotificationCenter.tsx`)
+is in scope for `RAISE-FR-ALERT-001` at all remains an **unreconciled
+contradiction** between PRD §16 Resolved Question 35 (which states
+`NotificationCenter.tsx` is confirmed entirely out of RAISE scope and
+distinct from this requirement) and
 [`ESAPS-UI-FOUNDATION-BASELINE.md`](../project-foundation-baseline/ESAPS-UI-FOUNDATION-BASELINE.md)
 line 88 (which maps `NotificationCenter.tsx` **to** `RAISE-FR-ALERT-001` as
 EXTEND) — this execution did not touch it and no side is picked. See Gap 17
 (§6, opened v1.9, still OPEN, untouched this revision) for the record.
 
-Gaps 1–15 remain resolved, unchanged this revision. Gap 17 remains OPEN,
-unchanged this revision.)
+Gaps 1–15 remain resolved, unchanged this revision. Gap 16 and Gap 18 are
+now also resolved this revision. Gap 17 remains OPEN, unchanged this
+revision.)
 **Status:** Draft for Traceability Review
-**Source:** [`RAISE-TEST-CASES.md`](../06-test-cases/RAISE-TEST-CASES.md) v0.18 (§14 `TC-ALERT-001-03..10` formally executed against merged `main` @ `c2e6b76`, PR #97). `RAISE-PRD.md` v0.15, `RAISE-DESIGN.md` v0.13, `RAISE-PROTOTYPE.md` v0.14, `RAISE-ACCEPTANCE-CRITERIA.md` v0.12, and `RAISE-TEST-PLAN.md` v0.12 are unchanged from v1.9 — this revision is a real code change plus a real formal test-execution update, not a further spec/business resolution. `RAISE-FR-OPS-002`'s row/Gap 15 record is unaffected and retained below for history. Confirmed: this revision's finding rests on genuine, real test-execution evidence against the running app (`main` @ `c2e6b76`), not on the code change or the prior spec resolution alone, per this document's own standing discipline (Gap 6/8/9/12's "a business decision or spec correction alone never upgrades a Test Status; only a real execution does").
+**Source:** [`RAISE-TEST-CASES.md`](../06-test-cases/RAISE-TEST-CASES.md) v0.20 (§14 `TC-ALERT-001-09` corrected in v0.19 then formally executed in v0.20 against merged `main` @ `30f176c`). `RAISE-PRD.md` v0.15, `RAISE-DESIGN.md` v0.13, `RAISE-PROTOTYPE.md` v0.14, `RAISE-ACCEPTANCE-CRITERIA.md` v0.12, and `RAISE-TEST-PLAN.md` v0.12 are unchanged from v1.9/v2.0 — this revision is a real formal test-execution update to a test document this matrix is read-only on, not a further spec/business resolution. `RAISE-FR-OPS-002`'s row/Gap 15 record is unaffected and retained below for history. Confirmed: this revision's finding rests on genuine, real test-execution evidence against the running app (`main` @ `30f176c`), not on the test-case correction alone, per this document's own standing discipline (Gap 6/8/9/12's "a business decision or spec correction alone never upgrades a Test Status; only a real execution does").
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
 
@@ -194,7 +180,7 @@ per v0.4 Gap 6's own closure criteria.
 | `RAISE-FR-MAINT-001` | Maintenance (4-stage workflow: User Requisition → Dept Approval (Delegated) → IT Dispatch → Technician Execution) | P0 / MVP | §5.1 Maintenance Domain | P-009 | AC-MAINT-001 (AC-MAINT-001-01..09) | TS-MAINT-001 | TC-MAINT-001-01..09 | **PASS** — executed 2026-08-28 against the real running app, all 9 cases: TC-MAINT-001-03 **PASS** (a new requisition submitted via "New IT Requisition" enters `PENDING_DEPT_APPROVAL`). TC-MAINT-001-04 **PASS** (Dept Sign-off → Approve transitions to `PENDING_IT_DISPATCH`). TC-MAINT-001-05 **PASS** (Reject on a separate `PENDING_DEPT_APPROVAL` ticket resulted in `REJECTED_BY_DEPT`, confirmed **not** `PENDING_IT_DISPATCH` — per this case's own scope, no claim is made about whether that specific resulting state is itself correct). TC-MAINT-001-06 **PASS** (Assign Tech + Dispatch transitions to `IN_PROGRESS`, one of the three allowed states). TC-MAINT-001-07 **PASS** (Update Status to On-Hold with a hold reason correctly reflects "3. On-Hold" and shows the reason banner). TC-MAINT-001-08 **PASS** (Mark Complete transitions to `DONE`/"4. Resolved & Closed" with resolution notes shown). TC-MAINT-001-01 originally **FAIL** — the Maintenance record list showed no date/cost fields (F-28) — **now PASS**, re-executed after the fix: each record now shows created date and cost, verified live on asset `a1`. TC-MAINT-001-09 originally **FAIL** — the 4-stage progress indicator (`GovernanceStep` in `TicketDetail/index.tsx`) only rendered two visual states (done ✓ vs. a plain gray circle with the step number), so the "Current" stage and any not-yet-reached "Pending" stage were visually identical (F-29) — **now PASS**, re-executed after the fix: the current stage is derived from `ticket.status` and rendered with a distinct brand-colored circle, ring, and a "Current" badge; verified live across `PENDING_DEPT_APPROVAL` (stage 2 current), `PENDING_IT_DISPATCH` (stage 3 current), and `DONE` (no stage marked current, all done). TC-MAINT-001-02 **PASS** (2 records for asset `a1` displayed in ascending-chronological order by observed outcome, though the underlying code has no explicit sort — `assetTickets` in `AssetDetail/index.tsx` is unsorted array-filter order — a fragility worth watching, not a current failure since the observed order was correct). **The 4-stage workflow shape and state model remain verified present in `RAISE-PRD.md` v0.9 §6 and §16 Resolved Question 33.** |
 | `RAISE-FR-WARRANTY-001` | Warranty | P0 / MVP | §5.2 Warranty Domain (3-state model); §5.4 Settings Domain | P-003 (Asset Registry column), P-004 (Asset Detail), P-018 (Settings > Warranty, new) | AC-WARRANTY-001 (AC-WARRANTY-001-01..06) | TS-WARRANTY-001 | TC-WARRANTY-001-01..06 | **PASS (partial)** — field-list blocker resolved 2026-08-29 (`RAISE-PRD.md` §16 Resolved Question 40, resolving Open Question 15: `warrantyExpiry` is the only MVP field). **Expiring-threshold blocker resolved 2026-09-01** (`RAISE-PRD.md` §16 Resolved Question 41, resolving follow-on Open Question 15b): the Expiring threshold is confirmed **per-Asset-Category configurable**, not a single global 90-day constant — defaulting to 90 days for all 5 current Asset Categories, admin-adjustable via a new P-018 Settings screen. **Implemented and formally executed 2026-09-01:** `frontend/src/lib/warranty.ts` (`getWarrantyStatus`, 3-state Active/Expiring/Expired), `frontend/src/types/settings.ts` (`WarrantySettings`), `frontend/src/services/settings-service.ts` + `settings-repository.ts` (per-category seed/merge), `frontend/src/pages/Settings/index.tsx` (new Warranty section, P-018), `frontend/src/pages/Assets/index.tsx` + `AssetDetail/index.tsx` (3-state badge). TC-WARRANTY-001-01 **PASS** (Warranty column/field displays `warrantyExpiry`). TC-WARRANTY-001-02 **PASS** (Active/Expiring/Expired badge correctly derived from `warrantyExpiry` + the asset's category's configured threshold, via `getWarrantyStatus()`). TC-WARRANTY-001-03 **PASS** — no longer BLOCKED: a category-specific threshold correctly flags an asset as Expiring, confirmed by automated test and live browser (setting IT Hardware to 5000 days flagged only IT Hardware assets Expiring, with an unrelated Mobile-category expired asset unaffected — no cross-category leakage). TC-WARRANTY-001-04 **PASS** (P-018 Settings > Warranty renders all 5 Asset Categories with a "90" default threshold input each). TC-WARRANTY-001-05 **PASS** (editing/saving one category's threshold recomputes only that category's assets; other categories unaffected). Verified via 151/151 automated tests (`tsc --noEmit`/lint clean) and live browser execution. **TC-WARRANTY-001-06 (non-admin access/write denial to P-018) formally executed 2026-09-01 and now PASS** — but only after a real defect was found and fixed first: the Settings route (`ROUTES.SETTINGS`) in `frontend/src/App.tsx` was **not actually gated to ADMIN**, sitting in the general authenticated-user route block instead of the existing `<Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>` block that already gates Administration/User Management/Role Management. Fixed by moving the Settings route into that existing block — no new RBAC mechanism invented, this reuses the exact mechanism already confirmed elsewhere in the app (PRD §16 Resolved Question 38, UI-only/client-side MVP enforcement level, per `RAISE-NFR-SEC-RBAC-001`). Confirmed by 2 new tests in `frontend/src/App.rbac.test.tsx` (non-ADMIN `EMPLOYEE`-role user redirected to the Forbidden page at `/settings`; ADMIN user let through), full suite 153/153 (was 151), `tsc --noEmit`/lint both clean, and live browser verification (2026-09-01): an EMPLOYEE-role user sees the app's real "403 — Access denied" Forbidden page at `/settings`, an ADMIN-role user sees the real Settings page render. **Both PRD-content blockers this row previously carried (field list, Q15; Expiring-threshold shape, Q15b) are now fully resolved** — see Gap 7 (§6, resolved 2026-08-29) and Gap 12 (§6, opened and RESOLVED same-revision, v1.3, 2026-09-01). **The one remaining coverage gap (TC-WARRANTY-001-06 unexecuted) is now also closed** — see Gap 13 (§6, opened v1.3, RESOLVED this revision v1.4, 2026-09-01). Overall row status: **PASS** — no remaining PRD-content blocker and no remaining unexecuted test case for this requirement. |
 | `RAISE-FR-ORACLE-001` | Oracle FA Integration + NBV/Depreciation | P0 / MVP | §6 Oracle FA Integration (incl. §6.4 "Phase 6" label note) | P-011 | AC-ORACLE-001 | TS-ORACLE-001 | TC-ORACLE-001-01..04 | **FAIL** — executed 2026-08-29 against the real running app, and the result is worse than the pre-existing BLOCKED status: the route the app maps to `RAISE-FR-ORACLE-001` (`/reconciliation`, labeled "Oracle FA Reconcile" in navigation) renders `ModulePage` — a generic, literal "foundation placeholder" `EmptyState` ("Oracle FA Reconciliation — foundation placeholder / Migrates from src/pages/Reconciliation.tsx once Oracle FA is connected in Phase 6."), confirmed via `frontend/src/pages/_shared/ModulePage.tsx` and real page text. TC-ORACLE-001-01 **FAILS even on its testable-now scope** — no "Asset Number", "Acquisition Information", "NBV", "Depreciation", "Oracle Source", or "Synchronization Status" field exists anywhere on this page (the closest analog, Asset Detail's own "Financial" section added for F-24, shows only Purchase Cost/Current Value/Purchase Date — no Oracle-specific fields at all). TC-ORACLE-001-02/-03/-04 **FAIL** — no "data unavailable"/"sync error"/"data conflict" state is rendered anywhere; the placeholder has no state logic at all. This is independent of, and does not wait on, the still-open integration-mechanism question (PRD §16 Q6–Q10, tracked as F-04) or the `ReconciliationPage` mapping question (Open Question 10a) — even presence-only testing of the four UI states fails, since no P-011 screen was actually built (a stub exists in its place). See `OPEN-FINDINGS.md` F-31 for this new build-gap finding (distinct from F-04's integration-mechanism gap). |
-| `RAISE-FR-ALERT-001` | Alerts | P0 / MVP | §14 Alert Architecture | P-012 | AC-ALERT-001 (AC-ALERT-001-01..10) | TS-ALERT-001 | TC-ALERT-001-01..10 | **PASS (partial) — reason for the partial status changes this revision (2026-09-04), the partial status itself does not.** Open Finding F-32 (no P-012 screen at all, route 404'd) was **RESOLVED 2026-09-01** — see that history retained below. Prior execution (2026-08-29) found `/notifications` rendered the app's generic 404 page, worse than the pre-existing BLOCKED status — see the superseded evidence retained in the Change Log (v1.1 → v1.2) for the historical record. **Business decision (2026-09-01):** scope the Alerts screen to derive its one alert-triggering condition from the one already confirmed elsewhere in the app — an asset's `warrantyExpiry` being in the past (the same `isWarrantyExpired` check the Assets list's Warranty column, `RAISE-FR-WARRANTY-001`, already uses) — no new field or data model. Severity was rendered honestly as "Not yet defined" rather than an invented High/Medium/Low, since severity mapping and trigger rules for any other condition remained undefined (PRD §6.9 Open Question, Open Finding F-05, at that time still open). **Implemented:** new `frontend/src/pages/Alerts/index.tsx`, registered at `ROUTES.NOTIFICATIONS` (`/notifications`) in `App.tsx` (previously had no route at all). **Formally executed 2026-09-01** against the real running app: `/notifications` renders 11 alert rows, matching the Dashboard's "Expired Warranty: 11" tile exactly. `TC-ALERT-001-01` **PASS** — the row for AST-0013 (Dell OptiPlex 7090) displays Severity "Not yet defined," Description "Warranty expired 2024-03-15," and the associated Asset as a clickable link that navigated correctly to Asset Detail. `TC-ALERT-001-02` **PASS** — confirmed the screen presents all 11 rows purely as an in-app table, with no Email/Teams/LINE or other delivery-channel UI anywhere on the page. Also covered by 2 passing automated tests in `frontend/src/pages/Alerts/index.test.tsx`; full frontend suite 149/149 at that time, `tsc --noEmit`/lint both clean. Both cases are **left exactly as recorded** — they remain PASS on the narrower, warranty-expired-only structural-display scope they actually tested; nothing about them is altered by the update below. **Update 2026-09-04 — PRD §16 Resolved Question 44 resolves Open Finding F-05's trigger-rules-and-severity cause (new Gap 16, §6, OPENED and left OPEN, NOT resolved this revision):** business confirmed exactly five MVP alert trigger conditions — Warranty EXPIRED → High (Asset), Maintenance ticket OVERDUE → High (Ticket, `targetResolutionDate` passed and status ≠ `DONE`), Warranty EXPIRING → Medium (Asset, reuses `RAISE-FR-WARRANTY-001`'s existing per-Asset-Category threshold, default 90 days), Maintenance ticket ON_HOLD → Medium (Ticket), IT Hardware Handover PENDING → Low (Handover, any non-terminal stage of the 4-stage `RAISE-FR-OPS-002` workflow) — a fixed, per-condition-type severity, not computed from days-overdue, asset value, or a nonexistent criticality field. Propagated through `RAISE-DESIGN.md` v0.13 §14 (Alert Architecture rewritten: alerts confirmed as a **read-time derivation** over existing Asset/Ticket/Handover state — no Alert entity, table, or persisted record), `RAISE-PROTOTYPE.md` v0.14 P-012 (rewritten with the five conditions, real severities, and three navigation destinations), `RAISE-ACCEPTANCE-CRITERIA.md` v0.12 §15 (`AC-ALERT-001` extended from 2 to 10 criteria, `AC-ALERT-001-03..10` new), and `RAISE-TEST-PLAN.md` v0.12 (`TS-ALERT-001`'s blocked-item note narrowed from "trigger rules TBD" to "Partial" — the business-rule question is closed, an implementation gap remains). `RAISE-TEST-CASES.md` v0.17 §14 adds eight new cases, `TC-ALERT-001-03` through `-10`, for 1:1 coverage. **This resolves the specification gap. It explicitly does not resolve the build gap, and this row is deliberately not upgraded to a full PASS as a result.** As of 2026-09-04, only the Warranty EXPIRED condition is actually implemented — and even that condition does not yet render its confirmed fixed **High** severity; the app still shows the literal placeholder "Not yet defined." The other four confirmed conditions (Maintenance ticket Overdue, Warranty Expiring, Maintenance ticket On Hold, IT Hardware Handover Pending) have no corresponding row/UI at all. `TC-ALERT-001-03` through `-08` are **BLOCKED (pending implementation)** — not driven by any open PRD question (severity mapping is confirmed, PRD §16 Resolved Question 44), solely an implementation gap; no PASS is claimed for any of them, including `TC-ALERT-001-03` (Warranty Expired → High), which is only a *partial* case of already-built behavior (`TC-ALERT-001-01` already confirmed the row/description/navigation; the fixed High severity value itself is the missing piece). `TC-ALERT-001-09` and `-10` are testable now against the currently-implemented Warranty Expired condition alone but have **not yet been formally executed** — no PASS is claimed for either. **Still genuinely open, unaffected by this update, not resolved and not decided here:** (1) the "authorized user" access gate on `AC-ALERT-001-01` (PRD §16 Q22, Open Finding F-08) remains **NOT TESTABLE YET**; (2) whether the header bell-icon dropdown in `AppShell` (`NotificationCenter.tsx`) is in scope for `RAISE-FR-ALERT-001` at all — an unreconciled contradiction between PRD §16 Resolved Question 35 (out of RAISE scope, distinct from this requirement) and `ESAPS-UI-FOUNDATION-BASELINE.md` line 88 (maps it to `RAISE-FR-ALERT-001` as EXTEND) — PRD v0.15 explicitly declines to pick a side, and this row does the same; see Gap 17 (§6, opened this revision, documentation-consistency finding, left OPEN); (3) alert acknowledgement/dismissal/read-unread/snooze, delivery/scheduling/digesting, notification preferences, and multi-channel (Email/Teams/LINE) delivery — all explicitly out of MVP scope, unchanged. See new **Gap 16** (§6, OPENED this revision, left OPEN — numbered after the existing 15, all of which remain resolved) and Gap 11 (§6, RESOLVED 2026-09-01 — infrastructure/build-gap scope only, unaffected and unchanged by this update) for the full record. **Update 2026-09-04 (v2.0) — Gap 16's build half formally executed; row stays `PASS (partial)` on a new, narrower reason:** PR #97 (merge commit `c2e6b76`, merged to `main`) implements all four previously-missing conditions, and Warranty Expired now renders its confirmed **High** severity (no more "Not yet defined" placeholder). `RAISE-TEST-CASES.md` v0.18 §14 records `TC-ALERT-001-03` through `-08` and `-10` (seven cases) formally executed against the real running app (`main` @ `c2e6b76`, signed in as `admin@raise.dev`/ADMIN, 19 seeded alert rows) and each now **PASS**: `-03` Warranty Expired → `High` (AST-0015, "Warranty expired 2026-07-22" → `/assets/a15`, 11 rows total all `High`); `-04` Maintenance Ticket Overdue → `High` (REQ-2026-0042 → `/maintenance/REQ-2026-0042`, 3 rows total); `-05` Warranty Expiring → `Medium` (AST-0012, "Warranty expires 2026-09-12" → `/assets/a12`, per-category threshold additionally confirmed live via Settings, 90→3 days, row removed 19→18, restored 19); `-06` Maintenance Ticket On Hold → `Medium` (REQ-2026-0041 → `/maintenance/REQ-2026-0041`); `-07` IT Hardware Handover Pending → `Low` (AHO-2026-001 → `/handovers/AHO-2026-001`, 3 rows total all `Low`); `-08` no severity computed from days-overdue/value/criticality, confirmed by two Warranty Expired rows dated 2024-03-15 and 2026-07-22 both rendering `High`; `-10` all 19 seeded rows across both pages matched one of the five confirmed conditions, no sixth condition observed. **`TC-ALERT-001-09` is `BLOCKED`, not PASS** — attempted and could not be executed as written: its step 2 ("Edit that Asset's `warrantyExpiry` to a future date") requires an asset-edit capability the product does not have (`frontend/src/services/asset-repository.ts` exposes only `create`/`assign`/`checkIn`, no `updateAsset`, no edit-asset UI). This is classified as a **test-case defect** in `RAISE-TEST-CASES.md` itself, not an implementation defect (the underlying read-time-derivation-with-no-persisted-record invariant `AC-ALERT-001-09` targets was separately, supportingly confirmed via a different, product-supported trigger — the Settings-threshold change described under `-05` above) and not a specification defect. **Because one case within Gap 16's scope remains unexecuted, Gap 16 is NOT closed this revision — only its recorded nature changes**, from "four of five conditions unbuilt" to "implemented and formally verified, except `TC-ALERT-001-09` which is unexecutable as written." `RAISE-FR-ALERT-001`'s row **stays `PASS (partial)`**; the reason no longer rests on missing implementation — it now rests on `TC-ALERT-001-09` being unexecuted, plus the still-separately-open "authorized user" access gate (PRD §16 Q22, Open Finding F-08), which this execution did not address. See Gap 16 (§6, updated this revision, still OPEN) and new **Gap 18** (§6, OPENED this revision, left OPEN — the `TC-ALERT-001-09` test-case-defect finding) for the full record. Gap 17 (`NotificationCenter.tsx` scope contradiction) is unaffected, untouched, still OPEN. |
+| `RAISE-FR-ALERT-001` | Alerts | P0 / MVP | §14 Alert Architecture | P-012 | AC-ALERT-001 (AC-ALERT-001-01..10) | TS-ALERT-001 | TC-ALERT-001-01..10 | **PASS (partial) — reason for the partial status changes this revision (2026-09-04), the partial status itself does not.** Open Finding F-32 (no P-012 screen at all, route 404'd) was **RESOLVED 2026-09-01** — see that history retained below. Prior execution (2026-08-29) found `/notifications` rendered the app's generic 404 page, worse than the pre-existing BLOCKED status — see the superseded evidence retained in the Change Log (v1.1 → v1.2) for the historical record. **Business decision (2026-09-01):** scope the Alerts screen to derive its one alert-triggering condition from the one already confirmed elsewhere in the app — an asset's `warrantyExpiry` being in the past (the same `isWarrantyExpired` check the Assets list's Warranty column, `RAISE-FR-WARRANTY-001`, already uses) — no new field or data model. Severity was rendered honestly as "Not yet defined" rather than an invented High/Medium/Low, since severity mapping and trigger rules for any other condition remained undefined (PRD §6.9 Open Question, Open Finding F-05, at that time still open). **Implemented:** new `frontend/src/pages/Alerts/index.tsx`, registered at `ROUTES.NOTIFICATIONS` (`/notifications`) in `App.tsx` (previously had no route at all). **Formally executed 2026-09-01** against the real running app: `/notifications` renders 11 alert rows, matching the Dashboard's "Expired Warranty: 11" tile exactly. `TC-ALERT-001-01` **PASS** — the row for AST-0013 (Dell OptiPlex 7090) displays Severity "Not yet defined," Description "Warranty expired 2024-03-15," and the associated Asset as a clickable link that navigated correctly to Asset Detail. `TC-ALERT-001-02` **PASS** — confirmed the screen presents all 11 rows purely as an in-app table, with no Email/Teams/LINE or other delivery-channel UI anywhere on the page. Also covered by 2 passing automated tests in `frontend/src/pages/Alerts/index.test.tsx`; full frontend suite 149/149 at that time, `tsc --noEmit`/lint both clean. Both cases are **left exactly as recorded** — they remain PASS on the narrower, warranty-expired-only structural-display scope they actually tested; nothing about them is altered by the update below. **Update 2026-09-04 — PRD §16 Resolved Question 44 resolves Open Finding F-05's trigger-rules-and-severity cause (new Gap 16, §6, OPENED and left OPEN, NOT resolved this revision):** business confirmed exactly five MVP alert trigger conditions — Warranty EXPIRED → High (Asset), Maintenance ticket OVERDUE → High (Ticket, `targetResolutionDate` passed and status ≠ `DONE`), Warranty EXPIRING → Medium (Asset, reuses `RAISE-FR-WARRANTY-001`'s existing per-Asset-Category threshold, default 90 days), Maintenance ticket ON_HOLD → Medium (Ticket), IT Hardware Handover PENDING → Low (Handover, any non-terminal stage of the 4-stage `RAISE-FR-OPS-002` workflow) — a fixed, per-condition-type severity, not computed from days-overdue, asset value, or a nonexistent criticality field. Propagated through `RAISE-DESIGN.md` v0.13 §14 (Alert Architecture rewritten: alerts confirmed as a **read-time derivation** over existing Asset/Ticket/Handover state — no Alert entity, table, or persisted record), `RAISE-PROTOTYPE.md` v0.14 P-012 (rewritten with the five conditions, real severities, and three navigation destinations), `RAISE-ACCEPTANCE-CRITERIA.md` v0.12 §15 (`AC-ALERT-001` extended from 2 to 10 criteria, `AC-ALERT-001-03..10` new), and `RAISE-TEST-PLAN.md` v0.12 (`TS-ALERT-001`'s blocked-item note narrowed from "trigger rules TBD" to "Partial" — the business-rule question is closed, an implementation gap remains). `RAISE-TEST-CASES.md` v0.17 §14 adds eight new cases, `TC-ALERT-001-03` through `-10`, for 1:1 coverage. **This resolves the specification gap. It explicitly does not resolve the build gap, and this row is deliberately not upgraded to a full PASS as a result.** As of 2026-09-04, only the Warranty EXPIRED condition is actually implemented — and even that condition does not yet render its confirmed fixed **High** severity; the app still shows the literal placeholder "Not yet defined." The other four confirmed conditions (Maintenance ticket Overdue, Warranty Expiring, Maintenance ticket On Hold, IT Hardware Handover Pending) have no corresponding row/UI at all. `TC-ALERT-001-03` through `-08` are **BLOCKED (pending implementation)** — not driven by any open PRD question (severity mapping is confirmed, PRD §16 Resolved Question 44), solely an implementation gap; no PASS is claimed for any of them, including `TC-ALERT-001-03` (Warranty Expired → High), which is only a *partial* case of already-built behavior (`TC-ALERT-001-01` already confirmed the row/description/navigation; the fixed High severity value itself is the missing piece). `TC-ALERT-001-09` and `-10` are testable now against the currently-implemented Warranty Expired condition alone but have **not yet been formally executed** — no PASS is claimed for either. **Still genuinely open, unaffected by this update, not resolved and not decided here:** (1) the "authorized user" access gate on `AC-ALERT-001-01` (PRD §16 Q22, Open Finding F-08) remains **NOT TESTABLE YET**; (2) whether the header bell-icon dropdown in `AppShell` (`NotificationCenter.tsx`) is in scope for `RAISE-FR-ALERT-001` at all — an unreconciled contradiction between PRD §16 Resolved Question 35 (out of RAISE scope, distinct from this requirement) and `ESAPS-UI-FOUNDATION-BASELINE.md` line 88 (maps it to `RAISE-FR-ALERT-001` as EXTEND) — PRD v0.15 explicitly declines to pick a side, and this row does the same; see Gap 17 (§6, opened this revision, documentation-consistency finding, left OPEN); (3) alert acknowledgement/dismissal/read-unread/snooze, delivery/scheduling/digesting, notification preferences, and multi-channel (Email/Teams/LINE) delivery — all explicitly out of MVP scope, unchanged. See new **Gap 16** (§6, OPENED this revision, left OPEN — numbered after the existing 15, all of which remain resolved) and Gap 11 (§6, RESOLVED 2026-09-01 — infrastructure/build-gap scope only, unaffected and unchanged by this update) for the full record. **Update 2026-09-04 (v2.0) — Gap 16's build half formally executed; row stays `PASS (partial)` on a new, narrower reason:** PR #97 (merge commit `c2e6b76`, merged to `main`) implements all four previously-missing conditions, and Warranty Expired now renders its confirmed **High** severity (no more "Not yet defined" placeholder). `RAISE-TEST-CASES.md` v0.18 §14 records `TC-ALERT-001-03` through `-08` and `-10` (seven cases) formally executed against the real running app (`main` @ `c2e6b76`, signed in as `admin@raise.dev`/ADMIN, 19 seeded alert rows) and each now **PASS**: `-03` Warranty Expired → `High` (AST-0015, "Warranty expired 2026-07-22" → `/assets/a15`, 11 rows total all `High`); `-04` Maintenance Ticket Overdue → `High` (REQ-2026-0042 → `/maintenance/REQ-2026-0042`, 3 rows total); `-05` Warranty Expiring → `Medium` (AST-0012, "Warranty expires 2026-09-12" → `/assets/a12`, per-category threshold additionally confirmed live via Settings, 90→3 days, row removed 19→18, restored 19); `-06` Maintenance Ticket On Hold → `Medium` (REQ-2026-0041 → `/maintenance/REQ-2026-0041`); `-07` IT Hardware Handover Pending → `Low` (AHO-2026-001 → `/handovers/AHO-2026-001`, 3 rows total all `Low`); `-08` no severity computed from days-overdue/value/criticality, confirmed by two Warranty Expired rows dated 2024-03-15 and 2026-07-22 both rendering `High`; `-10` all 19 seeded rows across both pages matched one of the five confirmed conditions, no sixth condition observed. **`TC-ALERT-001-09` is `BLOCKED`, not PASS** — attempted and could not be executed as written: its step 2 ("Edit that Asset's `warrantyExpiry` to a future date") requires an asset-edit capability the product does not have (`frontend/src/services/asset-repository.ts` exposes only `create`/`assign`/`checkIn`, no `updateAsset`, no edit-asset UI). This is classified as a **test-case defect** in `RAISE-TEST-CASES.md` itself, not an implementation defect (the underlying read-time-derivation-with-no-persisted-record invariant `AC-ALERT-001-09` targets was separately, supportingly confirmed via a different, product-supported trigger — the Settings-threshold change described under `-05` above) and not a specification defect. **Because one case within Gap 16's scope remains unexecuted, Gap 16 is NOT closed this revision — only its recorded nature changes**, from "four of five conditions unbuilt" to "implemented and formally verified, except `TC-ALERT-001-09` which is unexecutable as written." `RAISE-FR-ALERT-001`'s row **stays `PASS (partial)`**; the reason no longer rests on missing implementation — it now rests on `TC-ALERT-001-09` being unexecuted, plus the still-separately-open "authorized user" access gate (PRD §16 Q22, Open Finding F-08), which this execution did not address. See Gap 16 (§6, updated this revision, still OPEN) and new **Gap 18** (§6, OPENED this revision, left OPEN — the `TC-ALERT-001-09` test-case-defect finding) for the full record. Gap 17 (`NotificationCenter.tsx` scope contradiction) is unaffected, untouched, still OPEN. **Update 2026-09-04 (v2.1) — `TC-ALERT-001-09` corrected then executed; Gap 16 and Gap 18 CLOSE; row stays `PASS (partial)` on a narrowed, single reason:** `RAISE-TEST-CASES.md` v0.19 first corrected `TC-ALERT-001-09`'s written step 2 (Open Finding F-42 / Gap 18) — re-pointed away from the asset-edit capability the product does not have, to completing seeded ticket `REQ-2026-0041` to status `DONE` via Ticket Detail's real Update Status control (`ticketService.updateExecutionStatus`) — and deliberately left it unexecuted at that point, so the correction was not tailored to whatever the subsequent run would show. `RAISE-TEST-CASES.md` v0.20 then **formally executed** the corrected procedure against merged `main` @ `30f176c`, signed in as `admin@raise.dev` (ADMIN), and it **PASSED**: Alerts (P-012) showed 19 total rows with `REQ-2026-0041` appearing as exactly two (`High` "Maintenance Ticket Overdue," `Medium` "Maintenance Ticket On Hold"); completing that ticket to `DONE` through the product's own Update Status control (Status select → `Done`, Resolution Notes, Save Update — no test-only hook, no direct data manipulation) dropped the Alerts total to 17, a drop of exactly 2, with a full scan of every row across both pages confirming zero remaining references to that ticket; a scan of every button on the Alerts screen found no acknowledge/dismiss/clear/mark-read/snooze affordance anywhere, consistent with no persisted Alert record (Design v0.13 §14, read-time derivation) — the rows disappeared purely because both underlying conditions stopped holding. **With this, all 10 `TC-ALERT-001-*` cases have now been formally executed and all PASS** (`-01`/`-02` 2026-09-01; `-03..-08`/`-10` 2026-09-04 v2.0; `-09` 2026-09-04 v2.1). **Gap 18 CLOSES** — the test-case defect is resolved: the procedure was corrected before it was executed, which is the evidence it was not tailored to pass, and the corrected procedure is now proven genuinely runnable. **Gap 16 CLOSES** — its own stated discipline (a gap does not close while a case in its scope is unexecuted) is now satisfied: every `TC-ALERT-001-*` case in its scope has been executed and PASSes. **`RAISE-FR-ALERT-001`'s row stays `PASS (partial)` — this is not an oversight.** Its partial status has always rested on two independent reasons; only one (the unexecuted test case) is resolved by this execution. **The other remains fully open and untouched:** the "authorized user" access gate on `AC-ALERT-001-01` (PRD §16 Q22, Open Finding **F-08** — role/permission matrix content, a business decision nobody has made) remains **NOT TESTABLE YET**. The row's reason is updated to cite F-08 alone — every test case in scope now PASSes; the remaining partiality is a decision gap, not an engineering or test-coverage gap, and must not be read as the requirement being complete. Gap 17 (`NotificationCenter.tsx` scope contradiction) remains unaffected, untouched, still OPEN — no side is picked by this or any prior revision. See Gap 16 (§6, CLOSED this revision) and Gap 18 (§6, CLOSED this revision) for the full record. |
 | `RAISE-FR-AUDIT-001` | Immutable Audit Log | P0 / MVP | §15 Audit Architecture | P-013 | AC-AUDIT-001 | TS-AUDIT-001 | TC-AUDIT-001-01..03 | **BLOCKED (partial)** — testable subset executed 2026-08-26 against the real running app, all **PASS**: TC-AUDIT-001-01 (checked in a real asset via the UI; confirmed via `auditService.listAuditLogs` that an entry was recorded with actor `"Demo Admin"`, action `"Asset checked in"`, entity `asset/a2`, and a real timestamp); TC-AUDIT-001-02 (no edit/delete control exists anywhere near a rendered audit entry, and neither `AuditRepository`/`MockAuditRepository` nor the backend router expose any update/delete method or route — verified by both UI inspection and code); TC-AUDIT-001-03 (the recorded entry is visible on Asset Detail's "Audit" tab to a logged-in user). Field taxonomy (Design §15) and role-gate correctness (PRD §16 Q22) remain BLOCKED — unchanged by this execution, since those require a PRD/Design answer, not more testing. |
 | `RAISE-FR-EXEC-001` | Executive Dashboard | P0 / MVP | §13 Executive Intelligence (rewritten 2026-08-31 — "Logical Dashboard — Current MVP (As Built)") | P-014 (rewritten 2026-08-31 to match as-built) | AC-EXEC-001 (rewritten 2026-08-31: AC-EXEC-001-01/-02) | TS-EXEC-001 (corrected 2026-08-31) | TC-EXEC-001-01..02 (rewritten 2026-08-31) | **PASS** — re-executed 2026-08-31 against the real running app (`frontend/src/pages/Dashboard/index.tsx`, route `/dashboard`, page title literally "Executive Dashboard" — confirming P-014 and this route are the same entry point) after the F-22 spec correction. `TC-EXEC-001-01` **PASS** — all 8 KPI tiles present and confirmed via real page text: Total Assets (15), Available (4), Assigned (8), In Maintenance (2), Expired Warranty (11), Software Licenses (10), Monthly Depreciation ($42.8K, illustrative), Monthly Cost ($156.2K, illustrative). `TC-EXEC-001-02` **PASS** — all 10 sections present: AI Insights, AI Portfolio Health, Oracle FA Synced (Oracle FA Reconciliation), Asset Lifecycle, Department Distribution, Asset Status, Asset Type, Pending Approvals, Recent Activities, Maintenance Calendar. This closes Gap 8's re-execution item — see `OPEN-FINDINGS.md` F-22, now Resolved (R-13). The NBV/Risk absence sub-item (`AC-EXEC-001`'s narrative note, no numbered `-03` criterion) remains **BLOCKED (partial)**, tied to Open Finding F-03 (PRD §16 Q3–Q4, NBV/Risk formulas undefined) — unaffected by this re-execution, never claimed resolved. |
 | `RAISE-AI-SEARCH-001` | Natural Language Search | P0 / MVP (Current AI) | §9 Natural Language Search, §8.2 AI Flow, §20 Error Handling | P-015 | AC-AI-SEARCH-001, AC-AI-STATES | TS-AI-SEARCH-001, TS-AI-STATES | TC-AI-SEARCH-001-01..03, TC-AI-STATES-01..05 | **`TS-AI-SEARCH-001` FAIL** — executed 2026-08-29 against the real running app, and the result is worse than the pre-existing BLOCKED status. Two distinct "AI" surfaces exist, neither matching P-015's spec: (1) the header "AI Assistant" drawer (`frontend/src/components/AppShell.tsx`) accepts **no input at all** — a static placeholder message only ("AI Assistant will connect to POST /api/v1/ai/chat once the AI module migration phase lands."), confirmed live via screenshot; (2) the Assets page's "Ask AI" box (`frontend/src/pages/Assets/index.tsx`'s `handleAISearch`) is a hardcoded keyword-to-filter matcher (e.g. "laptop"/"notebook" → `Type = Laptop`) ported from legacy ESAPS, predating this PRD/prototype — it narrows the existing Asset list, it does not return a natural-language "answer." TC-AI-SEARCH-001-01 **FAILS** — no genuine answer is ever returned by either surface. TC-AI-SEARCH-001-02 **FAILS** — no "Sources / Data Used" section exists anywhere. TC-AI-SEARCH-001-03 **FAILS** — submitting the PRD's exact illustrative question ("Which notebooks expire within 90 days?") to the Assets "Ask AI" box only interpreted it as `Type = Laptop` (keyword match on "notebook") and filtered the existing table, producing none of the required affected-asset count or Asset/Warranty/Age/Maintenance/Status columns. This is independent of the still-open citation-precision/format question (PRD §16 Q18, tracked as F-06) — even presence-only testing fails. See `OPEN-FINDINGS.md` F-33 for this build-gap finding (distinct from F-06). **`TS-AI-STATES` FAIL** — executed 2026-08-29 against the same two surfaces, same root cause. None of the 5 required literal state messages ("No matching assets were found.", "RAISE could not answer from the available data.", "Some source data is currently unavailable.", "Conflicting information was found. Please review the source records.") exist anywhere in `frontend/src` (confirmed by source grep). Live-verified: submitting a deliberately nonsense query ("asdkjqwiuey zzz nonsense query xyz") to the Assets "Ask AI" box produced "AI interpreted: No specific filters detected — showing all assets." — i.e. it falls back to showing everything rather than a "no match" state, since it is a keyword filter with no concept of "no data found." TC-AI-STATES-01 (Success) **FAILS** for the same reason as `TS-AI-SEARCH-001` (no genuine answer/relevant-data/source-context triple is ever shown together). TC-AI-STATES-02 (No-data) **FAILS** — no "no matching assets" message exists; a non-matching query just shows the unfiltered list. TC-AI-STATES-03 (Unable-to-answer), TC-AI-STATES-04 (Source-unavailable), and TC-AI-STATES-05 (Data-conflict) **FAIL** — none of these states can even be simulated, since there is no backend AI call to fail, no source-availability check, and no conflict-detection logic anywhere in either surface. Since both suites trace to the exact same two built surfaces and the same root cause (no real Q&A engine exists), this **broadens F-33** rather than opening a new finding — the same precedent already established by F-22 (Dashboard, two Prototype screens/one page). |
@@ -1244,6 +1230,35 @@ except itself.
 `OPEN-FINDINGS.md` update (recording this narrowing, if tracked there) is
 handled separately, out of this document's scope.
 
+**Gap 16 is CLOSED as of this revision (2026-09-04, v2.1).** The fix this
+gap's own "revised what would close this gap" note named has now happened,
+in the correct order: `RAISE-TEST-CASES.md` v0.19 first corrected
+`TC-ALERT-001-09`'s step 2 (re-pointed to completing seeded ticket
+`REQ-2026-0041` to `DONE` via Ticket Detail's real Update Status control),
+deliberately leaving it unexecuted at that point — then `RAISE-TEST-CASES.md`
+v0.20 formally executed the corrected procedure against merged `main` @
+`30f176c` and it **PASSED**: Alerts dropped from 19 to 17 total rows,
+zero rows referencing `REQ-2026-0041` remained on either page, and no
+acknowledge/dismiss/mark-read/snooze affordance was found anywhere on the
+Alerts screen, consistent with the read-time-derivation architecture
+(Design v0.13 §14). **This satisfies Gap 16's own governing discipline
+exactly**: it was never reported closed while any case in its scope
+remained unexecuted, and now none does — **all 10 `TC-ALERT-001-*` cases
+are formally executed and all PASS.** This closure was verified directly
+against `RAISE-TEST-CASES.md` v0.20, not taken on trust.
+
+**What this closure does and does not mean for `RAISE-FR-ALERT-001`'s row
+(§3):** Gap 16 closing removes one of the row's two independent reasons for
+`PASS (partial)` — the other, the "authorized user" access gate on
+`AC-ALERT-001-01` (PRD §16 Q22, Open Finding F-08), is untouched by this
+closure and remains **NOT TESTABLE YET**. **The row therefore stays `PASS
+(partial)`, not a full PASS** — Gap 16's closure narrows the row's reason to
+F-08 alone; it does not remove the partial status itself. See the
+`RAISE-FR-ALERT-001` row (§3, Update 2026-09-04 v2.1) for the full record.
+
+`OPEN-FINDINGS.md` update (recording this closure, if tracked there) is
+handled separately, out of this document's scope.
+
 **Gap 17 (OPENED 2026-09-04 — a documentation-consistency finding, left
 OPEN, not decided either way):** an unreconciled contradiction exists
 between two documents this matrix's chain relies on: `RAISE-PRD.md` v0.15
@@ -1333,6 +1348,30 @@ this revision.
 
 `OPEN-FINDINGS.md` update (recording this as a new finding, if tracked
 there) is handled separately, out of this document's scope.
+
+**Gap 18 is CLOSED as of this revision (2026-09-04, v2.1).** Both halves
+this gap's own "what would close this gap" note required are now done, in
+the order that note specified: **first**, `RAISE-TEST-CASES.md` v0.19
+corrected `TC-ALERT-001-09`'s step 2 — substituting completing a
+Maintenance ticket to `DONE` (via Ticket Detail's real Update Status
+control, `ticketService.updateExecutionStatus`) for the unsupported
+asset-`warrantyExpiry`-edit trigger — and deliberately left the case
+unexecuted at that point, precisely so the correction could not be tailored
+to whatever the subsequent execution would show. **Then**, `RAISE-TEST-
+CASES.md` v0.20 formally re-executed the corrected procedure against merged
+`main` @ `30f176c`, and it **PASSED**: the corrected trigger genuinely
+works exactly as written, dropping the Alerts total from 19 to 17 and
+clearing both of `REQ-2026-0041`'s rows with no dismiss/acknowledge step
+anywhere. **This is the substantive proof the correction was sound** — a
+test-case defect fix is not truly closed by the edit alone, only by
+demonstrating the corrected procedure is genuinely executable, which this
+execution does. The **before-then-execute ordering is itself part of the
+evidence**: because the correction (v0.19) predates the execution (v0.20)
+by a distinct, separately-recorded update, the PASS cannot have been
+achieved by silently tailoring the procedure to a result already observed.
+
+`OPEN-FINDINGS.md` update (recording this closure, if tracked there) is
+handled separately, out of this document's scope.
 
 ---
 
@@ -1689,8 +1728,36 @@ downstream document's citation of an upstream document's content:
   — the `TC-ALERT-001-09` test-case-defect finding itself — is tracked
   separately as Gap 18 (§6, OPENED this revision, left OPEN, correction
   requires no business decision).
+- **`RAISE-FR-ALERT-001` / Gap 16 and Gap 18 CLOSE — thread walked this
+  revision (2026-09-04, v2.1), verified against `RAISE-TEST-CASES.md` v0.20
+  directly, not taken on trust:** the five upstream documents (`RAISE-PRD.md`
+  v0.15, `RAISE-DESIGN.md` v0.13, `RAISE-PROTOTYPE.md` v0.14,
+  `RAISE-ACCEPTANCE-CRITERIA.md` v0.12, `RAISE-TEST-PLAN.md` v0.12) are
+  **unchanged** from v2.0 — this update is produced entirely by two
+  `RAISE-TEST-CASES.md` revisions this matrix is read-only on: v0.19 (a
+  test-case-defect **correction**, `TC-ALERT-001-09` step 2 re-pointed to a
+  Maintenance-ticket-to-`DONE` trigger, left deliberately unexecuted) and
+  v0.20 (the corrected procedure **formally executed** against merged
+  `main` @ `30f176c`, confirmed **PASS** — 19 → 17 total alert rows, both
+  `REQ-2026-0041` rows gone, no dismiss/acknowledge affordance found). The
+  correction landing in a separate, earlier revision (v0.19) than its
+  execution (v0.20) is itself confirmed in the source document — this is
+  the evidence the procedure was not tailored to its own result. **Gap 18
+  closes**: both halves its own closure note required (correction, then
+  re-execution) are done, in the required order. **Gap 16 closes**: its own
+  governing discipline — not reported closed while any case in its scope is
+  unexecuted — is now satisfied, since all 10 `TC-ALERT-001-*` cases are
+  formally executed and PASS. This matrix's own §3 row mirrors this exactly:
+  **still `PASS (partial)`, not upgraded to a full PASS** — the reason is
+  narrowed from "one case unexecuted, plus F-08" to "F-08 alone." No
+  document in this thread claims or implies the "authorized user" access
+  gate (PRD §16 Q22, Open Finding F-08) or the `NotificationCenter.tsx`
+  scope contradiction (Gap 17) are resolved or touched by this execution —
+  both remain genuinely open, carried forward unchanged. Thread confirmed
+  complete — Gap 16 and Gap 18 are both now **CLOSED** (§6); Gap 17 remains
+  **OPEN**, untouched.
 - Full re-walk confirmed no other Test Status cell in §3/§4 has drifted from
-  the current text of `RAISE-TEST-CASES.md` v0.18 (cross-checked TC-by-TC):
+  the current text of `RAISE-TEST-CASES.md` v0.20 (cross-checked TC-by-TC):
   `RAISE-FR-ASSET-001`, `RAISE-FR-ORACLE-001`, `RAISE-FR-AUDIT-001`,
   `RAISE-AI-SEARCH-001`, `RAISE-FR-LIFE-001`,
   `RAISE-AI-DOC-001..004` all match their respective TC Blocked-column text
@@ -1885,40 +1952,38 @@ not touched by this correction.
   `employeeId` link exists between the User/auth model and Employee/
   recipient model anywhere in this codebase, a documented, accepted MVP
   limitation. See Gap 15, §6, RESOLVED (Resolution Update, v1.8).
-- **Updated this revision (2026-09-04, v2.0), Gap 16 — nature changed,
-  still NOT resolved:** `RAISE-FR-ALERT-001`'s severity/trigger-rule content
-  blocker (Open Finding F-05) was resolved at the specification layer at
-  v1.9 (PRD §16 Resolved Question 44). **This revision adds real
-  implementation and real execution evidence** (PR #97, merge commit
-  `c2e6b76`, merged to `main`; `RAISE-TEST-CASES.md` v0.18 §14):
-  `TC-ALERT-001-03` through `-08` and `-10` (seven of the eight new cases)
-  are now formally executed and **PASS** — Compliance Review may treat
-  those seven cases' coverage as a confirmed `PASS`. **Compliance Review
-  must not, however,** read this as full coverage of Gap 16's scope:
-  `TC-ALERT-001-09` was attempted and is **BLOCKED**, not PASS — its written
-  step 2 requires an asset-edit capability the product does not have (see
-  Gap 18 below). `RAISE-FR-ALERT-001`'s row remains, and should be treated
-  as, **PASS (partial)** — Compliance Review should read the "partial"
-  qualifier as now meaning "spec resolved, four of five conditions built
-  and verified, one test case unexecuted due to a test-case defect," not
-  "spec still undefined" (v1.9's reading) and not "fully built and fully
-  verified." See Gap 16, §6, updated this revision, still OPEN.
-- **New this revision (2026-09-04, v2.0), Gap 18 OPENED — a test-case
-  defect, deliberately left OPEN:** `TC-ALERT-001-09`'s written step 2
-  ("Edit that Asset's `warrantyExpiry` to a future date") specifies a
-  capability the product does not have — there is no `updateAsset` method
-  and no edit-asset UI anywhere in `frontend/src/pages/`. **Compliance
-  Review must not** read this as an implementation defect against
-  `AC-ALERT-001-09` (that criterion is satisfied by the app as built,
-  supportingly confirmed via a different, product-supported trigger — the
-  Settings-threshold change recorded on the `TC-ALERT-001-09` row) or as a
-  specification defect (`AC-ALERT-001-09` is sound and fully specified).
-  **Compliance Review should note** that correcting this requires no
-  business decision — only a deliberate edit to `RAISE-TEST-CASES.md`'s
-  step 2, substituting a product-supported trigger (e.g., completing a
-  Maintenance ticket to `DONE`) — and that this correction is outside this
-  document's read-only scope on `RAISE-TEST-CASES.md`. See Gap 18, §6,
-  OPENED and left OPEN.
+- **Updated this revision (2026-09-04, v2.1), Gap 16 — CLOSED:**
+  `RAISE-FR-ALERT-001`'s severity/trigger-rule content blocker (Open Finding
+  F-05) was resolved at the specification layer at v1.9 (PRD §16 Resolved
+  Question 44), and its build half was formally verified for seven of eight
+  cases at v2.0 (PR #97, `RAISE-TEST-CASES.md` v0.18). **This revision
+  closes the last item**: `RAISE-TEST-CASES.md` v0.19 corrected
+  `TC-ALERT-001-09`'s step 2 (re-pointed to completing a Maintenance ticket
+  to `DONE`), left deliberately unexecuted at that point, and
+  `RAISE-TEST-CASES.md` v0.20 then formally executed the corrected
+  procedure against merged `main` @ `30f176c` — **PASS**: Alerts dropped
+  19 → 17, both `REQ-2026-0041` rows gone, no dismiss/acknowledge affordance
+  found anywhere. **All 10 `TC-ALERT-001-*` cases are now formally executed
+  and PASS.** Compliance Review may treat `RAISE-FR-ALERT-001`'s full
+  `TC-ALERT-001-*` test-case coverage as confirmed `PASS`. **Compliance
+  Review must not, however,** read this as the requirement being fully
+  compliant: the row stays **PASS (partial)** — the "partial" qualifier now
+  means solely "the 'authorized user' access gate on `AC-ALERT-001-01` is
+  NOT TESTABLE YET, pending a role/permission-matrix business decision (PRD
+  §16 Q22, Open Finding F-08)," not any remaining coverage or build
+  question. See Gap 16, §6, CLOSED this revision.
+- **Updated this revision (2026-09-04, v2.1), Gap 18 — CLOSED:**
+  `TC-ALERT-001-09`'s test-case defect (its original step 2 specified an
+  asset-edit capability the product does not have) is now resolved in
+  substance, not merely edited: `RAISE-TEST-CASES.md` v0.19 corrected the
+  procedure and v0.20 formally proved it genuinely executable by running it
+  against merged `main` @ `30f176c` and recording a **PASS**. Compliance
+  Review may treat `TC-ALERT-001-09`'s coverage as a confirmed `PASS`, on
+  a corrected-and-proven procedure. **Compliance Review should note**, for
+  the record, the ordering this closure relies on: the correction (v0.19)
+  was recorded as a distinct, separate update *before* the execution
+  (v0.20) that proved it — the procedure was not tailored to a result
+  already observed. See Gap 18, §6, CLOSED this revision.
 - **New this revision (2026-09-04), Gap 17 OPENED — a documentation-
   consistency finding, deliberately left undecided:** PRD §16 Resolved
   Question 35 and `ESAPS-UI-FOUNDATION-BASELINE.md` line 88 disagree on
@@ -2045,43 +2110,40 @@ not touched by this correction.
       and name-string-based recipient matching on "My Pending Assignments"
       (no `employeeId` link exists) — all remain genuinely open, tracked
       separately (§6, Gap 15's Resolution and Resolution Update subsections)
-- [ ] **Gap 16 (§6), updated this revision (2026-09-04, v2.0), remains
-      OPEN — nature changed, not resolved.** Opened v1.9 when
-      `RAISE-FR-ALERT-001`'s severity/trigger-rule content blocker (Open
-      Finding F-05) was resolved at the spec layer but four of five
-      conditions were unbuilt. **This revision:** PR #97 (merge commit
-      `c2e6b76`, merged to `main`) implements all four missing conditions
-      and Warranty EXPIRED now renders its confirmed "High" severity;
-      `RAISE-TEST-CASES.md` v0.18 formally executed `TC-ALERT-001-03`
-      through `-08` and `-10` (seven cases) against the real running app —
-      all **PASS**. **Explicitly not resolved by this**, and correctly not
-      claimed as such: `TC-ALERT-001-09`, attempted and **BLOCKED** on a
-      test-case defect (see Gap 18), remains unexecuted. Because a case
-      within this gap's own scope is still unexecuted, this gap is **not**
-      checked off. `RAISE-FR-ALERT-001`'s row (§3) stays `PASS (partial)` —
-      not upgraded — with its reason narrowed again from "trigger rules
-      defined, four of five conditions unbuilt" to "implemented and
-      verified, except `TC-ALERT-001-09` which is unexecutable as written."
-      This gap will not be checked off until `TC-ALERT-001-09` is corrected
-      and formally re-executed, per this document's own no-silent-resolution
-      discipline
-- [ ] **Gap 18 (§6) is OPENED this revision (2026-09-04, v2.0) and
-      deliberately left OPEN — a test-case defect, not a code/spec gap:**
+- [x] **Gap 16 (§6) is CLOSED this revision (2026-09-04, v2.1).** Opened
+      v1.9 when `RAISE-FR-ALERT-001`'s severity/trigger-rule content blocker
+      (Open Finding F-05) was resolved at the spec layer but four of five
+      conditions were unbuilt; narrowed at v2.0 when PR #97 implemented all
+      four missing conditions and seven of eight new cases formally PASSed,
+      leaving only `TC-ALERT-001-09` unexecuted. **This revision:**
+      `RAISE-TEST-CASES.md` v0.19 corrected `TC-ALERT-001-09`'s step 2
+      (re-pointed to completing a Maintenance ticket to `DONE`), left
+      deliberately unexecuted at that point, and v0.20 formally executed the
+      corrected procedure against merged `main` @ `30f176c` — **PASS**
+      (Alerts 19 → 17, both `REQ-2026-0041` rows gone, no dismiss/
+      acknowledge affordance found). **All 10 `TC-ALERT-001-*` cases are now
+      formally executed and PASS**, satisfying this gap's own scope-coverage
+      discipline exactly. `RAISE-FR-ALERT-001`'s row (§3) **stays `PASS
+      (partial)`** — not upgraded — with its reason narrowed to the single
+      remaining independent cause: the "authorized user" access gate (PRD
+      §16 Q22, Open Finding F-08), unaffected by this closure
+- [x] **Gap 18 (§6) is CLOSED this revision (2026-09-04, v2.1).**
       `TC-ALERT-001-09`'s written step 2 ("Edit that Asset's
-      `warrantyExpiry` to a future date") specifies an asset-edit capability
+      `warrantyExpiry` to a future date") specified an asset-edit capability
       the product does not have (`frontend/src/services/asset-repository.ts`
-      exposes only `create`/`assign`/`checkIn`). Classified as a defect in
-      the test case's own written procedure — explicitly **not** an
-      implementation defect (`AC-ALERT-001-09`'s underlying invariant was
-      supportingly confirmed via a different, product-supported trigger) and
-      **not** a specification defect (`AC-ALERT-001-09` is sound as
-      written). **Correcting this requires no business decision** — only a
-      deliberate edit to `RAISE-TEST-CASES.md`'s step 2 (e.g., substituting
-      "complete a Maintenance ticket to `DONE`" for the unsupported
-      warranty-edit trigger) followed by formal re-execution. This matrix is
-      read-only on `RAISE-TEST-CASES.md`, so that correction is not made
-      here. This gap will not be checked off until the test case is
-      corrected and formally re-executed with a PASS/FAIL result recorded
+      exposes only `create`/`assign`/`checkIn`) — a defect in the test
+      case's own written procedure, explicitly **not** an implementation
+      defect (`AC-ALERT-001-09`'s underlying invariant was supportingly
+      confirmed via a different, product-supported trigger) and **not** a
+      specification defect (`AC-ALERT-001-09` is sound as written).
+      **Closure required, and got, both halves in order:** `RAISE-TEST-
+      CASES.md` v0.19 corrected step 2 (substituting "complete a
+      Maintenance ticket to `DONE`" for the unsupported warranty-edit
+      trigger), deliberately left unexecuted; v0.20 then formally
+      re-executed it against merged `main` @ `30f176c` and recorded a
+      **PASS**. The correction landing in a distinct, earlier revision than
+      its execution is the evidence the procedure was not tailored to a
+      result already known
 - [ ] **Gap 17 (§6) is OPENED (v1.9, 2026-09-04) and deliberately left
       OPEN, untouched this revision (v2.0) — a documentation-consistency
       finding, not a code/test gap:** `RAISE-PRD.md` §16 Resolved Question
@@ -2119,28 +2181,32 @@ Development (Source Code)
 RAISE-COMPLIANCE-REVIEW.md
 ```
 
-**Gaps 1–15 are all resolved; Gap 16, Gap 17, and new Gap 18 are OPEN, not
-resolved.** Gap 16 (opened v1.9, 2026-09-04, PRD resolution only) is a build
-gap whose nature was updated this revision (v2.0, 2026-09-04, real
-execution): PR #97 (merge commit `c2e6b76`, merged to `main`) implements
-all four previously-missing conditions and Warranty EXPIRED now renders its
-confirmed severity; `RAISE-TEST-CASES.md` v0.18 formally executed
-`TC-ALERT-001-03` through `-08` and `-10` (seven cases) — all **PASS**.
-`TC-ALERT-001-09` was attempted and is **BLOCKED** — a test-case defect, not
-an implementation or specification defect (see Gap 18). Because one case
-within its scope remains unexecuted, **Gap 16 is not closed** — only its
-recorded reason changes, from "four of five conditions unbuilt" to
-"implemented and verified, except `TC-ALERT-001-09` which is unexecutable
-as written." Gap 18 (new this revision) is the `TC-ALERT-001-09` test-case
-defect itself — a distinct finding from Gap 16, correctable with no
-business decision, only a deliberate edit to `RAISE-TEST-CASES.md`'s
-written procedure (outside this document's read-only scope). Gap 17
+**Gaps 1–16 and Gap 18 are all resolved; only Gap 17 remains OPEN.** Gap 16
+(opened v1.9, 2026-09-04, PRD resolution only; nature narrowed v2.0,
+2026-09-04, real execution of seven of eight cases) is **CLOSED this
+revision (v2.1, 2026-09-04)**: `RAISE-TEST-CASES.md` v0.19 first corrected
+`TC-ALERT-001-09`'s written procedure (Gap 18's fix — re-pointed to
+completing a Maintenance ticket to `DONE`, deliberately left unexecuted at
+that point), then `RAISE-TEST-CASES.md` v0.20 formally executed the
+corrected procedure against merged `main` @ `30f176c` and it **PASSED**
+(Alerts 19 → 17, both `REQ-2026-0041` rows gone, no dismiss/acknowledge
+affordance found anywhere). **All 10 `TC-ALERT-001-*` cases are now
+formally executed and PASS**, satisfying Gap 16's own no-case-left-unexecuted
+discipline. **Gap 18 is CLOSED this revision** — the test-case defect is
+resolved in substance: the correction (v0.19) predates its proving execution
+(v0.20) by a distinct, separately-recorded update, which is the evidence the
+procedure was not tailored to whatever passed. `RAISE-FR-ALERT-001`'s row
+(§3) **stays `PASS (partial)`** — this closure removes one of the row's two
+independent reasons for partial status, not the status itself; the
+"authorized user" access gate on `AC-ALERT-001-01` (PRD §16 Q22, Open
+Finding **F-08**, a role/permission-matrix content decision nobody has
+made) remains **NOT TESTABLE YET** and untouched by this execution. Gap 17
 (opened v1.9, untouched this revision) remains a documentation-consistency
 finding — an unreconciled contradiction between PRD §16 Resolved Question
 35 and `ESAPS-UI-FOUNDATION-BASELINE.md` line 88 over whether
 `NotificationCenter.tsx` is in scope for `RAISE-FR-ALERT-001` — this
 document does not decide it either way. See Gap 16, Gap 17, and Gap 18 (§6)
-for the full record, and the `RAISE-FR-ALERT-001` row in §3, which is
+for the full record, and the `RAISE-FR-ALERT-001` row in §3, which remains
 deliberately **not** upgraded to a full PASS as a result of this revision's
 real formal test execution.
 
@@ -2294,24 +2360,20 @@ current scope-boundary list.
    e-signature/recipient-decline questions and the employeeId-link gap
    behind "My Pending Assignments"'s name-string-based recipient matching,
    should either be prioritized.
-5. **Resolved this revision (2026-09-04, v2.0) — `RAISE-FR-ALERT-001`'s four
-   previously-missing confirmed alert conditions and fixed per-condition
-   severity values are now implemented (PR #97, merge commit `c2e6b76`,
-   merged to `main`) and formally executed** (Gap 16, §6, updated, still
-   OPEN): Maintenance ticket Overdue → High, Warranty Expiring → Medium,
-   Maintenance ticket On Hold → Medium, IT Hardware Handover Pending → Low
-   are all built, and the already-built Warranty Expired row now renders its
-   confirmed "High" severity. `TC-ALERT-001-03` through `-08` and `-10`
-   (seven cases) are formally executed and **PASS**. **Remaining action:**
-   correct `TC-ALERT-001-09`'s written step 2 — it specifies an asset-edit
-   capability the product does not have — to use a state change the product
-   actually supports (e.g., completing a Maintenance ticket to `DONE`), then
-   formally re-execute it (Gap 18, §6, OPENED, left OPEN). This correction
-   requires no further product/business decision, only a test-artifact
-   edit. Once `TC-ALERT-001-09` passes, Gap 16 can be evaluated for closure
-   and `RAISE-FR-ALERT-001`'s row (§3) can be re-evaluated beyond `PASS
-   (partial)` — subject also to the separately-open "authorized user" access
-   gate (PRD §16 Q22, Open Finding F-08), unaffected by this action item.
+5. **Resolved this revision (2026-09-04, v2.1) — `RAISE-FR-ALERT-001`'s
+   build gap is now fully closed; Gap 16 and Gap 18 are CLOSED.** All five
+   confirmed alert conditions are implemented (PR #97, v2.0), and
+   `TC-ALERT-001-09` — the last unexecuted case — was corrected
+   (`RAISE-TEST-CASES.md` v0.19, re-pointed to completing a Maintenance
+   ticket to `DONE`) and then formally executed (`RAISE-TEST-CASES.md`
+   v0.20, against merged `main` @ `30f176c`) — **PASS**. **All 10
+   `TC-ALERT-001-*` cases are now formally executed and PASS.** **Remaining
+   action, unaffected by this closure and not part of it:** resolve the
+   role/permission-matrix content question (PRD §16 Q22, Open Finding F-08)
+   that keeps `AC-ALERT-001-01`'s "authorized user" access gate **NOT
+   TESTABLE YET** — this is the sole remaining reason `RAISE-FR-ALERT-001`'s
+   row (§3) stays `PASS (partial)` rather than a full PASS, and it requires
+   a business decision this document cannot make.
 6. **New this revision — resolve the `NotificationCenter.tsx` in-scope-or-
    not contradiction** (Gap 17, §6, OPENED, left OPEN): PRD §16 Resolved
    Question 35 and `ESAPS-UI-FOUNDATION-BASELINE.md` line 88 disagree on
@@ -2325,55 +2387,59 @@ current scope-boundary list.
 
 ## Document Status
 
-**Version:** 2.0 (`RAISE-FR-ALERT-001` — **real formal test execution
-performed 2026-09-04 against the running app on merged `main` @ `c2e6b76`
-(PR #97, Gap 16). Gap 16 stays OPEN, its nature updated; new Gap 18 OPENED,
-also left OPEN.** PR #97 implements the four alert conditions Gap 16
-recorded as unbuilt at v1.9 (Maintenance ticket Overdue → High, Warranty
-Expiring → Medium, Maintenance ticket On Hold → Medium, IT Hardware
-Handover Pending → Low), and Warranty EXPIRED now renders its confirmed
-"High" severity (no more "Not yet defined" placeholder).
-`RAISE-TEST-CASES.md` v0.18 §14 records `TC-ALERT-001-03` through `-08` and
-`-10` (seven cases) formally executed against the real running app and each
-now **PASS**. `TC-ALERT-001-09` was attempted and is **BLOCKED** — not an
-implementation or specification defect, but a **test-case defect**: its
-written step 2 ("Edit that Asset's `warrantyExpiry` to a future date")
-requires an asset-edit capability the product does not have
-(`frontend/src/services/asset-repository.ts` exposes only `create`/
-`assign`/`checkIn`). Supporting, not substituting, evidence: lowering the
-IT Hardware "Expiring" threshold 90 → 3 days via the real Settings UI
-removed the Warranty Expiring row and the alert total fell 19 → 18,
-restoring to 19 on reset. **Because Gap 16's own scope has one unexecuted
-case, Gap 16 is NOT closed this revision** — only its recorded nature
-changes: from "four of five conditions unbuilt" (v1.9) to "implemented and
-verified, except `TC-ALERT-001-09` which is unexecutable as written" (this
-revision). `RAISE-FR-ALERT-001`'s row (§3) **stays `PASS (partial)`** — not
-upgraded — with its reason updated again: it no longer rests on missing
-implementation, it rests on `TC-ALERT-001-09` being unexecuted, plus the
-separately-open "authorized user" access gate (PRD §16 Q22, Open Finding
-F-08), unaffected by this execution. New **Gap 18** records the
-`TC-ALERT-001-09` test-case-defect finding as its own gap, distinct from
-Gap 16, because its fix (a test-artifact edit substituting a
-product-supported trigger, e.g. completing a Maintenance ticket to `DONE`)
-requires no business decision, unlike Gap 16's original build-work fix.
-`TC-ALERT-001-01`/`-02` are untouched, keeping their genuine 2026-09-01
-PASS. Gap 17 (the `NotificationCenter.tsx` scope contradiction, opened
-v1.9) is unaffected, untouched, still OPEN. Gaps 1–15 unchanged, retained
-below for history.)
+**Version:** 2.1 (`RAISE-FR-ALERT-001` — **`TC-ALERT-001-09` corrected then
+formally executed 2026-09-04; Gap 16 CLOSED, Gap 18 CLOSED. Gap 17
+unaffected, still OPEN.** `RAISE-TEST-CASES.md` v0.19 first corrected
+`TC-ALERT-001-09`'s step 2 (Open Finding F-42 / Gap 18) — re-pointed from
+the unsupported asset-`warrantyExpiry`-edit trigger to completing seeded
+ticket `REQ-2026-0041` to status `DONE` via Ticket Detail's real Update
+Status control (`ticketService.updateExecutionStatus`) — and deliberately
+left the case unexecuted at that point. `RAISE-TEST-CASES.md` v0.20 then
+formally executed the corrected procedure against merged `main` @
+`30f176c`, signed in as `admin@raise.dev` (ADMIN), and it **PASSED**:
+Alerts (P-012) showed 19 total rows with `REQ-2026-0041` appearing as
+exactly two (`High` "Maintenance Ticket Overdue," `Medium` "Maintenance
+Ticket On Hold"); completing it to `DONE` through the product's own Update
+Status control (no test-only hook, no direct data manipulation) dropped the
+total to 17, a drop of exactly 2, with a full scan of both pages confirming
+zero remaining rows referencing that ticket, and a scan of every button on
+the Alerts screen confirming no acknowledge/dismiss/clear/mark-read/snooze
+affordance exists anywhere — consistent with no persisted Alert record
+(Design v0.13 §14, read-time derivation). **The correction (v0.19) landing
+in a distinct, earlier revision than the execution that proved it (v0.20)
+is the evidence the procedure was not tailored to whatever passed.** With
+this, **all 10 `TC-ALERT-001-*` cases are now formally executed and PASS**
+(`-01`/`-02` 2026-09-01, historical; `-03..-08`/`-10` 2026-09-04, v2.0;
+`-09` 2026-09-04, this revision). **Gap 18 CLOSES**: its own closure note
+required exactly this correction-then-execution, in this order, and both
+are now done. **Gap 16 CLOSES**: its own governing discipline — not
+reported closed while any case in its scope is unexecuted — is now
+satisfied. `RAISE-FR-ALERT-001`'s row (§3) **stays `PASS (partial)` — not
+upgraded to a full PASS.** Its partial status has always rested on two
+independent reasons; this closure removes only one (the unexecuted test
+case). The other — the "authorized user" access gate on `AC-ALERT-001-01`
+(PRD §16 Q22, Open Finding **F-08**, role/permission-matrix content, a
+business decision nobody has made) — remains **NOT TESTABLE YET**,
+untouched by this execution. The row's reason is updated to cite F-08
+alone: every `TC-ALERT-001-*` case in scope now PASSes; the remaining
+partiality is a decision gap, not an engineering or coverage gap. Gap 17
+(the `NotificationCenter.tsx` scope contradiction, opened v1.9) is
+unaffected, untouched, still OPEN. Gaps 1–15 unchanged, retained below for
+history.)
 **Status:** Draft for Traceability Review
-**Source:** [`RAISE-TEST-CASES.md`](../06-test-cases/RAISE-TEST-CASES.md) v0.18 (§14 `TC-ALERT-001-03..10` formally executed against merged `main` @ `c2e6b76`, PR #97). `RAISE-PRD.md` v0.15, `RAISE-DESIGN.md` v0.13, `RAISE-PROTOTYPE.md` v0.14, `RAISE-ACCEPTANCE-CRITERIA.md` v0.12, and `RAISE-TEST-PLAN.md` v0.12 are unchanged from v1.9 — this revision reflects real implementation (PR #97) and a real test-execution update, not a further upstream spec/business resolution. This revision updates only `RAISE-TRACEABILITY-MATRIX.md` itself.
+**Source:** [`RAISE-TEST-CASES.md`](../06-test-cases/RAISE-TEST-CASES.md) v0.20 (§14 `TC-ALERT-001-09` corrected in v0.19, then formally executed in v0.20 against merged `main` @ `30f176c`). `RAISE-PRD.md` v0.15, `RAISE-DESIGN.md` v0.13, `RAISE-PROTOTYPE.md` v0.14, `RAISE-ACCEPTANCE-CRITERIA.md` v0.12, and `RAISE-TEST-PLAN.md` v0.12 are unchanged from v1.9/v2.0 — this revision reflects a real test-execution update to a test document this matrix is read-only on, not a further upstream spec/business resolution or any code change. This revision updates only `RAISE-TRACEABILITY-MATRIX.md` itself.
 **Reference:** VERSCAN only
 **Last Re-Verified:** 2026-09-04 (`RAISE-FR-ALERT-001` row updated to record
-Gap 16's build-half formal execution — seven of eight new test cases now
-PASS against merged `main` @ `c2e6b76`, one (`TC-ALERT-001-09`) BLOCKED on a
-newly-identified test-case defect (new Gap 18) — see Change Log v1.9 → v2.0
-below and Gap 16 (updated)/Gap 18 (opened), §6, for the full record. **Real
-source code (PR #97) and a real formal test-execution session both occurred
-this revision** — the "PASS (partial)" status carried forward is unchanged;
-the documented reason for it has narrowed for the second time. `RAISE-FR-
-OPS-002`'s row (unaffected this revision) is retained below for history:
-`TC-OPS-002-01..09` executed and confirmed PASS end-to-end, backend and
-frontend (Gap 15, §6, RESOLVED, v1.7/v1.8).
+`TC-ALERT-001-09`'s correction-then-execution and the resulting closure of
+Gap 16 and Gap 18 — all 10 `TC-ALERT-001-*` cases now PASS — see Change Log
+v2.0 → v2.1 below and Gap 16 (CLOSED)/Gap 18 (CLOSED), §6, for the full
+record. **A real formal test-execution session occurred this revision,
+verified directly against `RAISE-TEST-CASES.md` v0.20 rather than taken on
+trust** — the "PASS (partial)" status carried forward is unchanged; the
+documented reason for it has narrowed to a single remaining cause (Open
+Finding F-08). `RAISE-FR-OPS-002`'s row (unaffected this revision) is
+retained below for history: `TC-OPS-002-01..09` executed and confirmed PASS
+end-to-end, backend and frontend (Gap 15, §6, RESOLVED, v1.7/v1.8).
 
 Prior re-verification work on `RAISE-FR-OPS-002`'s general rule and
 `RAISE-FR-ASSET-003` (unaffected this revision) is retained below for
@@ -2414,7 +2480,89 @@ Pro showed "Expiring" consistently in both its Lifecycle row and Warranty &
 Coverage section badge. `TC-WARRANTY-001-06` was **not** executed that
 pass — this is exactly the gap v1.4 closes above.
 
-**Change Log — v1.9 → v2.0 (this revision, 2026-09-04, real formal test
+**Change Log — v2.0 → v2.1 (this revision, 2026-09-04, real formal test
+execution of the corrected `TC-ALERT-001-09` against merged `main` @
+`30f176c` — verified against `RAISE-TEST-CASES.md` v0.20 rather than taken
+on trust):**
+
+1. **Root cause / trigger.** `RAISE-TEST-CASES.md` v0.19 corrected
+   `TC-ALERT-001-09`'s written step 2 (Open Finding F-42 / Gap 18) — the
+   original step, "Edit that Asset's `warrantyExpiry` to a future date,"
+   specified an asset-edit capability the product has never had. The
+   correction re-pointed it at completing seeded ticket `REQ-2026-0041` to
+   status `DONE` via Ticket Detail's real Update Status control
+   (`ticketService.updateExecutionStatus`), and was deliberately left
+   **unexecuted** at that point — v0.20 then formally executed it against
+   the real running app on merged `main` @ `30f176c`, signed in as
+   `admin@raise.dev` (ADMIN).
+2. **Execution result — PASS, verified against `RAISE-TEST-CASES.md` v0.20
+   directly.** Step 1: Alerts (P-012) showed 19 total alerts; seeded ticket
+   `REQ-2026-0041` appeared as exactly two rows (`High` "Maintenance Ticket
+   Overdue," `Medium` "Maintenance Ticket On Hold"), as the corrected
+   procedure predicted. Step 2: on that ticket's detail view within P-009,
+   the real Update Status control was used — Status select → `Done`,
+   Resolution Notes entered, "Save Update" — the product's own
+   `ticketService.updateExecutionStatus` path, no test-only hook or direct
+   data manipulation; an "Updated" confirmation was shown. Step 3: returned
+   to Alerts; total alert count was 17, a drop of exactly 2; a scan of every
+   row across both pages found zero rows referencing `REQ-2026-0041`. A scan
+   of every button rendered on the Alerts screen found no acknowledge/
+   dismiss/clear/mark-read/snooze affordance anywhere, consistent with no
+   persisted Alert record (Design v0.13 §14, read-time derivation) — the
+   rows disappeared purely because both underlying conditions stopped
+   holding once the ticket's status became `DONE`.
+3. **Ordering confirmed as the evidence of a non-tailored fix.** The
+   correction (`RAISE-TEST-CASES.md` v0.19) is a distinct, separately dated
+   update from the execution that proved it (v0.20) — the procedure was
+   written and committed before its result was known, not adjusted
+   afterward to match an observed outcome. This document records that
+   ordering explicitly, per the instruction that opened this update.
+4. **`TC-ALERT-001-09` — Test Status now `PASS`, no longer unexecuted or
+   BLOCKED.** With this, all 10 `TC-ALERT-001-*` cases (`-01` through
+   `-10`) have been formally executed and all **PASS**.
+5. **Gap 18 — CLOSED.** The test-case defect this gap recorded is resolved
+   in substance: the corrected procedure has been proven genuinely
+   runnable, not merely rewritten. See §6, Gap 18, new "Gap 18 is CLOSED"
+   subsection.
+6. **Gap 16 — CLOSED.** Gap 16's own stated discipline — not reported closed
+   while any case in its scope remains unexecuted — is now satisfied, since
+   `TC-ALERT-001-09` was the last such case. See §6, Gap 16, new "Gap 16 is
+   CLOSED" subsection.
+7. **§3 `RAISE-FR-ALERT-001` row updated.** A new paragraph records the
+   2026-09-04 (v2.1) correction-then-execution result and confirms the row
+   **stays** `PASS (partial)`, with its reason narrowed to the single
+   remaining independent cause (Open Finding F-08). All prior paragraphs
+   (v1.9, v2.0) are left in place, unaltered, for history.
+8. **§6 Gap 16 and Gap 18 each gained a new closure subsection** ("Gap 16 is
+   CLOSED as of this revision," "Gap 18 is CLOSED as of this revision"),
+   appended after their existing histories, which are left unaltered. Gap
+   17 is untouched.
+9. **§7 Chain Consistency Check** gained a new `RAISE-FR-ALERT-001` / Gap 16
+   and Gap 18 closure thread-walk bullet; the "full re-walk" bullet's cited
+   Test Cases version updated v0.18 → v0.20.
+10. **§8 Compliance Review Readiness** — the Gap 16 and Gap 18 bullets each
+    rewritten to record closure; the Gap 17 bullet remains marked untouched.
+11. **§9 Checklist** — the Gap 16 and Gap 18 items each changed from
+    unchecked `[ ]` to checked `[x]`; the Gap 17 item unchanged.
+12. **§10 Next Step** — the "Gaps 1–15 resolved" summary paragraph rewritten
+    to "Gaps 1–16 and Gap 18 resolved; only Gap 17 remains OPEN"; action
+    item 5 rewritten to record the closure and redirect the one remaining
+    action to resolving Open Finding F-08.
+13. **Document Status (this section)** — Version bumped 2.0 → 2.1, Source
+    line updated to cite `RAISE-TEST-CASES.md` v0.20 as the operative source
+    for this revision (all other chain documents unchanged from v1.9/v2.0),
+    Last Re-Verified date updated to 2026-09-04 (same date as v2.0, later
+    session).
+14. **Not touched this revision:** `RAISE-PRD.md`, `RAISE-DESIGN.md`,
+    `RAISE-PROTOTYPE.md`, `RAISE-ACCEPTANCE-CRITERIA.md`, `RAISE-TEST-
+    PLAN.md` (all unchanged from v1.9/v2.0); `RAISE-FR-OPS-002`'s row (§3),
+    Gap 15 (§6, remains RESOLVED), Gap 17 (§6, remains OPEN, undecided), and
+    every other row/Gap in this document — this revision's scope is
+    `RAISE-FR-ALERT-001`'s `TC-ALERT-001-09` closure (Gap 16, Gap 18) only.
+
+---
+
+**Change Log — v1.9 → v2.0 (prior revision, 2026-09-04, real formal test
 execution against merged `main` @ `c2e6b76`, PR #97 — verified against
 `RAISE-TEST-CASES.md` v0.18 rather than taken on trust):**
 

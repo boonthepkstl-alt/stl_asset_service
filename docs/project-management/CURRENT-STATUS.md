@@ -9,7 +9,14 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-09-04, after `CHECKPOINT-2026-09-04-006` (PR #97 — **Gap
+**As of:** 2026-09-04, after `CHECKPOINT-2026-09-04-007` — `TC-ALERT-001-09`'s
+unexecutable procedure corrected and executed (**PASS**), closing **F-42
+(R-24)**, **Gap 18** and, with it, **Gap 16**. **All 10 `TC-ALERT-001-*`
+cases now pass.** `RAISE-FR-ALERT-001` nevertheless **remains
+`PASS (partial)`** — every test case in its scope passes, but the
+"authorized user" access gate stays NOT TESTABLE YET behind **F-08**, a
+business decision. That is a decision gap, not a coverage gap. The
+preceding milestone was `CHECKPOINT-2026-09-04-006` (PR #97 — **Gap
 16 implemented and formally executed**: all five alert conditions now
 derive with their confirmed severities, and `TC-ALERT-001-03..10` were
 executed against the real running app on merged `main` `c2e6b76` with
@@ -43,7 +50,7 @@ work is the PR #78–#93 series covering the Employee form, a round of
 user-driven UI/IA corrections, the CI pipeline, route-level code
 splitting, and backend error-response hygiene — see the dedicated paragraph at the end of
 this preamble, which is the newest item here.** Re-verified live this
-close-out pass, on merged `main` at `c2e6b76`: frontend
+close-out pass, on merged `main` at `30f176c`: frontend
 `npx tsc --noEmit` clean, `npm run lint` clean (0 warnings),
 `npm run build` clean, `npm run test` — **49 test files / 250 tests
 passing**; backend `go build ./...`, `go vet ./...`, `go test ./...` all
@@ -444,21 +451,23 @@ paragraph, which is a summary of a summary and can drift.
 Triaged against [`RAISE-TRACEABILITY-MATRIX.md`](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md)
 §3–§5 — re-check that file before picking an item, it may have changed.
 
-**Buildable now:** **One, and it is small: correct `TC-ALERT-001-09`'s
-procedure and execute it (F-42 / Gap 18).** Gap 16's implementation half
-shipped in PR #97 and seven of its eight cases now PASS against the real
-app. The eighth cannot run as written — its step 2 says "edit that
-Asset's `warrantyExpiry`", but the product has **no asset-edit
-capability at all** (`asset-repository.ts` exposes only `create`,
-`assign`, `checkIn`). That is a **test-case defect**, not an
-implementation or specification defect: the implementation was shown
-correct during the same execution by lowering the Expiring threshold
-90 → 3 via Settings, which took the alert total 19 → 18 and back.
+**Buildable now:** **None.** The previous entry here — correcting and
+executing `TC-ALERT-001-09` — is done (`CHECKPOINT-2026-09-04-007`,
+R-24), and with it **Gap 16 and Gap 18 are closed**. The traceability
+matrix is at **v2.1 with one gap open: Gap 17**, the bell-icon scope
+contradiction, which is a **documentation decision**, not an engineering
+task — two project documents contradict each other and somebody has to
+say which is right.
 
-Re-pointing the case at a state change the product *does* support — for
-example completing a maintenance ticket to `DONE` — needs **no business
-decision**, and executing it closes **Gap 16**. It is the single item
-standing between the current state and that closure.
+The remaining engineering items are not buildable-now: **F-41** (some
+4xx bodies carry raw driver errors) needs a per-site audit to separate
+genuine sentinels from wrapped driver errors before it can be scoped,
+and **F-40** (flaky navigate-away assertions) has all known sites fixed
+and is a pattern to watch rather than a task.
+
+**The project is decision-limited again**, and more sharply than before:
+`RAISE-FR-ALERT-001` now has **full test coverage passing** and is held
+off a complete `PASS` by **F-08** alone.
 
 Everything below this line describes the state *before* F-05 was
 resolved and is kept for the contrast it draws:

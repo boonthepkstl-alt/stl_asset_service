@@ -67,7 +67,10 @@ describe('CreateEmployeePage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Create Employee' }));
 
     await waitFor(() => expect(screen.getByText(/Test Employee .* added to system\./)).toBeInTheDocument());
-    expect(screen.queryByLabelText('Full Name')).not.toBeInTheDocument();
+    // The toast and the route change commit independently, so the form's removal needs its own
+    // wait rather than being asserted synchronously off the back of the toast. Asserting it
+    // directly passed locally but failed on CI, which is how this was found.
+    await waitFor(() => expect(screen.queryByLabelText('Full Name')).not.toBeInTheDocument());
   });
 
   it('blocks submit when the email matches an existing employee', async () => {

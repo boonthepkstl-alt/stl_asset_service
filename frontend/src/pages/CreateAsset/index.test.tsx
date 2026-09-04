@@ -78,6 +78,8 @@ describe('CreateAssetPage', () => {
     await waitFor(() => {
       expect(screen.getByText(/Test Laptop .* has been registered\./)).toBeInTheDocument();
     });
-    expect(screen.queryByLabelText('Asset Name')).not.toBeInTheDocument();
+    // Same independent-commit race as CreateEmployee's equivalent test: the toast and the
+    // route change flush separately, so the form's removal needs its own wait.
+    await waitFor(() => expect(screen.queryByLabelText('Asset Name')).not.toBeInTheDocument());
   });
 });

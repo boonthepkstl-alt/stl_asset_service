@@ -101,7 +101,6 @@ func (obj sampleController) CreateSample(c *fiber.Ctx) error {
 		log.Errorf("CreateSample service error: %v", err)
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Failed to create record",
-			"error":   err.Error(),
 		})
 	}
 
@@ -158,7 +157,6 @@ func (obj sampleController) UpdateSample(c *fiber.Ctx) error {
 		log.Errorf("UpdateSample service error: %v", err)
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Failed to update record",
-			"error":   err.Error(),
 		})
 	}
 
@@ -191,7 +189,6 @@ func (obj sampleController) DeleteSample(c *fiber.Ctx) error {
 		log.Errorf("DeleteSample service error: %v", err)
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Failed to delete record",
-			"error":   err.Error(),
 		})
 	}
 
@@ -236,7 +233,6 @@ func (obj sampleController) ListSamples(c *fiber.Ctx) error {
 		log.Errorf("ListSamples service error: %v", err)
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Failed to retrieve records",
-			"error":   err.Error(),
 		})
 	}
 

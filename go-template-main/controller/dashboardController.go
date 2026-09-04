@@ -37,7 +37,6 @@ func (obj *dashboardController) GetDashboardStats(c *fiber.Ctx) error {
 		log.Errorf("GetDashboardStats service error: %v", err)
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Failed to retrieve dashboard stats",
-			"error":   err.Error(),
 		})
 	}
 

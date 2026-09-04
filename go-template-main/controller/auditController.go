@@ -49,7 +49,6 @@ func (obj *auditController) ListAuditLogs(c *fiber.Ctx) error {
 		log.Errorf("ListAuditLogs service error: %v", err)
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Failed to retrieve audit logs",
-			"error":   err.Error(),
 		})
 	}
 

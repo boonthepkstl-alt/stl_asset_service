@@ -53,7 +53,6 @@ func (obj *employeeController) ListEmployees(c *fiber.Ctx) error {
 		log.Errorf("ListEmployees service error: %v", err)
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Failed to retrieve employees",
-			"error":   err.Error(),
 		})
 	}
 
@@ -102,7 +101,6 @@ func (obj *employeeController) CreateEmployee(c *fiber.Ctx) error {
 		log.Errorf("CreateEmployee service error: %v", err)
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Failed to create employee",
-			"error":   err.Error(),
 		})
 	}
 
@@ -136,7 +134,6 @@ func (obj *employeeController) UpdateEmployee(c *fiber.Ctx) error {
 		}
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Failed to update employee",
-			"error":   err.Error(),
 		})
 	}
 

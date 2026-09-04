@@ -3394,6 +3394,60 @@ Commits: `4151613` (workflow + Go test), `43d638e` (pin actions past the Node 20
 
 ---
 
+## CHECKPOINT-2026-09-04-003
+
+**Phase:** Phase 1 — Foundation (continuous; frontend engineering debt, not a product capability)
+**Feature:** Frontend bundle / initial load
+**Task:** Close **F-18** — route-level code splitting. Selected by the Next Work Discovery recorded in `NEXT-STEP.md` (2026-09-04 run) as the best remaining 🟢 candidate: the smallest self-contained task that invents no business rule
+
+**Objective:** cut what a first-time visitor downloads before the app is usable. The production build emitted a **single 694 KiB JS chunk** containing all **27** routes — `React.lazy` was used **zero** times — so someone landing on `/login` fetched the Asset Registry, the AI Decision Center and every admin screen before seeing a password field. Vite warned about it on every build.
+
+**What was implemented:** every authenticated page in `frontend/src/App.tsx` is now a `React.lazy` chunk behind a single `Suspense` boundary wrapping `<Routes>`. The pages use named exports, so each dynamic import is remapped to the default shape `React.lazy` requires. Vite splits on the dynamic import, so no `manualChunks` configuration was needed.
+**What was deliberately not changed:** three components stay eager, each for a stated reason — `Login`, the entry point of every unauthenticated visit, where a lazy chunk would add a round-trip to the most common first paint; and `NotFound`/`Forbidden`, both small and both rendered as the destination of a catch-all or a redirect, where showing a loading fallback *before* an error page is worse than the bytes saved. The `Suspense` fallback is deliberately identical to `ProtectedRoute`'s existing auth-loading markup, so a cold chunk fetch and an auth check read as one wait rather than two different ones.
+**What was added:** nothing beyond the above. **What was removed:** the 21 eager page imports.
+
+**Files changed:** 1 (`+124/-59`) — `frontend/src/App.tsx`.
+**Database changes:** None. **API changes:** None. **Backend changes:** None. **Frontend changes:** module-loading only — no component, route path, guard or rendered output changed.
+
+**Results, measured on the production build rather than estimated:**
+
+| | Before | After |
+|---|---|---|
+| Entry chunk | 694 KiB | **305 KiB** (312.5 kB, gzip 102 kB) — **−56%** |
+| Chunks emitted | 1 | 80 |
+| Total JS | 694 KiB | 789 KiB |
+| Vite >500 kB warning | present | **gone** |
+
+Total JS grows by ~95 KiB of chunking overhead. That is the honest trade and is recorded rather than omitted: the overhead is paid only for pages a user actually opens, while the initial load — which every user pays — drops by more than half.
+
+**Tests:**
+- Unit Test: none new
+- Integration Test: none new
+- **No test needed changing, and that was verified rather than assumed.** Lazy routes resolve asynchronously, which is exactly the timing class behind **F-40**, so the App-level suites were checked before the change: only `App.rbac.test.tsx` imports from `@/App`, and it takes `ProtectedRoute` with **stub elements**, not the real pages; the other seven `App.*.test.tsx` files build their own route trees from **direct page imports**, so `App.tsx`'s lazy wrappers never enter those paths.
+
+**Validation:**
+- Build: Pass (warning-free) · Lint: Pass (0 warnings) · Type Check: Pass
+- Test: Pass — **48 test files / 235 tests**, unchanged from before this PR
+- **CI on `main` itself:** run `33845187022`, event `push`, `head_branch=main`, sha `02ae966` — both jobs green
+- Live E2E through the real UI: login lands on the dashboard, and `/assets`, `/employees`, `/handovers`, `/notifications` and `/settings` each render their real content — **no console errors, no failed requests**
+
+**Requirement Traceability:**
+PRD: **N/A — no governing FR.** Design: N/A. Acceptance Criteria: N/A. Test Case: N/A. This is engineering debt recorded as **F-18**; **performance targets themselves remain undefined (F-17)**, so this closes a self-identified build warning, **not** a stated NFR. No chain document was touched — `RAISE-TRACEABILITY-MATRIX.md` stays at v1.8 with all 15 gaps closed, and this work neither adds nor removes coverage.
+
+**Findings resolved:** **F-18** → Resolved (**R-21**).
+**Findings discovered during validation:** none.
+
+**Git:**
+Branch: `perf/route-level-code-splitting`
+Commit: `6f92774`, merged to `main` via [PR #91](https://github.com/boonthepkstl-alt/stl_asset_service/pull/91) (merge commit `02ae966`), 2026-09-04.
+
+**Status:** ✅ Complete for its confirmed scope.
+**Known Issues:** None from this change. Two second-order notes, neither a defect: the `Suspense` fallback is a full-height "Loading..." panel, so a cold navigation briefly replaces the shell rather than showing an in-place skeleton — acceptable at this scale and not worth a design decision now; and because performance targets are undefined (**F-17**), there is no threshold this result can be declared to *meet*, only a warning it clears.
+**Remaining Work:** None for F-18.
+**Next Step:** **F-19** is the only 🟢 item left (46 `err.Error()` occurrences across 8 controllers leaking raw Go error strings into JSON responses), and it is low-urgency because no deployment exists (**F-13**). See `NEXT-STEP.md`: the project is **decision-limited, not engineering-limited** — the traceability matrix is closed at v1.8 and every non-`PASS` row in the Compliance Review waits on a business answer. **F-05** (alert trigger rules/channels) and **F-03** (NBV/Risk formulas) unlock more than every remaining buildable task combined.
+
+---
+
 ## Level 2 — Feature Checkpoints
 
 ### FEATURE-CHECKPOINT-project-tracking-governance

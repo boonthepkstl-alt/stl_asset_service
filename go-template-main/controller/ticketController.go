@@ -81,7 +81,7 @@ func (obj *ticketController) ListTickets(c *fiber.Ctx) error {
 	resp, err := obj.ticketService.ListTickets(query)
 	if err != nil {
 		log.Errorf("ListTickets service error: %v", err)
-		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": "Failed to retrieve tickets", "error": err.Error()})
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": "Failed to retrieve tickets"})
 	}
 	return c.Status(http.StatusOK).JSON(resp)
 }
@@ -112,7 +112,7 @@ func (obj *ticketController) ListTechnicians(c *fiber.Ctx) error {
 	technicians, err := obj.ticketService.ListTechnicians()
 	if err != nil {
 		log.Errorf("ListTechnicians service error: %v", err)
-		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": "Failed to retrieve technicians", "error": err.Error()})
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": "Failed to retrieve technicians"})
 	}
 	return c.Status(http.StatusOK).JSON(technicians)
 }
@@ -215,7 +215,7 @@ func (obj *ticketController) updateTicket(c *fiber.Ctx, run func(id string, body
 		if errors.Is(err, service.ErrTechnicianNotFound) {
 			return c.Status(http.StatusBadRequest).JSON(fiber.Map{"message": "Technician not found"})
 		}
-		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": "Failed to update ticket", "error": err.Error()})
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": "Failed to update ticket"})
 	}
 	return c.Status(http.StatusOK).JSON(updated)
 }

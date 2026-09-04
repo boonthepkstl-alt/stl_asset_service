@@ -60,7 +60,7 @@ func (obj *assetHandoverController) ListHandovers(c *fiber.Ctx) error {
 	resp, err := obj.handoverService.ListHandovers(query)
 	if err != nil {
 		log.Errorf("ListHandovers service error: %v", err)
-		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": "Failed to retrieve handovers", "error": err.Error()})
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": "Failed to retrieve handovers"})
 	}
 	return c.Status(http.StatusOK).JSON(resp)
 }
@@ -184,6 +184,6 @@ func mapHandoverError(c *fiber.Ctx, err error) error {
 		errors.Is(err, service.ErrInvalidDecision):
 		return c.Status(http.StatusConflict).JSON(fiber.Map{"message": "Handover request could not be completed", "error": err.Error()})
 	default:
-		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": "Failed to process handover", "error": err.Error()})
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": "Failed to process handover"})
 	}
 }

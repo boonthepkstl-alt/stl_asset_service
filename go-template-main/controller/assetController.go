@@ -70,7 +70,6 @@ func (obj *assetController) ListAssets(c *fiber.Ctx) error {
 		log.Errorf("ListAssets service error: %v", err)
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Failed to retrieve assets",
-			"error":   err.Error(),
 		})
 	}
 
@@ -119,7 +118,6 @@ func (obj *assetController) CreateAsset(c *fiber.Ctx) error {
 		log.Errorf("CreateAsset service error: %v", err)
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Failed to create asset",
-			"error":   err.Error(),
 		})
 	}
 
@@ -161,7 +159,6 @@ func (obj *assetController) AssignAsset(c *fiber.Ctx) error {
 		}
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Failed to assign asset",
-			"error":   err.Error(),
 		})
 	}
 
@@ -187,7 +184,6 @@ func (obj *assetController) CheckInAsset(c *fiber.Ctx) error {
 		}
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Failed to check in asset",
-			"error":   err.Error(),
 		})
 	}
 

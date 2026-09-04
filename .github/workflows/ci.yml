@@ -54,7 +54,7 @@ jobs:
       # is still validated by npm on every change to it.
       - name: Restore node_modules
         id: node-modules-cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: frontend/node_modules
           key: node-modules-${{ runner.os }}-node22-${{ hashFiles('frontend/package-lock.json') }}

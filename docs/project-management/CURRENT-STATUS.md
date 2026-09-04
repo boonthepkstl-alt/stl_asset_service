@@ -9,25 +9,30 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-09-04, after `CHECKPOINT-2026-09-04-003` (PR #91 —
-route-level code splitting, closing **F-18** as **R-21**; entry chunk
-694 KiB → 305 KiB, −56%). The preceding milestone was
+**As of:** 2026-09-04, after `CHECKPOINT-2026-09-04-004` (PR #93 — raw
+Go error text removed from all 5xx response bodies, closing **F-19** as
+**R-22**). **With it, every 🟢 buildable item in the backlog is now
+closed** — F-14 (CI), F-18 (bundle size) and F-19 (error hygiene) — and
+all three advanced **zero** requirement coverage. The preceding
+milestone was `CHECKPOINT-2026-09-04-003` (PR #91 — route-level code
+splitting, closing **F-18** as **R-21**; entry chunk 694 KiB → 305 KiB,
+−56%), and before that
 `CHECKPOINT-2026-09-04-002` (PR #89 — **the project's first CI
 pipeline**, closing **F-14** as **R-20**), and before it `CHECKPOINT-2026-09-04-001` (PR #87 — the
 Edit Identity modal converted to a full page, **completing the
 modal→full-page conversion begun in PR #78: no record-creation or
 record-editing form in the app is a modal any more**). **The most recent
-work is the PR #78–#91 series covering the Employee form, a round of
-user-driven UI/IA corrections, the CI pipeline, and route-level code
-splitting — see the dedicated paragraph at the end of
+work is the PR #78–#93 series covering the Employee form, a round of
+user-driven UI/IA corrections, the CI pipeline, route-level code
+splitting, and backend error-response hygiene — see the dedicated paragraph at the end of
 this preamble, which is the newest item here.** Re-verified live this
-close-out pass, on merged `main` at `02ae966`: frontend
+close-out pass, on merged `main` at `449a751`: frontend
 `npx tsc --noEmit` clean, `npm run lint` clean (0 warnings),
 `npm run build` clean, `npm run test` — **48 test files / 235 tests
 passing**; backend `go build ./...`, `go vet ./...`, `go test ./...` all
 clean. **This is now verified automatically as well**: the CI workflow
 PR #89 added ran green on `main` itself (most recently run
-`33845187022`, event `push`, sha `02ae966`, both jobs) — not merely on the
+`33851908649`, event `push`, sha `449a751`, both jobs) — not merely on the
 PR branch, which is the evidence F-14's closure rests on. **`gofmt` is
 deliberately not part of either the local or the CI gate**: the repo
 stores Go sources with CRLF line endings and has no `.gitattributes`, so
@@ -422,19 +427,19 @@ paragraph, which is a summary of a summary and can drift.
 Triaged against [`RAISE-TRACEABILITY-MATRIX.md`](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md)
 §3–§5 — re-check that file before picking an item, it may have changed.
 
-**Buildable now:** **One, pure engineering debt — and it does not
-advance a requirement.** (Was two; **F-18 shipped in PR #91**, R-21 —
-entry chunk 694 KiB → 305 KiB, −56%, Vite's size warning gone.) Re-derived from scratch on 2026-09-04 after
+**Buildable now:** **None — and this time the list is genuinely empty.**
+All three 🟢 items found by the 2026-09-04 discovery have shipped:
+**F-14** (CI, PR #89, R-20), **F-18** (code splitting, PR #91, R-21) and
+**F-19** (5xx error hygiene, PR #93, R-22). **All three advanced zero
+requirement, AC, compliance or traceability coverage** — that is the
+backlog's shape, not a selection failure. The one engineering item left
+is **F-41**, and it is not buildable-now: it needs a per-site audit to
+separate genuine sentinels from wrapped driver errors before it can even
+be scoped. Re-derived from scratch on 2026-09-04 after
 PR #89 merged, by re-reading the PRD, Design, AC, Test Plan, Traceability
 Matrix and Compliance Review against the actual source tree, not by
 inheriting the previous run's answer. Full candidate table with
 classifications in [`NEXT-STEP.md`](NEXT-STEP.md).
-
-- **F-19 — backend error-response hygiene.** Verified: **46
-  `err.Error()` occurrences across 8 controllers** put raw Go error
-  strings into JSON responses. No business rule required, though the
-  replacement contract must be chosen and frontend consumers checked, so
-  it is slightly more entangled than F-18.
 
 **Neither moves compliance or traceability coverage**, and that is not a
 selection failure — it is the actual state: the **traceability matrix is
@@ -510,14 +515,30 @@ changes: make the spec fields editable, or remove the button. There is
 `RAISE-FR-EMP-*` requirement at all — so this is a genuine product
 decision and **must not be picked unilaterally**.
 
-**Resolved this pass:** **F-14** (no CI pipeline) → **Resolved, R-20**,
+**Resolved 2026-09-04 (three findings, three PRs):** **F-19** (raw Go
+error text in 5xx bodies) → **Resolved, R-22**, by PR #93 (`449a751`) —
+all 18 sites across 7 controllers now return the human-readable message
+only, **0 remain**, proved on the wire by stopping the database and
+confirming the body no longer carries the driver's connection error
+while the server log still does. Guarded by a mutation-tested
+source-level invariant test. **F-18** (bundle size) → **Resolved, R-21**,
+by PR #91 (`02ae966`). **F-14** (no CI pipeline) → **Resolved, R-20**,
 by PR #89 (merge commit `103e069`) — closed only on evidence that CI runs
 green on `main` itself (run `33843149477`, event `push`), not merely that
 a workflow file exists. **F-14's image-build/push half is explicitly left
 open**: CI validates source only, builds and publishes no images, and
 **F-13 (hosting) is untouched**.
 
-**Deferred technical debt (not a decision, not buildable-now):** **F-40**,
+**Open engineering items (neither buildable-now nor a decision):**
+**F-41**, added 2026-09-04 by PR #93's own validation — some **4xx**
+bodies also carry raw driver errors rather than sentinels, confirmed
+live (`GET /api/assets/does-not-exist` returns `sql: no rows in result
+set`). This **partly contradicts the assumption F-19's 5xx-only scoping
+rested on**, which is why it was recorded rather than quietly absorbed.
+Not buildable-now: the 28 remaining 4xx sites mix genuine sentinels
+(text should stay) with wrapped driver errors (text should go), so it
+needs a per-site audit before it can be scoped. Lower severity than
+F-19 was. Also **F-40**,
 added 2026-09-04 — flaky navigate-away assertions, where a test waits for
 a success toast and then asserts the form's unmount *synchronously*
 although the toast and route change commit independently. Found three

@@ -4,8 +4,12 @@
 Overwritten in place each time the protocol is re-run — do not treat an
 old copy of this file as still valid; re-run the recalculation first.
 
-**Run date:** 2026-09-04, immediately after `CHECKPOINT-2026-09-04-002`
-(PR #89 — the project's first CI pipeline, merge commit `103e069`). The
+**Run date:** 2026-09-04, first written after `CHECKPOINT-2026-09-04-002`
+(PR #89 — the first CI pipeline), then **updated after
+`CHECKPOINT-2026-09-04-003`** (PR #91 — route-level code splitting, merge
+commit `02ae966`), which **shipped this file's own previous
+recommendation**. F-18 is now Resolved (R-21) and **F-19 is the only 🟢
+candidate left**; the conclusion below is otherwise unchanged. The
 previous copy of this file dated 2026-09-03 and pre-dated PRs #78–#89
 (12 merged PRs), so it was stale in both its state summary and its
 recommendation.
@@ -58,7 +62,7 @@ engineering debt will keep the repo tidy; it will not move the product.
 
 | Field | **F-18 — route-level code splitting** |
 |---|---|
-| **Status** | 🟢 |
+| **Status** | ✅ **SHIPPED** — PR #91, merge `02ae966`, Resolved as **R-21**. Entry chunk **694 KiB → 305 KiB (−56%)**, chunks 1 → 80, Vite's >500 kB warning gone. Kept here for one revision so this file's recommendation and its outcome stay side by side. |
 | **Requirement source** | None. `OPEN-FINDINGS.md` F-18 (Minor/Tech Debt); Vite's own build warning. **No NFR governs it** — performance targets are undefined (F-17). |
 | **Current state** | Verified on `main`: production build emits a **single 710 KB JS chunk**; `App.tsx` uses `React.lazy` **zero** times across **27** routes. |
 | **Why buildable** | `React.lazy` + `Suspense` per route invents no business rule and changes no behaviour or contract. Purely additive. |
@@ -118,26 +122,40 @@ engineering debt will keep the repo tidy; it will not move the product.
 
 ## Recommendation
 
-**Recommended Next Task:** Implement **F-18 — route-level code splitting
-in `frontend/src/App.tsx`** (convert the 27 route component imports to
-`React.lazy` with a `Suspense` fallback, and confirm the 710 KB single
-chunk splits in the build output).
+**Recommended Next Task:** **Stop implementing and obtain a business
+decision — specifically F-05 (alert trigger rules and channels) or F-03
+(NBV/Risk KPI formulas).**
 
-**Reason:** It is the smallest self-contained 🟢 task whose requirement is
-explicit as tech debt (recorded as F-18, with the standard fix already
-named, and flagged by Vite's own build warning). It invents no business
-rule, changes no API contract or behaviour, has no dependencies, and is
-measurable before/after — and the CI pipeline that just landed now guards
-its build step automatically. F-19 is the alternative but is an API
-response-shape change whose benefit is theoretical until a deployment
-exists (F-13).
+The previous recommendation here (F-18) shipped in PR #91. The only 🟢
+task still standing is **F-19 — backend error-response hygiene** (46
+`err.Error()` occurrences across 8 controllers leaking raw Go error
+strings into JSON responses). It is genuinely buildable and needs no
+decision, so it is available if implementation must continue — but it is
+recommended **second**, not first, for two honest reasons: no deployment
+exists yet (**F-13**), so the benefit is currently theoretical; and like
+F-18 before it, it moves **no requirement, no AC and no traceability
+coverage**.
 
-**Required Decisions Before It:** **None.**
+**Reason:** the last two 🟢 tasks (F-14 in PR #89, F-18 in PR #91) were
+both worth doing and both advanced **zero** requirement coverage. That is
+not a selection failure — it is the shape of the backlog. The
+traceability matrix is closed at **v1.8 with all 15 gaps closed**, and
+**every** non-`PASS` row in the Compliance Review is waiting on an answer
+rather than on code. Continuing to pick 🟢 items will keep the repo tidy
+while the product stands still.
 
-**Proposed Implementation Phase:** Phase 1 — Foundation (continuous).
-This is frontend engineering debt, not a product capability; it advances
-no `RAISE-FR-*`, no AC, and no traceability coverage, and **must not be
-recorded as phase progress.**
+**Required Decisions Before It:** **F-05** — which conditions raise an
+alert, at what severity, over which channels (would move
+`RAISE-FR-ALERT-001` off `PASS (partial)` and is the prerequisite for the
+header-bell question and its documentation conflict). **Or F-03** — the
+NBV and Risk KPI formulas and thresholds (would complete
+`RAISE-FR-EXEC-001` and the Dashboard). Either unlocks more than every
+remaining 🟢 task combined.
+
+**Proposed Implementation Phase:** none until a decision lands. If
+implementation must continue regardless, **F-19** sits in Phase 1 —
+Foundation (continuous) as backend engineering debt, and like F-18
+**must not be recorded as phase progress.**
 
 > **Read this before treating the above as "the plan."** F-18 is the best
 > *buildable* task, not the most *valuable* action. The project is

@@ -9,22 +9,25 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-09-04, after `CHECKPOINT-2026-09-04-002` (PR #89 — **the
-project's first CI pipeline**, closing **F-14** as **R-20**). The
-preceding milestone was `CHECKPOINT-2026-09-04-001` (PR #87 — the
+**As of:** 2026-09-04, after `CHECKPOINT-2026-09-04-003` (PR #91 —
+route-level code splitting, closing **F-18** as **R-21**; entry chunk
+694 KiB → 305 KiB, −56%). The preceding milestone was
+`CHECKPOINT-2026-09-04-002` (PR #89 — **the project's first CI
+pipeline**, closing **F-14** as **R-20**), and before it `CHECKPOINT-2026-09-04-001` (PR #87 — the
 Edit Identity modal converted to a full page, **completing the
 modal→full-page conversion begun in PR #78: no record-creation or
 record-editing form in the app is a modal any more**). **The most recent
-work is the PR #78–#89 series covering the Employee form, a round of
-user-driven UI/IA corrections, and the CI pipeline — see the dedicated paragraph at the end of
+work is the PR #78–#91 series covering the Employee form, a round of
+user-driven UI/IA corrections, the CI pipeline, and route-level code
+splitting — see the dedicated paragraph at the end of
 this preamble, which is the newest item here.** Re-verified live this
-close-out pass, on merged `main` at `103e069`: frontend
+close-out pass, on merged `main` at `02ae966`: frontend
 `npx tsc --noEmit` clean, `npm run lint` clean (0 warnings),
 `npm run build` clean, `npm run test` — **48 test files / 235 tests
 passing**; backend `go build ./...`, `go vet ./...`, `go test ./...` all
 clean. **This is now verified automatically as well**: the CI workflow
-PR #89 added ran green on `main` itself (run `33843149477`, event
-`push`, sha `103e069`, both jobs, zero annotations) — not merely on the
+PR #89 added ran green on `main` itself (most recently run
+`33845187022`, event `push`, sha `02ae966`, both jobs) — not merely on the
 PR branch, which is the evidence F-14's closure rests on. **`gofmt` is
 deliberately not part of either the local or the CI gate**: the repo
 stores Go sources with CRLF line endings and has no `.gitattributes`, so
@@ -419,18 +422,14 @@ paragraph, which is a summary of a summary and can drift.
 Triaged against [`RAISE-TRACEABILITY-MATRIX.md`](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md)
 §3–§5 — re-check that file before picking an item, it may have changed.
 
-**Buildable now:** **Two, both pure engineering debt — and neither
-advances a requirement.** Re-derived from scratch on 2026-09-04 after
+**Buildable now:** **One, pure engineering debt — and it does not
+advance a requirement.** (Was two; **F-18 shipped in PR #91**, R-21 —
+entry chunk 694 KiB → 305 KiB, −56%, Vite's size warning gone.) Re-derived from scratch on 2026-09-04 after
 PR #89 merged, by re-reading the PRD, Design, AC, Test Plan, Traceability
 Matrix and Compliance Review against the actual source tree, not by
 inheriting the previous run's answer. Full candidate table with
 classifications in [`NEXT-STEP.md`](NEXT-STEP.md).
 
-- **F-18 — route-level code splitting.** Verified on `main` at
-  `103e069`: the production build emits a **single 710 KB JS chunk** and
-  `App.tsx` uses `React.lazy` **zero** times across **27** routes. Vite's
-  own build warns about it. No business rule required; the fix is the
-  standard one already named in the finding.
 - **F-19 — backend error-response hygiene.** Verified: **46
   `err.Error()` occurrences across 8 controllers** put raw Go error
   strings into JSON responses. No business rule required, though the

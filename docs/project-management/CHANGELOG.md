@@ -17,6 +17,12 @@ changes user-visible or API-visible behavior. Pure documentation-sync PRs
 ## 2026-09-04
 
 ### Changed
+- **The app loads faster on first open** — it used to download every
+  screen in the product before showing you the login page, including
+  ones most people never open. Each screen is now fetched the first
+  time you actually go to it, which cuts the initial download by more
+  than half. You may briefly see a "Loading..." message the first time
+  you visit a screen in a session; after that it is instant.
 - **Editing an employee's details is now its own page, not a pop-up** —
   "Edit Identity" on an employee's profile now opens a full page at its
   own address instead of a dialog box on top of the profile. The fields

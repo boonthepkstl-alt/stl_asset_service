@@ -3753,6 +3753,97 @@ Upgraded from `PASS (partial)` in matrix v2.2. **All 11 `TC-ALERT-001-01..11` ca
 
 ---
 
+## CHECKPOINT-2026-09-05-001
+
+**Phase:** Cross-Cutting Work (backend error-response hygiene) — not tied to one product phase
+**Feature:** API error responses (`go-template-main/controller/`)
+**Task:** Audit all 28 4xx `err.Error()` sites and close **F-41**
+
+**Why an audit came first:** F-41's own text said the fix "needs a **per-site audit**, not a sweep", because the sites were a mix of genuine sentinels whose text is useful feedback and raw wrapped driver errors that must go. That instruction was followed literally — every site was classified before a single line changed — and the audit then corrected the finding's framing twice.
+
+### What the audit found that F-41 had wrong
+
+**1. There were three groups, not two.** F-41 described a two-way mix. The largest group is neither: **16 request-parse sites** (`c.QueryParser`/`c.BodyParser`, all 400) whose `err.Error()` is Go's json/schema decoder text — internal struct and field names, but genuinely useful client feedback and *not* infrastructure detail. Left untouched and raised as **F-43**, because sweeping them is exactly the blanket removal F-41 warned against.
+
+**2. The leak was worse than recorded.** F-41 called this *"lower severity than F-19 was"* since `sql: no rows in result set` is less sensitive than connection detail. That held only for the one case that had been observed. The not-found handlers reach the repository through `GetPGReadDB`, which returns a **connection** error when the pool cannot be built (`masterAsRead` → `GetPGWriteDb` → `openPGPool` → `db.Ping()`, `repository/dbManager.go`). **A database outage therefore answered 404 with the driver's dial text, host and port included** — the same class of detail F-19 removed from 5xx, reached through a status code F-19's guard did not watch.
+
+### Audit result — all 28 sites classified
+
+| Group | Count | Action |
+|---|---|---|
+| Raw driver error reachable | **7** | Fixed — `error` field removed |
+| `errors.Is`-guarded sentinels | 5 | Kept — meaningful, expected feedback, exactly as F-19 assumed |
+| Request-parse | 16 | Untouched → **F-43** |
+
+Fixed: the five not-found handlers (Asset / Employee / Ticket / Sample / Handover), `CreateTicket`'s service-error branch (reachable by a raw `repo.List` error), and `mapHandoverError`'s not-found case.
+
+**One fix could not be a deletion.** `mapHandoverError` was the only site where dropping the field lost real information — it could no longer say *which* record was missing. Rather than accept the loss or keep the leak, the branch was **split in two** and the distinction moved into the documented `message` field, where an API caller should have been reading it anyway.
+
+**Guard:** new `TestNoRawErrorTextIn404Responses` makes 404 a blanket rule, carrying the same anti-vacuity threshold as the 5xx scan so it cannot pass while inspecting nothing. **Verified by mutation** — reinstating the leak fails it by file and line. F-19's own test comment asserted that *"4xx bodies … carry sentinel errors"*; that claim is what F-41 disproved, so it was corrected rather than left standing.
+
+**Client contract:** `APIError` declared `error` as **required** while two whole classes of response no longer send it (5xx since PR #93, 404 as of this change). Nothing reads the field, so nothing breaks — but a type that lies about the wire format was worth correcting while the change was fresh.
+
+**Files changed:** 6 Go controller files + 1 frontend type + `OPEN-FINDINGS.md`. **Database changes:** None. **API changes:** 404 and one 400 body no longer carry an `error` field; two handover not-found cases now return distinct `message` values.
+
+**Validation:** merged `main` `f75f28b` — backend `go build`/`vet`/`test` clean; frontend `tsc`/lint/build clean, **50 test files / 257 tests passing**; CI green.
+
+**Findings resolved:** **F-41** → **R-26**.
+**Findings raised:** **F-43** (the 16 parse sites plus `authController.go:60`, deliberately not swept) and **F-44** (non-deterministic local test runs, found while validating).
+
+**Status:** ✅ Complete for its confirmed scope.
+
+**Known Issues:** **F-43** is open by choice, not oversight — removing parse-error text is a usability-versus-disclosure trade this AI should not decide alone, and the `authController.go:60` half is a status-code defect (a token-signing failure reported as 401) as much as a disclosure one.
+
+**Remaining Work:** None for F-41.
+**Next Step:** **F-44** — establish deterministic test execution before the next formal test cycle, since the close-out protocol compares test counts between checkpoints.
+
+---
+
+## CHECKPOINT-2026-09-05-002
+
+**Phase:** Cross-Cutting Work (test tooling) — not tied to one product phase
+**Feature:** Frontend test execution (`frontend/vitest.config.ts`)
+**Task:** Close **F-44** — make `npx vitest run` deterministic before the next formal test cycle
+
+**Why this was worth doing before more testing, not after:** `SESSION-CLOSEOUT-PROTOCOL.md` requires running the suite for real and comparing counts against the previous checkpoint. A runner that reports a different number of tests on each run makes that comparison meaningless, and the very next task (NBV) ends in a formal execution cycle.
+
+### Root cause — traced, not guessed
+
+Vitest 2's default pool is **`forks`**. A forked child cannot share the parent's in-memory module cache, so it round-trips every transformed module through a file under `os.tmpdir()` — `cacheFs: true`, set **only** on the child-process channel (`vitest/dist/chunks/resolveConfig.*.js`, `createChildProcessChannel`). On Windows two workers race that write and the loser gets `EBUSY: resource busy or locked`, which drops whole test **files** from collection.
+
+`threads` shares memory and never touches that path.
+
+### Measured, not assumed
+
+| Pool | Clean runs | Duration |
+|---|---|---|
+| `threads` | **3 of 3** at 50/257 | ~12s |
+| `forks` (old default) | **3 of 4** at 50/257 | ~12s |
+| `--no-file-parallelism` | deterministic | **160s** |
+
+`--no-file-parallelism` was rejected on that last row alone: it fixes the symptom at 13× the cost, while `pool: 'threads'` fixes the cause at none. After the change, 4 consecutive runs gave 50/257, exit 0, zero EBUSY.
+
+### A correction to F-44 as first written
+
+F-44 claimed the failing run *"still exits 0"*. **That was never measured.** The original command was piped through `grep`, so `$?` reported grep's status rather than vitest's. Measured properly, a failing run **exits 1** and prints `Unhandled Errors`.
+
+The finding was therefore overstated in the direction that matters most — it described a silent failure when the failure is actually loud. The corrected hazard is narrower and real: the run fails, but a reader taking the `Tests N passed` summary line at face value can still record a short count in a checkpoint. **That is exactly what happened during PR #103's validation**, which is how the flake was noticed at all.
+
+**Files changed:** `frontend/vitest.config.ts` + project-management. **Code changes:** configuration only — no production code, no test code. **API/database changes:** None.
+
+**Validation:** merged `main` `f75f28b` plus this change — frontend `tsc`/lint/build clean, **50 test files / 257 tests passing on 4 of 4 runs**; backend `go build`/`vet`/`test` clean.
+
+**Findings resolved:** **F-44** → **R-27**.
+
+**Status:** ✅ Complete for its confirmed scope.
+
+**Known Issues:** The pool change is scoped to what this suite needs today. If a future test genuinely requires process isolation — a native module, or per-file process environment — `threads` will not provide it and the choice must be revisited; the config comment says so.
+
+**Remaining Work:** None for F-44.
+**Next Step:** **NBV (F-03, part 2)** remains blocked on one business input — the default useful-life years per Asset Category. Everything else about it is decided. **F-43** and **Gap 17** are the other open items, both decisions rather than engineering work.
+
+---
+
 ## Level 2 — Feature Checkpoints
 
 ### FEATURE-CHECKPOINT-project-tracking-governance

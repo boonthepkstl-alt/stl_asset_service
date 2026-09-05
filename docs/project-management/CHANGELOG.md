@@ -14,6 +14,33 @@ changes user-visible or API-visible behavior. Pure documentation-sync PRs
 
 ---
 
+## 2026-09-05
+
+### Added
+- **The dashboard now shows Utilization** — a new KPI tile reading what share
+  of the assets that *can* be assigned currently are. It counts only assets
+  in an assignable state: anything retired or in for maintenance is left out
+  of the calculation entirely rather than counted as idle. With the current
+  register that reads 66.7% — 8 of 12 assignable assets — beside a total
+  asset count of 15, so the difference between the two numbers is the
+  excluded three.
+
+### Fixed
+- **Not-found responses no longer expose internal detail to API callers** —
+  asking the API for a record that doesn't exist used to reply with the raw
+  underlying database text alongside the plain description, e.g.
+  `{"error":"sql: no rows in result set","message":"Asset not found"}`. It
+  now returns only the description. This mattered more than the example
+  suggests: when the database itself is unreachable, that same field carried
+  the connection error, including the database host and port. **API note:**
+  404 responses no longer carry an `error` field, and neither does the 400
+  returned when creating a maintenance ticket fails. Requesting a handover
+  that doesn't exist now answers `"Handover not found"` or `"Asset not
+  found"` rather than a generic `"Not found"` — the detail that used to sit
+  in the removed field is now in the `message` field instead. Validation
+  errors on malformed request bodies are unchanged for now and are tracked
+  separately.
+
 ## 2026-09-04
 
 ### Added

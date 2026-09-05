@@ -9,7 +9,13 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-09-05, after PR #100 merged (`a7f0d42`) and
+**As of:** 2026-09-05, after PR #103 merged (`f75f28b`) — **F-41 closed
+(R-26)** by auditing all 28 4xx error sites and fixing 7, and **F-44
+closed (R-27)** by making local test runs deterministic. **`RAISE-FR-EXEC-001`
+gained its Utilization KPI** (PR #102), the first of F-03's three missing
+tiles — it turned out never to have been blocked on a decision at all.
+Suite **50 test files / 257 tests**. Earlier the same day, PR #100 merged
+(`a7f0d42`) and
 `FEATURE-CHECKPOINT-alerts` recorded — the first Level 2 (Feature)
 checkpoint written since the model was introduced, rolling up the six
 Level 1 checkpoints that took Alerts from a 404 route to a complete
@@ -462,25 +468,40 @@ paragraph, which is a summary of a summary and can drift.
 Triaged against [`RAISE-TRACEABILITY-MATRIX.md`](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md)
 §3–§5 — re-check that file before picking an item, it may have changed.
 
-**Buildable now:** **None.** Both previous entries are done: correcting
-and executing `TC-ALERT-001-09` (`CHECKPOINT-2026-09-04-007`, R-24,
-closing **Gap 16** and **Gap 18**), and the Alerts access gate
-(`CHECKPOINT-2026-09-04-008`, **R-25**), which took
-**`RAISE-FR-ALERT-001` to a full `PASS`**. The traceability
-matrix is at **v2.2 with one gap open: Gap 17**, the bell-icon scope
-contradiction, which is a **documentation decision**, not an engineering
-task — two project documents contradict each other and somebody has to
-say which is right.
+**Buildable now:** **NBV (F-03, part 2) is fully designed and blocked on
+exactly one input** — the default useful-life years per Asset Category.
+Everything else about it is decided (PRD chain sync pending): straight-line
+from `purchaseCost`/`purchaseDate`, useful life configurable per category in
+Settings following the `warrantyExpiringThresholdDaysByCategory` precedent,
+salvage value 0 clamped at 0. That number is deliberately **not** being
+guessed — it becomes money on an executive dashboard.
 
-The remaining engineering items are not buildable-now: **F-41** (some
-4xx bodies carry raw driver errors) needs a per-site audit to separate
-genuine sentinels from wrapped driver errors before it can be scoped,
-and **F-40** (flaky navigate-away assertions) has all known sites fixed
-and is a pattern to watch rather than a task.
+Everything else on the previous list is done. **F-41** is closed (**R-26**,
+`CHECKPOINT-2026-09-05-001`): all 28 4xx sites audited, 7 fixed, and the
+audit corrected the finding twice — there were **three** groups rather than
+two, and the leak was **worse** than recorded, since a database outage
+answered 404 with the driver's dial text including host and port. **F-44** is
+closed (**R-27**, `CHECKPOINT-2026-09-05-002`): local `vitest run` now uses
+`pool: 'threads'` and reports 50/257 deterministically, traced to Vitest 2's
+`forks` default round-tripping modules through `os.tmpdir()`. **F-40** (flaky
+navigate-away assertions) has all known sites fixed and is a pattern to watch
+rather than a task.
 
-**The project is decision-limited again**, and more sharply than before:
-`RAISE-FR-ALERT-001` now has **full test coverage passing** and is held
-off a complete `PASS` by **F-08** alone.
+The traceability matrix is at **v2.2 with one gap open: Gap 17**, the
+bell-icon scope contradiction — a **documentation decision**, not an
+engineering task: two project documents contradict each other and somebody
+has to say which is right.
+
+Newly open and deliberately so: **F-43** — the 16 request-parse 4xx sites
+that still echo Go decoder text, plus `authController.go:60`, which reports a
+token-signing failure as a 401. Not swept with F-41 because removing parse
+text is a usability-versus-disclosure trade nobody has decided, and the 401
+half is a status-code defect whose fix changes login response text.
+
+**The project is decision-limited**, and every open item is now a decision
+rather than engineering work: **F-03**'s five numbers, **Gap 17**'s
+document conflict, **F-43**'s trade-off, and **PRD Q22a**'s missing
+`User`↔`Employee` link.
 
 Everything below this line describes the state *before* F-05 was
 resolved and is kept for the contrast it draws:

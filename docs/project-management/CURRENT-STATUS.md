@@ -9,7 +9,13 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-09-04, after `CHECKPOINT-2026-09-04-007` — `TC-ALERT-001-09`'s
+**As of:** 2026-09-04, after `CHECKPOINT-2026-09-04-008` — the Alerts
+access gate confirmed by business (**F-08 narrowed, R-25**), propagated
+through all seven chain documents and executed across all four roles.
+**`RAISE-FR-ALERT-001` is now a full `PASS`** — all 11
+`TC-ALERT-001-01..11` cases executed and passing. This is the first
+requirement to move from `PASS (partial)` to `PASS` in this series. The
+preceding milestone was `CHECKPOINT-2026-09-04-007` — `TC-ALERT-001-09`'s
 unexecutable procedure corrected and executed (**PASS**), closing **F-42
 (R-24)**, **Gap 18** and, with it, **Gap 16**. **All 10 `TC-ALERT-001-*`
 cases now pass.** `RAISE-FR-ALERT-001` nevertheless **remains
@@ -50,7 +56,7 @@ work is the PR #78–#93 series covering the Employee form, a round of
 user-driven UI/IA corrections, the CI pipeline, route-level code
 splitting, and backend error-response hygiene — see the dedicated paragraph at the end of
 this preamble, which is the newest item here.** Re-verified live this
-close-out pass, on merged `main` at `30f176c`: frontend
+close-out pass, on merged `main` at `d8ad01c`: frontend
 `npx tsc --noEmit` clean, `npm run lint` clean (0 warnings),
 `npm run build` clean, `npm run test` — **49 test files / 250 tests
 passing**; backend `go build ./...`, `go vet ./...`, `go test ./...` all
@@ -451,9 +457,11 @@ paragraph, which is a summary of a summary and can drift.
 Triaged against [`RAISE-TRACEABILITY-MATRIX.md`](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md)
 §3–§5 — re-check that file before picking an item, it may have changed.
 
-**Buildable now:** **None.** The previous entry here — correcting and
-executing `TC-ALERT-001-09` — is done (`CHECKPOINT-2026-09-04-007`,
-R-24), and with it **Gap 16 and Gap 18 are closed**. The traceability
+**Buildable now:** **None.** Both previous entries are done: correcting
+and executing `TC-ALERT-001-09` (`CHECKPOINT-2026-09-04-007`, R-24,
+closing **Gap 16** and **Gap 18**), and the Alerts access gate
+(`CHECKPOINT-2026-09-04-008`, **R-25**), which took
+**`RAISE-FR-ALERT-001` to a full `PASS`**. The traceability
 matrix is at **v2.1 with one gap open: Gap 17**, the bell-icon scope
 contradiction, which is a **documentation decision**, not an engineering
 task — two project documents contradict each other and somebody has to

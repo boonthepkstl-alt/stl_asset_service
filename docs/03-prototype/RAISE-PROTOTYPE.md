@@ -2,11 +2,26 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Prototype Specification
-**Version:** 0.14 Draft
+**Version:** 0.15 Draft
 **Status:** Draft for Prototype Review
-**Source:** [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.15 + [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.13 (§23 Prototype Preparation, §9A Document Intelligence Capabilities, §4.2 Custody & Asset Operations — Check-in/Check-out workflow/permission/holder-model resolved, plus the new "IT Hardware Assignment Approval Workflow" category-scoped exception, §5.1 Maintenance Domain, §5.2 Warranty Domain — 3-state status model + per-Asset-Category Expiring threshold resolved, §5.3 License Domain, §5.4 Settings Domain, §4.1B Settings / Platform Configuration, §6.4 ReconciliationPage / "Phase 6" Label, §13 Executive Intelligence — corrected to as-built, §14 Alert Architecture — five MVP trigger conditions and fixed-per-condition severity resolved, §16 Security Architecture — MVP Enforcement Level, §16A Other Non-Functional Requirements — Design Backlog, §15/§22 Out of Scope)
+**Source:** [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.16 + [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.14 (§23 Prototype Preparation, §9A Document Intelligence Capabilities, §4.2 Custody & Asset Operations — Check-in/Check-out workflow/permission/holder-model resolved, plus the new "IT Hardware Assignment Approval Workflow" category-scoped exception, §5.1 Maintenance Domain, §5.2 Warranty Domain — 3-state status model + per-Asset-Category Expiring threshold resolved, §5.3 License Domain, §5.4 Settings Domain, §4.1B Settings / Platform Configuration, §6.4 ReconciliationPage / "Phase 6" Label, §13 Executive Intelligence — corrected to as-built, §14 Alert Architecture — five MVP trigger conditions and fixed-per-condition severity resolved, §16 Security Architecture — MVP Enforcement Level, Alerts Screen Access Gate resolved 2026-09-04, §16A Other Non-Functional Requirements — Design Backlog, §15/§22 Out of Scope)
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
+
+**Version note (2026-09-04 re-sync, v0.14 → v0.15, PRD §16 Resolved Question 45 /
+Design §16 "Alerts Screen Access Gate"):** `RAISE-PRD.md` v0.16 §16 Resolved Question 45
+and `RAISE-DESIGN.md` v0.14 §16 jointly confirm, for **[§18 P-012
+Alerts](#18-p-012-alerts)** only, that the screen's "authorized user" access gate is
+**any authenticated user** — all four roles (`EMPLOYEE`, `IT_STAFF`, `IT_MANAGER`,
+`ADMIN`), no role excluded — confirming the already-built behavior, with enforcement
+declared per-route in code (`ProtectedRoute allowedRoles`). This **partially** resolves
+Open Finding F-08 (exactly this one sub-question); it does **not** resolve the
+role/permission matrix content for any other screen, and it does **not** touch the
+authentication mechanism itself (PRD §16 Q21). A **separate, distinct, still-open**
+question — PRD §16 Q22a, whether alert rows should eventually be filtered per viewing
+user rather than shown in full to every authenticated user — is explicitly **not**
+decided here and remains open below. See the dedicated Change Log entry near the end of
+this document for the full delta.
 
 **Version note (2026-09-04 re-sync, v0.13 → v0.14, PRD §16 Resolved Question 44 /
 Design §14 "Alert Architecture"):** `RAISE-PRD.md` §16 Resolved Question 44 and
@@ -402,7 +417,7 @@ not from a permission matrix).
 | P-009 | Maintenance | P0 | RAISE-FR-MAINT-001 |
 | P-010 | Warranty | P0 | RAISE-FR-WARRANTY-001 |
 | P-011 | Oracle FA / Financial View | P0 | RAISE-FR-ORACLE-001 |
-| P-012 | Alerts | P0 | RAISE-FR-ALERT-001 — five MVP trigger conditions and fixed-per-condition severity confirmed 2026-09-04 |
+| P-012 | Alerts | P0 | RAISE-FR-ALERT-001 — five MVP trigger conditions and fixed-per-condition severity confirmed 2026-09-04; access gate confirmed 2026-09-04 as any authenticated user (all four roles), enforced per-route in code |
 | P-013 | Audit Log | P0 | RAISE-FR-AUDIT-001 |
 | P-014 | Executive Dashboard | P0 | RAISE-FR-EXEC-001 |
 | P-015 | AI Assistant | P0 / Current AI | RAISE-AI-SEARCH-001 |
@@ -1498,6 +1513,26 @@ condition type** — this entry is rewritten to reflect that. This is a spec upd
 match a newly-confirmed business decision, not a reinterpretation of
 `RAISE-FR-ALERT-001`'s existing scope.
 
+## Status Note — Updated 2026-09-04 to Reflect Confirmed Access Gate (PRD v0.16 §16 Resolved Question 45; Design v0.14 §16 "Alerts Screen Access Gate")
+
+**This entry previously left "authorized user" (who may view this screen) unspecified,
+tracked as part of Open Finding F-08.** PRD v0.16 §16 Resolved Question 45 and Design
+v0.14 §16 now confirm, for this screen only: **any authenticated user** — all four
+roles, `EMPLOYEE`, `IT_STAFF`, `IT_MANAGER`, `ADMIN` — may open the Alerts screen; no
+role is excluded. This confirms behavior already built (`frontend/src/App.tsx` registers
+`ROUTES.NOTIFICATIONS` inside the unrestricted `ProtectedRoute` block), consistent with
+the existing treatment of Assets, Employees, Maintenance, and Handovers — only
+Administration, User Management, Role Management, and Settings are `ADMIN`-gated.
+Enforcement is declared per-route in code (`ProtectedRoute allowedRoles`), not
+data-driven; the built Role Management permission matrix has no enforcement effect on
+this or any other screen. **This partially resolves Open Finding F-08 — exactly this one
+sub-question, not F-08 as a whole:** the role/permission matrix content for every screen
+other than Alerts remains open, and the authentication mechanism itself (PRD §16 Q21) is
+untouched. A separate, distinct, still-open question (PRD §16 Q22a) — whether alert rows
+should eventually be filtered to only those "relevant" to the viewing user — is raised
+alongside this resolution but explicitly **not** decided by it; see Open Questions
+below.
+
 **Read-time derivation, no stored Alert record (Design §14).** Nothing below implies an
 Alert table, an Alert entity, or a persisted alert state (e.g., no read/unread, no
 acknowledge/dismiss, no snooze). Every row on this screen is the output of evaluating
@@ -1508,8 +1543,10 @@ the moment the screen is displayed.
 
 Display, at read time, the five confirmed MVP alert conditions derived from
 already-existing Asset, Maintenance ticket, and IT Hardware Assignment Approval Request
-state — with severity and the affected record — to an authorized user (role/permission
-detail for alert visibility remains TBD, see Open Question below).
+state — with severity and the affected record — to an authorized user. **Authorized =
+any authenticated user** (all four roles: `EMPLOYEE`, `IT_STAFF`, `IT_MANAGER`, `ADMIN`;
+none excluded), confirmed 2026-09-04 (PRD §16 Resolved Question 45; Design §16 "Alerts
+Screen Access Gate") — see Open Questions below for what this does and does not resolve.
 
 ## Five MVP Trigger Conditions and Severity (confirmed 2026-09-04)
 
@@ -1581,10 +1618,22 @@ entry, per `RAISE-FR-ALERT-001`'s own Scope line and PRD §16 Resolved Question 
   44 and Design v0.13 §14 both explicitly decline to resolve this contradiction. This
   entry (P-012, the Alerts screen/page) does **not** speak to the bell icon's contents
   or scope either way — it remains open for a future business confirmation round.
-- **"Authorized user"** (who may view this screen) is unspecified beyond the general MVP
-  RBAC enforcement-level decision (UI-only/client-side, backend deferred to Roadmap —
-  see P-001 Login's Traceability note); PRD §16 Q22 / Open Finding F-08 tracks this
-  separately and is unaffected by this update.
+- ~~**"Authorized user"** (who may view this screen) is unspecified~~ **Resolved
+  2026-09-04** — any authenticated user (all four roles), enforced per-route in code
+  (`ProtectedRoute allowedRoles`); see the Status Note above (PRD §16 Resolved Question
+  45; Design §16 "Alerts Screen Access Gate"). This is exactly one specific sub-question
+  of Open Finding F-08, not F-08 as a whole — the role/permission matrix content for
+  every screen other than Alerts remains open, and the authentication mechanism itself
+  (PRD §16 Q21) is untouched.
+- **Per-user filtering of alert rows** — a separate, distinct, still-open question (PRD
+  §16 Q22a), not decided by the access-gate resolution above. Today every authenticated
+  user sees all matching alerts, regardless of role or which employee they are; whether
+  a user should eventually see only alerts "relevant" to them is raised but not decided.
+  Not yet specifiable: there is no link between the authenticated `User` and an
+  `Employee` record (`User` carries only `id`/`username`/`fullName`/`role`) — the
+  Handovers screen (P-008) matches recipients by comparing `fullName` strings as a
+  documented MVP limitation, not a reusable identity link. No solution, and no new
+  `employeeId` field, is proposed here.
 - Alert acknowledgement, dismissal, read/unread, snooze, delivery/scheduling/digesting,
   and notification preferences are all out of MVP scope and are not shown on this
   screen — consistent with Design §14's "Explicitly Not Designed Here."
@@ -1595,7 +1644,10 @@ entry, per `RAISE-FR-ALERT-001`'s own Scope line and PRD §16 Resolved Question 
 Maintenance ticket OVERDUE/ON_HOLD, IT Hardware Handover PENDING) and fixed-per-condition
 High/Medium/Low severity confirmed 2026-09-04 (PRD §16 Resolved Question 44; Design §14
 Alert Architecture). Dependencies (unchanged from PRD §6): `RAISE-FR-WARRANTY-001`,
-`RAISE-FR-MAINT-001`, `RAISE-FR-OPS-002`.
+`RAISE-FR-MAINT-001`, `RAISE-FR-OPS-002`, `RAISE-NFR-SEC-RBAC-001` — access gate any
+authenticated user, confirmed 2026-09-04 (PRD §16 Resolved Question 45; Design §16
+"Alerts Screen Access Gate"), partially resolving Open Finding F-08 for this screen
+only.
 
 ---
 
@@ -2156,7 +2208,7 @@ all:
 | PRD §10 NFR Area | Prototype Status |
 |---|---|
 | Authentication | No screen beyond P-001's generic auth action placeholder (§7) — mechanism TBD |
-| Authorization / RBAC | Covered narratively on P-001/P-009 (MVP enforcement level only — UI-only/client-side, per `RAISE-NFR-SEC-RBAC-001`); role list/permission content TBD, no role model shown |
+| Authorization / RBAC | Covered narratively on P-001/P-009 (MVP enforcement level only — UI-only/client-side, per `RAISE-NFR-SEC-RBAC-001`); P-012 Alerts access gate resolved 2026-09-04 (any authenticated user, per-route code enforcement — PRD §16 Resolved Question 45; Design §16), partially resolving Open Finding F-08 for that screen only; role list/permission content for every other screen remains TBD, no role model shown |
 | Performance | No prototype representation — no target defined in PRD/Design |
 | Availability | No prototype representation — no target defined in PRD/Design |
 | Scalability | No prototype representation — no target defined in PRD/Design |
@@ -2380,7 +2432,7 @@ not be treated as approved MVP functionality.
 | P-009 Maintenance | RAISE-FR-MAINT-001 | Planned — 4-stage workflow shape reflected (confirmed 2026-08-21); SLA/vendor/cost model TBD |
 | P-010 Warranty | RAISE-FR-WARRANTY-001 | Planned — field list resolved 2026-08-29 (PRD §16 Resolved Question 40; Design §5.2): `warrantyExpiry` only for MVP; 7-field draft explicitly rejected. Expiring-threshold shape resolved 2026-09-01 (PRD §16 Resolved Question 41; Design §5.2/§5.4): 3-state Active/Expiring/Expired status, per-Asset-Category configurable threshold (default 90 days, admin-adjustable via P-018 Settings) — implemented end-to-end |
 | P-011 Oracle FA | RAISE-FR-ORACLE-001 | Planned |
-| P-012 Alerts | RAISE-FR-ALERT-001 | Planned — five MVP trigger conditions (Warranty EXPIRED/EXPIRING, Maintenance ticket OVERDUE/ON_HOLD, IT Hardware Handover PENDING) and fixed-per-condition High/Medium/Low severity resolved 2026-09-04 (PRD §16 Resolved Question 44; Design §14 Alert Architecture); read-time derivation, no persisted Alert entity, no new detail screen — links to existing P-004 Asset Detail / P-009 Maintenance Request Detail / P-008 Assignment Approval Request detail by condition type. Header bell-icon dropdown (`NotificationCenter.tsx`) in/out-of-scope contradiction (Resolved Question 35 vs. `ESAPS-UI-FOUNDATION-BASELINE.md`) remains open, not decided by this row |
+| P-012 Alerts | RAISE-FR-ALERT-001 | Planned — five MVP trigger conditions (Warranty EXPIRED/EXPIRING, Maintenance ticket OVERDUE/ON_HOLD, IT Hardware Handover PENDING) and fixed-per-condition High/Medium/Low severity resolved 2026-09-04 (PRD §16 Resolved Question 44; Design §14 Alert Architecture); read-time derivation, no persisted Alert entity, no new detail screen — links to existing P-004 Asset Detail / P-009 Maintenance Request Detail / P-008 Assignment Approval Request detail by condition type. **Access gate resolved 2026-09-04 (PRD §16 Resolved Question 45; Design §16 "Alerts Screen Access Gate"):** any authenticated user (all four roles), enforced per-route in code (`ProtectedRoute allowedRoles`) — partially resolves Open Finding F-08 for this screen only; role/permission matrix content for every other screen, and per-user filtering of alert rows (PRD §16 Q22a), remain open. Header bell-icon dropdown (`NotificationCenter.tsx`) in/out-of-scope contradiction (Resolved Question 35 vs. `ESAPS-UI-FOUNDATION-BASELINE.md`) remains open, not decided by this row |
 | P-013 Audit | RAISE-FR-AUDIT-001 | Planned |
 | P-014 Executive | RAISE-FR-EXEC-001 | Planned — corrected 2026-08-31 to match as-built dashboard (Open Finding F-22); same built page as P-002 Main Dashboard; NBV/Risk/Utilization KPIs remain a separate, not-yet-scheduled enhancement |
 | P-015 AI Assistant | RAISE-AI-SEARCH-001 | Planned |
@@ -2583,8 +2635,47 @@ The next artifact should be **Acceptance Criteria**, not source code.
 
 ## Document Status
 
-**Version:** 0.13 (2026-09-02, PRD v0.14 §16 Resolved Question 43 / Design v0.12 §4.2
-"IT Hardware Assignment Approval Workflow")
+**Version:** 0.15 (2026-09-04, PRD v0.16 §16 Resolved Question 45 / Design v0.14 §16
+"Alerts Screen Access Gate")
+
+**Change Log — v0.14 → v0.15 (2026-09-04, PRD §16 Resolved Question 45 / Design §16
+"Alerts Screen Access Gate", per explicit business confirmation):**
+
+1. **Root confirmation.** PRD v0.16 §16 Resolved Question 45 and Design v0.14 §16 jointly
+   confirm, for **[§18 P-012 Alerts](#18-p-012-alerts)** only: (a) the screen's access
+   gate is **any authenticated user** — `EMPLOYEE`, `IT_STAFF`, `IT_MANAGER`, `ADMIN`,
+   none excluded — confirming already-built behavior
+   (`frontend/src/App.tsx`'s unrestricted `ProtectedRoute` block), consistent with the
+   existing treatment of Assets, Employees, Maintenance, and Handovers; and (b)
+   enforcement is declared per-route in code (`ProtectedRoute allowedRoles`), not
+   data-driven — the built Role Management permission matrix has no enforcement effect.
+   This **partially** resolves Open Finding F-08 — exactly this one sub-question, not
+   F-08 as a whole.
+2. **[§18 P-012 Alerts](#18-p-012-alerts)** updated: new Status Note added; Purpose line
+   states the confirmed access gate directly instead of citing it as TBD; the former
+   "authorized user is unspecified" Open Question bullet is struck through and marked
+   Resolved 2026-09-04; Traceability line adds `RAISE-NFR-SEC-RBAC-001` as a dependency
+   with the confirmed access-gate detail.
+3. **New, explicitly left open — not decided by this pass:** per-user filtering of alert
+   rows (PRD §16 Q22a). Today every authenticated user sees all matching alerts; whether
+   a user should eventually see only alerts "relevant" to them is raised but not decided.
+   Recorded as not yet specifiable because there is no link between the authenticated
+   `User` and an `Employee` record — no solution, and no new `employeeId` field, is
+   proposed here. The role/permission matrix *content* for every screen other than
+   Alerts, and the authentication mechanism itself (PRD §16 Q21), remain untouched and
+   fully open.
+4. **§5 Screen Inventory, §25A NFR Backlog table, and §27 Prototype Traceability
+   Matrix** — P-012 rows / the Authorization-RBAC row updated to note the confirmed
+   access gate and its partial-resolution scope.
+5. **No other screen, requirement ID, or row is added, removed, or changed.** The five
+   MVP trigger conditions, their fixed-per-condition severities, and the three link
+   targets (P-004, P-009, P-008) added in v0.14 are unchanged.
+6. **`RAISE-PRD.md` and `RAISE-DESIGN.md` are not modified by this pass.** No
+   `## NEEDS_PRD_CONFIRMATION` signal is raised — the access gate and enforcement
+   mechanism used here already exist in the PRD/Design sources cited.
+7. Header metadata updated: Version bumped to 0.15; PRD Source updated to v0.16
+   (advanced from v0.15); Design Source updated to v0.14 (advanced from v0.13), with the
+   "Alerts Screen Access Gate" subsection of §16 added to the cited section list.
 
 **Change Log — v0.13 → v0.14 (2026-09-04, PRD §16 Resolved Question 44 / Design §14
 "Alert Architecture", per explicit business confirmation):**

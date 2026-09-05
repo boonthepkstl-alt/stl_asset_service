@@ -3681,6 +3681,78 @@ Also still open: **Gap 17** — the `NotificationCenter.tsx` bell-icon scope con
 
 ---
 
+## CHECKPOINT-2026-09-04-008
+
+**Phase:** Phase 2 — Authentication / RBAC (the sub-question resolved here) and Phase 3 — Asset Management (the requirement it completes)
+**Feature:** Alerts (`RAISE-FR-ALERT-001`) access gate
+**Task:** Resolve the part of **F-08** that was blocking `RAISE-FR-ALERT-001` — the undefined "authorized user" access gate — propagate it through the chain, execute it, and re-verify the requirement's verdict
+
+**Why this was worth doing now:** after Gap 16 and Gap 18 closed, `RAISE-FR-ALERT-001` had **every test case in its scope passing** and was still not a full `PASS`, held there by one thing: `AC-ALERT-001-01` said alert information must be *"visible to an authorized user"*, and nobody had ever defined "authorized". That is a decision gap, not an engineering gap — no amount of code closes it.
+
+### The decision (business Q&A, 2026-09-04 → PRD v0.16 §16 Resolved Question 45)
+
+1. **Alerts access gate = any authenticated user.** All four roles — `EMPLOYEE`, `IT_STAFF`, `IT_MANAGER`, `ADMIN` — may open the screen; none is excluded. This **confirms behaviour already built**: `App.tsx` registers `ROUTES.NOTIFICATIONS` inside the unrestricted `ProtectedRoute` block, consistent with Assets/Employees/Maintenance/Handovers, while only Administration/User Management/Role Management/Settings are `ADMIN`-gated.
+2. **Role enforcement stays declared in code, per route** (`ProtectedRoute allowedRoles`) — not data-driven.
+
+**How the options were framed, which matters for trusting the answer:** the roles offered were read out of `types/auth.ts` and the existing gating map out of `App.tsx` before asking, so no option could have invented a role or a screen. **No business rule was authored by the AI.**
+
+**A consequence recorded rather than left implied:** the app ships a **Role Management screen** with an editable, **persisted** 15-module × 6-action permission matrix — and **nothing reads it**. Under decision 2 it enforces nothing and is presentational only. Recorded in PRD v0.16, Design v0.14 and the findings so no reader mistakes that screen for working access control.
+
+### Chain propagated
+
+| Document | | What changed |
+|---|---|---|
+| PRD | 0.15 → **0.16** | §16 Resolved Question 45; new open question **Q22a**; `RAISE-NFR-SEC-RBAC-001` and `RAISE-FR-ALERT-001` updated |
+| Design | 0.13 → **0.14** | §16 access gate + route gating map; Role Management recorded as non-enforcing |
+| Prototype | 0.14 → **0.15** | P-012's "authorized user" TBD replaced with the confirmed answer |
+| Acceptance Criteria | 0.12 → **0.13** | `AC-ALERT-001-01`'s access-gate NOT TESTABLE YET **closed**; new **`AC-ALERT-001-11`** for the unauthenticated-redirect negative case |
+| Test Plan | 0.12 → **0.13** | TS-ALERT-001's F-08 blocked item removed; Q22a added in its place |
+| Test Cases | 0.20 → **0.21** | Access-gate execution recorded; new `TC-ALERT-001-11` |
+| Traceability Matrix | 2.1 → **2.2** | `RAISE-FR-ALERT-001` → full **`PASS`** |
+
+### Formal execution — merged `main` `d8ad01c`, both PASS
+
+**Positive (`AC-ALERT-001-01` access half).** Signed in as each demo account in turn, clearing the stored session between each:
+
+| Account | Role in session | Reached Alerts | Rows | Total |
+|---|---|---|---|---|
+| `admin@raise.dev` | `ADMIN` | yes | yes | 19 |
+| `manager@raise.dev` | `IT_MANAGER` | yes | yes | 19 |
+| `itstaff@raise.dev` | `IT_STAFF` | yes | yes | 19 |
+| `employee@raise.dev` | `EMPLOYEE` | yes | yes | 19 |
+
+No Forbidden page, no redirect, for any role.
+
+**Negative (`TC-ALERT-001-11`).** With `localStorage`/`sessionStorage` cleared, requesting `/notifications` redirected to `/login` and displayed no alert data.
+
+**A false result was caught and corrected, and is recorded deliberately.** The negative case *first appeared to pass an unauthenticated visitor straight through to the Alerts screen*. That was not real: the browser still held an `ADMIN` session in `localStorage` from an earlier execution in the same profile (`raise_user` = Demo Admin/ADMIN). It was inspected, cleared, and the case re-run properly. Recorded so a later tester does not repeat it in a dirty profile and file a false failure — **and because reporting that first observation as a defect would have been wrong.**
+
+### Verdict — `RAISE-FR-ALERT-001` is now a full `PASS`
+
+Upgraded from `PASS (partial)` in matrix v2.2. **All 11 `TC-ALERT-001-01..11` cases are executed and pass.** The verdict was reached against the Compliance Review's own definition — every test case executed and passed, and no open PRD-content question blocking the requirement's *confirmed scope* — rather than because two gaps happened to close.
+
+**PRD §16 Q22a** (should a user see only the alerts relevant to them?) was weighed explicitly and judged **outside** the confirmed scope: it is raised but unspecified, and the AC layer deliberately wrote **no criterion** for it. It is not specifiable today anyway — there is **no link between the authenticated `User` and an `Employee`** (`User` carries only `id`/`username`/`fullName`/`role`; the Handovers screen matches by `fullName` string comparison as a documented MVP limitation). Recorded as future scope, not as an unmet criterion.
+
+**One correction made to the matrix by hand.** The row's status cell had been rewritten so it still *opened* with `**PASS (partial)**` and disclosed the upgrade only ~14,000 characters later at the end of the cell — meaning anyone scanning the matrix, which is its entire purpose, would read the wrong verdict. The cell now leads with the current verdict, with the full superseded history retained beneath it.
+
+**Files changed:** 7 chain documents + project-management. **Code changes: none** — this was a decision, a chain sync, and an execution.
+
+**Validation:** merged `main` `d8ad01c` — frontend `tsc`/lint/build clean, **49 test files / 250 tests passing**; backend `go build`/`vet`/`test` clean; CI green.
+
+**Findings:** **F-08 narrowed, not closed** (**R-25**). Two sub-questions resolved; the role/permission matrix *content* for every other screen and the authentication mechanism itself (Q21, F-11, F-12) remain open.
+
+**Status:** ✅ Complete for its confirmed scope.
+
+**Known Issues:**
+- **F-08 remains open** for every screen other than Alerts. Closing it for Alerts must not be read as closing it.
+- **PRD Q22a** — per-user alert filtering, raised and undecided, blocked behind the missing `User`↔`Employee` link.
+- **Gap 17** — the `NotificationCenter.tsx` bell-icon scope contradiction. Untouched, no side picked, still the only open gap in the matrix.
+
+**Remaining Work:** None for `RAISE-FR-ALERT-001`. It is complete for its confirmed MVP scope.
+**Next Step:** **F-03** (Dashboard NBV/Risk formulas) is now the highest-leverage decision — it would complete `RAISE-FR-EXEC-001` and the Dashboard the same way this completed Alerts. **Gap 17** is the cheapest remaining item once decided, since `deriveAlerts` already exists and the bell only needs wiring. Both are decisions, not engineering tasks.
+
+---
+
 ## Level 2 — Feature Checkpoints
 
 ### FEATURE-CHECKPOINT-project-tracking-governance

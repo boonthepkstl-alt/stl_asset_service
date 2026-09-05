@@ -2,9 +2,9 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** System / Product Design
-**Version:** 0.13 Draft
+**Version:** 0.14 Draft
 **Status:** Draft for Design Review
-**Design Source:** [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.15
+**Design Source:** [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.16
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
 
@@ -1741,11 +1741,34 @@ design does **not** add:
   severity.
 - Any new Employee, Asset, or Ticket field.
 
-**"Authorized user" (who may view alerts) is not further defined here.**
-Beyond the general MVP RBAC enforcement-level decision
-([§16 Security Architecture, "MVP Enforcement Level"](#16-security-architecture)),
-this resolution does not specify a role list or permission matrix for alert
-visibility — carried forward as open, not invented.
+**"Authorized user" (who may view alerts) — resolved 2026-09-04, for this
+screen only** (PRD v0.16, §16 Resolved Question 45, partially resolving Open
+Finding F-08): **authorized = authenticated.** Any authenticated user, in any
+of the four existing roles (`EMPLOYEE`, `IT_STAFF`, `IT_MANAGER`, `ADMIN`),
+may view the Alerts screen (P-012); no role is excluded. Enforcement is
+declared in code, per route (`ProtectedRoute allowedRoles`, an empty/absent
+allow-list), the same mechanism already gating every other route — see
+[§16 Security Architecture, "Alerts Screen Access Gate"](#alerts-screen-access-gate--resolved-2026-09-04-prd-v016-16-resolved-question-45)
+for the full route gating map and for why this does **not** extend to the
+role/permission-matrix content of any other screen. The built Role Management
+permission-matrix screen (`frontend/src/pages/RoleManagement/index.tsx`) has
+no bearing on this or any other route's access — see the same subsection for
+why it is presentational only.
+
+**Per-user filtering of alert rows — raised 2026-09-04, explicitly not
+decided (PRD v0.16, §16 Open Question 22a):** today every authenticated user
+sees all five conditions' matching alerts, regardless of role or assignment.
+Whether the Alerts screen should eventually filter rows to only those
+"relevant" to the viewing user is a distinct question from the access gate
+above, and is **not designed here.** It is not yet designable at all: there
+is no link between the authenticated `User` record (`id`/`username`/
+`fullName`/`role` only) and an `Employee` record, and the closest existing
+precedent — the Handovers screen's recipient matching — works around the
+same gap by comparing `fullName` strings, a documented MVP limitation, not a
+reusable identity link. This design does not propose adding a `User`↔
+`Employee` link (e.g., an `employeeId` field) to close that gap; doing so
+would be unrequested scope. Recorded here only as the reason Q22a stays
+undesignable until the business (or a future requirement) answers it.
 
 **Open, not resolved by this design (must stay open):** whether the header
 bell-icon dropdown in `AppShell` (`NotificationCenter.tsx`) is in scope for
@@ -1940,6 +1963,80 @@ role-restricted beyond being the specific actor named at that stage
 (IT/Admin at Stage 1, the recipient employee at Stage 2). It does not extend
 role-gating to Check-in, to any other asset category, or to any other
 domain's role/permission content.
+
+## Alerts Screen Access Gate — Resolved 2026-09-04 (PRD v0.16, §16 Resolved Question 45)
+
+Requirement: `RAISE-FR-ALERT-001` (P-012). This subsection is the second gate
+in this document to be **fully** resolved (access + enforcement mechanism),
+not merely have its enforcement *level* fixed — the same treatment as
+`RAISE-FR-OPS-002`'s Check-in/Check-out gate above. It **partially** resolves
+Open Finding **F-08**; F-08 is not closed.
+
+- **Access:** any authenticated user — `EMPLOYEE`, `IT_STAFF`, `IT_MANAGER`,
+  `ADMIN` — may view the Alerts screen; no role is excluded. This is not a
+  new design choice; it confirms already-built behavior
+  (`frontend/src/App.tsx` registers `ROUTES.NOTIFICATIONS` inside the
+  unrestricted `ProtectedRoute` block).
+- **Enforcement mechanism:** declared in code, per route, via the existing
+  `ProtectedRoute allowedRoles` pattern — the same mechanism this document
+  already describes as the pattern for every other RBAC-gated route (see the
+  "IT Hardware Check-out Stages 3–4" exception above, and the "Further
+  narrowing" paragraph). It is explicitly **not** data-driven: nothing reads
+  a persisted permission model to decide access.
+
+**Route Gating Map — current state, restated for traceability, not a new
+design decision.** This table records the gating pattern the PRD narrative
+above (§16 Resolved Question 45) already describes as already-built; it is
+included here so the full map is visible in one place rather than only as
+prose:
+
+| Route / Screen | Gate | Mechanism |
+|---|---|---|
+| Assets | Any authenticated user | `ProtectedRoute`, no `allowedRoles` |
+| Employees | Any authenticated user | `ProtectedRoute`, no `allowedRoles` |
+| Maintenance | Any authenticated user | `ProtectedRoute`, no `allowedRoles` |
+| Handovers | Any authenticated user | `ProtectedRoute`, no `allowedRoles` |
+| Alerts (P-012, `RAISE-FR-ALERT-001`) | Any authenticated user | `ProtectedRoute`, no `allowedRoles` — **confirmed 2026-09-04** |
+| Administration | `ADMIN` only | `ProtectedRoute allowedRoles={['ADMIN']}` |
+| User Management | `ADMIN` only | `ProtectedRoute allowedRoles={['ADMIN']}` |
+| Role Management | `ADMIN` only | `ProtectedRoute allowedRoles={['ADMIN']}` |
+| Settings | `ADMIN` only | `ProtectedRoute allowedRoles={['ADMIN']}` |
+
+This map covers exactly the routes named in PRD §16 Resolved Question 45's
+narrative. It is **not** a complete enumeration of every screen in
+[§3 Screen Inventory](#3-conceptual-navigation--screen-groups) /
+[`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md); any screen not
+listed here still has its access gate as **TBD**, unchanged by this update —
+see the "Still fully TBD" paragraph above, which this table narrows but does
+not replace.
+
+**Role Management permission matrix — presentational only, recorded so it is
+not mistaken for working access control.** The application ships a Role
+Management screen (`frontend/src/pages/RoleManagement/index.tsx`) presenting
+an editable, persisted permission matrix of 15 modules × 6 actions
+(View/Create/Edit/Delete/Approve/Export; persistence via
+`roleService.updatePermissions`). Under the code-declared, per-route
+enforcement model above, **this matrix has no enforcement effect
+whatsoever** — no route, guard, or access check in this design reads it to
+grant or deny anything. It is a UI artifact only. This design does **not**
+propose or schedule work to make the matrix authoritative; that would be
+inventing scope beyond PRD v0.16 §16 Resolved Question 45, which records this
+as current truth, not a future fix.
+
+**What this resolution narrows, not closes, in the "Still fully TBD"
+paragraph above:** the role/permission matrix *content* for every screen
+other than Alerts remains **TBD** exactly as before (F-08 stays open for
+those); the authentication mechanism itself (PRD §16 Q21) is untouched —
+there is still no real user store (Open Finding **F-11**), and
+`middleware.RequireRole` is still wired only to the Go template's demo routes
+(Open Finding **F-12**). Neither of those is resolved by this subsection.
+
+**Not designed here — a distinct, still-open question (PRD v0.16, §16 Open
+Question 22a):** whether Alerts should eventually filter rows to only those
+"relevant" to the viewing user. See
+[§14 Alert Architecture](#explicitly-not-designed-here-per-prds-own-non-decisions)
+for why this is not yet designable (no `User`↔`Employee` link exists) and why
+this design does not propose adding one.
 
 ---
 
@@ -2339,7 +2436,7 @@ treated as mandatory.
 | RAISE-FR-WARRANTY-001 | Warranty (§5.2 — field list resolved 2026-08-29: `warrantyExpiry` only; 3-state status + per-Asset-Category Expiring threshold, default 90 days, resolved 2026-09-01) / Settings (§5.4 — threshold configuration home) |
 | RAISE-FR-LICENSE-001 | License Management — **Roadmap, not MVP** (§4.1A, §5.3; corrected 2026-08-21) |
 | RAISE-FR-ORACLE-001 | Oracle Integration |
-| RAISE-FR-ALERT-001 | Alert Architecture (§14 — five MVP trigger conditions and fixed-per-condition High/Medium/Low severity confirmed 2026-09-04; read-time derivation, no persisted Alert entity) |
+| RAISE-FR-ALERT-001 | Alert Architecture (§14 — five MVP trigger conditions and fixed-per-condition High/Medium/Low severity confirmed 2026-09-04; read-time derivation, no persisted Alert entity; access gate confirmed 2026-09-04 as any authenticated user, enforced via `ProtectedRoute allowedRoles`, see [§16 Security Architecture, "Alerts Screen Access Gate"](#alerts-screen-access-gate--resolved-2026-09-04-prd-v016-16-resolved-question-45)) |
 | RAISE-FR-AUDIT-001 | Audit Architecture |
 | RAISE-FR-EXEC-001 | Executive Dashboard |
 | RAISE-FR-LIFE-001 | Lifecycle |
@@ -2409,7 +2506,18 @@ and §14 for why this is deliberate. This resolution does not change the
 alerting (§5.3), and does not decide the separate `NotificationCenter.tsx`
 scope contradiction still recorded under [Out of
 Scope](#out-of-scope-no-design-area--by-business-decision) and
-[§25](#25-design-open-questions).
+[§25](#25-design-open-questions). **As of Design v0.14 (PRD v0.16, §16
+Resolved Question 45):** the `RAISE-FR-ALERT-001` row above now also covers
+the confirmed access gate (any authenticated user) and enforcement mechanism
+(code-declared, per-route `ProtectedRoute allowedRoles`), partially resolving
+Open Finding F-08 for this screen only — see [§16 Security Architecture,
+"Alerts Screen Access Gate"](#alerts-screen-access-gate--resolved-2026-09-04-prd-v016-16-resolved-question-45).
+This same resolution records the built Role Management permission matrix as
+presentational only (no enforcement effect) and narrows, without resolving,
+the `RAISE-NFR-SEC-RBAC-001` "Still fully TBD" paragraph in §16: role/
+permission-matrix content for every screen other than Alerts, and the
+authentication mechanism itself, remain open exactly as before. It does not
+change any other row in this table.
 
 ---
 
@@ -2436,14 +2544,16 @@ design-relevant grouping — not a new set of questions.)
    EXPIRED/EXPIRING, Ticket OVERDUE/ON_HOLD, Handover PENDING), fixed
    per-condition High/Medium/Low severity, and single-channel/in-app scope
    restated (not newly decided) — see [§14 Alert
-   Architecture](#14-alert-architecture). **Still open, not decided by this
-   resolution:** alert acknowledgement/dismissal/read-unread/snooze, alert
-   delivery/scheduling/digesting, a notification-preference model, the
-   "authorized user" viewer role/permission detail (depends on the still-open
-   Security item 22 below), and the unreconciled `NotificationCenter.tsx`
-   scope contradiction (PRD §16 Resolved Question 35 vs.
-   `docs/project-foundation-baseline/ESAPS-UI-FOUNDATION-BASELINE.md` —
-   neither this design nor Resolved Question 44 picks a side).
+   Architecture](#14-alert-architecture). The "authorized user" viewer detail
+   is now **also resolved, 2026-09-04** (PRD v0.16, §16 Resolved Question 45):
+   any authenticated user, any role — see Security item 22 below. **Still
+   open, not decided by either resolution:** alert acknowledgement/dismissal/
+   read-unread/snooze, alert delivery/scheduling/digesting, a
+   notification-preference model, per-user filtering of which alert rows a
+   given user sees (new item 22a below), and the unreconciled
+   `NotificationCenter.tsx` scope contradiction (PRD §16 Resolved Question 35
+   vs. `docs/project-foundation-baseline/ESAPS-UI-FOUNDATION-BASELINE.md` —
+   neither this design nor Resolved Question 44/45 picks a side).
 
 ## Data
 
@@ -2534,7 +2644,10 @@ design-relevant grouping — not a new set of questions.)
 
 ## Security
 
-21. Authentication mechanism?
+21. Authentication mechanism? — **Still fully open** (PRD v0.16, §16 Q21).
+    There is still no real user store (Open Finding **F-11**), and
+    `middleware.RequireRole` is still wired only to the Go template's demo
+    routes (Open Finding **F-12**). Untouched by Resolved Question 45.
 22. Roles and permissions? — **Enforcement-level sub-question resolved
     2026-08-21** (PRD v0.9, §16 Resolved Question 38): UI-only/client-side
     enforcement is acceptable for MVP; backend enforcement is deferred to
@@ -2551,7 +2664,27 @@ design-relevant grouping — not a new set of questions.)
     **do** require a specific role (`IT_STAFF`, `IT_MANAGER` respectively) —
     see [§16 Security Architecture](#16-security-architecture), "Further
     narrowing." No new role introduced; this remains scoped to IT Hardware
-    Check-out Stages 3–4 only.
+    Check-out Stages 3–4 only. **A second gate fully resolved 2026-09-04**
+    (PRD v0.16, §16 Resolved Question 45), partially resolving Open Finding
+    **F-08**: the Alerts screen (P-012, `RAISE-FR-ALERT-001`) access gate is
+    any authenticated user, no role excluded, enforced via the same
+    code-declared `ProtectedRoute allowedRoles` mechanism — see
+    [§16 Security Architecture, "Alerts Screen Access
+    Gate"](#alerts-screen-access-gate--resolved-2026-09-04-prd-v016-16-resolved-question-45),
+    which also records the built Role Management permission matrix as
+    presentational only (no enforcement effect) and lists the current
+    route-gating map. **Still fully open, not touched by either
+    resolution:** the role/permission matrix content for every screen other
+    than Check-in/Check-out and Alerts — F-08 remains open for those.
+22a. Should the Alerts screen eventually filter rows to only those "relevant"
+    to the viewing user? — **Raised 2026-09-04, explicitly not decided**
+    (PRD v0.16, §16 Open Question 22a). Not yet designable: no link exists
+    between the authenticated `User` record and an `Employee` record (the
+    Handovers screen's `fullName`-string matching is a documented MVP
+    workaround, not a reusable identity link) — see [§14 Alert
+    Architecture](#explicitly-not-designed-here-per-prds-own-non-decisions).
+    This design does not propose adding a `User`↔`Employee` link to close
+    that gap.
 23. Sensitive data?
 24. Immutable audit event definition?
 25. Retention period?
@@ -2632,11 +2765,65 @@ RAISE-COMPLIANCE-REVIEW.md
 
 ## Document Status
 
-**Version:** 0.13 (sync with PRD v0.15, §16 Resolved Question 44: five MVP
-`RAISE-FR-ALERT-001` alert trigger conditions and fixed-per-condition
-High/Medium/Low severity confirmed; MVP channel scope restated as
-single-channel/in-app, not newly decided. Documentation-only sync; no code
-change.)
+**Version:** 0.14 (sync with PRD v0.16, §16 Resolved Question 45: Alerts
+screen (P-012, `RAISE-FR-ALERT-001`) access gate confirmed as any
+authenticated user, enforced via the existing code-declared, per-route
+`ProtectedRoute allowedRoles` mechanism — partially resolving Open Finding
+F-08 for this one screen only. Records the built Role Management permission
+matrix as presentational only, with no enforcement effect. Documentation-only
+sync; no code change.)
+
+**Change Log — v0.13 → v0.14 (sync with PRD v0.15 → v0.16: Alerts screen
+access gate and RBAC enforcement mechanism confirmed; PRD §16 Resolved
+Question 45, partially resolving Open Finding F-08; new PRD §16 Open
+Question 22a raised and carried forward as explicitly open):**
+
+1. **§16 Security Architecture** — new "Alerts Screen Access Gate — Resolved
+   2026-09-04" subsection: records the confirmed access decision (any
+   authenticated user, no role excluded) and enforcement mechanism
+   (code-declared, per-route `ProtectedRoute allowedRoles`); adds a Route
+   Gating Map table (Assets/Employees/Maintenance/Handovers/Alerts open to
+   any authenticated user; Administration/User Management/Role
+   Management/Settings `ADMIN`-only), restating already-described behavior
+   rather than deciding new gates; records the built Role Management
+   permission matrix (15 modules × 6 actions,
+   `frontend/src/pages/RoleManagement/index.tsx`) as **presentational
+   only — no enforcement effect** — explicitly not proposed or scheduled to
+   become authoritative; and narrows (does not resolve) the existing "Still
+   fully TBD" paragraph: role/permission-matrix content for every screen
+   other than Check-in/Check-out and Alerts, and the authentication
+   mechanism itself (Open Findings F-11/F-12), remain open exactly as
+   before.
+2. **§14 Alert Architecture** — "Authorized user" paragraph rewritten from
+   "not further defined here" to record the 2026-09-04 resolution, with a
+   cross-reference to the new §16 subsection; new paragraph added recording
+   PRD §16 Open Question 22a (per-user filtering of alert rows) as raised and
+   explicitly not decided, and explaining why it is not yet designable — no
+   `User`↔`Employee` link exists today (`User` carries only
+   `id`/`username`/`fullName`/`role`; the Handovers screen's `fullName`-string
+   recipient matching is a documented MVP workaround, not a reusable identity
+   link). This design does not propose adding a `User`↔`Employee` link
+   (e.g., an `employeeId` field) — that would be unrequested scope.
+3. **§24 Design Traceability** — `RAISE-FR-ALERT-001` row updated to note the
+   confirmed access gate and enforcement mechanism; cross-check paragraph
+   extended with a v0.14 note cross-referencing the new §16 subsection and
+   restating that role/permission-matrix content for every other screen, and
+   the authentication mechanism, remain open.
+4. **§25 Design Open Questions** — Business item 5a updated to mark the
+   "authorized user" viewer detail resolved, cross-referencing Security item
+   22; Security item 22 extended with the 2026-09-04 resolution and a
+   restated "still fully open" scope note; new Security item 22a added
+   (per-user alert-row filtering), recorded as raised, not decided, with the
+   `User`↔`Employee` link gap as the reason it is not yet designable.
+5. **No `## NEEDS_PRD_CONFIRMATION` signal raised by this design pass.**
+   Every statement added traces directly to PRD v0.16 §16 Resolved Question
+   45 or to the already-built `frontend/src/App.tsx` /
+   `frontend/src/pages/RoleManagement/index.tsx` behavior the PRD itself
+   cites. No capability was found during this pass that lacks a requirement
+   behind it. Q22a's obstacle (no `User`↔`Employee` link) is recorded as the
+   reason the question stays open, not designed around.
+6. Header metadata updated: Version bumped to 0.14; Design Source updated to
+   reference PRD v0.16.
 
 **Change Log — v0.12 → v0.13 (sync with PRD v0.14 → v0.15: `RAISE-FR-ALERT-001`
 trigger conditions, severity model, and channel-scope wording confirmed; PRD

@@ -2,9 +2,9 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Test Cases
-**Version:** 0.20 Draft
+**Version:** 0.21 Draft
 **Status:** Draft for Test Case Review
-**Source:** [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.12 §7 (Test Suites) + §8 (Blocked Items) + §8.1 (Fully-Blocked Suites — AI Document Intelligence Capabilities) + §3.3 (PRD §10 NFR Backlog — No Suite), expanding [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.12
+**Source:** [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.13 §7 (Test Suites) + §8 (Blocked Items) + §8.1 (Fully-Blocked Suites — AI Document Intelligence Capabilities) + §3.3 (PRD §10 NFR Backlog — No Suite), expanding [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.13
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
 
@@ -739,9 +739,58 @@ numerically by this execution (`TC-ALERT-001-09` was already counted as Fully Te
 it, since "not blocked" and "not yet executed" are distinct from a PASS claim) — a note
 recording the execution is added there.
 
+**Status Note — Access Gate Formally Executed 2026-09-04 (AC document v0.13, Test Plan
+v0.13, PRD v0.16 §16 Resolved Question 45; Design v0.14 §16 "Alerts Screen Access
+Gate"; real running app, merged `main` @ `d8ad01c`).** `AC-ALERT-001-01`'s "authorized
+user" access-gate half — previously left untested and noted as testable "only
+structurally" in `TC-ALERT-001-01`'s Blocked column below (PRD §16 Q22, Open Finding
+F-08) — is now confirmed by business decision as **any authenticated user**, all four
+roles, none excluded, enforced per-route in code (`ProtectedRoute allowedRoles`, the
+Alerts route sitting in the unrestricted block). This is now tested directly, positive
+and negative:
+
+- **Positive case (`AC-ALERT-001-01`'s access-gate half) — PASS.** Signed in as each of
+  the four demo accounts in turn, clearing stored session between each, and navigated to
+  `/notifications`: `admin@raise.dev` (`ADMIN`), `manager@raise.dev` (`IT_MANAGER`),
+  `itstaff@raise.dev` (`IT_STAFF`), and `employee@raise.dev` (`EMPLOYEE`) all reached
+  Alerts directly — no Forbidden page, no redirect — each rendering all 19 seeded alert
+  rows. This evidence is appended to `TC-ALERT-001-01`'s Blocked column below, alongside
+  (not replacing) its existing 2026-09-01 display-mechanism execution record.
+- **Negative case, new criterion `AC-ALERT-001-11` — PASS.** A new test case,
+  `TC-ALERT-001-11`, is added below for 1:1 coverage. With `localStorage`/
+  `sessionStorage` cleared (no token, no stored user), requesting `/notifications`
+  directly redirected to `/login`, rendered the login form, and displayed no alert
+  data.
+
+**A procedural note worth recording, because the first attempt at the negative case was
+misleading:** an initial run of `TC-ALERT-001-11` appeared to show the Alerts screen to
+an unauthenticated visitor. That was **not** a real result — the browser still held an
+`ADMIN` session in `localStorage` from an earlier execution in the same profile
+(`raise_user` = `Demo Admin`/`ADMIN`). The session was verified and cleared, and the
+case was re-run properly, producing the PASS recorded above and in `TC-ALERT-001-11`'s
+row below. This is recorded so the case is not re-run in a dirty browser profile and a
+false failure (or, as happened here, a false pass-through) reported.
+
+This resolves this one sub-question of Open Finding F-08 for the Alerts screen only —
+the role/permission-matrix content for every screen other than Alerts remains **NOT
+TESTABLE YET** (PRD §16 Q22), and the authentication mechanism itself (PRD §16 Q21) is
+untouched. **Per-user filtering of which alert rows a given role/user sees remains NOT
+TESTABLE YET** (PRD §16 Q22a, newly raised, not decided by this resolution): all four
+roles above saw the identical 19 alerts, which is the currently-specified behavior —
+whether a user should eventually see only alerts "relevant" to them is raised but not
+decided, and is not yet specifiable, since there is no link between the authenticated
+`User` and an `Employee` record (`User` carries only `id`/`username`/`fullName`/`role`;
+the Handovers screen, P-008, matches recipients by comparing `fullName` strings as a
+documented MVP limitation, not a reusable identity link). No test case is written for
+per-user filtering, and none should be inferred from `TC-ALERT-001-01`/`-11` below; no
+`employeeId` field or other `User`↔`Employee` link is proposed here. The header
+bell-icon dropdown (`NotificationCenter.tsx` in `AppShell`, Gap 17) remains an
+unreconciled, carried-forward contradiction, untouched by this update — no test case
+covers it.
+
 | TC ID | Title | Steps | Test Data | Expected Result | Blocked |
 |---|---|---|---|---|---|
-| TC-ALERT-001-01 | Triggered alert displays with severity/asset | 1. Trigger an alert-worthy condition. 2. Open Alerts. | 1 asset meeting an alert condition | Alert shown with severity, description, associated asset | No — **PASS on the display mechanism**, fully testable against the as-built Alerts screen (P-012), scoped to `AC-ALERT-001-01`'s structural-display criterion (`RAISE-ACCEPTANCE-CRITERIA.md` §15): an alert lists severity/description/asset when opened. Which specific severity/trigger-rule values are correct remains **NOT TESTABLE YET** (PRD §6.9 Open Question, Open Finding F-05) — a separate, still-unresolved question this case does not claim to close. The "authorized user" gate remains testable only structurally since the role/permission model is undefined (PRD §16 Q22), unaffected by this update. **Formally executed 2026-09-01 against the real running app — PASS:** navigated to `/notifications` (previously 404'd; now renders the Alerts screen with 11 rows, matching the Dashboard's "Expired Warranty: 11" tile exactly); confirmed the row for AST-0013 (Dell OptiPlex 7090) displays Severity "Not yet defined," Description "Warranty expired 2024-03-15," and the associated Asset as a clickable link; clicking it navigated correctly to that asset's Asset Detail page. Also covered by an automated test in `frontend/src/pages/Alerts/index.test.tsx`. |
+| TC-ALERT-001-01 | Triggered alert displays with severity/asset | 1. Trigger an alert-worthy condition. 2. Open Alerts. | 1 asset meeting an alert condition | Alert shown with severity, description, associated asset | No — **PASS on the display mechanism**, fully testable against the as-built Alerts screen (P-012), scoped to `AC-ALERT-001-01`'s structural-display criterion (`RAISE-ACCEPTANCE-CRITERIA.md` §15): an alert lists severity/description/asset when opened. Which specific severity/trigger-rule values are correct remains **NOT TESTABLE YET** (PRD §6.9 Open Question, Open Finding F-05) — a separate, still-unresolved question this case does not claim to close. The "authorized user" gate remains testable only structurally since the role/permission model is undefined (PRD §16 Q22), unaffected by this update. **Formally executed 2026-09-01 against the real running app — PASS:** navigated to `/notifications` (previously 404'd; now renders the Alerts screen with 11 rows, matching the Dashboard's "Expired Warranty: 11" tile exactly); confirmed the row for AST-0013 (Dell OptiPlex 7090) displays Severity "Not yet defined," Description "Warranty expired 2024-03-15," and the associated Asset as a clickable link; clicking it navigated correctly to that asset's Asset Detail page. Also covered by an automated test in `frontend/src/pages/Alerts/index.test.tsx`. **Access-gate half formally executed 2026-09-04 against the real running app (merged `main` @ `d8ad01c`) — PASS:** signed in as each of the four demo accounts in turn (`admin@raise.dev`/`ADMIN`, `manager@raise.dev`/`IT_MANAGER`, `itstaff@raise.dev`/`IT_STAFF`, `employee@raise.dev`/`EMPLOYEE`), clearing stored session between each, and navigated to `/notifications`. All four reached Alerts directly — no Forbidden page, no redirect — each rendering all 19 seeded alert rows. This closes the access-gate half of `AC-ALERT-001-01` per PRD v0.16 §16 Resolved Question 45 / Design v0.14 §16 (any authenticated user, all four roles, none excluded); the display-mechanism half above remains exactly as originally executed 2026-09-01, preserved as history, not overwritten. Per-user filtering of which alerts a given role/user sees remains **NOT TESTABLE YET** (PRD §16 Q22a, newly raised, not decided — no `User`↔`Employee` link exists) — this execution confirms only that all four roles can reach the screen and see alerts, not that each should see a different subset; no test case exists for that separate question. |
 | TC-ALERT-001-02 | Only in-app presentation verified | 1. Open Alerts screen. | ≥1 alert | Alert shown on-screen only; no Email/Teams/LINE delivery attempted | No — **formally executed 2026-09-01 against the real running app — PASS:** confirmed the Alerts screen (`/notifications`, P-012) presents all 11 alert rows purely as an in-app table, with no Email/Teams/LINE or other delivery-channel UI anywhere on the page. Also covered by an automated test in `frontend/src/pages/Alerts/index.test.tsx`. |
 | TC-ALERT-001-03 | Warranty Expired alert row shows High severity and navigates to Asset Detail | 1. Set an Asset's `warrantyExpiry` date to a past date. 2. Open Alerts (P-012). 3. Select that row. | 1 Asset with `warrantyExpiry` in the past | A row is shown with severity **High**, condition "Warranty Expired," and the affected Asset; selecting the row navigates to that Asset's Asset Detail (P-004) | No — **formally executed 2026-09-04 against the real running app (merged `main` @ `c2e6b76`, PR #97) — PASS:** row shows severity `High`, condition "Warranty Expired," description "Warranty expired 2026-07-22," affected record "Surface Pro 9 AST-0015"; selecting it navigated to `/assets/a15`, which rendered that asset. 11 Warranty Expired rows were present in total (AST-0003 through -0010, -0013, -0014, -0015), all `High`. |
 | TC-ALERT-001-04 | Maintenance Ticket Overdue alert row shows High severity and navigates to Maintenance Request detail | 1. Set a Maintenance ticket's `targetResolutionDate` to a past date with status not `DONE`. 2. Open Alerts (P-012). 3. Select that row. | 1 Maintenance ticket, `targetResolutionDate` passed, status ≠ `DONE` | A row is shown with severity **High**, condition "Maintenance Ticket Overdue," and the affected ticket; selecting the row navigates to that ticket's Maintenance Request detail view within P-009 | No — **formally executed 2026-09-04 against the real running app (merged `main` @ `c2e6b76`, PR #97) — PASS:** row shows severity `High`, condition "Maintenance Ticket Overdue," description "Target resolution date 2026-08-17 has passed," affected record "MacBook Pro Display Flickering & Battery Overheating REQ-2026-0042"; selecting it navigated to `/maintenance/REQ-2026-0042`, which rendered that ticket. 3 Overdue rows were present in total (REQ-2026-0041, -0042, -0045). |
@@ -751,6 +800,7 @@ recording the execution is added there.
 | TC-ALERT-001-08 | No alert severity is computed from days-overdue, asset value, or criticality | 1. Trigger each of the five confirmed conditions with varying degrees of overdue-ness / value, where applicable (e.g., a ticket 1 day overdue and one 100 days overdue). 2. Open Alerts (P-012) and compare severities within each condition type. | Multiple instances of the same condition type with differing overdue-duration/value | All rows of the same condition type show the identical, fixed severity for that type (per AC-ALERT-001-03..07's table) regardless of how overdue or how valuable the underlying record is — no such derivation or field exists in the data model | No — **formally executed 2026-09-04 against the real running app (merged `main` @ `c2e6b76`, PR #97) — PASS:** severity is fixed per condition type, not computed. Direct evidence from the same screen: Warranty Expired rows dated 2024-03-15 (≈2.5 years overdue) and 2026-07-22 (≈6 weeks overdue) both render `High`; all three Handover Pending rows render `Low` regardless of stage or asset. No row's severity varied within its condition type across all 19 seeded rows. |
 | TC-ALERT-001-09 | Alert rows disappear once the underlying condition no longer holds | 1. Open Alerts (P-012) and confirm that seeded ticket `REQ-2026-0041` ("Data Center Core Switch SFP+ Fiber Module Replacement") appears as two separate rows: one with condition "Maintenance Ticket Overdue," one with condition "Maintenance Ticket On Hold." Note the total alert count shown on the page. 2. Navigate to that ticket's Maintenance Request detail view within P-009 (Ticket Detail) and use its Status control to complete the ticket, selecting the "Done" option (wired to `ticketService.updateExecutionStatus`, which maps `Done` to status `DONE`). 3. Return to Alerts (P-012). | Seeded ticket `REQ-2026-0041`, initially with `targetResolutionDate` 2026-08-16 (passed) and status `ON_HOLD` — satisfying both the Maintenance Ticket Overdue and Maintenance Ticket On Hold conditions at once | Both of `REQ-2026-0041`'s rows (Maintenance Ticket Overdue and Maintenance Ticket On Hold) no longer appear on Alerts once its status is `DONE`, and the total alert count has dropped by 2 accordingly — nothing was acknowledged, dismissed, or marked read anywhere in this procedure (no such affordance exists on the Alerts screen), consistent with no persisted Alert record (Design v0.13 §14 read-time derivation) | No — **formally executed 2026-09-04 against the real running app (merged `main` @ `30f176c`), signed in as `admin@raise.dev` (ADMIN) — PASS:** Step 1: Alerts (P-012) showed 19 total alerts; `REQ-2026-0041` appeared as exactly two rows — `High` / "Maintenance Ticket Overdue" / "Target resolution date 2026-08-16 has passed" and `Medium` / "Maintenance Ticket On Hold" / "Ticket is on hold." Step 2: on that ticket's detail view within P-009, used the real Update Status control, selected `Done`, entered the Resolution Notes field the UI reveals only for `Done`, and saved via "Save Update" — the product's own `ticketService.updateExecutionStatus` path, no test-only hook, no direct data manipulation; the app showed an "Updated" confirmation. Step 3: returned to Alerts; total alert count was 17, a drop of exactly 2; a scan of every row across both pages found zero rows referencing `REQ-2026-0041`. Nothing was acknowledged, dismissed, cleared, marked read, or snoozed anywhere — a scan of every button on the Alerts screen found no such affordance at all, consistent with no persisted Alert record (Design v0.13 §14 read-time derivation); the rows disappeared purely because both underlying conditions stopped holding once the ticket's status became `DONE`. No console errors were produced. This single state change cleared two different conditions at once (`REQ-2026-0041` satisfied both Overdue and On Hold simultaneously), a stronger demonstration of the read-time-derivation property than the original, unrunnable warranty-based procedure would have given. This is the last `TC-ALERT-001-*` case to be executed — all 10 are now executed and PASS. **Procedure corrected 2026-09-04 (Open Finding F-42 / Gap 18) — history retained, not silently swapped.** The original step 2 ("Edit that Asset's `warrantyExpiry` to a future date") was attempted and formally found unrunnable on 2026-09-04, because the product has no asset-edit capability anywhere: `frontend/src/services/asset-repository.ts` exposes only `create`, `assign`, and `checkIn` — no `updateAsset` method, no update endpoint consumed, and no edit-asset UI anywhere in `frontend/src/pages/`. That was a defect in this test case's written procedure only — not in the implementation (the underlying AC-ALERT-001-09 read-time-derivation invariant was separately confirmed to hold, via a different, product-supported trigger: lowering the IT Hardware "Expiring" threshold from 90 to 3 days through the real Settings UI, P-018, which removed the Warranty Expiring row for AST-0012 and dropped the alert total 19 → 18, restoring to 19 when reverted) and not in AC-ALERT-001-09's specification (which remains correct as written and is unchanged by this correction). This row's steps, test data, and expected result were rewritten to point at a state change the product genuinely supports — verified in source before writing this correction: `frontend/src/pages/TicketDetail/index.tsx` exposes a real Status control with a "Done" option wired to `ticketService.updateExecutionStatus` (`frontend/src/services/ticket-repository.ts`), which maps `Done` to status `DONE`; seeded ticket `REQ-2026-0041` satisfies both the Overdue and On Hold conditions simultaneously, so completing it to `DONE` is a stronger demonstration of the read-time property than the single-row warranty case would have been (two rows disappear from one state change, with no dismiss/acknowledge step anywhere). No corresponding capability was added to the product to make this correction possible — only the test procedure changed, pointing at a capability (Ticket Status → Done) that already existed. The corrected procedure was executed exactly as written in the pass recorded immediately above, confirming it is genuinely runnable and closing the F-42 / Gap 18 defect in substance. |
 | TC-ALERT-001-10 | No condition beyond the five confirmed appears as a row | 1. Open Alerts (P-012). 2. Review every row shown, including its condition label. | Existing seeded Assets/tickets/Assignment Approval Requests | No row's condition is anything other than one of the five confirmed (Warranty Expired, Maintenance Ticket Overdue, Warranty Expiring, Maintenance Ticket On Hold, IT Hardware Handover Pending) — specifically, no preventive-maintenance-due row (no next-service-date field exists) and no software-license-expiry row (`RAISE-FR-LICENSE-001` is Roadmap) appears | No — **formally executed 2026-09-04 against the real running app (merged `main` @ `c2e6b76`, PR #97) — PASS:** all 19 seeded rows across both pages (10 per page) were read. Every row's condition was one of the five confirmed (Warranty Expired ×11, Maintenance Ticket Overdue ×3, Warranty Expiring ×1, Maintenance Ticket On Hold ×1, IT Hardware Handover Pending ×3). No sixth condition appeared; in particular no preventive-maintenance-due and no software-license-expiry row. |
+| TC-ALERT-001-11 | Unauthenticated visitor is redirected to Login | 1. Ensure no session is stored (clear `localStorage`/`sessionStorage`, confirm no token/user object remains). 2. Request `/notifications` directly. | No authenticated session (verified cleared) | Visitor is redirected to `/login`; the login form is rendered; no alert data is displayed | No — **formally executed 2026-09-04 against the real running app (merged `main` @ `d8ad01c`) — PASS:** with `localStorage`/`sessionStorage` cleared (no token, no stored user), requesting `/notifications` directly redirected to `/login`, which rendered the login form; no alert data was displayed anywhere. **Procedural note:** an initial attempt appeared to show the Alerts screen to an unauthenticated visitor — this was found to be a false result caused by a stale `ADMIN` session (`raise_user` = `Demo Admin`/`ADMIN`) left in `localStorage` from an earlier execution in the same browser profile, not a real gap in `ProtectedRoute` behavior. The session was verified and cleared, and the case was re-run properly to produce the PASS recorded above; this is documented here so the case is not re-run in a dirty profile and a false result reported. Existing `ProtectedRoute` behavior; the Alerts route carries no route-specific role restriction (PRD §16 Resolved Question 45; Design §16 "Alerts Screen Access Gate"). |
 
 ---
 
@@ -988,7 +1038,7 @@ been formally executed and are PASS**.
 | TS-MAINT-001 | 9 | 3 | 6 | 0 | 0 |
 | TS-WARRANTY-001 | 6 | 6 | 0 | 0 | 0 |
 | TS-ORACLE-001 | 4 | 3 | 1 | 0 | 0 |
-| TS-ALERT-001 | 10 | 10 | 0 | 0 | 0 |
+| TS-ALERT-001 | 11 | 11 | 0 | 0 | 0 |
 | TS-AUDIT-001 | 3 | 1 | 2 | 0 | 0 |
 | TS-EXEC-001 | 2 | 2 | 0 | 0 | 0 |
 | TS-AI-SEARCH-001 | 3 | 2 | 1 | 0 | 0 |
@@ -997,7 +1047,32 @@ been formally executed and are PASS**.
 | TS-AI-DOC-002 | 1 | 0 | 0 | 1 | 0 |
 | TS-AI-DOC-003 | 1 | 0 | 0 | 1 | 0 |
 | TS-AI-DOC-004 | 1 | 0 | 0 | 1 | 0 |
-| **Total** | **80** | **55** | **20** | **4** | **1** |
+| **Total** | **81** | **56** | **20** | **4** | **1** |
+
+**TS-ALERT-001 updated a fifth time 2026-09-04 (real formal test execution of the
+confirmed Alerts access gate, real running app, merged `main` @ `d8ad01c`, PRD v0.16 §16
+Resolved Question 45 / Design v0.14 §16, AC document v0.13, Test Plan v0.13; see §14's
+newest Status Note for full detail):** row grows from `10 | 10 | 0 | 0 | 0` to
+`11 | 11 | 0 | 0 | 0`, and Grand **Total** row grows from `80 | 55 | 20 | 4 | 1` to
+`81 | 56 | 20 | 4 | 1` (one test case added, `TC-ALERT-001-11`, entering directly as
+Fully Testable and PASS — no case moves between any other columns). `TC-ALERT-001-01`'s
+access-gate half — previously untested and noted only as "testable structurally" — was
+formally executed as a positive case across all four demo roles (`ADMIN`, `IT_MANAGER`,
+`IT_STAFF`, `EMPLOYEE`), each reaching Alerts and seeing all 19 seeded rows; this
+evidence is appended to its existing Blocked-column PASS record, which preserves its
+original 2026-09-01 display-mechanism execution unchanged, as history. The new
+criterion `AC-ALERT-001-11` (negative case — unauthenticated visitor redirected to
+Login) is covered by the new `TC-ALERT-001-11`, formally executed and **PASS**: with no
+stored session, requesting `/notifications` directly redirected to `/login` with no
+alert data shown. An initial run of this negative case was found to give a false result
+due to a stale session left in the browser profile from an earlier execution; the
+session was cleared and the case re-run properly — recorded in `TC-ALERT-001-11`'s row
+and in §14's Status Note so it is not mistaken for a real defect. **Per-user filtering
+of alert rows remains NOT TESTABLE YET** (PRD §16 Q22a, newly raised, not decided — no
+`User`↔`Employee` link exists); no test case is written for it, and this update does not
+propose one. The role/permission-matrix content for every screen other than Alerts
+remains NOT TESTABLE YET (PRD §16 Q22, Open Finding F-08) — only this suite's own
+access-gate sub-question is resolved. No other suite's row is affected.
 
 **TS-ALERT-001 updated a fourth time 2026-09-04 (formal execution of the corrected
 `TC-ALERT-001-09` procedure, real running app, merged `main` @ `30f176c`; see §14's newest
@@ -1294,6 +1369,12 @@ Before moving to the Requirement Traceability Matrix / Development:
 - [x] PRD §10 / Design §16A / Prototype §25A / AC §19.9 / Test Plan §3.3's NFR backlog is
       explicitly acknowledged (§18.5) rather than silently absent from this document — no
       test case is invented for any of the ten open areas
+- [x] AC-ALERT-001-01's access-gate half (positive case, any authenticated user, all
+      four roles) and the new AC-ALERT-001-11 (negative case, unauthenticated →
+      Login) are both formally executed against the real running app and recorded
+      PASS (§14); per-user filtering of alert rows (PRD §16 Q22a) is correctly left
+      as NOT TESTABLE YET with no test case written, and no `employeeId`/`User`↔
+      `Employee` link is proposed anywhere in this document
 
 ---
 
@@ -1326,6 +1407,62 @@ Suite ID → TC ID) into one master table for compliance review.
 ---
 
 ## Document Status
+
+**Version:** 0.21 (2026-09-04 — sync to `RAISE-TEST-PLAN.md` v0.13 / `RAISE-ACCEPTANCE-CRITERIA.md`
+v0.13's confirmed Alerts access gate (PRD v0.16 §16 Resolved Question 45), plus a real formal
+test execution against the real running app, merged `main` @ `d8ad01c`. Added
+`TC-ALERT-001-11` (new negative case — unauthenticated visitor redirected to Login) and
+formally executed both it and `TC-ALERT-001-01`'s previously-untested access-gate half; both
+**PASS**. See the Change Log entry below and §14's newest Status Note for full detail)
+
+**Change Log — v0.20 → v0.21 (2026-09-04, sync to `RAISE-TEST-PLAN.md` v0.13 /
+`RAISE-ACCEPTANCE-CRITERIA.md` v0.13's confirmed Alerts access gate, plus real formal test
+execution against the real running app on merged `main` @ `d8ad01c`):**
+
+1. **Trigger.** `RAISE-ACCEPTANCE-CRITERIA.md` v0.13 and `RAISE-TEST-PLAN.md` v0.13 resolved
+   `AC-ALERT-001-01`'s previously NOT TESTABLE YET "authorized user" access-gate sub-question
+   (PRD v0.16 §16 Resolved Question 45; Design v0.14 §16 "Alerts Screen Access Gate"): any
+   authenticated user, all four roles (`EMPLOYEE`, `IT_STAFF`, `IT_MANAGER`, `ADMIN`), none
+   excluded, enforced per-route in code (`ProtectedRoute allowedRoles`). A new criterion,
+   `AC-ALERT-001-11`, was added to the AC document to test the negative case (unauthenticated
+   visitor redirected to Login). This update expands `RAISE-TEST-CASES.md` to match and
+   formally executes both halves against the real running app.
+2. **§14 TS-ALERT-001 — new Status Note added** ("Access Gate Formally Executed
+   2026-09-04"), recording the resolution, the four-role positive-case execution, the new
+   negative-case criterion, and a procedural note about a stale-session false result on the
+   first attempt at the negative case (corrected and re-run before the PASS below was
+   recorded). Every prior Status Note in §14 is left exactly as recorded.
+3. **`TC-ALERT-001-01` — Blocked column extended, not overwritten.** Its existing 2026-09-01
+   PASS record (display-mechanism half) is preserved verbatim as history; a new sentence is
+   appended recording the access-gate half's own formal execution — signed in as each of the
+   four demo accounts (`admin@raise.dev`/`ADMIN`, `manager@raise.dev`/`IT_MANAGER`,
+   `itstaff@raise.dev`/`IT_STAFF`, `employee@raise.dev`/`EMPLOYEE`) in turn, clearing stored
+   session between each — all four reached `/notifications` directly and saw all 19 seeded
+   alert rows, no Forbidden page, no redirect. **PASS.**
+4. **`TC-ALERT-001-11` added** (new, negative case — unauthenticated visitor redirected to
+   Login). Formally executed with `localStorage`/`sessionStorage` cleared: requesting
+   `/notifications` directly redirected to `/login`, rendered the login form, and showed no
+   alert data. **PASS.** Its Blocked column records the stale-session false result from the
+   first attempt and the corrected re-run, so the case is not mistaken for a defect if re-run
+   in a dirty browser profile.
+5. **Per-user filtering of alert rows stays NOT TESTABLE YET** (PRD §16 Q22a, newly raised,
+   not decided by this resolution) — no test case is written for it, and no `employeeId` or
+   other `User`↔`Employee` link is proposed anywhere in this document, per the AC document's
+   own explicit instruction. The role/permission-matrix content for every screen other than
+   Alerts remains NOT TESTABLE YET (PRD §16 Q22); this update narrows, not removes, that
+   general blocked note's scope for Alerts specifically. The header bell-icon dropdown
+   contradiction (Gap 17) is untouched — no side picked, no test case added.
+6. **`TC-ALERT-001-02` through `-10` are explicitly left untouched** by this update — their
+   existing 2026-09-01/2026-09-04 PASS results are unaffected.
+7. **§19 Test Case Summary** updated: `TS-ALERT-001` row moves from `10 | 10 | 0 | 0 | 0` to
+   `11 | 11 | 0 | 0 | 0` (one test case added, entering directly as Fully Testable and PASS).
+   Grand **Total** row moves from `80 | 55 | 20 | 4 | 1` to `81 | 56 | 20 | 4 | 1`. No other
+   suite's row is affected.
+8. **§20 Test Case Review Checklist** gained a new checklist item confirming both halves of
+   the Alerts access gate are formally executed and PASS, and that per-user filtering
+   correctly remains uncovered by any test case.
+9. **Header Source line and top-of-document Version line** updated to cite
+   `RAISE-TEST-PLAN.md` v0.13 and `RAISE-ACCEPTANCE-CRITERIA.md` v0.13.
 
 **Version:** 0.20 (2026-09-04 — real formal test execution of the corrected `TC-ALERT-001-09`
 procedure against merged `main` @ `30f176c`, signed in as `admin@raise.dev` (ADMIN); no

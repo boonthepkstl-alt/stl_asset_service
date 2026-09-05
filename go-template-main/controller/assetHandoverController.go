@@ -78,7 +78,7 @@ func (obj *assetHandoverController) GetHandoverByCode(c *fiber.Ctx) error {
 	handover, err := obj.handoverService.GetHandover(code)
 	if err != nil {
 		log.Errorf("GetHandoverByCode error: %v", err)
-		return c.Status(http.StatusNotFound).JSON(fiber.Map{"message": "Handover not found", "error": err.Error()})
+		return c.Status(http.StatusNotFound).JSON(fiber.Map{"message": "Handover not found"})
 	}
 	return c.Status(http.StatusOK).JSON(handover)
 }
@@ -172,8 +172,10 @@ func (obj *assetHandoverController) updateHandover(c *fiber.Ctx, auditAction str
 
 func mapHandoverError(c *fiber.Ctx, err error) error {
 	switch {
-	case errors.Is(err, service.ErrHandoverNotFound), errors.Is(err, service.ErrAssetNotFound):
-		return c.Status(http.StatusNotFound).JSON(fiber.Map{"message": "Not found", "error": err.Error()})
+	case errors.Is(err, service.ErrHandoverNotFound):
+		return c.Status(http.StatusNotFound).JSON(fiber.Map{"message": "Handover not found"})
+	case errors.Is(err, service.ErrAssetNotFound):
+		return c.Status(http.StatusNotFound).JSON(fiber.Map{"message": "Asset not found"})
 	case errors.Is(err, service.ErrInvalidRecipient):
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"message": "Invalid request body", "error": err.Error()})
 	case errors.Is(err, service.ErrAssetNotITHardware),

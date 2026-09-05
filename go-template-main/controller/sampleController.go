@@ -122,10 +122,7 @@ func (obj sampleController) GetSampleByID(c *fiber.Ctx) error {
 	data, err := obj.someService.GetSample(id)
 	if err != nil {
 		log.Errorf("GetSampleByID error: %v", err)
-		return c.Status(http.StatusNotFound).JSON(fiber.Map{
-			"message": "Record not found",
-			"error":   err.Error(),
-		})
+		return c.Status(http.StatusNotFound).JSON(fiber.Map{"message": "Record not found"})
 	}
 
 	return c.Status(http.StatusOK).JSON(data)

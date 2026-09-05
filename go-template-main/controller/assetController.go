@@ -90,10 +90,7 @@ func (obj *assetController) GetAssetByID(c *fiber.Ctx) error {
 	asset, err := obj.assetService.GetAsset(id)
 	if err != nil {
 		log.Errorf("GetAssetByID error: %v", err)
-		return c.Status(http.StatusNotFound).JSON(fiber.Map{
-			"message": "Asset not found",
-			"error":   err.Error(),
-		})
+		return c.Status(http.StatusNotFound).JSON(fiber.Map{"message": "Asset not found"})
 	}
 
 	return c.Status(http.StatusOK).JSON(asset)

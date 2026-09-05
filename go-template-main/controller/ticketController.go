@@ -99,7 +99,7 @@ func (obj *ticketController) GetTicketByCode(c *fiber.Ctx) error {
 	ticket, err := obj.ticketService.GetTicket(code)
 	if err != nil {
 		log.Errorf("GetTicketByCode error: %v", err)
-		return c.Status(http.StatusNotFound).JSON(fiber.Map{"message": "Ticket not found", "error": err.Error()})
+		return c.Status(http.StatusNotFound).JSON(fiber.Map{"message": "Ticket not found"})
 	}
 	return c.Status(http.StatusOK).JSON(ticket)
 }
@@ -131,7 +131,7 @@ func (obj *ticketController) CreateTicket(c *fiber.Ctx) error {
 	created, err := obj.ticketService.CreateTicket(input)
 	if err != nil {
 		log.Errorf("CreateTicket service error: %v", err)
-		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"message": "Failed to create ticket", "error": err.Error()})
+		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"message": "Failed to create ticket"})
 	}
 	obj.recordAudit(c, "Ticket created", created.ID)
 	return c.Status(http.StatusCreated).JSON(created)

@@ -73,10 +73,7 @@ func (obj *employeeController) GetEmployeeByID(c *fiber.Ctx) error {
 	employee, err := obj.employeeService.GetEmployee(id)
 	if err != nil {
 		log.Errorf("GetEmployeeByID error: %v", err)
-		return c.Status(http.StatusNotFound).JSON(fiber.Map{
-			"message": "Employee not found",
-			"error":   err.Error(),
-		})
+		return c.Status(http.StatusNotFound).JSON(fiber.Map{"message": "Employee not found"})
 	}
 
 	return c.Status(http.StatusOK).JSON(employee)

@@ -9,6 +9,7 @@ import {
   TrendingDown,
   DollarSign,
   UserCheck,
+  Gauge,
   ShoppingCart,
   KeyRound as KeyIcon,
   ClipboardCheck,
@@ -25,6 +26,7 @@ import { AppShell } from '@/components/AppShell';
 import { Card, CardHeader, Badge, StatusBadge, Button, EmptyState } from '@/components/ui';
 import { BarChart, DonutChart, ProgressBarChart } from '@/components/Charts';
 import { useDashboardStats } from '@/hooks/useDashboardStats';
+import { computeUtilization } from '@/lib/utilization';
 import { kpis as staticKpis, assetLifecycleData, activities, approvals, maintenanceRecords } from '@/data/fixtures/mockData';
 import { aiInsights } from '@/data/fixtures/aiData';
 import { cn } from '@/lib/cn';
@@ -59,6 +61,9 @@ const severityConfig = {
 export function DashboardPage() {
   const navigate = useNavigate();
   const { stats, loading, error, refetch } = useDashboardStats();
+  // `stats` is null only while loading/errored, when the KPI grid below isn't rendered at all;
+  // the zero fallback keeps this free of a non-null assertion rather than guarding twice.
+  const utilization = computeUtilization(stats ?? { available: 0, assigned: 0 });
   const upcomingMaintenance = maintenanceRecords.filter((m) => m.status === 'Scheduled' || m.status === 'Overdue').slice(0, 4);
 
   const kpiCards = stats
@@ -66,6 +71,7 @@ export function DashboardPage() {
         { label: 'Total Assets', value: stats.totalAssets, icon: Boxes, color: 'brand', sub: 'across all locations' },
         { label: 'Available', value: stats.available, icon: CheckCircle2, color: 'success', sub: 'ready to assign' },
         { label: 'Assigned', value: stats.assigned, icon: UserCheck, color: 'accent', sub: 'in active use' },
+        { label: 'Utilization', value: `${utilization.percent}%`, icon: Gauge, color: 'brand', sub: `${utilization.assigned} of ${utilization.eligible} assignable assets` },
         { label: 'In Maintenance', value: stats.inMaintenance, icon: Wrench, color: 'warning', sub: 'under repair' },
         { label: 'Expired Warranty', value: stats.expiredWarranty, icon: AlertTriangle, color: 'error', sub: 'needs attention' },
         { label: 'Software Licenses', value: stats.softwareLicenseCount, icon: KeyRound, color: 'singer', sub: 'active contracts' },

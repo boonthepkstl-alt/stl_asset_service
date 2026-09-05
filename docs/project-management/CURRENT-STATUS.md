@@ -9,7 +9,11 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-09-04, after `CHECKPOINT-2026-09-04-008` — the Alerts
+**As of:** 2026-09-05, after PR #100 merged (`a7f0d42`) and
+`FEATURE-CHECKPOINT-alerts` recorded — the first Level 2 (Feature)
+checkpoint written since the model was introduced, rolling up the six
+Level 1 checkpoints that took Alerts from a 404 route to a complete
+requirement. It follows `CHECKPOINT-2026-09-04-008` — the Alerts
 access gate confirmed by business (**F-08 narrowed, R-25**), propagated
 through all seven chain documents and executed across all four roles.
 **`RAISE-FR-ALERT-001` is now a full `PASS`** — all 11
@@ -56,7 +60,8 @@ work is the PR #78–#93 series covering the Employee form, a round of
 user-driven UI/IA corrections, the CI pipeline, route-level code
 splitting, and backend error-response hygiene — see the dedicated paragraph at the end of
 this preamble, which is the newest item here.** Re-verified live this
-close-out pass, on merged `main` at `d8ad01c`: frontend
+close-out pass, on merged `main` at `a7f0d42` (PR #100 merged
+2026-09-05): frontend
 `npx tsc --noEmit` clean, `npm run lint` clean (0 warnings),
 `npm run build` clean, `npm run test` — **49 test files / 250 tests
 passing**; backend `go build ./...`, `go vet ./...`, `go test ./...` all
@@ -462,7 +467,7 @@ and executing `TC-ALERT-001-09` (`CHECKPOINT-2026-09-04-007`, R-24,
 closing **Gap 16** and **Gap 18**), and the Alerts access gate
 (`CHECKPOINT-2026-09-04-008`, **R-25**), which took
 **`RAISE-FR-ALERT-001` to a full `PASS`**. The traceability
-matrix is at **v2.1 with one gap open: Gap 17**, the bell-icon scope
+matrix is at **v2.2 with one gap open: Gap 17**, the bell-icon scope
 contradiction, which is a **documentation decision**, not an engineering
 task — two project documents contradict each other and somebody has to
 say which is right.

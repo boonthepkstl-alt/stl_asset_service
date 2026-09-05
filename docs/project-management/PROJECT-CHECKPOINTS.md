@@ -3775,6 +3775,34 @@ Upgraded from `PASS (partial)` in matrix v2.2. **All 11 `TC-ALERT-001-01..11` ca
 
 ---
 
+### FEATURE-CHECKPOINT-alerts
+
+**Feature:** Alerts (the `/notifications` screen, P-012, and the derivation behind it)
+**Maps to Phase(s):** Phase 7 — Alerts & Notifications
+**Maps to Requirement(s):** `RAISE-FR-ALERT-001`
+
+**Task Checkpoints included:** `CHECKPOINT-2026-08-29-006` (TS-ALERT-001 sweep, F-32 raised), `CHECKPOINT-2026-09-01-004` (F-32 resolved, scoped screen built), `CHECKPOINT-2026-09-04-005` (F-05 → R-23, specification only), `CHECKPOINT-2026-09-04-006` (Gap 16 built, `TC-ALERT-001-03..10` executed — 7 PASS, 1 BLOCKED), `CHECKPOINT-2026-09-04-007` (`TC-ALERT-001-09` corrected and executed, F-42 → R-24, Gap 18 and Gap 16 closed), `CHECKPOINT-2026-09-04-008` (access gate, F-08 partial → R-25, requirement to full `PASS`) — see Level 1 above for each one's detail.
+
+**Progress Summary:** The feature went from **a route that returned the app's generic 404** to a complete, executed requirement in four moves, and the order matters: the 404 was found by *formal test execution*, not by browsing (`CHECKPOINT-2026-08-29-006`, **F-32**); a scoped single-condition screen shipped 2026-09-01, deliberately rendering severity as the literal **"Not yet defined"** rather than inventing a High/Medium/Low mapping nobody had approved; business then fixed the content (PRD §16 **Resolved Question 44** — five conditions with fixed per-type severities) and the four remaining conditions were built and executed; finally business fixed the access gate (**Resolved Question 45** — any authenticated user), which was the last thing holding the requirement at partial.
+
+The architecture held throughout: `frontend/src/lib/alerts.ts` is a **pure derivation over already-fetched lists** — **no Alert entity, table, persisted record, new field or data-model change** — exactly as Design §14 specified before any of it was built. Two judgement calls were settled by reading the spec rather than choosing: a ticket both `ON_HOLD` and overdue emits **both** alerts (Resolved Question 44 defines five *independent* conditions with no precedence, and suppressing one would have invented a rule), and the Expiring threshold is read from Settings per Asset Category rather than hardcoded.
+
+**Acceptance Criteria Status:** **Met** — `AC-ALERT-001` (`AC-ALERT-001-01..11`) → `TS-ALERT-001` → `TC-ALERT-001-01..11`. `RAISE-TRACEABILITY-MATRIX.md` v2.2 §3 records the row's Test Status as **`PASS`**, upgraded from `PASS (partial)`; `RAISE-TEST-CASES.md` v0.21 records all 11 cases as executed. No criterion in the group remains NOT TESTABLE YET.
+
+**Status:** ✅ Feature-complete for current scope.
+
+**Known Issues:**
+- **Gap 17** — the header bell-icon dropdown across other pages is still hardcoded empty, and its *scope* is contradicted between two project documents (PRD §16 Resolved Question 35 vs `ESAPS-UI-FOUNDATION-BASELINE.md` line 88). Untouched, **no side picked** — this is a documentation decision, not an engineering task, and the only gap still open in the matrix.
+- **PRD Q22a** — should a user see only the alerts relevant to them? Raised, unspecified, and **not specifiable today**: there is no link between the authenticated `User` and an `Employee` (`User` carries only `id`/`username`/`fullName`/`role`). It was weighed explicitly and judged outside the requirement's confirmed scope rather than left as an unmet criterion.
+- **F-08 narrowed, not closed (R-25)** — only the Alerts access gate was answered. Role/permission content for every other screen, and the authentication mechanism itself (Q21, F-11, F-12), remain open.
+- The app ships a **Role Management screen with an editable, persisted 15-module × 6-action permission matrix that nothing reads**. Under Resolved Question 45 it enforces nothing and is presentational only — recorded in PRD v0.16 and Design v0.14 so no reader mistakes it for working access control.
+
+**Remaining Work:** None within engineering's reach for `RAISE-FR-ALERT-001`. Both remaining items are decisions.
+
+**Next Recommended Task:** **Gap 17** is the cheapest item in this feature once somebody says which document is right — `deriveAlerts` already exists and the bell only needs wiring. Outside this feature, **F-03** (Dashboard NBV/Risk formulas) is the higher-leverage decision: `RAISE-FR-EXEC-001` is in exactly the position Alerts was in — passing on its confirmed scope and missing two tiles **because no formula exists**, not because nobody wrote the code.
+
+---
+
 ## Level 3 — Phase Checkpoints
 
 ### PHASE-CHECKPOINT-1

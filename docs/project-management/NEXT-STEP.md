@@ -13,6 +13,12 @@ Prototype **v0.15**, AC **v0.13**, Test Plan **v0.13**, Test Cases
 **v0.21**, Traceability Matrix **v2.2**, Compliance Review v1.0,
 `OPEN-FINDINGS.md`, and the source tree.
 
+**Still current as of `a7f0d42`** (PR #100 merged 2026-09-05). That PR
+changed **no code** — it was a decision, a chain sync and an execution —
+so nothing below moved. Re-validated on the merged commit: frontend
+`tsc`/lint/build clean and **49 test files / 250 tests passing**;
+backend `go build`/`vet`/`test` clean.
+
 ---
 
 ## Current State

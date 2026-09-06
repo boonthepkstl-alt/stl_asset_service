@@ -2,7 +2,7 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Test Cases
-**Version:** 0.22 Draft
+**Version:** 0.23 Draft
 **Status:** Draft for Test Case Review
 **Source:** [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.14 §7 (Test Suites) + §8 (Blocked Items) + §8.1 (Fully-Blocked Suites — AI Document Intelligence Capabilities) + §3.3 (PRD §10 NFR Backlog — No Suite), expanding [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.14
 **Source of Truth:** RAISE PRD
@@ -162,13 +162,34 @@ which (Utilization) is no longer true. **No new or restructured case below is ma
 by this update** — `TC-DASH-01` (against its new expected result), `TC-DASH-03a`, and
 `TC-DASH-03b` are each left unexecuted for a separate, subsequent formal execution sweep.
 
+**Status Note — Formal execution 2026-09-05 (real formal test execution against the real
+running app, merged `main` @ `5f232a8`, Vite dev server `http://localhost:5173`, executed
+2026-09-05 — closes the open items flagged in `RAISE-TRACEABILITY-MATRIX.md` Matrix Gap 19):**
+`localStorage` and `sessionStorage` were cleared to zero entries before signing in, to avoid a
+stale-session false result. Signed in with `admin@raise.dev`; session confirmed in-app as
+`{id: u-admin, fullName: "Demo Admin", role: "ADMIN"}`. Landed on route `/dashboard`, page H1
+reads literally "Executive Dashboard." No console errors. Bonus observation (not the object of
+this sweep, recorded for completeness only): requesting `/dashboard` while unauthenticated
+redirected to the login screen, consistent with the access gate confirmed in PRD Resolved
+Question 45. **`TC-DASH-01` and `TC-DASH-03a` are formally executed by this sweep and recorded
+PASS below — see their rows.** `TC-DASH-02` was incidentally re-confirmed (all ten sections
+present) during this same session but this is recorded as incidental confirmation only, not a
+re-execution of `TC-DASH-02` itself; its existing 2026-08-31 PASS stands as the case's formal
+execution record. `TC-DASH-03b` (NBV) stays **BLOCKED** — no NBV tile appeared, as expected,
+and Open Question 3a is still unanswered. `TC-DASH-03c` (Risk) stays **Out of Scope** — no Risk
+KPI tile appeared in the grid, consistent with the confirmed decision; the "High Risk" text
+visible on the page belongs to the AI Insights severity labels, not to a Risk KPI tile, and must
+not be mistaken for one. These four are the **first** formal executions against the nine-tile
+grid — they supersede nothing; the 2026-08-31 eight-tile-grid PASS on `TC-DASH-01` remains
+preserved above as separate history for its own, now-superseded scope.
+
 | TC ID | Title | Steps | Test Data | Expected Result | Blocked |
 |---|---|---|---|---|---|
-| TC-DASH-01 | KPI grid displays all nine tiles | 1. Log in. 2. Land on Dashboard (P-002). | Any asset/maintenance/warranty/license dataset (15-asset seeded register, `frontend/src/data/fixtures/mockData.ts`) | The KPI grid displays all nine tiles: Total Assets, Available, Assigned, **Utilization**, In Maintenance, Expired Warranty, Software Licenses, Monthly Depreciation, and Monthly Cost | No — fully testable against the as-built page. Presence only: Monthly Depreciation and Monthly Cost are explicitly **illustrative** (Prototype §8 — no depreciation model has been built), and none of the other seven tiles has a PRD-defined field list, formula, or threshold beyond what the page computes from existing data; this case asserts the tiles are *displayed*, not that their figures are correct. **Historical PASS SUPERSEDED, not re-affirmed:** formally executed 2026-08-31 against the then-shipped **eight**-tile grid, recorded PASS (`RAISE-TRACEABILITY-MATRIX.md` §3/§4) — that execution was valid for what it tested at the time, but the grid genuinely grew to nine tiles on 2026-09-05 (PR #102, Utilization). This row's Expected Result is now the nine-tile grid; the 2026-08-31 PASS is preserved above as history but does not cover it. **Not yet re-executed against the nine-tile version by this update.** |
-| TC-DASH-02 | Ten dashboard sections display | 1. Ensure asset/maintenance/warranty/license data exists. 2. Land on Dashboard (P-002). | Asset/maintenance/warranty/license dataset covering at least one record relevant to each section | All ten sections are displayed: AI Insights, AI Portfolio Health, Oracle FA Reconciliation, Asset Lifecycle, Department Distribution, Asset Status, Asset Type, Pending Approvals, Recent Activities, and Maintenance Calendar | No — fully testable against the as-built page. **PASS**, formally executed 2026-08-31 (`RAISE-TRACEABILITY-MATRIX.md` §3/§4). Unaffected by the 2026-09-05 Utilization change — the section list did not change; this historical PASS is unmodified, not superseded. |
-| TC-DASH-03a | Utilization tile displays a percentage and an assigned/assignable sub-label | 1. Log in. 2. Navigate to `/dashboard`. 3. Locate the Utilization tile within the KPI grid tested by `TC-DASH-01`. 4. Read its displayed percentage value and sub-label. | 15-asset seeded register (`frontend/src/data/fixtures/mockData.ts`), of which 12 assets are currently assignable (Disposed/Retired/Under-Maintenance excluded from the denominator per PRD §16 Resolved Questions 27/29) and 8 of those 12 are currently assigned | The Utilization tile displays a percentage value (e.g. "66.7%") and a sub-label naming how many assets are currently assigned out of how many are currently assignable (e.g. "8 of 12 assignable assets") — this tests actual displayed behavior, not mere presence, since Utilization's definition and mechanics are fully resolved | No — fully testable; **not yet formally executed by this update, left unexecuted for a subsequent execution sweep — no PASS is claimed here.** Supporting context only, **not a substitute for formal execution of this case:** automated unit coverage already exists at `frontend/src/lib/utilization.test.ts` (6 unit tests) and the Dashboard page's own test asserts the literal strings "66.7%" and "8 of 12 assignable assets"; the tile was also live-verified during PR #102 (per `RAISE-ACCEPTANCE-CRITERIA.md` §5's "Utilization — BUILT AND LIVE" note). None of that automated/PR-review evidence is recorded here as a formal `TC-DASH-03a` execution result. |
-| TC-DASH-03b | NBV tile confirmed absent, blocked on missing default useful-life values | 1. Land on Dashboard (P-002) with the KPI grid from `TC-DASH-01` displayed. 2. Inspect the grid for a tile labeled NBV. | Same dataset as `TC-DASH-01` | No NBV tile is present in the shipped grid — this documents today's accurate absence, not a target for NBV to be displayed | **BLOCKED (partial)** — the absence-check itself is testable now and expected to pass structurally against the current build; **not yet formally executed by this update, no PASS claimed.** **NOT TESTABLE YET beyond the absence-check, and precisely why:** the NBV formula itself is confirmed (PRD §16 Resolved Question 46 — straight-line depreciation from `purchaseDate`/`purchaseCost`, salvage value zero, clamped at 0, useful life configurable per Asset Category via P-018) — this is a **specified but not yet buildable** state, not an "unspecified" one. The sole remaining blocker is the missing default per-Asset-Category useful-life values (PRD §16 Open Question 3a), tracked as [Open Finding F-03](../project-management/OPEN-FINDINGS.md#blocking-gates-an-mvp-requirement) (**OPEN, narrowed 2026-09-05, not closed**). No illustrative/placeholder value is asserted for any category. |
-| TC-DASH-03c | Risk tile — confirmed out of MVP scope | N/A — see Blocked column | N/A | N/A | **OUT OF SCOPE FOR MVP** — the Executive/Main Dashboard will not carry a Risk KPI tile for MVP, by confirmed business decision (PRD §16 Resolved Question 47). This is **not** a blocked test case and **not** a gap — retained as a row here only to preserve 1:1 traceability against `AC-DASH-03c`, so it is not later misread as missing coverage. PRD §16 Q4 (the exact definition of risk) remains open, but it belongs entirely to `RAISE-AI-RISK-001` (Pilot/Roadmap), not to this screen. Re-activate only if Risk is later promoted to MVP scope for this screen through the standard PRD → Design → Prototype → AC → Test Plan chain. |
+| TC-DASH-01 | KPI grid displays all nine tiles | 1. Log in. 2. Land on Dashboard (P-002). | Any asset/maintenance/warranty/license dataset (15-asset seeded register, `frontend/src/data/fixtures/mockData.ts`) | The KPI grid displays all nine tiles: Total Assets, Available, Assigned, **Utilization**, In Maintenance, Expired Warranty, Software Licenses, Monthly Depreciation, and Monthly Cost | No — fully testable against the as-built page. Presence only: Monthly Depreciation and Monthly Cost are explicitly **illustrative** (Prototype §8 — no depreciation model has been built), and none of the other seven tiles has a PRD-defined field list, formula, or threshold beyond what the page computes from existing data; this case asserts the tiles are *displayed*, not that their figures are correct. **Historical PASS SUPERSEDED (2026-08-31, eight-tile grid), preserved as history, not re-affirmed** (see Status Note above). **Formally re-executed 2026-09-05 against the real running app (merged `main` @ `5f232a8`) — PASS:** all nine KPI tiles present, read from the page's own rendered text, with displayed values Total Assets 15, Available 4, Assigned 8, Utilization 66.7%, In Maintenance 2, Expired Warranty 11, Software Licenses 10, Monthly Depreciation $42.8K, Monthly Cost $156.2K. Tile order on the page matches the expected list exactly. The Monthly Depreciation and Monthly Cost tiles still carry their literal "illustrative — no depreciation model yet" sub-labels, so this case's presence-only scope and its illustrative-figures caveat both still hold. This execution is the **first** against the nine-tile grid; it supersedes nothing. |
+| TC-DASH-02 | Ten dashboard sections display | 1. Ensure asset/maintenance/warranty/license data exists. 2. Land on Dashboard (P-002). | Asset/maintenance/warranty/license dataset covering at least one record relevant to each section | All ten sections are displayed: AI Insights, AI Portfolio Health, Oracle FA Reconciliation, Asset Lifecycle, Department Distribution, Asset Status, Asset Type, Pending Approvals, Recent Activities, and Maintenance Calendar | No — fully testable against the as-built page. **PASS**, formally executed 2026-08-31 (`RAISE-TRACEABILITY-MATRIX.md` §3/§4). Unaffected by the 2026-09-05 Utilization change — the section list did not change; this historical PASS is unmodified, not superseded. All ten sections were incidentally re-confirmed present during the 2026-09-05 `TC-DASH-01`/`TC-DASH-03a` execution sweep — recorded as **incidental confirmation only, not a re-execution** of this case; the 2026-08-31 PASS remains this case's formal execution record. |
+| TC-DASH-03a | Utilization tile displays a percentage and an assigned/assignable sub-label | 1. Log in. 2. Navigate to `/dashboard`. 3. Locate the Utilization tile within the KPI grid tested by `TC-DASH-01`. 4. Read its displayed percentage value and sub-label. | 15-asset seeded register (`frontend/src/data/fixtures/mockData.ts`), of which 12 assets are currently assignable (Disposed/Retired/Under-Maintenance excluded from the denominator per PRD §16 Resolved Questions 27/29) and 8 of those 12 are currently assigned | The Utilization tile displays a percentage value (e.g. "66.7%") and a sub-label naming how many assets are currently assigned out of how many are currently assignable (e.g. "8 of 12 assignable assets") — this tests actual displayed behavior, not mere presence, since Utilization's definition and mechanics are fully resolved | No — fully testable. **Formally executed 2026-09-05 against the real running app (merged `main` @ `5f232a8`) — PASS:** the Utilization tile renders the value "66.7%," the label "Utilization," and the sub-label "8 of 12 assignable assets" — the three strings were read directly from the tile's own DOM subtree, not inferred. **Best evidence, recorded explicitly because it verifies the RQ29(b) denominator rule on the page itself rather than by trusting the code:** the same page's "Asset Status" section independently reports Available 4, Assigned 8, In Maintenance 2, Retired 1 — fifteen assets in total, matching the "Total Assets 15" tile. The Utilization tile's denominator is 12, which is exactly Available (4) + Assigned (8), with In Maintenance (2) and Retired (1) excluded. The exclusion required by PRD Resolved Question 29(b) is therefore demonstrated by two independent readings on the same screen, not asserted. The automated coverage cited previously (`frontend/src/lib/utilization.test.ts`, Dashboard page test) remains supporting context only, not a substitute — this is the first formal manual execution of this case. |
+| TC-DASH-03b | NBV tile confirmed absent, blocked on missing default useful-life values | 1. Land on Dashboard (P-002) with the KPI grid from `TC-DASH-01` displayed. 2. Inspect the grid for a tile labeled NBV. | Same dataset as `TC-DASH-01` | No NBV tile is present in the shipped grid — this documents today's accurate absence, not a target for NBV to be displayed | **BLOCKED (partial)** — the absence-check itself is testable now and expected to pass structurally against the current build. **Not formally executed as a standalone case; incidentally observed during the 2026-09-05 execution sweep:** no NBV tile appeared, as expected, consistent with the ongoing block — this observation does not change the BLOCKED (partial) status and is not recorded as a PASS. **NOT TESTABLE YET beyond the absence-check, and precisely why:** the NBV formula itself is confirmed (PRD §16 Resolved Question 46 — straight-line depreciation from `purchaseDate`/`purchaseCost`, salvage value zero, clamped at 0, useful life configurable per Asset Category via P-018) — this is a **specified but not yet buildable** state, not an "unspecified" one. The sole remaining blocker is the missing default per-Asset-Category useful-life values (PRD §16 Open Question 3a), tracked as [Open Finding F-03](../project-management/OPEN-FINDINGS.md#blocking-gates-an-mvp-requirement) (**OPEN, narrowed 2026-09-05, not closed**). No illustrative/placeholder value is asserted for any category. |
+| TC-DASH-03c | Risk tile — confirmed out of MVP scope | N/A — see Blocked column | N/A | N/A | **OUT OF SCOPE FOR MVP** — the Executive/Main Dashboard will not carry a Risk KPI tile for MVP, by confirmed business decision (PRD §16 Resolved Question 47). This is **not** a blocked test case and **not** a gap — retained as a row here only to preserve 1:1 traceability against `AC-DASH-03c`, so it is not later misread as missing coverage. During the 2026-09-05 execution sweep, no Risk KPI tile appeared in the grid, consistent with this confirmed decision; the "High Risk" text visible elsewhere on the page belongs to the AI Insights severity labels, not to a Risk KPI tile, and must not be mistaken for one. PRD §16 Q4 (the exact definition of risk) remains open, but it belongs entirely to `RAISE-AI-RISK-001` (Pilot/Roadmap), not to this screen. Re-activate only if Risk is later promoted to MVP scope for this screen through the standard PRD → Design → Prototype → AC → Test Plan chain. |
 
 ---
 
@@ -897,13 +918,36 @@ same built page. **No new or restructured case below is marked PASS by this upda
 `TC-EXEC-001-01` (against its new expected result) and `TC-EXEC-001-03a`/`-03b` are each left
 unexecuted for a separate, subsequent formal execution sweep.
 
+**Status Note — Formal execution 2026-09-05 (real formal test execution against the real
+running app, merged `main` @ `5f232a8`, Vite dev server `http://localhost:5173`, executed
+2026-09-05 — same session and same evidence as §4's `TC-DASH-01`/`TC-DASH-03a` execution, since
+P-014 and P-002 document the same built page; closes the open items flagged in
+`RAISE-TRACEABILITY-MATRIX.md` Matrix Gap 19):** **`TC-EXEC-001-01` and `TC-EXEC-001-03a` are
+formally executed by this sweep and recorded PASS below** — same evidence as `TC-DASH-01` and
+`TC-DASH-03a` respectively, since both pairs are the same built page (H1 reading "Executive
+Dashboard" on route `/dashboard` confirms P-014 and P-002 resolve to one page).
+
+**Deviation recorded honestly, not papered over:** `TC-EXEC-001-01`'s and `TC-EXEC-001-03a`'s
+step 1 reads "Log in as Executive." **There is no Executive role in the application** —
+`UserRole` (`frontend/src/types/auth.ts`) has exactly four values: `ADMIN`, `IT_MANAGER`,
+`IT_STAFF`, `EMPLOYEE`. "Executive" is a PRD **persona** (`RAISE-FR-EXEC-001`'s User/Actor
+field), not a system role. Execution was performed as `ADMIN` (`admin@raise.dev`, session
+confirmed in-app as `{id: u-admin, fullName: "Demo Admin", role: "ADMIN"}`) as a substitution.
+**This substitution does not weaken the result:** the dashboard route carries no role
+restriction — it sits in the unrestricted `ProtectedRoute` block, consistent with PRD Resolved
+Question 45's confirmed any-authenticated-user gate. The step wording is flagged as a **defect
+found during execution**, not silently rewritten: it should read "log in as any authenticated
+user" rather than naming a role that does not exist in the system. This wording defect is
+recorded here as an execution finding; correcting the step text itself is deferred to a
+separate pass, consistent with this document's scope as execution reporting, not a spec change.
+
 | TC ID | Title | Steps | Test Data | Expected Result | Blocked |
 |---|---|---|---|---|---|
-| TC-EXEC-001-01 | KPI grid displays all nine tiles (Executive Dashboard) | 1. Log in as Executive. 2. Open Executive Dashboard (P-014). | Org-level asset dataset (same 15-asset seeded register as P-002) | The KPI grid displays all nine tiles: Total Assets, Available, Assigned, **Utilization**, In Maintenance, Expired Warranty, Software Licenses, Monthly Depreciation, and Monthly Cost | No — fully testable; identical shipped grid to `TC-DASH-01` since P-014 and P-002 document the same built page. Same Monthly Depreciation/Monthly Cost illustrative-figures caveat and presence-only scope from `TC-DASH-01` apply. **Historical PASS SUPERSEDED, not re-affirmed:** formally executed against the then-shipped **eight**-tile grid, recorded PASS (`RAISE-TRACEABILITY-MATRIX.md` §3/§4) — valid for what it tested at the time, but the grid genuinely grew to nine tiles on 2026-09-05 (PR #102, Utilization). This row's Expected Result is now the nine-tile grid; the prior PASS is preserved above as history but does not cover it. **Not yet re-executed against the nine-tile version by this update.** |
-| TC-EXEC-001-02 | Ten dashboard sections display (Executive Dashboard) | 1. Open Executive Dashboard (P-014) with the dashboard displayed. | Org-level asset/maintenance/warranty/license dataset | All ten sections are present: AI Insights, AI Portfolio Health, Oracle FA Reconciliation, Asset Lifecycle, Department Distribution, Asset Status, Asset Type, Pending Approvals, Recent Activities, and Maintenance Calendar | No — fully testable; identical shipped section list to `TC-DASH-02`. **PASS**, formally executed. Unaffected by the 2026-09-05 Utilization change — the section list did not change; this historical PASS is unmodified, not superseded. |
-| TC-EXEC-001-03a | Utilization tile displays a percentage and an assigned/assignable sub-label (Executive Dashboard) | 1. Log in as Executive. 2. Open Executive Dashboard (P-014). 3. Locate the Utilization tile within the KPI grid tested by `TC-EXEC-001-01`. 4. Read its displayed percentage value and sub-label. | Same 15-asset seeded register as `TC-DASH-03a` (12 assignable, 8 currently assigned) | The Utilization tile displays a percentage value (e.g. "66.7%") and a sub-label naming how many assets are currently assigned out of how many are currently assignable — identical in substance to `TC-DASH-03a`, since P-014 and P-002 document the same built page | No — fully testable; **not yet formally executed by this update, left unexecuted for a subsequent execution sweep — no PASS is claimed here.** Supporting context only, **not a substitute for formal execution of this case:** the same automated coverage cited under `TC-DASH-03a` (`frontend/src/lib/utilization.test.ts`, 6 unit tests; Dashboard page test asserting "66.7%" / "8 of 12 assignable assets") applies here, since it is the same built page, plus PR #102 live verification. None of that is recorded here as a formal `TC-EXEC-001-03a` execution result. |
-| TC-EXEC-001-03b | NBV tile confirmed absent, blocked on missing default useful-life values (Executive Dashboard) | 1. Open Executive Dashboard (P-014) with the KPI grid from `TC-EXEC-001-01` displayed. 2. Inspect the grid for a tile labeled NBV. | Same dataset as `TC-EXEC-001-01` | No NBV tile is present in the shipped grid — this documents today's accurate absence, not a target for NBV to be displayed | **BLOCKED (partial)** — identical reasoning to `TC-DASH-03b`: the absence-check itself is testable now and expected to pass structurally; **not yet formally executed by this update, no PASS claimed.** The NBV formula is confirmed (PRD §16 Resolved Question 46) — **specified but not yet buildable**, not unspecified — the sole remaining blocker is the missing default per-Asset-Category useful-life values (PRD §16 Open Question 3a), tracked as [Open Finding F-03](../project-management/OPEN-FINDINGS.md#blocking-gates-an-mvp-requirement) (**OPEN, narrowed 2026-09-05, not closed**). No illustrative/placeholder value is asserted for any category. |
-| TC-EXEC-001-03c | Risk tile — confirmed out of MVP scope (Executive Dashboard) | N/A — see Blocked column | N/A | N/A | **OUT OF SCOPE FOR MVP** — the Executive Dashboard will not carry a Risk KPI tile for MVP, by confirmed business decision (PRD §16 Resolved Question 47), identical to `TC-DASH-03c`. This is **not** a blocked test case and **not** a gap — retained as a row here only to preserve 1:1 traceability against `AC-EXEC-001-03c`. PRD §16 Q4 (definition of risk) remains open but belongs entirely to `RAISE-AI-RISK-001` (Pilot/Roadmap). Re-activate only if Risk is later promoted to MVP scope for this screen through the standard PRD → Design → Prototype → AC → Test Plan chain. |
+| TC-EXEC-001-01 | KPI grid displays all nine tiles (Executive Dashboard) | 1. Log in as Executive. 2. Open Executive Dashboard (P-014). | Org-level asset dataset (same 15-asset seeded register as P-002) | The KPI grid displays all nine tiles: Total Assets, Available, Assigned, **Utilization**, In Maintenance, Expired Warranty, Software Licenses, Monthly Depreciation, and Monthly Cost | No — fully testable; identical shipped grid to `TC-DASH-01` since P-014 and P-002 document the same built page. Same Monthly Depreciation/Monthly Cost illustrative-figures caveat and presence-only scope from `TC-DASH-01` apply. **Historical PASS SUPERSEDED (eight-tile grid), preserved as history, not re-affirmed** (see Status Note above). **Formally re-executed 2026-09-05 against the real running app (merged `main` @ `5f232a8`) — PASS:** same evidence as `TC-DASH-01` — P-014 and P-002 are the same built page, confirmed by the H1 reading "Executive Dashboard" on route `/dashboard`; all nine tiles present with the same displayed values recorded under `TC-DASH-01`. **Execution deviation recorded (see Status Note above):** step 1 says "Log in as Executive," but no Executive role exists in the app (`UserRole` has only `ADMIN`/`IT_MANAGER`/`IT_STAFF`/`EMPLOYEE`) — "Executive" is a PRD persona, not a role. Execution was performed as `ADMIN`; this does not weaken the result since the route carries no role restriction (PRD Resolved Question 45). This execution is the **first** against the nine-tile grid; it supersedes nothing. |
+| TC-EXEC-001-02 | Ten dashboard sections display (Executive Dashboard) | 1. Open Executive Dashboard (P-014) with the dashboard displayed. | Org-level asset/maintenance/warranty/license dataset | All ten sections are present: AI Insights, AI Portfolio Health, Oracle FA Reconciliation, Asset Lifecycle, Department Distribution, Asset Status, Asset Type, Pending Approvals, Recent Activities, and Maintenance Calendar | No — fully testable; identical shipped section list to `TC-DASH-02`. **PASS**, formally executed. Unaffected by the 2026-09-05 Utilization change — the section list did not change; this historical PASS is unmodified, not superseded. All ten sections were incidentally re-confirmed present during the 2026-09-05 execution sweep (same session as `TC-EXEC-001-01`/`-03a`) — recorded as **incidental confirmation only, not a re-execution** of this case; the existing PASS remains this case's formal execution record. |
+| TC-EXEC-001-03a | Utilization tile displays a percentage and an assigned/assignable sub-label (Executive Dashboard) | 1. Log in as Executive. 2. Open Executive Dashboard (P-014). 3. Locate the Utilization tile within the KPI grid tested by `TC-EXEC-001-01`. 4. Read its displayed percentage value and sub-label. | Same 15-asset seeded register as `TC-DASH-03a` (12 assignable, 8 currently assigned) | The Utilization tile displays a percentage value (e.g. "66.7%") and a sub-label naming how many assets are currently assigned out of how many are currently assignable — identical in substance to `TC-DASH-03a`, since P-014 and P-002 document the same built page | No — fully testable. **Formally executed 2026-09-05 against the real running app (merged `main` @ `5f232a8`) — PASS:** same evidence as `TC-DASH-03a` — same page, same tile: "66.7%," label "Utilization," sub-label "8 of 12 assignable assets," and the same two-independent-readings evidence recorded under `TC-DASH-03a` (Asset Status section: Available 4 + Assigned 8 = the Utilization denominator of 12, with In Maintenance 2 and Retired 1 excluded, demonstrating PRD Resolved Question 29(b)). **Execution deviation recorded (see Status Note above):** step 1 says "Log in as Executive" — no such role exists; execution performed as `ADMIN`, substitution does not weaken the result (no role restriction on this route, PRD Resolved Question 45). |
+| TC-EXEC-001-03b | NBV tile confirmed absent, blocked on missing default useful-life values (Executive Dashboard) | 1. Open Executive Dashboard (P-014) with the KPI grid from `TC-EXEC-001-01` displayed. 2. Inspect the grid for a tile labeled NBV. | Same dataset as `TC-EXEC-001-01` | No NBV tile is present in the shipped grid — this documents today's accurate absence, not a target for NBV to be displayed | **BLOCKED (partial)** — identical reasoning to `TC-DASH-03b`: the absence-check itself is testable now and expected to pass structurally. **Not formally executed as a standalone case; incidentally observed during the 2026-09-05 execution sweep:** no NBV tile appeared, as expected, consistent with the ongoing block — this observation does not change the BLOCKED (partial) status and is not recorded as a PASS. The NBV formula is confirmed (PRD §16 Resolved Question 46) — **specified but not yet buildable**, not unspecified — the sole remaining blocker is the missing default per-Asset-Category useful-life values (PRD §16 Open Question 3a), tracked as [Open Finding F-03](../project-management/OPEN-FINDINGS.md#blocking-gates-an-mvp-requirement) (**OPEN, narrowed 2026-09-05, not closed**). No illustrative/placeholder value is asserted for any category. |
+| TC-EXEC-001-03c | Risk tile — confirmed out of MVP scope (Executive Dashboard) | N/A — see Blocked column | N/A | N/A | **OUT OF SCOPE FOR MVP** — the Executive Dashboard will not carry a Risk KPI tile for MVP, by confirmed business decision (PRD §16 Resolved Question 47), identical to `TC-DASH-03c`. This is **not** a blocked test case and **not** a gap — retained as a row here only to preserve 1:1 traceability against `AC-EXEC-001-03c`. During the 2026-09-05 execution sweep, no Risk KPI tile appeared in the grid, consistent with this confirmed decision; the "High Risk" text visible elsewhere on the page belongs to the AI Insights severity labels, not to a Risk KPI tile. PRD §16 Q4 (definition of risk) remains open but belongs entirely to `RAISE-AI-RISK-001` (Pilot/Roadmap). Re-activate only if Risk is later promoted to MVP scope for this screen through the standard PRD → Design → Prototype → AC → Test Plan chain. |
 
 ---
 
@@ -1099,6 +1143,29 @@ been formally executed and are PASS**.
 | TS-AI-DOC-003 | 1 | 0 | 0 | 1 | 0 |
 | TS-AI-DOC-004 | 1 | 0 | 0 | 1 | 0 |
 | **Total** | **87** | **58** | **22** | **4** | **3** |
+
+**Four test cases formally executed 2026-09-05 (real formal test execution against the real
+running app, merged `main` @ `5f232a8`, closing the open items tracked as Matrix Gap 19 in
+`RAISE-TRACEABILITY-MATRIX.md`; see §4/§16 Status Notes for full detail — no column totals
+below change, matching the precedent set by `TC-ALERT-001-09`'s execution above, since "not
+blocked, not yet executed" and "PASS" are distinct from a column-count change):**
+`TC-DASH-01`, `TC-DASH-03a`, `TC-EXEC-001-01`, and `TC-EXEC-001-03a` — all four left
+unexecuted by the 2026-09-05 spec-sync update immediately below — are now formally executed
+and recorded **PASS**. `TC-DASH-01`/`TC-EXEC-001-01` confirm all nine KPI tiles present with
+real displayed values (Total Assets 15, Available 4, Assigned 8, Utilization 66.7%, In
+Maintenance 2, Expired Warranty 11, Software Licenses 10, Monthly Depreciation $42.8K,
+Monthly Cost $156.2K). `TC-DASH-03a`/`TC-EXEC-001-03a` confirm the Utilization tile's
+percentage and sub-label, with the RQ29(b) denominator-exclusion rule demonstrated via the
+page's own independent "Asset Status" section rather than asserted. `TC-DASH-02`/
+`TC-EXEC-001-02` were incidentally re-confirmed, not re-executed — their existing PASS
+records remain the formal execution of record. `TC-DASH-03b`/`TC-EXEC-001-03b` (NBV) remain
+**BLOCKED**; `TC-DASH-03c`/`TC-EXEC-001-03c` (Risk) remain **Out of Scope**;
+`TC-WARRANTY-001-07` remains **BLOCKED**, untouched by this sweep. One execution deviation is
+recorded, not silently corrected: `TC-EXEC-001-01`/`-03a`'s step 1 ("Log in as Executive")
+names a PRD persona, not a system role — execution substituted `ADMIN`, which does not weaken
+the result (no role restriction on this route, PRD Resolved Question 45). These four PASS
+results are the **first** formal executions against the nine-tile grid; they supersede
+nothing.
 
 **TS-DASH, TS-EXEC-001, and TS-WARRANTY-001 updated 2026-09-05 (sync to `RAISE-TEST-PLAN.md`
 v0.14 / `RAISE-ACCEPTANCE-CRITERIA.md` v0.14's just-corrected TS-DASH/TS-EXEC-001/
@@ -1491,6 +1558,15 @@ Before moving to the Requirement Traceability Matrix / Development:
       any new or restructured case by this sync; Risk (`TC-DASH-03c`/`TC-EXEC-001-03c`)
       is correctly recorded as Out of Scope, not BLOCKED; Open Finding F-03 remains
       OPEN (narrowed, not closed)
+- [x] `TC-DASH-01`, `TC-DASH-03a`, `TC-EXEC-001-01`, and `TC-EXEC-001-03a` (Matrix Gap 19)
+      are formally executed against the real running app (merged `main` @ `5f232a8`,
+      2026-09-05) and recorded **PASS** (§4, §16), with the RQ29(b) Utilization-denominator
+      exclusion rule demonstrated via an independent on-page reading, not asserted; the
+      `TC-EXEC-001-01`/`-03a` "Log in as Executive" step-wording defect (no Executive role
+      exists in the app) is flagged honestly as an execution finding, not silently
+      rewritten; `TC-DASH-03b`/`TC-EXEC-001-03b` (NBV) remain BLOCKED and
+      `TC-DASH-03c`/`TC-EXEC-001-03c` (Risk) remain Out of Scope, both unaffected by this
+      execution sweep
 
 ---
 
@@ -1523,6 +1599,57 @@ Suite ID → TC ID) into one master table for compliance review.
 ---
 
 ## Document Status
+
+**Version:** 0.23 (2026-09-05 — real formal execution reporting for the four test cases
+tracked as `RAISE-TRACEABILITY-MATRIX.md` Matrix Gap 19: `TC-DASH-01`, `TC-DASH-03a`,
+`TC-EXEC-001-01`, `TC-EXEC-001-03a`. Executed against merged `main` @ `5f232a8`, the real
+running app (Vite dev server, `http://localhost:5173`), 2026-09-05, with browser storage
+cleared to zero entries before sign-in. All four recorded **PASS** — the first executions
+against the nine-tile grid; they supersede nothing. Records the RQ29(b) Utilization-denominator
+exclusion rule as demonstrated by an independent on-page reading (the page's own "Asset
+Status" section), not merely asserted. Records, honestly rather than silently, an execution
+deviation in `TC-EXEC-001-01`/`-03a`'s step wording ("Log in as Executive" names a PRD persona,
+not a system role that exists in the app; execution substituted `ADMIN`, which does not weaken
+the result). This is execution reporting only — no criterion, suite, or earlier-layer document
+is touched or restructured. See the Change Log entry below and §4/§16/§19/§20 for full detail)
+
+**Change Log — v0.22 → v0.23 (2026-09-05, real formal execution reporting, no spec change):**
+
+1. **Trigger.** `RAISE-TRACEABILITY-MATRIX.md` Matrix Gap 19 tracked four test cases left
+   unexecuted by the v0.22 sync: `TC-DASH-01`, `TC-DASH-03a`, `TC-EXEC-001-01`,
+   `TC-EXEC-001-03a`. All four were formally executed 2026-09-05 against merged `main` @
+   `5f232a8`, the real running app.
+2. **§4 TS-DASH.** A new Status Note records the execution session (storage cleared, signed
+   in as `admin@raise.dev`, landed on `/dashboard` with H1 "Executive Dashboard," no console
+   errors; bonus note on the unauthenticated-redirect access gate). `TC-DASH-01`'s row is
+   updated with a **PASS** result: all nine tiles present with real displayed values (Total
+   Assets 15, Available 4, Assigned 8, Utilization 66.7%, In Maintenance 2, Expired Warranty
+   11, Software Licenses 10, Monthly Depreciation $42.8K, Monthly Cost $156.2K), tile order
+   matching exactly. `TC-DASH-03a`'s row is updated with a **PASS** result: Utilization tile
+   renders "66.7%" / "Utilization" / "8 of 12 assignable assets," with the RQ29(b) denominator
+   rule demonstrated via the page's own "Asset Status" section (Available 4 + Assigned 8 = 12,
+   excluding In Maintenance 2 and Retired 1). `TC-DASH-02`'s row notes an incidental
+   re-confirmation of all ten sections, explicitly not a re-execution. `TC-DASH-03b`/`-03c`
+   rows note the expected NBV/Risk absence was incidentally observed, with no status change.
+3. **§16 TS-EXEC-001.** Mirrors §4 exactly (same built page, same session). `TC-EXEC-001-01`
+   and `TC-EXEC-001-03a` recorded **PASS**. A new Status Note flags, as an honest execution
+   finding rather than a silent rewrite, that step 1 of both cases ("Log in as Executive")
+   names a PRD persona, not a system role — `UserRole` in `frontend/src/types/auth.ts` has
+   only `ADMIN`/`IT_MANAGER`/`IT_STAFF`/`EMPLOYEE`. Execution substituted `ADMIN`; this does
+   not weaken the result because the route carries no role restriction (PRD Resolved Question
+   45). `TC-EXEC-001-02`'s row notes the same incidental re-confirmation as `TC-DASH-02`.
+4. **§19 Test Case Summary.** A new narrative note records the four PASS results. No column
+   total changes — consistent with the precedent set by `TC-ALERT-001-09`'s execution, "not
+   blocked, not yet executed" and "PASS" are distinct from a column-count change.
+5. **§20 Test Case Review Checklist.** A new checked item records that the four cases are
+   formally executed and PASS, the RQ29(b) exclusion rule is demonstrated on-page, the step-
+   wording defect is flagged rather than silently corrected, and NBV/Risk rows are unaffected.
+6. **Unchanged.** `TC-DASH-03b`/`TC-EXEC-001-03b` (NBV) remain **BLOCKED**;
+   `TC-DASH-03c`/`TC-EXEC-001-03c` (Risk) remain **Out of Scope**; `TC-WARRANTY-001-07`
+   remains **BLOCKED**, untouched by this sweep. No other suite is affected.
+   `RAISE-TEST-PLAN.md`, `RAISE-ACCEPTANCE-CRITERIA.md`, and every earlier-layer document are
+   untouched — this is execution reporting only, not a spec change; `OPEN-FINDINGS.md` is
+   also untouched.
 
 **Version:** 0.22 (2026-09-05 — sync to `RAISE-TEST-PLAN.md` v0.14 / `RAISE-ACCEPTANCE-CRITERIA.md`
 v0.14's just-corrected TS-DASH/TS-EXEC-001/TS-WARRANTY-001 sections (PRD v0.17 §16 Resolved

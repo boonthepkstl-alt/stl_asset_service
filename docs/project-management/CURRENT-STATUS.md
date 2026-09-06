@@ -9,7 +9,13 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-09-05, after PR #103 merged (`f75f28b`) — **F-41 closed
+**As of:** 2026-09-05, after PR #106 merged (`5100678`) — the Executive
+Dashboard KPI round is complete except for NBV. All seven chain documents
+were re-synced (PRD **0.17** → Matrix **2.4**), the four Gap 19 test cases
+were formally executed and **PASS**, and **`RAISE-FR-EXEC-001` sits at
+`PASS (partial)`** — held there by NBV alone. **`Gap 17` is now the only
+open gap in the entire traceability matrix.** Suite **50 test files / 257
+tests**. Earlier the same day, PR #103 merged (`f75f28b`) — **F-41 closed
 (R-26)** by auditing all 28 4xx error sites and fixing 7, and **F-44
 closed (R-27)** by making local test runs deterministic. **`RAISE-FR-EXEC-001`
 gained its Utilization KPI** (PR #102), the first of F-03's three missing
@@ -468,40 +474,36 @@ paragraph, which is a summary of a summary and can drift.
 Triaged against [`RAISE-TRACEABILITY-MATRIX.md`](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md)
 §3–§5 — re-check that file before picking an item, it may have changed.
 
-**Buildable now:** **NBV (F-03, part 2) is fully designed and blocked on
-exactly one input** — the default useful-life years per Asset Category.
-Everything else about it is decided (PRD chain sync pending): straight-line
-from `purchaseCost`/`purchaseDate`, useful life configurable per category in
-Settings following the `warrantyExpiringThresholdDaysByCategory` precedent,
-salvage value 0 clamped at 0. That number is deliberately **not** being
-guessed — it becomes money on an executive dashboard.
+**Buildable now:** **None — and for the first time that is not a bad sign.**
+The last buildable item, the **Gap 19 execution sweep**, was completed
+2026-09-05 (`CHECKPOINT-2026-09-05-004`): all four cases executed against
+the real running app and **PASS**, Gap 19 closed.
 
-Everything else on the previous list is done. **F-41** is closed (**R-26**,
-`CHECKPOINT-2026-09-05-001`): all 28 4xx sites audited, 7 fixed, and the
-audit corrected the finding twice — there were **three** groups rather than
-two, and the leak was **worse** than recorded, since a database outage
-answered 404 with the driver's dial text including host and port. **F-44** is
-closed (**R-27**, `CHECKPOINT-2026-09-05-002`): local `vitest run` now uses
-`pool: 'threads'` and reports 50/257 deterministically, traced to Vitest 2's
-`forks` default round-tripping modules through `os.tmpdir()`. **F-40** (flaky
-navigate-away assertions) has all known sites fixed and is a pattern to watch
-rather than a task.
+**`RAISE-FR-EXEC-001` is `PASS (partial)`, held by NBV alone.** It was
+deliberately **not** returned to a full `PASS` after that sweep, because
+`TC-DASH-03b`/`TC-EXEC-001-03b` remain BLOCKED and a full PASS would
+misstate the evidence. **NBV is fully designed and blocked on exactly one
+input** — the default useful-life years per Asset Category (PRD Open
+Question 3a, **F-03** still open). The formula, the Settings shape, the
+salvage rule and the clamp are all confirmed; only the five numbers are
+missing, and they are deliberately not being guessed because they become
+money on an executive dashboard.
 
-The traceability matrix is at **v2.2 with one gap open: Gap 17**, the
-bell-icon scope contradiction — a **documentation decision**, not an
-engineering task: two project documents contradict each other and somebody
-has to say which is right.
+**`Gap 17` is now the only open gap in the whole matrix** — the bell-icon
+scope contradiction between PRD §16 Resolved Question 35 and
+`ESAPS-UI-FOUNDATION-BASELINE.md` line 88. It is a **documentation
+decision**, not an engineering task: two project documents contradict each
+other and somebody has to say which is right. `deriveAlerts` already
+exists, so the bell only needs wiring once that is settled.
 
-Newly open and deliberately so: **F-43** — the 16 request-parse 4xx sites
-that still echo Go decoder text, plus `authController.go:60`, which reports a
-token-signing failure as a 401. Not swept with F-41 because removing parse
-text is a usability-versus-disclosure trade nobody has decided, and the 401
-half is a status-code defect whose fix changes login response text.
+**Every open item is now a decision, not engineering work:** **F-03**'s five
+numbers, **Gap 17**'s document conflict, **F-43**'s
+usability-versus-disclosure trade on request-parse 4xx bodies, and **PRD
+Q22a**'s missing `User`↔`Employee` link. Two minor items need no decision
+and no urgency: **F-45** (two test cases name an "Executive" role the app
+does not have — a two-line wording fix) and **F-40** (flaky navigate-away
+assertions, all known sites fixed, a pattern to watch rather than a task).
 
-**The project is decision-limited**, and every open item is now a decision
-rather than engineering work: **F-03**'s five numbers, **Gap 17**'s
-document conflict, **F-43**'s trade-off, and **PRD Q22a**'s missing
-`User`↔`Employee` link.
 
 Everything below this line describes the state *before* F-05 was
 resolved and is kept for the contrast it draws:

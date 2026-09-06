@@ -2,9 +2,9 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** System / Product Design
-**Version:** 0.14 Draft
+**Version:** 0.15 Draft
 **Status:** Draft for Design Review
-**Design Source:** [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.16
+**Design Source:** [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.17
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
 
@@ -891,9 +891,18 @@ built ahead of that confirmation.
 **Status:** new design area, added 2026-09-01 in Design v0.10 (PRD v0.12, §16
 Resolved Question 41). This is **not** itself a PRD Traceability ID — the PRD
 does not define a standalone "Settings" requirement. It exists at the design
-layer as the necessary home for admin-configurable platform values, currently
-driven by exactly one confirmed need: `RAISE-FR-WARRANTY-001`'s per-Asset-Category
-"Expiring" threshold.
+layer as the necessary home for admin-configurable platform values, originally
+driven by exactly one confirmed need — `RAISE-FR-WARRANTY-001`'s per-Asset-Category
+"Expiring" threshold — and, **as of Design v0.15 (PRD v0.17, §16 Resolved
+Question 46), a second confirmed need**: `RAISE-FR-EXEC-001`'s NBV KPI
+per-Asset-Category useful-life value, following the exact same shape (one
+value per current Asset Category, admin-editable). **Unlike the Warranty
+threshold, the NBV useful-life values have no confirmed defaults yet** (PRD
+§16 [Open Question 3a](../01-requirements/RAISE-PRD.md#16-open-questions)) —
+this design area records the confirmed *shape* of that second config only; it
+does not supply numbers, and the NBV tile cannot be built until numbers exist
+(see [§13 Executive Intelligence, "NBV — Formula Confirmed, Default Values
+Still Missing"](#nbv--formula-confirmed-default-values-still-missing)).
 
 **Origin note:** this design area is implementation-confirmed, not
 speculative — the PRD's Resolved Question 41 cites already-built and verified
@@ -917,21 +926,31 @@ Settings Domain — Application/Domain
         ├── WarrantySettings: Record<AssetCategory, thresholdDays>
         │       (one entry per current Asset Category, default 90)
         │
+        ├── NBVSettings: Record<AssetCategory, usefulLifeYears>
+        │       (one entry per current Asset Category — shape confirmed,
+        │        default values NOT confirmed, see PRD §16 Open Question 3a;
+        │        not buildable yet)
+        │
         ▼
 Settings Data — persisted configuration record
         │
         ▼
 Consumed by: Warranty status computation
              (see §5.2 "Expiring Threshold —
-             Per-Asset-Category Configurable")
+             Per-Asset-Category Configurable");
+             NBV KPI computation, once buildable
+             (see §13 "NBV — Formula Confirmed,
+             Default Values Still Missing")
 ```
 
 - **Settings (Admin)** — an admin-facing UI surface for viewing and editing
-  platform configuration values; for MVP, scoped to exactly one section
-  (Warranty thresholds per Asset Category).
+  platform configuration values; for MVP, scoped to Warranty thresholds per
+  Asset Category (built) and, once default values exist, NBV useful-life per
+  Asset Category (shape confirmed, not yet built).
 - **Settings Domain** — holds configuration state keyed by concept (currently
-  only `WarrantySettings`, keyed by Asset Category) and exposes it for read by
-  other domains (currently only Warranty status computation) and for
+  `WarrantySettings`, keyed by Asset Category, plus the confirmed-but-not-yet-
+  populated `NBVSettings` shape) and exposes it for read by other domains
+  (Warranty status computation; NBV KPI computation once buildable) and for
   admin-gated write.
 - **Settings Data** — the persisted configuration record(s). This design does
   not assume a specific storage technology (per [§26 Technology
@@ -949,17 +968,21 @@ restated as a new risk.
 ### Scope Boundary — Not a General Settings Framework
 
 This design area exists **only** to the extent the PRD requires it for
-`RAISE-FR-WARRANTY-001`'s threshold. It should **not** be read as authorizing
-a general-purpose, multi-section admin Settings framework beyond Warranty
-thresholds — any further Settings section (e.g., Alert channel configuration,
-future License renewal-alert configuration per [§5.3](#53-license-domain-enterprise-roadmap))
-would need its own PRD confirmation before being added here, the same
-discipline applied to every other design area in this document.
+`RAISE-FR-WARRANTY-001`'s threshold and, as of PRD v0.17 §16 Resolved Question
+46, `RAISE-FR-EXEC-001`'s NBV useful-life value. It should **not** be read as
+authorizing a general-purpose, multi-section admin Settings framework beyond
+these two confirmed drivers — any further Settings section (e.g., Alert
+channel configuration, future License renewal-alert configuration per
+[§5.3](#53-license-domain-enterprise-roadmap)) would need its own PRD
+confirmation before being added here, the same discipline applied to every
+other design area in this document.
 
 ### Dependencies
 
-- `RAISE-FR-WARRANTY-001` (sole current driver — per-category Expiring
-  threshold)
+- `RAISE-FR-WARRANTY-001` (per-category Expiring threshold — built)
+- `RAISE-FR-EXEC-001` (per-category NBV useful-life value — shape confirmed
+  2026-09-05, PRD §16 Resolved Question 46; default numbers not confirmed,
+  PRD §16 Open Question 3a; not yet built)
 - `RAISE-FR-ASSET-002` (Category & Hierarchy — the configuration key)
 - `RAISE-NFR-SEC-RBAC-001` (admin-only write access)
 
@@ -1474,10 +1497,14 @@ correction to match reality — it does not add, remove, or reinterpret any PRD
 requirement; `RAISE-FR-EXEC-001` continues to cover this dashboard unchanged.
 
 This correction does **not** delete the NBV/Risk/Utilization KPI concept —
-those remain PRD-listed proposal KPIs (see "NBV/Risk/Utilization — Proposal
-KPIs, Not Yet Implemented" below) and are recorded as a distinct,
-not-yet-scheduled enhancement layered on top of the shipped dashboard, not
-silently dropped.
+those remain PRD-listed proposal KPIs (see "NBV/Risk/Utilization — KPI
+Status" below). **As of 2026-09-05, this is no longer uniformly "not yet
+implemented":** Utilization is now built and live (PRD v0.17, §16 Resolved
+Question 48); NBV's formula is confirmed but still blocked on missing default
+values (PRD v0.17, §16 Resolved Question 46, Open Question 3a); Risk is
+confirmed out of MVP scope by business decision, not a gap (PRD v0.17, §16
+Resolved Question 47). Each is recorded on its own terms below, not as one
+undifferentiated "not yet implemented" group.
 
 ## Logical Dashboard — Current MVP (As Built)
 
@@ -1497,6 +1524,9 @@ derived from, the original wireframe below.
 │  Software  │  Monthly   │  Monthly Cost                             │
 │  Licenses  │Depreciation│  (both illustrative — no depreciation      │
 │            │(illustrative)│ model exists yet)                        │
+├────────────┼──────────────────────────────────────────────────────────┤
+│Utilization │ (built PR #102, 2026-09-05 — see "NBV/Risk/Utilization    │
+│            │  — KPI Status" below)                                    │
 ├────────────┴────────────┴────────────────────────────────────────────┤
 │ AI Insights                                                          │
 │ AI Portfolio Health                                                  │
@@ -1511,12 +1541,14 @@ derived from, the original wireframe below.
 └──────────────────────────────────────────────────────────────────────┘
 ```
 
-**KPI grid (8 tiles):** Total Assets, Available, Assigned, In Maintenance,
-Expired Warranty, Software Licenses, Monthly Depreciation (illustrative — no
-depreciation model has been built; see [§6 Oracle FA
-Integration](#6-oracle-fa-integration) and [Open Finding
-F-31](../project-management/OPEN-FINDINGS.md)), Monthly Cost (illustrative,
-same caveat).
+**KPI grid (9 tiles as of PR #102, 2026-09-05 — previously 8):** Total
+Assets, Available, Assigned, In Maintenance, Expired Warranty, Software
+Licenses, Monthly Depreciation (illustrative — no depreciation model has been
+built; see [§6 Oracle FA Integration](#6-oracle-fa-integration) and [Open
+Finding F-31](../project-management/OPEN-FINDINGS.md)), Monthly Cost
+(illustrative, same caveat), **Utilization** (built and live — not
+illustrative; see "NBV/Risk/Utilization — KPI Status" below for its
+derivation).
 
 **Sections (10):** AI Insights, AI Portfolio Health, Oracle FA Reconciliation
 (a.k.a. "Oracle FA Synced" — related to but not a resolution of [Open Finding
@@ -1527,41 +1559,36 @@ Activities, Maintenance Calendar.
 
 None of these tiles/sections has a PRD-defined field list, formula, or
 threshold beyond what the page already computes from existing Asset/
-Maintenance/Warranty/License data — this design does not invent one. This
-list documents what exists; it is not a new specification for further
-development.
+Maintenance/Warranty/License data — this design does not invent one, with one
+exception as of PR #102 (2026-09-05): the Utilization tile does have a
+PRD-defined formula (see below), and this list documents that it is now
+implemented against that formula. This list documents what exists; it is not
+a new specification for further development.
 
-## NBV/Risk/Utilization — Proposal KPIs, Not Yet Implemented
+## NBV/Risk/Utilization — KPI Status
 
-The PRD identifies:
+The PRD identifies NBV, Risk, and Utilization as proposal-defined KPIs under
+`RAISE-FR-EXEC-001`. As of PRD v0.17 (2026-09-05, §16 Resolved Questions
+46–48), the three no longer share one status — each is recorded separately:
 
-- NBV
-- Risk
-- Utilization
+- **Utilization — BUILT AND LIVE** (PRD v0.17, §16 Resolved Question 48). See
+  "Utilization — Built and Live" below.
+- **NBV — formula CONFIRMED, but NOT BUILT and NOT YET BUILDABLE** (PRD v0.17,
+  §16 Resolved Question 46; default values open per PRD §16 Open Question
+  3a). See "NBV — Formula Confirmed, Default Values Still Missing" below.
+- **Risk — CONFIRMED OUT OF MVP SCOPE for this dashboard, by business
+  decision** (PRD v0.17, §16 Resolved Question 47) — **this is a decision, not
+  a gap.** Any prior wording in this document that treated a missing Risk KPI
+  tile as a TBD/gap on `RAISE-FR-EXEC-001` is superseded by this. See "Risk —
+  Confirmed Not MVP" below.
 
-as proposal-defined KPIs under `RAISE-FR-EXEC-001`. **None of the three
-appears in the shipped dashboard's KPI grid above.** This is recorded as an
-explicit open item — a separate, not-yet-scheduled enhancement layered on top
-of the current MVP dashboard, not a silently dropped requirement.
+### Utilization — Built and Live
 
-- **Utilization's definition is already resolved** (PRD §16 Resolved
-  Questions 27 and 29 — see below); only its *implementation* on the
-  dashboard is outstanding.
-- **NBV and Risk formulas, thresholds, and dashboard placement remain TBD** —
-  see [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md#16-open-questions) §16
-  Q3–Q4, tracked as [Open Finding
-  F-03](../project-management/OPEN-FINDINGS.md#blocking-gates-an-mvp-requirement).
-
-**Utilization — Resolved 2026-08-21 (PRD v0.3, §16 Resolved Question 27):**
-~~"Utilization" is listed in the PRD as a KPI with no definition~~. Business
-confirmed the definition as **assignment-time-based**:
+**Definition — Resolved 2026-08-21 (PRD v0.3, §16 Resolved Question 27):**
+Business confirmed the definition as **assignment-time-based**:
 
 > Utilization = % of time an asset is assigned to a user/department,
 > relative to total available time.
-
-This definition is what a future Utilization tile must implement against —
-it is not implemented on the shipped dashboard today (see "NBV/Risk/
-Utilization — Proposal KPIs, Not Yet Implemented" above).
 
 **Calculation mechanics — Resolved 2026-08-21 (PRD v0.4, §16 Resolved
 Question 29):**
@@ -1572,15 +1599,107 @@ Question 29):**
 - **Denominator exclusions** — assets with status Disposed, Retired, or Under
   Maintenance are **excluded** from the "total available time" denominator;
   only assets in an active/available-for-assignment state count toward the
-  denominator. This denominator interacts with the Custody domain in
-  [§4.2](#42-custody--asset-operations) and the asset lifecycle states in
-  [§18 Logical Data Model](#18-logical-data-model), both of which remain
-  design-phase TBD for exact status naming.
+  denominator.
 
-NBV and Risk KPI formulas remain undefined and unresolved. See
-[`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md#8-executive-intelligence) §8
-and [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md#ambiguous-requirements)
-Pre-Finalization Quality Pass.
+**Built and live — 2026-09-05 (PRD v0.17, §16 Resolved Question 48):** this
+required no new business decision — the definition (Resolved Question 27) and
+mechanics (Resolved Question 29) were already resolved on 2026-08-21; it had
+simply not been built yet. Implemented as `frontend/src/lib/utilization.ts`
+plus the Executive Dashboard KPI tile, PR #102 (merged 2026-09-05, commit
+`321265f`), live-verified reading **66.7% / "8 of 12 assignable assets"**
+against the 15-asset seeded register.
+
+**Derivation shape — a pure function, no new entity or history table:** the
+real-time-snapshot ruling in Resolved Question 29 is precisely what makes this
+possible. At a single instant, "share of available time spent assigned"
+collapses to "share of eligible assets currently assigned" — a pure function
+over the Available and Assigned counts the Executive Dashboard already
+fetches for its own KPI tiles (see the As-Built KPI grid above), with **no
+assignment-history table** required. This is consistent with this document's
+[§2.3 Deterministic First](#23-deterministic-first) principle: no AI/LLM
+involvement, a plain read-time computation.
+
+**Implementation fact PRD §16 Resolved Question 29 could not have
+anticipated:** Resolved Question 29 names Disposed, Retired, **and** Under
+Maintenance as the three denominator-exclusion states, but the design's
+`AssetStatus` model (see [§18 Logical Data
+Model](#18-logical-data-model)) has only four values — `'Available' |
+'Assigned' | 'In Maintenance' | 'Retired'` — and there is **no Disposed
+status**, because Disposal is confirmed Enterprise Roadmap (PRD §16 Resolved
+Question 26). So two of the three named exclusions apply today (Retired, In
+Maintenance) and the third (Disposed) has nothing to exclude yet. **If a
+Disposed status is ever added to the design's asset lifecycle model, it must
+be added to this exclusion set too.**
+
+### NBV — Formula Confirmed, Default Values Still Missing
+
+**Method — confirmed 2026-09-05 (PRD v0.17, §16 Resolved Question 46):
+straight-line depreciation.**
+
+```text
+NBV = purchaseCost − (purchaseCost ÷ usefulLifeYears × assetAgeInYears)
+NBV = max(NBV, 0)   // salvage/residual value is zero; clamped at 0
+```
+
+computed from the `purchaseDate` and `purchaseCost` fields that already exist
+end-to-end on every Asset record (`frontend/src/types/asset.ts`,
+`go-template-main/model/assetModel.go`, `sql/pg/V1__Assets_Table.sql`). **No
+new Asset field and no new data model is needed** — this is purely a derived
+read-time value, the same architectural shape as Utilization above.
+
+**Useful life — configurable per Asset Category**, set by an admin in
+Settings, following the exact precedent already established by [§5.4 Settings
+Domain](#54-settings-domain) for the Warranty "Expiring" threshold
+(`WarrantySettings.expiringThresholdDaysByCategory`, PRD §16 Resolved
+Question 41) — **not** a single global constant. The intended shape mirrors
+that structure: one useful-life-in-years value per current Asset Category (IT
+Hardware, Mobile, Office Equipment, Infrastructure, Media Equipment). See
+[§5.4 Settings Domain](#54-settings-domain) for this design area's confirmed
+second driver.
+
+**Blocked — NOT built and NOT yet buildable:** the actual default
+useful-life-per-Asset-Category numbers remain undefined (PRD §16 [Open
+Question 3a](../01-requirements/RAISE-PRD.md#16-open-questions)). Business was
+asked directly and answered "I will specify these myself" — the numbers have
+not been supplied. **This design does not invent illustrative or placeholder
+default values** for those numbers; without them, the formula above has a
+confirmed shape but no computable useful-life input, so no NBV tile can be
+implemented yet. Tracked as the narrowed remainder of Open Finding
+**F-03** in `OPEN-FINDINGS.md` (maintained separately, not edited by this
+change).
+
+**Supporting fact recorded to prevent a wrong future implementation:** the
+Asset record already carries a `currentValue` field, but it **cannot** serve
+as NBV — `go-template-main/service/assetService.go:101` sets `currentValue`
+equal to `purchaseCost` on create and never recomputes it, and the seed
+fixtures hold hand-written values at inconsistent rates. A future NBV tile
+must be a newly derived read-time value (per the formula above), not a read
+of `currentValue`.
+
+### Risk — Confirmed Not MVP
+
+**Confirmed 2026-09-05 (PRD v0.17, §16 Resolved Question 47): the Executive
+Dashboard will NOT carry a Risk KPI tile for MVP.** This **confirms**, rather
+than changes, what this design and the PRD already recorded:
+`RAISE-AI-RISK-001` is Priority "Pilot (not confirmed MVP)" — see [§10 Risk
+Scoring](#10-risk-scoring). PRD §16 [Open Question
+4](../01-requirements/RAISE-PRD.md#16-open-questions)
+("What is the exact definition of risk?") **remains open** but is **no longer
+a blocker on `RAISE-FR-EXEC-001`'s MVP completeness** — it belongs entirely to
+the Pilot/Roadmap `RAISE-AI-RISK-001` requirement, not to this P0 one.
+
+**As-built observation — recorded and explicitly NOT a requirement, NOT a
+specified design:** the shipped app already contains a "Portfolio Risk
+Matrix" tab in the AI Decision Center, with a per-asset `riskScore`, a
+Portfolio Risk Index, and risk bands. This decision leaves it exactly as-is —
+it is not promoted into this design as an `RAISE-FR-EXEC-001` design area, and
+it is not removed either. It is fixture-backed
+(`frontend/src/data/fixtures/decisionData.ts` covers only 7 of 15 assets with
+hand-written scores) and that one file uses three **mutually inconsistent**
+risk-band thresholds (`>70`, `>75`/`>40`, and `80`/`60`/`30` at different
+lines). This observation is tied to `RAISE-AI-RISK-001` (Pilot/Roadmap), not
+to this Executive Dashboard section, so that nobody mistakes it for a
+specified MVP feature of `RAISE-FR-EXEC-001`.
 
 **AI-Generated Executive Summary — open ambiguity (from PRD Pre-Finalization
 Quality Pass), status unchanged by this correction:** the PRD's "AI-Generated
@@ -2438,7 +2557,7 @@ treated as mandatory.
 | RAISE-FR-ORACLE-001 | Oracle Integration |
 | RAISE-FR-ALERT-001 | Alert Architecture (§14 — five MVP trigger conditions and fixed-per-condition High/Medium/Low severity confirmed 2026-09-04; read-time derivation, no persisted Alert entity; access gate confirmed 2026-09-04 as any authenticated user, enforced via `ProtectedRoute allowedRoles`, see [§16 Security Architecture, "Alerts Screen Access Gate"](#alerts-screen-access-gate--resolved-2026-09-04-prd-v016-16-resolved-question-45)) |
 | RAISE-FR-AUDIT-001 | Audit Architecture |
-| RAISE-FR-EXEC-001 | Executive Dashboard |
+| RAISE-FR-EXEC-001 | Executive Dashboard (§13 — Utilization KPI **built and live** 2026-09-05, PR #102; NBV formula confirmed 2026-09-05 but blocked on missing per-Asset-Category default useful-life values (§16 Open Question 3a); Risk KPI confirmed **NOT MVP** for this dashboard, by decision, not gap) / Settings (§5.4 — NBV useful-life configuration home, shape only) |
 | RAISE-FR-LIFE-001 | Lifecycle |
 | RAISE-AI-SEARCH-001 | AI Search |
 | RAISE-AI-DOC-001 | Document Intelligence Capabilities (§9A) |
@@ -2517,7 +2636,18 @@ presentational only (no enforcement effect) and narrows, without resolving,
 the `RAISE-NFR-SEC-RBAC-001` "Still fully TBD" paragraph in §16: role/
 permission-matrix content for every screen other than Alerts, and the
 authentication mechanism itself, remain open exactly as before. It does not
-change any other row in this table.
+change any other row in this table. **As of Design v0.15 (PRD v0.17, §16
+Resolved Questions 46–48):** the `RAISE-FR-EXEC-001` row above now records
+three separate, no-longer-uniform statuses instead of one "TBD" — Utilization
+built and live (Resolved Question 48), NBV formula confirmed but blocked on
+missing default values (Resolved Question 46, Open Question 3a), and Risk
+confirmed out of MVP scope by decision, not gap (Resolved Question 47). The
+`RAISE-FR-EXEC-001` row now also cross-references [§5.4 Settings
+Domain](#54-settings-domain) for the NBV useful-life configuration shape, the
+same cross-reference pattern already used for the `RAISE-FR-WARRANTY-001`
+row. No new PRD Traceability ID is introduced by this change — NBV useful-life
+configuration is a design-layer extension of the existing Settings Domain,
+the same treatment already given to the Warranty threshold.
 
 ---
 
@@ -2534,9 +2664,35 @@ design-relevant grouping — not a new set of questions.)
    Question 27, mechanics resolved in PRD v0.4 §16 Resolved Question 29):
    definition confirmed as assignment-time-based; calculation mechanics
    confirmed as real-time snapshot with Disposed/Retired/Under-Maintenance
-   denominator exclusions (see [§13 Executive Intelligence](#13-executive-intelligence)).
-   NBV/Risk KPI formulas remain open.
-4. What is risk?
+   denominator exclusions. **Built and live 2026-09-05** (PRD v0.17, §16
+   Resolved Question 48; see [§13 Executive
+   Intelligence](#13-executive-intelligence), "Utilization — Built and
+   Live"). **NBV formula narrowed 2026-09-05** (PRD v0.17, §16 Resolved
+   Question 46): method confirmed (straight-line, zero salvage, clamped at
+   0, per-Asset-Category configurable useful life via [§5.4 Settings
+   Domain](#54-settings-domain)) — default useful-life values per category
+   remain open, see new item 3a below. **Risk KPI confirmed NOT MVP for the
+   Executive Dashboard, 2026-09-05** (PRD v0.17, §16 Resolved Question 47) —
+   see item 4 below, which is no longer a blocker on this requirement.
+3a. What are the default useful-life values per Asset Category (IT Hardware,
+   Mobile, Office Equipment, Infrastructure, Media Equipment) for NBV
+   straight-line depreciation? — new item, added 2026-09-05 alongside PRD
+   v0.17 §16 Resolved Question 46 (PRD §16 Open Question 3a). Business was
+   asked directly and answered "I will specify these myself" — the numbers
+   have not been supplied. **Do not invent or use an illustrative number as
+   if confirmed.** Same shape as item 9a below (Resolved Question 41):
+   mechanism confirmed, exact numbers not. Tracked as the narrowed remainder
+   of Open Finding **F-03** in `OPEN-FINDINGS.md` (maintained separately,
+   not edited by this change). Blocks the NBV KPI tile — see [§13 Executive
+   Intelligence](#13-executive-intelligence), "NBV — Formula Confirmed,
+   Default Values Still Missing".
+4. What is risk? — **Confirmed 2026-09-05 to no longer block
+   `RAISE-FR-EXEC-001`'s MVP completeness** (PRD v0.17, §16 Resolved Question
+   47): the Executive Dashboard will not carry a Risk KPI tile for MVP, so
+   this question belongs entirely to `RAISE-AI-RISK-001` (already
+   Pilot/Roadmap, not MVP — see [§10 Risk Scoring](#10-risk-scoring)), not to
+   this P0 requirement. The exact definition of risk **remains open** for
+   that Pilot/Roadmap requirement.
 5. What business decision should AI support first?
 5a. What are the alert trigger conditions, severity model, and channel scope
    for `RAISE-FR-ALERT-001`? — **Resolved 2026-09-04** (PRD v0.15, §16
@@ -2765,13 +2921,60 @@ RAISE-COMPLIANCE-REVIEW.md
 
 ## Document Status
 
-**Version:** 0.14 (sync with PRD v0.16, §16 Resolved Question 45: Alerts
-screen (P-012, `RAISE-FR-ALERT-001`) access gate confirmed as any
-authenticated user, enforced via the existing code-declared, per-route
-`ProtectedRoute allowedRoles` mechanism — partially resolving Open Finding
-F-08 for this one screen only. Records the built Role Management permission
-matrix as presentational only, with no enforcement effect. Documentation-only
-sync; no code change.)
+**Version:** 0.15 (sync with PRD v0.17, §16 Resolved Questions 46–48 and new
+Open Question 3a: `RAISE-FR-EXEC-001`'s three proposal KPIs — NBV, Risk,
+Utilization — no longer share one undifferentiated "not yet implemented"
+status. Utilization is now built and live (PR #102, 2026-09-05); NBV's
+formula is confirmed (straight-line, zero salvage, clamped at 0,
+per-Asset-Category configurable useful life) but blocked on missing default
+useful-life values per category (new Open Question 3a); Risk is confirmed
+out of MVP scope for this dashboard by business decision, not a gap. All
+three are confirmed business decisions from a live user session —
+`## NEEDS_PRD_CONFIRMATION` is **not** raised by this sync. Documentation-only
+sync; no code change to this design pass itself, though it records already-
+merged PR #102.)
+
+**Change Log — v0.14 → v0.15 (sync with PRD v0.16 → v0.17: NBV formula
+confirmed but blocked on missing default values; Risk KPI confirmed NOT MVP
+for the Executive Dashboard; Utilization KPI confirmed built and live; PRD
+§16 Resolved Questions 46, 47, 48; new PRD §16 Open Question 3a):**
+
+1. **§13 Executive Intelligence** — "Logical Dashboard — Current MVP (As
+   Built)" KPI grid updated from 8 to 9 tiles, adding the built Utilization
+   tile; "NBV/Risk/Utilization — Proposal KPIs, Not Yet Implemented" renamed
+   to "NBV/Risk/Utilization — KPI Status" and restructured into three
+   subsections reflecting each KPI's own status: "Utilization — Built and
+   Live" (definition/mechanics restated, build/PR #102 details added,
+   derivation-shape rationale added — a pure function over Available/
+   Assigned counts, no assignment-history table, per the real-time-snapshot
+   ruling in Resolved Question 29; the AssetStatus-has-no-Disposed-value
+   implementation fact recorded), "NBV — Formula Confirmed, Default Values
+   Still Missing" (formula, per-category useful-life mechanism, zero-salvage/
+   clamp-at-0 rule, and the `currentValue`-cannot-serve-as-NBV supporting
+   fact all recorded; explicitly not built and not yet buildable pending
+   Open Question 3a), and "Risk — Confirmed Not MVP" (decision recorded as a
+   decision, not a gap; the as-built Portfolio Risk Matrix tab recorded as an
+   observation, explicitly not a requirement or specified design).
+2. **§5.4 Settings Domain** — extended with a second confirmed driver: NBV
+   per-Asset-Category useful-life configuration, following the exact shape
+   already used for the Warranty Expiring threshold. Conceptual data-flow
+   diagram, component descriptions, Scope Boundary, and Dependencies all
+   updated. Explicitly records that only the *shape* is confirmed — no
+   default useful-life numbers are supplied by this design.
+3. **§24 Design Traceability** — `RAISE-FR-EXEC-001` row updated to record
+   the three separate KPI statuses and a new cross-reference to §5.4;
+   cross-check paragraph extended with a v0.15 note.
+4. **§25 Design Open Questions** — Business item 3 updated (Utilization
+   built; NBV narrowed; Risk resolved-not-a-blocker); new item 3a added
+   (default useful-life values, explicitly not supplied); item 4 updated
+   (risk definition remains open but no longer blocks `RAISE-FR-EXEC-001`).
+5. **No `## NEEDS_PRD_CONFIRMATION` signal raised by this design pass.**
+   Every statement added traces directly to PRD v0.17 §16 Resolved Questions
+   46, 47, or 48, or to already-merged code (`frontend/src/lib/utilization.ts`,
+   PR #102, commit `321265f`) the PRD itself cites. No capability was found
+   during this pass that lacks a requirement behind it.
+6. Header metadata updated: Version bumped to 0.15; Design Source updated to
+   reference PRD v0.17.
 
 **Change Log — v0.13 → v0.14 (sync with PRD v0.15 → v0.16: Alerts screen
 access gate and RBAC enforcement mechanism confirmed; PRD §16 Resolved

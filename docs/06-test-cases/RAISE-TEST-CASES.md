@@ -2,9 +2,9 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Test Cases
-**Version:** 0.23 Draft
+**Version:** 0.24 Draft
 **Status:** Draft for Test Case Review
-**Source:** [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.14 §7 (Test Suites) + §8 (Blocked Items) + §8.1 (Fully-Blocked Suites — AI Document Intelligence Capabilities) + §3.3 (PRD §10 NFR Backlog — No Suite), expanding [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.14
+**Source:** [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.15 §7 (Test Suites, including "TS-ALERT-001 gains header bell second-surface coverage") + §8 (Blocked Items) + §8.1 (Fully-Blocked Suites — AI Document Intelligence Capabilities) + §3.3 (PRD §10 NFR Backlog — No Suite), expanding [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.15
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
 
@@ -843,10 +843,66 @@ decided, and is not yet specifiable, since there is no link between the authenti
 the Handovers screen, P-008, matches recipients by comparing `fullName` strings as a
 documented MVP limitation, not a reusable identity link). No test case is written for
 per-user filtering, and none should be inferred from `TC-ALERT-001-01`/`-11` below; no
-`employeeId` field or other `User`↔`Employee` link is proposed here. The header
-bell-icon dropdown (`NotificationCenter.tsx` in `AppShell`, Gap 17) remains an
-unreconciled, carried-forward contradiction, untouched by this update — no test case
-covers it.
+`employeeId` field or other `User`↔`Employee` link is proposed here.
+
+**Status Note — Header Bell Second-Surface Coverage Added 2026-09-07 (sync only, no
+execution; AC document v0.15 §15, Test Plan v0.15 §7 "TS-ALERT-001 gains header bell
+second-surface coverage," PRD v0.18 §16 Resolved Question 49; Design §14 "Header
+Bell — Second Surface Over the Same Derivation"; Prototype v0.17 §6/§18; closes
+`RAISE-TRACEABILITY-MATRIX.md` Gap 17). The prior paragraph's note that "the header
+bell-icon dropdown remains an unreconciled, carried-forward contradiction, untouched
+by this update — no test case covers it" is now **superseded**: the header bell
+(`frontend/src/components/AppShell.tsx`) is confirmed in scope as a second display
+surface over the exact same read-time derivation (`frontend/src/hooks/useAlerts.ts`)
+P-012 Alerts itself uses — not a second Alert model, not a second requirement, not a
+second screen ID. Six new test cases, `TC-ALERT-001-12` through `TC-ALERT-001-17`, are
+added below for 1:1 coverage of the six new criteria `AC-ALERT-001-12` through `-17`,
+continuing this suite's numbering after `TC-ALERT-001-11`. **None of the six is marked
+PASS by this update — all six are left unexecuted for a separate, subsequent formal
+execution step**, consistent with every other criterion-addition sync in this document
+(e.g., the 2026-09-05 TS-DASH/TS-EXEC-001/TS-WARRANTY-001 sync above). None of the six
+carries a Test-Plan/AC-level blocker — all six are fully specified and the feature is
+already built and shipped — so none is marked BLOCKED; each is recorded as **No — not
+blocked, not yet executed**.
+
+Two surfaces, not one, are now in scope for this suite: P-012 Alerts itself
+(`TC-ALERT-001-01..11`) and the header bell in global chrome
+(`TC-ALERT-001-12..17`). A test case that exercises P-012 directly does **not**
+exercise the bell's badge, dropdown, truncation-to-five, ordering-agreement, or
+accessibility attributes, and vice versa — each of the six new cases below is written
+to exercise the bell, not to re-exercise P-012's own already-covered behavior.
+
+`TC-ALERT-001-14` is written per the Test Plan's explicit instruction: verifying "the
+same ordering" is only meaningful read in the **same session against the same data**,
+so its procedure has the tester open the bell, note its five rows, then open
+`/notifications` in that same session and compare against the page's own first five
+rows — not check the bell alone against a remembered/separately-recorded list.
+
+**Ordering rationale (recorded here for this suite's own record, not re-derived at
+execution time):** business's first request was "the 5 most recent alerts." That
+phrasing is **not computable** — the `Alert` interface (`frontend/src/lib/alerts.ts`)
+carries **no timestamp field of any kind**, because alerts are a read-time derivation
+with no persisted record, so there is no creation time to sort by. Business was shown
+this and confirmed the severity ordering instead (High → Medium → Low), so the bell and
+P-012 agree by construction — both read the same `useAlerts` hook — not by coincidence
+of a given dataset. Sorting by the underlying Asset/Ticket/Handover records' own dates
+was explicitly considered and explicitly **rejected**, since it would introduce a new
+ordering rule with no existing definition. `TC-ALERT-001-14` below tests agreement
+between the two surfaces, not merely that the bell's own five rows are internally
+sorted.
+
+**Context only, explicitly not an execution result of any test case below:** five
+automated tests exist at `frontend/src/components/AppShell.bell.test.tsx`, and the
+feature was live-verified during implementation — badge showing 19; five dropdown rows
+`AST-0003 · iPhone 15 Pro` through `AST-0007 · Cisco Catalyst 9300`, all `High`; "View
+all alerts" navigating to `/notifications`, whose own first five rows were identical.
+Neither the automated tests nor the implementation-time live-verification is a formal
+execution of `TC-ALERT-001-12` through `-17` — no PASS is claimed for any of the six by
+this note or by this update.
+
+PRD §16 Open Question 22a (per-user alert filtering) is unaffected by this addition and
+stays open: the bell shows the same unfiltered alert set as P-012 itself, to every
+authenticated user, and none of the six new cases below implies otherwise.
 
 | TC ID | Title | Steps | Test Data | Expected Result | Blocked |
 |---|---|---|---|---|---|
@@ -861,6 +917,12 @@ covers it.
 | TC-ALERT-001-09 | Alert rows disappear once the underlying condition no longer holds | 1. Open Alerts (P-012) and confirm that seeded ticket `REQ-2026-0041` ("Data Center Core Switch SFP+ Fiber Module Replacement") appears as two separate rows: one with condition "Maintenance Ticket Overdue," one with condition "Maintenance Ticket On Hold." Note the total alert count shown on the page. 2. Navigate to that ticket's Maintenance Request detail view within P-009 (Ticket Detail) and use its Status control to complete the ticket, selecting the "Done" option (wired to `ticketService.updateExecutionStatus`, which maps `Done` to status `DONE`). 3. Return to Alerts (P-012). | Seeded ticket `REQ-2026-0041`, initially with `targetResolutionDate` 2026-08-16 (passed) and status `ON_HOLD` — satisfying both the Maintenance Ticket Overdue and Maintenance Ticket On Hold conditions at once | Both of `REQ-2026-0041`'s rows (Maintenance Ticket Overdue and Maintenance Ticket On Hold) no longer appear on Alerts once its status is `DONE`, and the total alert count has dropped by 2 accordingly — nothing was acknowledged, dismissed, or marked read anywhere in this procedure (no such affordance exists on the Alerts screen), consistent with no persisted Alert record (Design v0.13 §14 read-time derivation) | No — **formally executed 2026-09-04 against the real running app (merged `main` @ `30f176c`), signed in as `admin@raise.dev` (ADMIN) — PASS:** Step 1: Alerts (P-012) showed 19 total alerts; `REQ-2026-0041` appeared as exactly two rows — `High` / "Maintenance Ticket Overdue" / "Target resolution date 2026-08-16 has passed" and `Medium` / "Maintenance Ticket On Hold" / "Ticket is on hold." Step 2: on that ticket's detail view within P-009, used the real Update Status control, selected `Done`, entered the Resolution Notes field the UI reveals only for `Done`, and saved via "Save Update" — the product's own `ticketService.updateExecutionStatus` path, no test-only hook, no direct data manipulation; the app showed an "Updated" confirmation. Step 3: returned to Alerts; total alert count was 17, a drop of exactly 2; a scan of every row across both pages found zero rows referencing `REQ-2026-0041`. Nothing was acknowledged, dismissed, cleared, marked read, or snoozed anywhere — a scan of every button on the Alerts screen found no such affordance at all, consistent with no persisted Alert record (Design v0.13 §14 read-time derivation); the rows disappeared purely because both underlying conditions stopped holding once the ticket's status became `DONE`. No console errors were produced. This single state change cleared two different conditions at once (`REQ-2026-0041` satisfied both Overdue and On Hold simultaneously), a stronger demonstration of the read-time-derivation property than the original, unrunnable warranty-based procedure would have given. This is the last `TC-ALERT-001-*` case to be executed — all 10 are now executed and PASS. **Procedure corrected 2026-09-04 (Open Finding F-42 / Gap 18) — history retained, not silently swapped.** The original step 2 ("Edit that Asset's `warrantyExpiry` to a future date") was attempted and formally found unrunnable on 2026-09-04, because the product has no asset-edit capability anywhere: `frontend/src/services/asset-repository.ts` exposes only `create`, `assign`, and `checkIn` — no `updateAsset` method, no update endpoint consumed, and no edit-asset UI anywhere in `frontend/src/pages/`. That was a defect in this test case's written procedure only — not in the implementation (the underlying AC-ALERT-001-09 read-time-derivation invariant was separately confirmed to hold, via a different, product-supported trigger: lowering the IT Hardware "Expiring" threshold from 90 to 3 days through the real Settings UI, P-018, which removed the Warranty Expiring row for AST-0012 and dropped the alert total 19 → 18, restoring to 19 when reverted) and not in AC-ALERT-001-09's specification (which remains correct as written and is unchanged by this correction). This row's steps, test data, and expected result were rewritten to point at a state change the product genuinely supports — verified in source before writing this correction: `frontend/src/pages/TicketDetail/index.tsx` exposes a real Status control with a "Done" option wired to `ticketService.updateExecutionStatus` (`frontend/src/services/ticket-repository.ts`), which maps `Done` to status `DONE`; seeded ticket `REQ-2026-0041` satisfies both the Overdue and On Hold conditions simultaneously, so completing it to `DONE` is a stronger demonstration of the read-time property than the single-row warranty case would have been (two rows disappear from one state change, with no dismiss/acknowledge step anywhere). No corresponding capability was added to the product to make this correction possible — only the test procedure changed, pointing at a capability (Ticket Status → Done) that already existed. The corrected procedure was executed exactly as written in the pass recorded immediately above, confirming it is genuinely runnable and closing the F-42 / Gap 18 defect in substance. |
 | TC-ALERT-001-10 | No condition beyond the five confirmed appears as a row | 1. Open Alerts (P-012). 2. Review every row shown, including its condition label. | Existing seeded Assets/tickets/Assignment Approval Requests | No row's condition is anything other than one of the five confirmed (Warranty Expired, Maintenance Ticket Overdue, Warranty Expiring, Maintenance Ticket On Hold, IT Hardware Handover Pending) — specifically, no preventive-maintenance-due row (no next-service-date field exists) and no software-license-expiry row (`RAISE-FR-LICENSE-001` is Roadmap) appears | No — **formally executed 2026-09-04 against the real running app (merged `main` @ `c2e6b76`, PR #97) — PASS:** all 19 seeded rows across both pages (10 per page) were read. Every row's condition was one of the five confirmed (Warranty Expired ×11, Maintenance Ticket Overdue ×3, Warranty Expiring ×1, Maintenance Ticket On Hold ×1, IT Hardware Handover Pending ×3). No sixth condition appeared; in particular no preventive-maintenance-due and no software-license-expiry row. |
 | TC-ALERT-001-11 | Unauthenticated visitor is redirected to Login | 1. Ensure no session is stored (clear `localStorage`/`sessionStorage`, confirm no token/user object remains). 2. Request `/notifications` directly. | No authenticated session (verified cleared) | Visitor is redirected to `/login`; the login form is rendered; no alert data is displayed | No — **formally executed 2026-09-04 against the real running app (merged `main` @ `d8ad01c`) — PASS:** with `localStorage`/`sessionStorage` cleared (no token, no stored user), requesting `/notifications` directly redirected to `/login`, which rendered the login form; no alert data was displayed anywhere. **Procedural note:** an initial attempt appeared to show the Alerts screen to an unauthenticated visitor — this was found to be a false result caused by a stale `ADMIN` session (`raise_user` = `Demo Admin`/`ADMIN`) left in `localStorage` from an earlier execution in the same browser profile, not a real gap in `ProtectedRoute` behavior. The session was verified and cleared, and the case was re-run properly to produce the PASS recorded above; this is documented here so the case is not re-run in a dirty profile and a false result reported. Existing `ProtectedRoute` behavior; the Alerts route carries no route-specific role restriction (PRD §16 Resolved Question 45; Design §16 "Alerts Screen Access Gate"). |
+| TC-ALERT-001-12 | Header bell badge shows the same total alert count P-012 itself derives | 1. Sign in as any authenticated demo user (e.g., `admin@raise.dev`, `ADMIN`) against the seeded 15-asset register. 2. Without opening the bell dropdown, read the numeric badge rendered on the header bell button in `AppShell` (top navigation, present on every authenticated page). 3. In the same session, navigate to Alerts (`/notifications`, P-012) and read the total alert count that screen itself shows (count every row across both pages if paginated). 4. Compare the two numbers. | Seeded 15-asset register — 19 alerts, per the shared `useAlerts` hook (`frontend/src/hooks/useAlerts.ts`) | The header bell badge shows **19**, identical to the total P-012 Alerts derives from the same `useAlerts` hook — not a separately computed or independently-sourced count | No — not blocked, not yet executed. Fully testable now; the feature is built and shipped (AC-ALERT-001-12). Formal execution deliberately deferred to a subsequent step. |
+| TC-ALERT-001-13 | Bell dropdown lists exactly five rows, each with condition label, description, and `CODE · Name` | 1. Sign in as any authenticated demo user. 2. Click the header bell button to open its dropdown panel. 3. Count the number of alert rows rendered in the panel. 4. For each of the rows, read the condition label, the description text, and the affected-record identifier shown beneath it. | Seeded 15-asset register — 19 alerts total, more than five | The dropdown lists **exactly five** rows — not all 19 currently-existing alerts — each showing the condition label, the description, and the affected record formatted as `CODE · Name` (e.g., `AST-0003 · iPhone 15 Pro`) | No — not blocked, not yet executed. Fully testable now; the feature is built and shipped (AC-ALERT-001-13). Formal execution deliberately deferred to a subsequent step. |
+| TC-ALERT-001-14 | Bell's five rows match P-012's own first five rows in content, count, and order (same session, same data) | 1. Sign in as any authenticated demo user. 2. Click the header bell button and, without closing it or reloading, record the five rows shown, in the order rendered (condition label, `CODE · Name`, severity). 3. In that same session (do not sign out or reload data), navigate to Alerts (`/notifications`, P-012) and read its own first five rows, in the order rendered on the page. 4. Compare the bell's recorded five rows against P-012's first five rows for content, count, and order. | Seeded 15-asset register — 19 alerts, both surfaces reading the same `useAlerts` hook | The bell's five rows are identical in content, count, and order to P-012's own first five rows, both sorted High → Medium → Low — the bell shows the first five in the same severity ordering P-012 uses, not "5 most recent" (not computable — `Alert` carries no timestamp field; see this suite's Ordering Rationale note above) | No — not blocked, not yet executed. Fully testable now; the feature is built and shipped (AC-ALERT-001-14 — the criterion the business decision most turned on). Formal execution deliberately deferred to a subsequent step. |
+| TC-ALERT-001-15 | "View all alerts" navigates to `/notifications` | 1. Sign in as any authenticated demo user. 2. Click the header bell button to open its dropdown panel. 3. Click the "View all alerts" control at the bottom of the panel. 4. Observe the resulting route/page. | Seeded 15-asset register — 19 alerts | Selecting "View all alerts" navigates to `ROUTES.NOTIFICATIONS` (`/notifications`) — i.e., to P-012 Alerts itself — and the dropdown panel closes | No — not blocked, not yet executed. Fully testable now; the feature is built and shipped (AC-ALERT-001-15). Formal execution deliberately deferred to a subsequent step. |
+| TC-ALERT-001-16 | No acknowledge/dismiss/read-unread/snooze affordance exists anywhere in the bell | 1. Sign in as any authenticated demo user. 2. Click the header bell button to open its dropdown panel. 3. Inspect every interactive element rendered inside the panel — the header area, each of the five alert rows, and the footer — noting each one's function. 4. Compare the found controls against acknowledge, dismiss, mark-read/unread, and snooze affordances. | Seeded 15-asset register — 19 alerts | The only interactive elements in the panel are the bell toggle button itself and the "View all alerts" control; no per-row or panel-level acknowledge, dismiss, read/unread, or snooze affordance is present anywhere — consistent with AC-ALERT-001-09's existing documentation of the same confirmed absences on P-012 itself. The badge count is a currently-exists count, not an unseen/unread count | No — not blocked, not yet executed. Fully testable now (L2 — negative/absence check); the feature is built and shipped (AC-ALERT-001-16). Formal execution deliberately deferred to a subsequent step. |
+| TC-ALERT-001-17 | Bell button exposes an accessible name and `aria-expanded` | 1. Sign in as any authenticated demo user. 2. With the bell dropdown closed, inspect the bell button element (browser dev tools / accessibility tree) and read its `aria-label` and `aria-expanded` attribute values. 3. Click the bell button to open the dropdown. 4. Re-inspect the same button and re-read `aria-expanded`. | Seeded 15-asset register — 19 alerts | Closed: `aria-label` names the button's purpose and current count (e.g., "Notifications, 19 alerts") and `aria-expanded="false"`. Open: `aria-expanded="true"`, same `aria-label` | No — not blocked, not yet executed. Fully testable now; the feature is built and shipped (AC-ALERT-001-17). Formal execution deliberately deferred to a subsequent step. |
 
 ---
 
@@ -1133,7 +1195,7 @@ been formally executed and are PASS**.
 | TS-MAINT-001 | 9 | 3 | 6 | 0 | 0 |
 | TS-WARRANTY-001 | 7 | 6 | 1 | 0 | 0 |
 | TS-ORACLE-001 | 4 | 3 | 1 | 0 | 0 |
-| TS-ALERT-001 | 11 | 11 | 0 | 0 | 0 |
+| TS-ALERT-001 | 17 | 17 | 0 | 0 | 0 |
 | TS-AUDIT-001 | 3 | 1 | 2 | 0 | 0 |
 | TS-EXEC-001 | 5 | 3 | 1 | 0 | 1 (`TC-EXEC-001-03c` — Risk, confirmed out of MVP scope) |
 | TS-AI-SEARCH-001 | 3 | 2 | 1 | 0 | 0 |
@@ -1142,7 +1204,24 @@ been formally executed and are PASS**.
 | TS-AI-DOC-002 | 1 | 0 | 0 | 1 | 0 |
 | TS-AI-DOC-003 | 1 | 0 | 0 | 1 | 0 |
 | TS-AI-DOC-004 | 1 | 0 | 0 | 1 | 0 |
-| **Total** | **87** | **58** | **22** | **4** | **3** |
+| **Total** | **93** | **64** | **22** | **4** | **3** |
+
+**TS-ALERT-001 updated a sixth time 2026-09-07 (sync only, no execution — header bell
+second-surface coverage, AC document v0.15 §15, Test Plan v0.15, PRD v0.18 §16 Resolved
+Question 49, closing `RAISE-TRACEABILITY-MATRIX.md` Gap 17; see §14's newest Status
+Note for full detail):** row grows from `11 | 11 | 0 | 0 | 0` to `17 | 17 | 0 | 0 | 0`,
+and Grand **Total** row grows from `87 | 58 | 22 | 4 | 3` to `93 | 64 | 22 | 4 | 3` (six
+test cases added, `TC-ALERT-001-12` through `-17`, all entering directly as **Fully
+Testable** — none is BLOCKED, since the feature is already built and shipped and none of
+the six criteria depends on any open PRD Question). **None of the six is marked PASS by
+this update** — all six are left unexecuted for a separate, subsequent formal execution
+step, exactly as `TC-DASH-01`/`TC-DASH-03a`/`TC-EXEC-001-01`/`TC-EXEC-001-03a` were left
+unexecuted by the 2026-09-05 sync above before their own later execution sweep. The five
+automated tests at `frontend/src/components/AppShell.bell.test.tsx` and the
+implementation-time live-verification recorded in §14's Status Note are context only,
+not a formal execution of any of these six cases. No other suite's row is affected by
+this update; PRD §16 Open Question 22a (per-user alert filtering) remains open and
+unaffected.
 
 **Four test cases formally executed 2026-09-05 (real formal test execution against the real
 running app, merged `main` @ `5f232a8`, closing the open items tracked as Matrix Gap 19 in
@@ -1567,6 +1646,19 @@ Before moving to the Requirement Traceability Matrix / Development:
       rewritten; `TC-DASH-03b`/`TC-EXEC-001-03b` (NBV) remain BLOCKED and
       `TC-DASH-03c`/`TC-EXEC-001-03c` (Risk) remain Out of Scope, both unaffected by this
       execution sweep
+- [x] `TC-ALERT-001-12` through `-17` (header bell second surface, closing Matrix Gap 17)
+      are added 1:1 against `AC-ALERT-001-12` through `-17`, all recorded as Fully
+      Testable/not blocked (the feature is built and shipped); none is marked PASS —
+      all six are left unexecuted for a separate, subsequent formal execution step;
+      `TC-ALERT-001-14`'s procedure explicitly compares the bell against P-012 in the
+      same session against the same data, not the bell alone against a remembered list;
+      the suite's notes record the severity-ordering rationale (no timestamp field
+      exists on `Alert`, "5 most recent" is not computable) as context, not as a new
+      business rule invented here; PRD §16 Q22a (per-user alert filtering) is correctly
+      left unaffected and no case implies the bell filters by user; the five automated
+      tests at `AppShell.bell.test.tsx` and implementation-time live-verification are
+      recorded as context only, explicitly not as an execution result of any of these
+      six cases
 
 ---
 
@@ -1599,6 +1691,66 @@ Suite ID → TC ID) into one master table for compliance review.
 ---
 
 ## Document Status
+
+**Version:** 0.24 (2026-09-07 — sync to `RAISE-TEST-PLAN.md` v0.15's newly-added
+`TS-ALERT-001` header-bell coverage (PRD v0.18 §16 Resolved Question 49, closing
+`RAISE-TRACEABILITY-MATRIX.md` Gap 17). Adds six new test cases, `TC-ALERT-001-12`
+through `TC-ALERT-001-17`, 1:1 against the six new criteria `AC-ALERT-001-12` through
+`-17` in `RAISE-ACCEPTANCE-CRITERIA.md` v0.15 §15, covering the header bell in
+`AppShell`: badge total (§14, `-12`), dropdown lists exactly five with condition
+label/description/`CODE · Name` (`-13`), those five matching P-012's own first five in
+content/count/order, verified in the same session against the same data (`-14`), "View
+all alerts" navigating to `/notifications` (`-15`), confirmed absence of
+acknowledge/dismiss/read-unread/snooze anywhere in the bell (`-16`), and the bell
+button's `aria-label`/`aria-expanded` (`-17`). All six are recorded **Fully
+Testable/not blocked** — the feature is already built and shipped — but **none is
+marked PASS by this update**; all six are left unexecuted for a separate, subsequent
+formal execution step. Records, as context only and explicitly not as an execution
+result, that five automated tests exist at
+`frontend/src/components/AppShell.bell.test.tsx` and that the feature was
+live-verified during implementation. Records this suite's ordering rationale (business
+first asked for "the 5 most recent," found not computable because `Alert` carries no
+timestamp field of any kind, and confirmed the severity ordering instead — sorting by
+the underlying records' own dates was considered and rejected). PRD §16 Open Question
+22a (per-user alert filtering) is unaffected and stays open; no new case implies the
+bell filters by user. `TC-ALERT-001-01` through `-11` and every other suite's existing
+test cases and historical PASS results (`TC-DASH-*`, `TC-EXEC-001-*`,
+`TC-WARRANTY-001-07`, etc.) are left exactly as recorded — untouched by this update.
+`RAISE-TEST-PLAN.md`, `OPEN-FINDINGS.md`, and every earlier-layer document are
+untouched. See the Change Log entry below and §14/§19/§20 for full detail)
+
+**Change Log — v0.23 → v0.24 (2026-09-07, sync only, no execution):**
+
+1. **Trigger.** `RAISE-TEST-PLAN.md` v0.15 added six new criteria to `AC-ALERT-001` —
+   `AC-ALERT-001-12` through `-17` — covering the header bell in `AppShell` as a
+   confirmed-in-scope second display surface over the same `RAISE-FR-ALERT-001`
+   derivation P-012 Alerts itself uses (PRD v0.18 §16 Resolved Question 49, closing
+   `RAISE-TRACEABILITY-MATRIX.md` Gap 17). This document had no test case for any of
+   the six.
+2. **§14 TS-ALERT-001.** A new Status Note records the addition, supersedes the prior
+   paragraph's note that the header bell "remains an unreconciled, carried-forward
+   contradiction... no test case covers it," records the ordering rationale
+   (severity order, not "5 most recent" — not computable, no timestamp field on
+   `Alert`), records the "same session, same data" comparison instruction for
+   `TC-ALERT-001-14`, and records the automated-test/live-verification evidence as
+   context only. Six new rows are added to the table: `TC-ALERT-001-12` (badge
+   total) through `TC-ALERT-001-17` (accessible name/`aria-expanded`), each recorded
+   **No — not blocked, not yet executed**. No existing row (`TC-ALERT-001-01`
+   through `-11`) is modified.
+3. **§19 Test Case Summary.** `TS-ALERT-001`'s row moves from `11 | 11 | 0 | 0 | 0` to
+   `17 | 17 | 0 | 0 | 0`; Grand **Total** moves from `87 | 58 | 22 | 4 | 3` to
+   `93 | 64 | 22 | 4 | 3`. A new narrative note records the six additions and that
+   none is marked PASS.
+4. **§20 Test Case Review Checklist.** A new checked item records the six additions,
+   the 1:1 traceability to `AC-ALERT-001-12..17`, the deliberate non-PASS status, the
+   same-session comparison instruction for `-14`, the ordering rationale, and that
+   PRD §16 Q22a remains correctly unaffected.
+5. **Unchanged.** `TC-ALERT-001-01` through `-11` are untouched, preserving their
+   existing PASS results exactly as recorded. `TC-DASH-*`, `TC-EXEC-001-*`, and
+   `TC-WARRANTY-001-07` are unaffected. `RAISE-TEST-PLAN.md`, `OPEN-FINDINGS.md`, and
+   every earlier-layer document are untouched — this is a Test Cases-layer sync only.
+
+---
 
 **Version:** 0.23 (2026-09-05 — real formal execution reporting for the four test cases
 tracked as `RAISE-TRACEABILITY-MATRIX.md` Matrix Gap 19: `TC-DASH-01`, `TC-DASH-03a`,

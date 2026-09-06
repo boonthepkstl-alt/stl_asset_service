@@ -2,9 +2,9 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Test Plan
-**Version:** 0.14 Draft
+**Version:** 0.15 Draft
 **Status:** Draft for Test Plan Review
-**Source:** [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.14, cross-checked against [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.17, [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.15, [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.16
+**Source:** [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.15, cross-checked against [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.18, [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.15, [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.17
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
 
@@ -127,7 +127,7 @@ own layer.
 | Level | Purpose | Applies To |
 |---|---|---|
 | L1 — Functional / Happy Path | Verify the primary flow described in each AC group succeeds | All 15 screens |
-| L2 — Negative / Error State | Verify explicitly defined error, empty, and denied states | Login, QR Scan, Oracle Financial View, AI Response States, Alerts (unauthenticated-visitor redirect, resolved 2026-09-04 — AC-ALERT-001-11) |
+| L2 — Negative / Error State | Verify explicitly defined error, empty, and denied states | Login, QR Scan, Oracle Financial View, AI Response States, Alerts (unauthenticated-visitor redirect, resolved 2026-09-04 — AC-ALERT-001-11; header bell's confirmed-absent acknowledge/dismiss/read-unread/snooze affordances, resolved 2026-09-05 — AC-ALERT-001-16) |
 | L3 — State Integrity | Verify data written by one flow is correctly reflected elsewhere (e.g., Check-out → Custody History → Audit Log) | Custody, Check-in/Check-out, Audit |
 | L4 — Boundary / Integration | Verify behavior at the edge of an external dependency (Oracle FA availability, AI source availability/conflict) | Oracle FA, AI Assistant |
 | L5 — Traceability Regression | Re-verify that every AC-to-requirement mapping still holds after any PRD/Design/Prototype change | All (run before each Compliance Review) |
@@ -181,7 +181,7 @@ Each suite ID mirrors its AC group for direct traceability.
 | TS-MAINT-001 | AC-MAINT-001 | P-009 | L1, L3 | P0 | Yes — field model (date/event/status/cost), SLA/vendor/cost model, and delegated-approver rules TBD; stage-transition criteria (AC-MAINT-001-03..09) testable for state-transition behavior; AC-MAINT-001-04..08 depend on `RAISE-NFR-SEC-RBAC-001` (enforcement level confirmed UI-only/client-side, role list/permission matrix still TBD) |
 | TS-WARRANTY-001 | AC-WARRANTY-001 | P-010, P-018 | L1, L2 | P0 | Partial — AC-WARRANTY-001-01 through -06 (Warranty section of P-010/P-018) are fully testable, no blocked items, resolved 2026-09-01 (PRD §16 Resolved Question 41). **New 2026-09-05:** AC-WARRANTY-001-07 (P-018's new NBV section, PRD §16 Resolved Question 46) is **NOT TESTABLE YET** for two independent reasons: (1) the NBV section does not exist in `frontend/src/` today (shape-confirmed only, per Prototype §23A), and (2) even once built, no default useful-life value per Asset Category can be asserted (PRD §16 Open Question 3a) — tracked as Open Finding F-03 (OPEN, narrowed) |
 | TS-ORACLE-001 | AC-ORACLE-001 | P-011 | L1, L2, L4 | P0 | Yes — integration design TBD |
-| TS-ALERT-001 | AC-ALERT-001 | P-012 | L1, L2, L3 | P0 | Partial — trigger rules and severity mapping resolved 2026-09-04 (PRD §16 Resolved Question 44), closing the sole prior blocker (Open Finding F-05). **Access gate also resolved 2026-09-04** (PRD §16 Resolved Question 45): AC-ALERT-001-01's "authorized user" gate is now confirmed as any authenticated user, all four roles, none excluded, and is fully testable directly (positive case) alongside new AC-ALERT-001-11 (negative case — unauthenticated visitor redirected to Login) — this closes that one sub-question of Open Finding F-08 for Alerts only; the general role/permission-matrix content question for other screens remains open (Q22). Separately, of the five confirmed conditions only Warranty Expired (AC-ALERT-001-03) is implemented as of 2026-09-04 — AC-ALERT-001-04/-05/-06/-07 (Maintenance Overdue, Warranty Expiring, Maintenance On Hold, IT Hardware Handover Pending) are **blocked on implementation, not on any further business decision**, the same distinction already applied to TS-OPS-002-04..09. **New NOT TESTABLE YET item (§8):** per-user filtering of alert rows (PRD §16 Q22a, newly raised, not decided) — no `User`↔`Employee` link exists in the data model, so no criterion tests filtering and none should be inferred |
+| TS-ALERT-001 | AC-ALERT-001 | P-012 (+ header bell, `AppShell`, global chrome) | L1, L2, L3 | P0 | Partial — trigger rules and severity mapping resolved 2026-09-04 (PRD §16 Resolved Question 44), closing the sole prior blocker (Open Finding F-05). **Access gate also resolved 2026-09-04** (PRD §16 Resolved Question 45): AC-ALERT-001-01's "authorized user" gate is now confirmed as any authenticated user, all four roles, none excluded, and is fully testable directly (positive case) alongside new AC-ALERT-001-11 (negative case — unauthenticated visitor redirected to Login) — this closes that one sub-question of Open Finding F-08 for Alerts only; the general role/permission-matrix content question for other screens remains open (Q22). Separately, of the five confirmed conditions only Warranty Expired (AC-ALERT-001-03) is implemented as of 2026-09-04 — AC-ALERT-001-04/-05/-06/-07 (Maintenance Overdue, Warranty Expiring, Maintenance On Hold, IT Hardware Handover Pending) are **blocked on implementation, not on any further business decision**, the same distinction already applied to TS-OPS-002-04..09. **NOT TESTABLE YET item, unchanged by this update (§8):** per-user filtering of alert rows (PRD §16 Q22a, newly raised, not decided) — no `User`↔`Employee` link exists in the data model, so no criterion tests filtering and none should be inferred; unaffected by the header bell addition below. **New 2026-09-05 (PRD §16 Resolved Question 49, closing Gap 17): the header bell (`AppShell`) is confirmed in scope as a second display surface over this same requirement, and AC-ALERT-001-12 through -17 are added, all fully testable now — none is blocked.** This suite must now be executed against **two distinct surfaces of one requirement** — P-012 Alerts itself and the header bell in global chrome (Prototype v0.17 §6) — see the coverage note following this table: a test case that exercises one surface does not exercise the other, and both must be covered for the suite to reach a clean exit. This addition does **not** raise this suite's blocked-item count — see §8 |
 | TS-AUDIT-001 | AC-AUDIT-001 | P-013 | L1, L3 | P0 | Yes — taxonomy/retention TBD; role gate (Q22) TBD |
 | TS-EXEC-001 | AC-EXEC-001 | P-014 | L1 | P0 | Partial — AC-EXEC-001-01, -02, and -03a are testable now against the same as-built **nine-tile** KPI grid / 10-section list as TS-DASH (AC rewritten 2026-08-31 to match `frontend/src/pages/Dashboard/index.tsx`, since P-014 and P-002 document the same built page, Open Finding F-22; grid updated 2026-09-05, PRD §16 Resolved Questions 46–48, to add the built, live **Utilization** tile, PR #102). AC-EXEC-001-03a (Utilization) is a **passing, testable** criterion, identical in substance to AC-DASH-03a. AC-EXEC-001-03b (NBV) remains **NOT TESTABLE YET** — formula confirmed (Resolved Question 46), blocked only on the missing default per-Asset-Category useful-life values (PRD §16 Open Question 3a; Open Finding F-03, OPEN, narrowed not closed). AC-EXEC-001-03c (Risk) is **confirmed out of MVP scope by business decision** (Resolved Question 47) — not a blocked item, not a gap |
 | TS-AI-SEARCH-001 | AC-AI-SEARCH-001 | P-015 | L1, L4 | P0 | Yes — citation/confidence TBD |
@@ -272,6 +272,72 @@ AC-ALERT-001-01..11; no `employeeId` field or other `User`↔`Employee` link is
 proposed here. Test execution (pass/fail) is not recorded in this document —
 that happens at `RAISE-TEST-CASES.md` against the real, running app.
 
+**TS-ALERT-001 gains header bell second-surface coverage 2026-09-05** (AC document
+v0.15 §15, PRD v0.18 §16 Resolved Question 49; Design §14 "Header Bell — Second
+Surface Over the Same Derivation"; Prototype v0.17 §6/§18; closes
+`RAISE-TRACEABILITY-MATRIX.md` Gap 17). The header bell dropdown in `AppShell`
+(`frontend/src/components/AppShell.tsx`) is confirmed **in scope** for
+`RAISE-FR-ALERT-001` as a second display surface over the exact same read-time
+derivation (`frontend/src/hooks/useAlerts.ts`) this screen itself uses — not a
+second Alert model, not a second requirement, not a second screen ID. **All six
+new criteria are fully testable now, built and shipped — none is blocked, and
+this suite's blocked-item count does not rise because of them.** Coverage
+expectations for each:
+
+- **AC-ALERT-001-12 (badge total):** verify the header badge shows the same
+  **total** alert count the shared `useAlerts` hook returns, matching the count
+  this screen itself derives from the identical hook — not a separately
+  computed or independently-sourced number.
+- **AC-ALERT-001-13 (dropdown lists exactly five):** verify opening the bell
+  dropdown lists **exactly five** rows (not all currently-existing alerts),
+  each showing the condition label, the description, and the affected record
+  formatted as `CODE · Name`.
+- **AC-ALERT-001-14 (same first five, same order as this screen — the
+  criterion the business decision most turned on):** verify the bell's five
+  rows are identical in content, count, and order to this screen's own first
+  five rows, both sorted High → Medium → Low. **Ordering rationale to record
+  here, not re-derived at test-case-writing time:** the criterion reads "first
+  five in severity order," not "5 most recent," because the `Alert` interface
+  (`frontend/src/lib/alerts.ts`) carries **no timestamp field of any kind** —
+  alerts are a read-time derivation with no persisted record, so there is no
+  creation time to sort by and "most recent" is not computable. Business's
+  first request was "5 most recent"; once shown this was not computable,
+  business confirmed the severity ordering instead (PRD §16 Resolved Question
+  49), so the two surfaces agree by construction (both read the same
+  `useAlerts` hook), not by coincidence of a given dataset. A test case for
+  this criterion must confirm agreement between the two surfaces, not merely
+  that the bell's own five rows are internally sorted.
+- **AC-ALERT-001-15 ("View all alerts" navigation):** verify selecting the
+  dropdown's "View all alerts" control navigates to `ROUTES.NOTIFICATIONS`
+  (`/notifications`) — i.e., to this same screen, P-012 Alerts.
+- **AC-ALERT-001-16 (confirmed absence of acknowledge/dismiss/read-unread/
+  snooze):** verify none of these affordances appears anywhere in the bell
+  dropdown — an absence check (L2), confirmed by the same business decision
+  that resolved the bell's scope, consistent with AC-ALERT-001-09's existing
+  documentation of the same absences on this screen. Not a gap; the badge
+  count is a currently-exists count, not an unseen/unread count.
+- **AC-ALERT-001-17 (bell button accessibility):** verify the bell button
+  exposes an `aria-label` naming its purpose and current count (e.g.,
+  "Notifications, 19 alerts") and an `aria-expanded` attribute reflecting
+  whether the dropdown panel is open.
+
+**Coverage consideration — two surfaces of one requirement.** `AC-ALERT-001`
+(and therefore `TS-ALERT-001`) now spans **two surfaces**: the Alerts screen
+itself (P-012, AC-ALERT-001-01..11) and the header bell in global chrome
+(`AppShell`, Prototype v0.17 §6, AC-ALERT-001-12..17). A test case that
+exercises P-012 directly (e.g., navigating to `/notifications` and reading its
+full list) does **not** exercise the bell's badge, dropdown, truncation-to-five,
+ordering-agreement, or accessibility attributes, and vice versa — a test case
+that only opens the bell does not verify P-012's own full-list rendering,
+per-condition navigation targets, or access gate. `RAISE-TEST-CASES.md` must
+write independent test cases per surface; neither surface's execution may be
+recorded as satisfying the other.
+
+As with every other criterion in this document, **no pass/fail result is
+recorded for AC-ALERT-001-12 through -17 here** — this is a plan-layer sync of
+coverage expectations; formal test execution against the real, running app
+happens at `RAISE-TEST-CASES.md` as a separate, subsequent step.
+
 **TS-WARRANTY-001 removed from the "no blocked items" group 2026-09-05** (AC
 document v0.14 §13, PRD v0.17 §16 Resolved Question 46 — P-018's new NBV
 section). AC-WARRANTY-001-01 through -06 (the Warranty section of P-010/P-018)
@@ -312,7 +378,7 @@ introduced here.
 | TS-MAINT-001 | Q14 Maintenance fields / SLA / vendor model / cost model (workflow shape and state model now confirmed — Resolved Question 33; only SLA, vendor model, cost model, and delegated-approver configuration remain open); Q22 Roles/permissions | Whether the full field set (beyond date/event/status/cost) is complete, only that records/history render (AC-MAINT-001-01/-02). **Stage-transition criteria now testable (2026-08-21):** the 4-stage workflow (User Requisition → Dept Approval (Delegated) → IT Dispatch → Technician Execution) and its state model (`PENDING_DEPT_APPROVAL → PENDING_IT_DISPATCH → PLANNING/IN_PROGRESS/ON_HOLD → DONE`) are business-confirmed (PRD §16 Resolved Question 33; Design §5.1), so AC-MAINT-001-03, -06, -07, -08, -09 are executable for the confirmed state transitions and stage-progress indicator. Remaining NOT TESTABLE YET items: (a) AC-MAINT-001-05's Reject/Request Info resulting state/downstream flow — Prototype §15 shows these as UI actions only with no defined resulting state; (b) delegated-approver configuration rules (*who* may delegate, *to whom*, how delegation is audited) — AC-MAINT-001-04 tests only that an Approve action advances the state, not any delegation authorization rule; (c) SLA per stage, the vendor model (internal technician vs. external vendor dispatch), and the cost model/tracking — the "Priority," "Vendor model," and "Cost incurred" fields shown in the Prototype are placeholders only. **RBAC dependency (AC-MAINT-001-04 through -08):** MVP enforcement level is confirmed as UI-only/client-side (PRD §16 Resolved Question 38; Design §16), backend deferred to Roadmap — this fixes only *where* a permission check would run, not *what* the roles/permissions are; the role list, permission matrix contents, and authentication/delegation mechanism remain TBD (Q22), so these five criteria are executable only for the state-transition behavior itself, not for whether the acting user's role (Dept Approver, IT Dispatcher, Technician) is correctly gated or verified. No behavior is defined for Mark Complete attempted from an invalid state, or for skipped/reversed stages — no test case exists for those cases. |
 | TS-WARRANTY-001 | Warranty section (P-010/P-018): **RESOLVED and CLOSED 2026-09-01**. NBV section of P-018 (AC-WARRANTY-001-07, added 2026-09-05): Q3a NBV per-Asset-Category default useful-life values, tracked as [Open Finding F-03](../project-management/OPEN-FINDINGS.md#blocking-gates-an-mvp-requirement) (OPEN, narrowed, not closed) | **Warranty section — RESOLVED and CLOSED 2026-09-01** (PRD §16 Resolved Question 41, resolving Open Question 15b). Q15 Warranty fields was already resolved 2026-08-29 (PRD §16 Resolved Question 40; Design §5.2; Prototype §14 P-010 — the Warranty domain has exactly one MVP field, `warrantyExpiry`; a draft 8-field proposal was explicitly rejected for MVP, not deferred), closing AC-WARRANTY-001-01/-02. The formerly-open, separate blocker on AC-WARRANTY-001-03 — that the 90-day expiry-window figure was only the PRD §6.7 illustrative business example, not a confirmed generalizable rule — is now closed: the "Expiring" threshold is confirmed as **per-Asset-Category configurable**, defaulting to 90 days, admin-adjustable via the new **P-018 Settings** screen (Design §5.2/§5.4; Prototype §14 P-010, §23A P-018 Settings). AC-WARRANTY-001-03 is rewritten to test this resolved rule directly (no standalone "expiring-assets view" screen is asserted, since none exists). Three new criteria were added and are covered by this suite: **AC-WARRANTY-001-04** (P-018 Warranty section shows all 5 Asset Categories with an editable threshold input defaulting to 90), **AC-WARRANTY-001-05** (editing and saving one category's threshold affects only that category's assets, no cross-category leakage), and **AC-WARRANTY-001-06** (non-admin access/write to P-018 is denied, at the confirmed MVP UI-only/client-side RBAC enforcement level per PRD §16 Resolved Question 38 — no new role list/permission matrix is asserted; role name/backend enforcement remain TBD per Q22, same narrow scope already applied to TS-LOGIN/TS-OPS-002/TS-MAINT-001). **New 2026-09-05 (PRD v0.17 §16 Resolved Question 46; Prototype v0.16 §23A):** P-018 gains a second confirmed configuration section, shape only, not built — a per-Asset-Category **NBV useful-life value** (`NBVSettings: Record<AssetCategory, usefulLifeYears>`). **AC-WARRANTY-001-07** tests that each of the 5 Asset Categories shows an editable "Useful Life (years)" input on P-018's NBV section. It is **NOT TESTABLE YET** for two independent reasons: (1) the NBV section does not exist in `frontend/src/` today — no `NBVSettings` type, service, repository, or UI section has been built; (2) even once built, no default useful-life value per Asset Category can be asserted, since the actual default numbers (PRD §16 Open Question 3a) remain unanswered. The NBV section's existence, shape, and admin-only access gate (same UI-only/client-side MVP enforcement level as the Warranty section) are otherwise confirmed — only the default values and the build itself are outstanding. | Warranty section: none — AC-WARRANTY-001-01 through -06 are all fully testable. No test case has been executed or has passed as of this Test Plan update; writing/updating the corresponding test cases in `RAISE-TEST-CASES.md` for AC-WARRANTY-001-04/-05/-06 and re-executing the suite is a separate, already-underway follow-up. NBV section: whether P-018's NBV section exists and shows the correct default useful-life value per Asset Category — no test case can execute until the section is built and PRD §16 Open Question 3a is answered; the input state to test once built is "unset," not a specific illustrative number. |
 | TS-ORACLE-001 | Q6–Q10 Integration method, sync, mapping, error handling, ownership, source-of-truth, security | Whether the integration itself is correct, only that the four UI states (available/unavailable/error/conflict) render appropriately |
-| TS-ALERT-001 | **Alert trigger rules and severity mapping RESOLVED and CLOSED 2026-09-04** (PRD §16 Resolved Question 44, closing Open Finding F-05's trigger-rules-and-severity cause). `RAISE-ACCEPTANCE-CRITERIA.md` §15 confirms exactly five MVP trigger conditions with a fixed 3-level (High/Medium/Low) severity assigned per condition type — not by days-overdue, asset value, or criticality — plus the correct navigation destination per condition type (Warranty → P-004 Asset Detail; Maintenance ticket → the Maintenance Request detail view in P-009; IT Hardware handover → the Assignment Approval Request detail view in P-008) and read-time derivation with no persisted Alert record (Design §14). AC-ALERT-001-03 through -10 are all fully testable on the business-rule question. **Access gate also RESOLVED and CLOSED 2026-09-04** (PRD v0.16 §16 Resolved Question 45; Design v0.14 §16 "Alerts Screen Access Gate"): AC-ALERT-001-01's "authorized user" gate — previously NOT TESTABLE YET (Open Finding F-08) — is now confirmed as **any authenticated user**, all four roles (`EMPLOYEE`, `IT_STAFF`, `IT_MANAGER`, `ADMIN`), none excluded, enforced per-route in code (`ProtectedRoute allowedRoles`, Alerts route in the unrestricted block). AC-ALERT-001-01 (positive case) and the new **AC-ALERT-001-11** (negative case — unauthenticated visitor redirected to Login, existing `ProtectedRoute` behavior) are both now fully testable. This resolves this one sub-question of Open Finding F-08 for the Alerts screen only — the role/permission-matrix content for every screen other than Alerts remains NOT TESTABLE YET (PRD §16 Q22), and the authentication mechanism itself (PRD §16 Q21) is untouched. **New, separate NOT TESTABLE YET item (replaces the former Q22 role-gate blocker for this suite):** whether Alert rows should eventually be filtered to only those "relevant" to the viewing user (PRD §16 Q22a, newly raised, not decided) — there is no link between the authenticated `User` and an `Employee` record (`User` carries only `id`/`username`/`fullName`/`role`; the Handovers screen, P-008, matches recipients by comparing `fullName` strings as a documented MVP limitation, not a reusable identity link); no criterion tests per-user filtering, and none should be inferred from AC-ALERT-001-01..11 — no `employeeId` field or other `User`↔`Employee` link is proposed. **Separately, an implementation gap, not a business-decision gap:** as of 2026-09-04 only the Warranty Expired condition (AC-ALERT-001-03) is actually built; AC-ALERT-001-04/-05/-06/-07 (Maintenance Ticket Overdue, Warranty Expiring, Maintenance Ticket On Hold, IT Hardware Handover Pending) are specified and testable-once-implemented but cannot execute until built — the same implementation-vs-decision distinction already applied to TS-OPS-002-04..09 (§8's TS-OPS-002 row). **Also carried forward, unresolved, no side picked (Gap 17):** whether the header bell-icon dropdown (`NotificationCenter.tsx` in `AppShell`) is in scope for `RAISE-FR-ALERT-001` at all remains an unreconciled contradiction between PRD §16 Resolved Question 35 (out of RAISE scope) and `ESAPS-UI-FOUNDATION-BASELINE.md` line 88 (maps it to `RAISE-FR-ALERT-001` as EXTEND) — carried forward unresolved by PRD v0.16, Design v0.14, Prototype v0.15, and AC v0.13; no test case in this suite covers the bell icon, and none should be added until that contradiction is reconciled. | Whether the correct conditions actually trigger and display in the running app for the four not-yet-built conditions, and whether alert rows should eventually be filtered per-user (Q22a) — only that, once built, a triggered alert lists severity/description/affected record and navigates correctly when opened, and that the access gate (any authenticated user, all four roles) and its negative case (unauthenticated → Login) behave as confirmed. No pass/fail result for any AC-ALERT-001 criterion is recorded in this document; execution happens at `RAISE-TEST-CASES.md` against the real app. |
+| TS-ALERT-001 | **Alert trigger rules and severity mapping RESOLVED and CLOSED 2026-09-04** (PRD §16 Resolved Question 44, closing Open Finding F-05's trigger-rules-and-severity cause). `RAISE-ACCEPTANCE-CRITERIA.md` §15 confirms exactly five MVP trigger conditions with a fixed 3-level (High/Medium/Low) severity assigned per condition type — not by days-overdue, asset value, or criticality — plus the correct navigation destination per condition type (Warranty → P-004 Asset Detail; Maintenance ticket → the Maintenance Request detail view in P-009; IT Hardware handover → the Assignment Approval Request detail view in P-008) and read-time derivation with no persisted Alert record (Design §14). AC-ALERT-001-03 through -10 are all fully testable on the business-rule question. **Access gate also RESOLVED and CLOSED 2026-09-04** (PRD v0.16 §16 Resolved Question 45; Design v0.14 §16 "Alerts Screen Access Gate"): AC-ALERT-001-01's "authorized user" gate — previously NOT TESTABLE YET (Open Finding F-08) — is now confirmed as **any authenticated user**, all four roles (`EMPLOYEE`, `IT_STAFF`, `IT_MANAGER`, `ADMIN`), none excluded, enforced per-route in code (`ProtectedRoute allowedRoles`, Alerts route in the unrestricted block). AC-ALERT-001-01 (positive case) and the new **AC-ALERT-001-11** (negative case — unauthenticated visitor redirected to Login, existing `ProtectedRoute` behavior) are both now fully testable. This resolves this one sub-question of Open Finding F-08 for the Alerts screen only — the role/permission-matrix content for every screen other than Alerts remains NOT TESTABLE YET (PRD §16 Q22), and the authentication mechanism itself (PRD §16 Q21) is untouched. **New, separate NOT TESTABLE YET item (replaces the former Q22 role-gate blocker for this suite):** whether Alert rows should eventually be filtered to only those "relevant" to the viewing user (PRD §16 Q22a, newly raised, not decided) — there is no link between the authenticated `User` and an `Employee` record (`User` carries only `id`/`username`/`fullName`/`role`; the Handovers screen, P-008, matches recipients by comparing `fullName` strings as a documented MVP limitation, not a reusable identity link); no criterion tests per-user filtering, and none should be inferred from AC-ALERT-001-01..11 — no `employeeId` field or other `User`↔`Employee` link is proposed. **Separately, an implementation gap, not a business-decision gap:** as of 2026-09-04 only the Warranty Expired condition (AC-ALERT-001-03) is actually built; AC-ALERT-001-04/-05/-06/-07 (Maintenance Ticket Overdue, Warranty Expiring, Maintenance Ticket On Hold, IT Hardware Handover Pending) are specified and testable-once-implemented but cannot execute until built — the same implementation-vs-decision distinction already applied to TS-OPS-002-04..09 (§8's TS-OPS-002 row). **Gap 17 RESOLVED and CLOSED 2026-09-05** (PRD v0.18 §16 Resolved Question 49; Design §14 "Header Bell — Second Surface Over the Same Derivation"; Prototype v0.17 §6/§18; AC v0.15 §15). The former unreconciled contradiction between PRD §16 Resolved Question 35 (out of RAISE scope) and `ESAPS-UI-FOUNDATION-BASELINE.md` line 88 (EXTEND) is resolved: Resolved Question 35 refers only to the ESAPS reference page `esaps_ai_template/src/pages/NotificationCenter.tsx`, unchanged and still out of scope; the header bell built in RAISE's own `frontend/src/components/AppShell.tsx` is a different, independently-built artifact, never ported from the ESAPS page, and is confirmed **in scope** for `RAISE-FR-ALERT-001` as a second display surface over the same read-time derivation this screen already uses. **Six new criteria, AC-ALERT-001-12 through -17, are added — the feature is built and shipped, so all six are directly testable now, not NOT TESTABLE YET, and none is added to this row as a blocked item.** No test case previously existed for the bell icon; per this update, `RAISE-TEST-CASES.md` should add test cases covering the badge total (AC-ALERT-001-12), the five-row dropdown content (AC-ALERT-001-13), agreement in content/count/order with this screen's own first five rows (AC-ALERT-001-14), the "View all alerts" navigation to `/notifications` (AC-ALERT-001-15), confirmed absence of acknowledge/dismiss/read-unread/snooze affordances (AC-ALERT-001-16), and the bell button's `aria-label`/`aria-expanded` accessibility attributes (AC-ALERT-001-17) — see §7's narrative note above for full coverage-expectation detail per criterion, including the ordering rationale ("first five by severity," not "5 most recent," because `Alert` carries no timestamp field of any kind). This resolution is unrelated to, and does not affect, the still-open PRD §16 Q22a per-user-filtering item above, which remains open exactly as it was; the bell shows the same alerts to every authenticated user, with no personalization or filtering by user. | Whether the correct conditions actually trigger and display in the running app for the four not-yet-built conditions, and whether alert rows should eventually be filtered per-user (Q22a) — only that, once built, a triggered alert lists severity/description/affected record and navigates correctly when opened, and that the access gate (any authenticated user, all four roles) and its negative case (unauthenticated → Login) behave as confirmed. For the header bell (AC-ALERT-001-12..17): whether the badge total, five-row dropdown, cross-surface ordering agreement, "View all alerts" navigation, confirmed-absent affordances, and accessible-name/expanded-state attributes behave as confirmed — all six are testable now with no blocker; this is a coverage addition to an already-built feature, not a new open question. No pass/fail result for any AC-ALERT-001 criterion (including -12 through -17) is recorded in this document; execution happens at `RAISE-TEST-CASES.md` against the real app. |
 | TS-AUDIT-001 | Q24–Q25 Event taxonomy, retention; Q22 Roles/permissions | Whether all required audit fields are captured, only that Actor/Timestamp/Action/Entity are recorded and immutable; separately, whether the "audit-review access" gate on AC-AUDIT-001-03 is correctly enforced, only that entries are viewable
 | TS-EXEC-001 | Q3a NBV per-Asset-Category default useful-life values, tracked as [Open Finding F-03](../project-management/OPEN-FINDINGS.md#blocking-gates-an-mvp-requirement) (OPEN, narrowed 2026-09-05, not closed) | **Updated 2026-09-05 (PRD v0.17 §16 Resolved Questions 46–48, per confirmed business decision):** the KPI grid grew from eight to **nine** tiles with the addition of a built, live **Utilization** tile (PR #102, 2026-09-05) — identical in substance to TS-DASH (§ above), since P-014 and P-002 document the same built `frontend/src/pages/Dashboard/index.tsx` page. AC-EXEC-001-01 and AC-EXEC-001-02 test the actual shipped nine-tile KPI grid and 10-section list — both fully testable, no remaining gap on tile/section presence. The former single NBV/Risk/Utilization "not yet built" note is **restructured into three separately-reasoned sub-criteria**: **AC-EXEC-001-03a (Utilization)** is now a **passing, testable** criterion, identical in substance to AC-DASH-03a — not a blocked item. **AC-EXEC-001-03b (NBV)** remains **NOT TESTABLE YET**: the formula is confirmed (PRD §16 Resolved Question 46), the sole remaining blocker is the missing default per-Asset-Category useful-life values (PRD §16 Open Question 3a) — "specified but not yet buildable," not "unspecified." **AC-EXEC-001-03c (Risk)** is **confirmed out of MVP scope by business decision** (PRD §16 Resolved Question 47) — not a blocked item, not NOT TESTABLE YET, not a gap, and excluded from this Blocked Items list on that basis |
 | TS-AI-SEARCH-001 | Q18–Q20 Citation, confidence threshold, conflict handling | Whether source attribution is precise/correct, only that it is present |
@@ -392,7 +458,7 @@ respectively — not a concrete UI element or business rule). Consequently:
 | TS-MAINT-001 | AC-MAINT-001 | RAISE-FR-MAINT-001 | §5.1 Maintenance Domain | P-009 |
 | TS-WARRANTY-001 | AC-WARRANTY-001 | RAISE-FR-WARRANTY-001 (Warranty section); `RAISE-FR-EXEC-001` (P-018's new NBV section, AC-WARRANTY-001-07, NOT TESTABLE YET) | §5.2 Warranty Domain (threshold display/state); §5.4 (per-category threshold configuration, resolved 2026-09-01, PRD §16 Resolved Question 41; per-category NBV useful-life configuration, shape-confirmed but not built, added 2026-09-05, PRD §16 Resolved Question 46) | P-010, P-018 |
 | TS-ORACLE-001 | AC-ORACLE-001 | RAISE-FR-ORACLE-001 | §6 Oracle FA Integration | P-011 |
-| TS-ALERT-001 | AC-ALERT-001 | RAISE-FR-ALERT-001 | §14 Alert Architecture (five confirmed MVP trigger conditions / fixed per-condition severity / read-time derivation resolved 2026-09-04, PRD §16 Resolved Question 44); §16 "Alerts Screen Access Gate" (any authenticated user, all four roles, resolved 2026-09-04, PRD §16 Resolved Question 45); also touches P-004, P-008, P-009 for navigation destinations only | P-012 |
+| TS-ALERT-001 | AC-ALERT-001 | RAISE-FR-ALERT-001 | §14 Alert Architecture (five confirmed MVP trigger conditions / fixed per-condition severity / read-time derivation resolved 2026-09-04, PRD §16 Resolved Question 44); §16 "Alerts Screen Access Gate" (any authenticated user, all four roles, resolved 2026-09-04, PRD §16 Resolved Question 45); §14 "Header Bell — Second Surface Over the Same Derivation" (badge/dropdown/five-row-severity-ordering/"View all alerts"/confirmed-absent affordances/accessibility, resolved 2026-09-05, PRD §16 Resolved Question 49, closes Gap 17); also touches P-004, P-008, P-009 for navigation destinations only | P-012 (+ header bell, `AppShell`, Prototype v0.17 §6 — global chrome, not a separate screen ID) |
 | TS-AUDIT-001 | AC-AUDIT-001 | RAISE-FR-AUDIT-001 | §15 Audit Architecture | P-013 |
 | TS-EXEC-001 | AC-EXEC-001 | RAISE-FR-EXEC-001 | As-built `frontend/src/pages/Dashboard/index.tsx` (Prototype §20, same built page as P-002/TS-DASH, nine-tile grid including built, live Utilization, PR #102); §13 Executive Intelligence / §5.4 P-018 NBV Settings section cover only the not-yet-built NBV proposal KPI (AC-EXEC-001-03b); Risk (AC-EXEC-001-03c) is confirmed out of MVP scope, no design area applies | P-014 |
 | TS-AI-SEARCH-001 | AC-AI-SEARCH-001 | RAISE-AI-SEARCH-001 | §9 Natural Language Search | P-015 |
@@ -468,6 +534,14 @@ a placeholder:
   `frontend/src/data/fixtures/mockData.ts` (e.g. IT Hardware/Laptop,
   IT Hardware/Monitor, Mobile/Smartphone), to exercise AC-ASSET-002-01's
   category → type display and AC-ASSET-002-03's expand/drill-down behavior
+- The currently-seeded alert register as a whole (19 alerts live-verified,
+  2026-09-05), to exercise the header bell's AC-ALERT-001-12 (badge total
+  must equal this same figure) and AC-ALERT-001-13/-14 (dropdown's first five
+  rows, currently all High severity — `AST-0003 · iPhone 15 Pro` through
+  `AST-0007 · Cisco Catalyst 9300` — must match this screen's own first five
+  rows in the same severity order). This figure is a snapshot of the current
+  fixture data, not a fixed target value; a change to
+  `frontend/src/data/fixtures/mockData.ts` changes it accordingly
 
 **This test data model must be finalized once the Open Questions in §8
 are resolved** — do not treat the above as a data dictionary.
@@ -553,11 +627,65 @@ the BLOCKED distinctions in §8.
 
 ## Document Status
 
-**Version:** 0.14 (re-synced against `RAISE-ACCEPTANCE-CRITERIA.md` v0.14, 2026-09-05 —
-P-002/P-014 Executive Dashboard KPI grid correction (Utilization built and live; NBV and
-Risk each recorded on their own, no-longer-shared terms) and new P-018 NBV configuration
-section (shape only, not built), per confirmed business decision resolving PRD v0.17 §16
-Resolved Questions 46–48)
+**Version:** 0.15 (re-synced against `RAISE-ACCEPTANCE-CRITERIA.md` v0.15, 2026-09-05 —
+header bell (`AppShell`) confirmed in scope as a second display surface of
+`RAISE-FR-ALERT-001`/`AC-ALERT-001`, per confirmed business decision resolving PRD v0.18
+§16 Resolved Question 49, closing `RAISE-TRACEABILITY-MATRIX.md` Gap 17)
+
+**Change Log — v0.14 → v0.15 (2026-09-05, per confirmed business decision resolving PRD
+v0.18 §16 Resolved Question 49, closing Gap 17):**
+
+1. **Root cause.** `RAISE-ACCEPTANCE-CRITERIA.md` v0.15 §15 adds six new criteria,
+   **AC-ALERT-001-12 through -17**, covering the header bell dropdown in `AppShell`
+   (`frontend/src/components/AppShell.tsx`). This resolves the former unreconciled
+   contradiction between PRD §16 Resolved Question 35 (out of RAISE scope — refers only
+   to the ESAPS reference page `NotificationCenter.tsx`) and
+   `ESAPS-UI-FOUNDATION-BASELINE.md` line 88 (EXTEND): the header bell is a different,
+   independently-built artifact, confirmed in scope as a second display surface over the
+   exact same read-time derivation (`frontend/src/hooks/useAlerts.ts`) P-012 Alerts
+   itself already uses — not a second Alert model, not a second requirement, not a
+   second screen ID. **The feature is built and shipped, so all six new criteria are
+   fully testable now — none is NOT TESTABLE YET, and this Test Plan's blocked-item
+   count does not rise as a result.**
+2. **§7 Test Suites — TS-ALERT-001 row updated.** Screen column now reads "P-012 (+
+   header bell, `AppShell`, global chrome)." A new note records that all six new
+   criteria are fully testable and blocked-item count is unaffected, and flags the
+   coverage consideration that this suite now spans **two surfaces of one requirement**
+   — P-012 Alerts and the header bell (Prototype v0.17 §6) — where a test case
+   exercising one surface does not exercise the other. A detailed narrative paragraph is
+   added after the existing TS-ALERT-001 paragraphs, giving per-criterion coverage
+   expectations for AC-ALERT-001-12 through -17, including the ordering rationale for
+   AC-ALERT-001-14 (first five by severity, not "5 most recent," because `Alert` carries
+   no timestamp field of any kind — alerts are a read-time derivation with no persisted
+   record, so "most recent" is not computable; business confirmed severity ordering
+   instead).
+3. **§8 Blocked Items — TS-ALERT-001 row updated.** The former "carried forward,
+   unresolved, no side picked (Gap 17)" note is replaced with a **RESOLVED and CLOSED**
+   note recording the resolution and naming the six new testable criteria; none is added
+   as a new blocked item. The still-open PRD §16 Q22a per-user-filtering item (unaffected
+   by this update) remains exactly as it was, still open.
+4. **§9 Traceability Matrix row for TS-ALERT-001 updated** to cite Design §14 "Header
+   Bell — Second Surface Over the Same Derivation" and the Prototype v0.17 §6 global
+   chrome location; Screen column updated to name the bell alongside P-012.
+5. **§4 Test Levels — L2 row updated** to cite AC-ALERT-001-16's confirmed-absent-
+   affordances check alongside the existing AC-ALERT-001-11 access-gate negative case.
+6. **§10 Test Data Requirements gained one new bullet** recording the currently-seeded
+   alert register total (19, live-verified 2026-09-05) and the specific five High-
+   severity records the bell dropdown and this screen's own first five rows must agree
+   on, as a snapshot of current fixture data, not a fixed target value.
+7. **No result is recorded for any AC-ALERT-001 criterion in this document, including
+   -12 through -17** — this Test Plan sync plans coverage; formal test execution happens
+   at `RAISE-TEST-CASES.md` against the real, running app, as a separate, subsequent
+   step.
+8. **Explicitly NOT changed by this sync:** `RAISE-ACCEPTANCE-CRITERIA.md`,
+   `OPEN-FINDINGS.md`, and every earlier-layer document are untouched. PRD §16 Open
+   Question 22a (per-user alert filtering) is unaffected and remains open, exactly as it
+   was. Open Finding F-03 is unaffected. All other suites (TS-LOGIN, TS-DASH,
+   TS-ASSET-001, TS-ASSET-001-DETAIL, TS-LIFE-001, TS-ASSET-002, TS-ASSET-003, TS-OPS-001,
+   TS-OPS-002, TS-MAINT-001, TS-WARRANTY-001, TS-ORACLE-001, TS-AUDIT-001, TS-EXEC-001,
+   TS-AI-SEARCH-001, TS-AI-STATES, TS-AI-DOC-001..004) are unaffected by this sync.
+9. Version citations in the document header updated: AC v0.14 → v0.15, PRD v0.17 →
+   v0.18; Design v0.15 and Prototype v0.17 citations confirmed unchanged/current.
 
 **Change Log — v0.13 → v0.14 (2026-09-05, per confirmed business decision resolving PRD
 v0.17 §16 Resolved Questions 46–48 and Open Question 3a):**

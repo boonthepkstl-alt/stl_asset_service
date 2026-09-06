@@ -1,14 +1,10 @@
-import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bell } from 'lucide-react';
 import { AppShell } from '@/components/AppShell';
 import { Card, Badge, EmptyState } from '@/components/ui';
 import { DataTable, type Column } from '@/components/DataTable';
-import { useAssets } from '@/hooks/useAssets';
-import { useTickets } from '@/hooks/useTickets';
-import { useHandovers } from '@/hooks/useHandovers';
-import { useSettings } from '@/hooks/useSettings';
-import { deriveAlerts, type Alert, type AlertSeverity } from '@/lib/alerts';
+import { useAlerts } from '@/hooks/useAlerts';
+import { type Alert, type AlertSeverity } from '@/lib/alerts';
 
 // RAISE-FR-ALERT-001 / Prototype P-012. The five trigger conditions and their fixed
 // severities were confirmed by business on 2026-09-04 (PRD v0.15 §16 Resolved Question 44,
@@ -20,10 +16,15 @@ import { deriveAlerts, type Alert, type AlertSeverity } from '@/lib/alerts';
 // per RAISE-DESIGN.md v0.13 §14. Alerts are read-time only: no alert entity, table or
 // persisted record exists, and this page holds no alert state of its own.
 //
-// Still deliberately NOT implemented here: the header bell-icon dropdown (Gap 17 -- an
-// unreconciled contradiction between PRD §16 Resolved Question 35 and
-// ESAPS-UI-FOUNDATION-BASELINE.md line 88 about whether it belongs to this requirement at
-// all), and any acknowledge/dismiss/read-unread/snooze behaviour, which is out of MVP scope.
+// The header bell-icon dropdown IS now part of this requirement -- Gap 17 was resolved on
+// 2026-09-05 (PRD §16 Resolved Question 49) in favour of the PRD: the ESAPS page
+// NotificationCenter.tsx stays out of scope per Resolved Question 35, but RAISE's own
+// AppShell bell is a different artifact and is in scope. It shares this page's derivation
+// through hooks/useAlerts.ts and shows the first five in the same severity order, so the
+// two surfaces cannot disagree.
+//
+// Still deliberately NOT implemented: acknowledge/dismiss/read-unread/snooze behaviour,
+// which remains out of MVP scope and was not touched by Resolved Question 49.
 
 const SEVERITY_VARIANT: Record<AlertSeverity, 'error' | 'warning' | 'neutral'> = {
   High: 'error',
@@ -33,26 +34,7 @@ const SEVERITY_VARIANT: Record<AlertSeverity, 'error' | 'warning' | 'neutral'> =
 
 export function AlertsPage() {
   const navigate = useNavigate();
-  const { assets, loading: assetsLoading } = useAssets({});
-  const { tickets, loading: ticketsLoading } = useTickets({});
-  const { handovers, loading: handoversLoading } = useHandovers({});
-  const { settings: platformSettings } = useSettings();
-
-  const loading = assetsLoading || ticketsLoading || handoversLoading;
-
-  const alerts = useMemo<Alert[]>(
-    () =>
-      deriveAlerts({
-        assets,
-        tickets,
-        handovers,
-        // Same lookup the Assets list and Asset Detail use -- 90 is the seeded default, not a
-        // hardcoded rule (AC-WARRANTY-001-03 / R-17).
-        warrantyThresholdFor: (category) =>
-          platformSettings?.warranty.expiringThresholdDaysByCategory[category] ?? 90,
-      }),
-    [assets, tickets, handovers, platformSettings]
-  );
+  const { alerts, loading } = useAlerts();
 
   const columns: Column<Alert>[] = [
     {

@@ -2,9 +2,9 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Test Cases
-**Version:** 0.21 Draft
+**Version:** 0.22 Draft
 **Status:** Draft for Test Case Review
-**Source:** [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.13 §7 (Test Suites) + §8 (Blocked Items) + §8.1 (Fully-Blocked Suites — AI Document Intelligence Capabilities) + §3.3 (PRD §10 NFR Backlog — No Suite), expanding [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.13
+**Source:** [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.14 §7 (Test Suites) + §8 (Blocked Items) + §8.1 (Fully-Blocked Suites — AI Document Intelligence Capabilities) + §3.3 (PRD §10 NFR Backlog — No Suite), expanding [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.14
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
 
@@ -130,17 +130,45 @@ F-22](../project-management/OPEN-FINDINGS.md#confirmed-via-test-execution-not-bl
 Assets/NBV/Risk/Warranty Expiry tiles; "Asset by Category"/"Lifecycle / Maintenance
 Overview"/"Recent Alerts" sections). Formal test execution on 2026-08-29 confirmed none of
 that wireframe was ever built. Per explicit business decision on F-22, all three cases
-below are rewritten against the actually shipped `frontend/src/pages/Dashboard/index.tsx`
-page (`RAISE-PROTOTYPE.md` §8; `RAISE-ACCEPTANCE-CRITERIA.md` §5). This is a scope/spec
-correction to match reality, not a new requirement, and **does not itself report a new
-PASS/FAIL execution result** — re-running formal execution against the rewritten steps
-below is deferred to a future execution sweep.
+below were rewritten against the actually shipped `frontend/src/pages/Dashboard/index.tsx`
+page (`RAISE-PROTOTYPE.md` §8; `RAISE-ACCEPTANCE-CRITERIA.md` §5). `TC-DASH-01`/`TC-DASH-02`
+and `TC-DASH-03` were then formally executed 2026-08-31 against that then-shipped **8-tile**
+grid and the single, combined "none of NBV/Risk/Utilization is present" criterion, all
+recorded **PASS** (`RAISE-TRACEABILITY-MATRIX.md` §3/§4).
+
+**Status Note — 2026-09-05, prior PASS SUPERSEDED by criterion change, not invalidated by
+regression (PRD v0.17 §16 Resolved Questions 46–48; `RAISE-ACCEPTANCE-CRITERIA.md` v0.14 §5;
+`RAISE-TEST-PLAN.md` v0.14 §7/§8; PR #102, commit `321265f`, merged 2026-09-05):** a built,
+live **Utilization** tile shipped, growing the KPI grid from eight to nine tiles. This must
+be handled honestly, not silently rewritten: **the 2026-08-31 PASS recorded for
+`TC-DASH-01` and for `TC-DASH-03` was valid at the time it was executed** — on that date the
+grid genuinely had eight tiles and genuinely carried none of NBV/Risk/Utilization. **That
+PASS is now superseded by the criterion change, not by any regression:** re-running
+`TC-DASH-01`'s original steps today would FAIL a literal "exactly eight tiles" reading, and
+re-running `TC-DASH-03`'s original steps (checking for the *absence* of a Utilization tile)
+would also now FAIL — not because anything regressed, but because the thing it checked for
+absence now correctly exists. Both historical PASS records and their 2026-08-31 execution
+date are preserved below as history, not deleted or quietly overwritten.
+
+Consequently: `TC-DASH-01`'s Expected Result is rewritten below to the current nine-tile
+grid; its prior PASS is recorded as history only and is **not** re-affirmed against the new
+expected result. `TC-DASH-02` is unaffected (the ten-section list did not change) and its
+2026-08-31 PASS stands unmodified. The former single `TC-DASH-03` is **restructured into
+three separately-reasoned cases**, `TC-DASH-03a`/`-03b`/`-03c`, matching the AC document's
+own restructuring into `AC-DASH-03a`/`-03b`/`-03c` (§5), because Utilization, NBV, and Risk
+are no longer in the same state as each other — `TC-DASH-03`'s prior PASS covered all three
+KPIs' absence as one undifferentiated fact, and that fact is now split three ways, one of
+which (Utilization) is no longer true. **No new or restructured case below is marked PASS
+by this update** — `TC-DASH-01` (against its new expected result), `TC-DASH-03a`, and
+`TC-DASH-03b` are each left unexecuted for a separate, subsequent formal execution sweep.
 
 | TC ID | Title | Steps | Test Data | Expected Result | Blocked |
 |---|---|---|---|---|---|
-| TC-DASH-01 | KPI grid displays all eight tiles | 1. Log in. 2. Land on Dashboard (P-002). | Any asset/maintenance/warranty/license dataset | The KPI grid displays all eight tiles: Total Assets, Available, Assigned, In Maintenance, Expired Warranty, Software Licenses, Monthly Depreciation, and Monthly Cost | No — fully testable against the as-built page (Open Finding F-22). Presence only: Monthly Depreciation and Monthly Cost are explicitly **illustrative** (Prototype §8 — no depreciation model has been built), and none of the eight tiles has a PRD-defined field list, formula, or threshold beyond what the page computes from existing data; this case asserts the tiles are *displayed*, not that their figures are correct. |
-| TC-DASH-02 | Ten dashboard sections display | 1. Ensure asset/maintenance/warranty/license data exists. 2. Land on Dashboard (P-002). | Asset/maintenance/warranty/license dataset covering at least one record relevant to each section | All ten sections are displayed: AI Insights, AI Portfolio Health, Oracle FA Reconciliation, Asset Lifecycle, Department Distribution, Asset Status, Asset Type, Pending Approvals, Recent Activities, and Maintenance Calendar | No — fully testable against the as-built page (Open Finding F-22). Presence only, not calculation/content correctness (`RAISE-ACCEPTANCE-CRITERIA.md` §5 caveat). |
-| TC-DASH-03 | NBV/Risk/Utilization tiles confirmed absent from the shipped KPI grid | 1. Land on Dashboard (P-002) with the KPI grid from `TC-DASH-01` displayed. 2. Inspect the grid for tiles labeled NBV, Risk, or Utilization. | Same dataset as `TC-DASH-01` | None of the three PRD-proposal KPIs (`RAISE-FR-EXEC-001`) is present in the shipped grid — this documents today's gap accurately; the expected result is absence, not a target for any of the three to be displayed | **BLOCKED (partial)** — the absence-check itself is testable now and expected to pass structurally against the current build. **NOT TESTABLE YET:** whether/when NBV, Risk, or Utilization tiles should be added to the dashboard, and their formulas, thresholds, and placement, since these remain fully undefined (PRD §16 Q3–Q4, tracked as [Open Finding F-03](../project-management/OPEN-FINDINGS.md#blocking-gates-an-mvp-requirement)) — a separate, not-yet-scheduled enhancement (Prototype §8 "NBV/Risk/Utilization — Proposal KPIs, Not Yet Implemented"). Utilization's *definition* remains separately resolved (2026-08-21, PRD §16 Resolved Question 27 — assignment-time-based, Disposed/Retired/Under-Maintenance excluded from the denominator) and unaffected by this correction; only its dashboard *implementation* is outstanding, so this case must not be read as confirming a Utilization tile is required to pass. |
+| TC-DASH-01 | KPI grid displays all nine tiles | 1. Log in. 2. Land on Dashboard (P-002). | Any asset/maintenance/warranty/license dataset (15-asset seeded register, `frontend/src/data/fixtures/mockData.ts`) | The KPI grid displays all nine tiles: Total Assets, Available, Assigned, **Utilization**, In Maintenance, Expired Warranty, Software Licenses, Monthly Depreciation, and Monthly Cost | No — fully testable against the as-built page. Presence only: Monthly Depreciation and Monthly Cost are explicitly **illustrative** (Prototype §8 — no depreciation model has been built), and none of the other seven tiles has a PRD-defined field list, formula, or threshold beyond what the page computes from existing data; this case asserts the tiles are *displayed*, not that their figures are correct. **Historical PASS SUPERSEDED, not re-affirmed:** formally executed 2026-08-31 against the then-shipped **eight**-tile grid, recorded PASS (`RAISE-TRACEABILITY-MATRIX.md` §3/§4) — that execution was valid for what it tested at the time, but the grid genuinely grew to nine tiles on 2026-09-05 (PR #102, Utilization). This row's Expected Result is now the nine-tile grid; the 2026-08-31 PASS is preserved above as history but does not cover it. **Not yet re-executed against the nine-tile version by this update.** |
+| TC-DASH-02 | Ten dashboard sections display | 1. Ensure asset/maintenance/warranty/license data exists. 2. Land on Dashboard (P-002). | Asset/maintenance/warranty/license dataset covering at least one record relevant to each section | All ten sections are displayed: AI Insights, AI Portfolio Health, Oracle FA Reconciliation, Asset Lifecycle, Department Distribution, Asset Status, Asset Type, Pending Approvals, Recent Activities, and Maintenance Calendar | No — fully testable against the as-built page. **PASS**, formally executed 2026-08-31 (`RAISE-TRACEABILITY-MATRIX.md` §3/§4). Unaffected by the 2026-09-05 Utilization change — the section list did not change; this historical PASS is unmodified, not superseded. |
+| TC-DASH-03a | Utilization tile displays a percentage and an assigned/assignable sub-label | 1. Log in. 2. Navigate to `/dashboard`. 3. Locate the Utilization tile within the KPI grid tested by `TC-DASH-01`. 4. Read its displayed percentage value and sub-label. | 15-asset seeded register (`frontend/src/data/fixtures/mockData.ts`), of which 12 assets are currently assignable (Disposed/Retired/Under-Maintenance excluded from the denominator per PRD §16 Resolved Questions 27/29) and 8 of those 12 are currently assigned | The Utilization tile displays a percentage value (e.g. "66.7%") and a sub-label naming how many assets are currently assigned out of how many are currently assignable (e.g. "8 of 12 assignable assets") — this tests actual displayed behavior, not mere presence, since Utilization's definition and mechanics are fully resolved | No — fully testable; **not yet formally executed by this update, left unexecuted for a subsequent execution sweep — no PASS is claimed here.** Supporting context only, **not a substitute for formal execution of this case:** automated unit coverage already exists at `frontend/src/lib/utilization.test.ts` (6 unit tests) and the Dashboard page's own test asserts the literal strings "66.7%" and "8 of 12 assignable assets"; the tile was also live-verified during PR #102 (per `RAISE-ACCEPTANCE-CRITERIA.md` §5's "Utilization — BUILT AND LIVE" note). None of that automated/PR-review evidence is recorded here as a formal `TC-DASH-03a` execution result. |
+| TC-DASH-03b | NBV tile confirmed absent, blocked on missing default useful-life values | 1. Land on Dashboard (P-002) with the KPI grid from `TC-DASH-01` displayed. 2. Inspect the grid for a tile labeled NBV. | Same dataset as `TC-DASH-01` | No NBV tile is present in the shipped grid — this documents today's accurate absence, not a target for NBV to be displayed | **BLOCKED (partial)** — the absence-check itself is testable now and expected to pass structurally against the current build; **not yet formally executed by this update, no PASS claimed.** **NOT TESTABLE YET beyond the absence-check, and precisely why:** the NBV formula itself is confirmed (PRD §16 Resolved Question 46 — straight-line depreciation from `purchaseDate`/`purchaseCost`, salvage value zero, clamped at 0, useful life configurable per Asset Category via P-018) — this is a **specified but not yet buildable** state, not an "unspecified" one. The sole remaining blocker is the missing default per-Asset-Category useful-life values (PRD §16 Open Question 3a), tracked as [Open Finding F-03](../project-management/OPEN-FINDINGS.md#blocking-gates-an-mvp-requirement) (**OPEN, narrowed 2026-09-05, not closed**). No illustrative/placeholder value is asserted for any category. |
+| TC-DASH-03c | Risk tile — confirmed out of MVP scope | N/A — see Blocked column | N/A | N/A | **OUT OF SCOPE FOR MVP** — the Executive/Main Dashboard will not carry a Risk KPI tile for MVP, by confirmed business decision (PRD §16 Resolved Question 47). This is **not** a blocked test case and **not** a gap — retained as a row here only to preserve 1:1 traceability against `AC-DASH-03c`, so it is not later misread as missing coverage. PRD §16 Q4 (the exact definition of risk) remains open, but it belongs entirely to `RAISE-AI-RISK-001` (Pilot/Roadmap), not to this screen. Re-activate only if Risk is later promoted to MVP scope for this screen through the standard PRD → Design → Prototype → AC → Test Plan chain. |
 
 ---
 
@@ -539,6 +567,16 @@ re-verified live *after* the live-browser session's IT Hardware edit, since edit
 test independently confirms the default-seed behavior), but the live-browser pass alone
 did not re-observe it.
 
+**Status Note — 2026-09-05, suite gains one new blocked criterion, not a re-execution
+(PRD v0.17 §16 Resolved Question 46; `RAISE-ACCEPTANCE-CRITERIA.md` v0.14 §13;
+`RAISE-TEST-PLAN.md` v0.14 §7/§8; Prototype v0.16 §23A):** P-018 Settings gained a second
+confirmed configuration section — a per-Asset-Category NBV useful-life value, shape only,
+not built. A new criterion, `AC-WARRANTY-001-07`, was added, and `TC-WARRANTY-001-07` is
+added below to match it 1:1, marked **BLOCKED (partial)**. This does **not** touch
+`TC-WARRANTY-001-01` through `-06` above — their existing PASS results (2026-09-01) are
+unaffected, unmodified, and not superseded, since the Warranty section of P-018 (as opposed
+to the new NBV section) did not change.
+
 **`TC-WARRANTY-001-06` formally executed 2026-09-01, with a root cause found and fixed
 first.** Formal execution surfaced a real defect, not a documentation gap: the Settings
 route (`ROUTES.SETTINGS`) was **not** actually gated by role in `frontend/src/App.tsx`
@@ -574,6 +612,7 @@ Administration. Evidence:
 | TC-WARRANTY-001-04 | P-018 Settings Warranty section shows all 5 categories with editable threshold inputs defaulting to 90 | 1. Log in as an admin. 2. Open Settings (P-018) and its Warranty section. | Fresh/default `WarrantySettings` (no prior edits) | Each of the 5 current Asset Categories (IT Hardware, Mobile, Office Equipment, Infrastructure, Media Equipment) shows an editable "Days before expiry to flag as Expiring" number input, defaulting to **90** | No — **PASS**, formally executed 2026-09-01: automated test in `frontend/src/services/settings-service.test.ts` confirms the 90-day seed for every category at the service layer; live-browser pass confirmed all 5 categories render with a "90" default input each (see Status Note above for the one caveat: the default was not re-observed live after the IT Hardware edit in the same session, only via the automated seed test) |
 | TC-WARRANTY-001-05 | Editing/saving one category's threshold does not affect other categories | 1. As an admin on P-018 Settings > Warranty, change one Asset Category's threshold value. 2. Select Save Changes. 3. Open assets in the changed category and assets in other, unchanged categories. | IT Hardware threshold changed from 90 to 5000; Mobile and other categories left at 90 | Assets in the changed category (IT Hardware) recompute their Warranty badge/state per the new threshold; assets in other, unchanged categories (e.g., Mobile) retain their existing threshold and are unaffected — no cross-category leakage | No — **PASS**, formally executed 2026-09-01: automated test in `frontend/src/services/settings-service.test.ts` confirms `updateSettings` merges a per-category change without clobbering others; live-browser pass confirmed MacBook Pro/Dell UltraSharp Monitor (IT Hardware) flipped to "Expiring" while iPhone 15 Pro (Mobile, already expired) still showed "Expired" (see Status Note above) |
 | TC-WARRANTY-001-06 | Non-admin access/write to P-018 Settings is denied | 1. Log in as a non-admin user. 2. Attempt to navigate to Settings (P-018) and/or edit a Warranty threshold. | 1 non-admin user session | Access and/or write is denied at the confirmed MVP UI-only/client-side RBAC enforcement level (`RAISE-NFR-SEC-RBAC-001`, PRD §16 Resolved Question 38) — this case tests only that a denial exists at the UI layer, not any specific role name or backend enforcement (role list/permission matrix remain TBD, PRD §16 Q22) | No — **PASS**, formally executed 2026-09-01. A real defect was found and fixed first: the Settings route was not actually role-gated in `frontend/src/App.tsx` (it sat in the general authenticated-user route block, not the ADMIN-only `ProtectedRoute allowedRoles={['ADMIN']}` block already used for Administration/User Management/Role Management). Fixed by moving the Settings route into that same ADMIN-only block — no new RBAC mechanism invented. Automated: 2 new tests in `frontend/src/App.rbac.test.tsx` (non-ADMIN redirected to Forbidden; ADMIN allowed through), full suite 153/153 passing. Live-browser: EMPLOYEE-role session hitting `/settings` rendered the Forbidden page ("403 — Access denied"); ADMIN-role session hitting `/settings` rendered the real Settings page. See §12 Status Note for full evidence |
+| TC-WARRANTY-001-07 | P-018 Settings NBV section shows all 5 categories with editable useful-life inputs | 1. Log in as an admin. 2. Open Settings (P-018) and its NBV section. 3. Inspect each of the 5 current Asset Categories' "Useful Life (years)" input. | 5 current Asset Categories (IT Hardware, Mobile, Office Equipment, Infrastructure, Media Equipment); no illustrative/placeholder default value is asserted | Each of the 5 current Asset Categories shows an editable "Useful Life (years)" number input, following the same shape as the Warranty section's per-category threshold input (`NBVSettings: Record<AssetCategory, usefulLifeYears>`, per Prototype §23A) | **BLOCKED (partial)** — added new 2026-09-05 for the new `AC-WARRANTY-001-07` (PRD v0.17 §16 Resolved Question 46; Prototype v0.16 §23A). No PASS is or can be claimed. Blocked for two independent, precisely stated reasons, neither of which is "unspecified": (1) **the section is not built** — no `NBVSettings` type, service, repository, or UI section exists anywhere in `frontend/src/` today (Prototype §23A Status Banner), so step 2 above cannot be performed against the real running app; (2) **even once built, no default useful-life value per Asset Category can be asserted** — the formula this section feeds is confirmed (PRD §16 Resolved Question 46 — straight-line depreciation, salvage value zero, clamped at 0), but the actual default-useful-life-per-Asset-Category numbers (PRD §16 Open Question 3a) remain unanswered; business was asked directly and answered "I will specify these myself." Tracked as [Open Finding F-03](../project-management/OPEN-FINDINGS.md#blocking-gates-an-mvp-requirement) (OPEN, narrowed, not closed). This is "specified but not yet buildable," the same category of block as `TC-DASH-03b`/`TC-EXEC-001-03b`, not "unspecified." The section's existence, shape, and admin-only access gate are otherwise confirmed by Prototype §23A — only the default values and the build itself are outstanding, and the input state to test once built is "unset," not a specific illustrative number. |
 
 ---
 
@@ -826,33 +865,45 @@ F-22](../project-management/OPEN-FINDINGS.md#confirmed-via-test-execution-not-bl
 `TC-EXEC-001-01`/`-02` previously asserted the stale "Executive Asset Intelligence" wireframe
 (NBV/Risk/Utilization tiles; "Asset Overview"/"Executive Summary" sections). Formal test
 execution on 2026-08-26 confirmed none of that wireframe was ever built. Per explicit
-business decision on F-22, both cases below are rewritten against the actually shipped
+business decision on F-22, both cases were rewritten against the actually shipped
 `frontend/src/pages/Dashboard/index.tsx` page — the same built page as P-002 (see §4
 `TC-DASH-*` above) — per `RAISE-PROTOTYPE.md` §20 and `RAISE-ACCEPTANCE-CRITERIA.md` §17.
-This is a scope/spec correction to match reality — it does not add, remove, or reinterpret
-`RAISE-FR-EXEC-001` — and **does not itself report a new PASS/FAIL execution result**;
-re-running formal execution against the rewritten steps below is deferred to a future
-execution sweep.
+`TC-EXEC-001-01`/`-02` were then formally executed against the then-shipped **8-tile** grid
+and 10-section list, recorded **PASS** (`RAISE-TRACEABILITY-MATRIX.md` §3/§4). At that time,
+`AC-EXEC-001` (§17) did not carry a separate numbered "-03" criterion for NBV/Risk/
+Utilization absence — it was documented only as a narrative note — so no `TC-EXEC-001-03`
+existed; the substance was instead carried as an explanatory note pointing back to
+`TC-DASH-03` (§4).
+
+**Status Note — 2026-09-05, prior PASS SUPERSEDED by criterion change, not invalidated by
+regression (PRD v0.17 §16 Resolved Questions 46–48; `RAISE-ACCEPTANCE-CRITERIA.md` v0.14 §17;
+`RAISE-TEST-PLAN.md` v0.14 §7/§8; PR #102, commit `321265f`, merged 2026-09-05):** the built,
+live **Utilization** tile shipped (identical page to P-002/TS-DASH), growing the KPI grid
+from eight to nine tiles, and `AC-EXEC-001` (§17) was restructured into numbered
+`AC-EXEC-001-03a`/`-03b`/`-03c`, matching `AC-DASH-03a`/`-03b`/`-03c` (§5). This is handled
+the same way as §4 above, honestly rather than silently: **the prior `TC-EXEC-001-01` PASS
+was valid at the time it was executed** (the grid genuinely had eight tiles on that date),
+and **is now superseded by the criterion change, not by any regression** — re-running its
+original steps today against the now-nine-tile grid would FAIL a literal "exactly eight
+tiles" reading, precisely because Utilization was built and shipped correctly. The historical
+PASS record and its execution date are preserved below as history, not deleted or quietly
+overwritten. `TC-EXEC-001-01`'s Expected Result is rewritten below to the current nine-tile
+grid; its prior PASS is recorded as history only and is **not** re-affirmed against the new
+expected result. `TC-EXEC-001-02` is unaffected (the ten-section list did not change) and its
+PASS stands unmodified. Three new cases are added 1:1 against the newly numbered
+`AC-EXEC-001-03a`/`-03b`/`-03c` — `TC-EXEC-001-03a` (Utilization), `-03b` (NBV), `-03c`
+(Risk) — mirroring `TC-DASH-03a`/`-03b`/`-03c` exactly, since P-014 and P-002 document the
+same built page. **No new or restructured case below is marked PASS by this update** —
+`TC-EXEC-001-01` (against its new expected result) and `TC-EXEC-001-03a`/`-03b` are each left
+unexecuted for a separate, subsequent formal execution sweep.
 
 | TC ID | Title | Steps | Test Data | Expected Result | Blocked |
 |---|---|---|---|---|---|
-| TC-EXEC-001-01 | KPI grid displays all eight tiles (Executive Dashboard) | 1. Log in as Executive. 2. Open Executive Dashboard (P-014). | Org-level asset dataset | The KPI grid displays all eight tiles: Total Assets, Available, Assigned, In Maintenance, Expired Warranty, Software Licenses, Monthly Depreciation, and Monthly Cost | No — fully testable; identical shipped grid to `TC-DASH-01` since P-014 and P-002 document the same built page (Open Finding F-22). Same Monthly Depreciation/Monthly Cost illustrative-figures caveat and presence-only scope from `TC-DASH-01` apply. |
-| TC-EXEC-001-02 | Ten dashboard sections display (Executive Dashboard) | 1. Open Executive Dashboard (P-014) with the dashboard displayed. | Org-level asset/maintenance/warranty/license dataset | All ten sections are present: AI Insights, AI Portfolio Health, Oracle FA Reconciliation, Asset Lifecycle, Department Distribution, Asset Status, Asset Type, Pending Approvals, Recent Activities, and Maintenance Calendar | No — fully testable; identical shipped section list to `TC-DASH-02`. |
-
-**Note — NBV/Risk absence, not a numbered AC criterion (unlike AC-DASH-03):** unlike AC-DASH
-(§5 of the AC document), `AC-EXEC-001` (§17) does not carry a separate numbered "-03"
-criterion for NBV/Risk absence — it is documented only as a narrative "NOT TESTABLE YET
-(NBV/Risk — not yet built)" note below AC-EXEC-001-01/-02. Per this document's own TC ID
-convention (§2 — no test case without a matching AC ID), no `TC-EXEC-001-03` is created.
-The substance is identical to `TC-DASH-03` (§4 above): NBV, Risk, and Utilization are
-proposal-defined KPIs under `RAISE-FR-EXEC-001` that do not appear in the shipped grid
-tested by `TC-EXEC-001-01`; NBV and Risk formulas, thresholds, and dashboard placement
-remain fully undefined (PRD §16 Q3–Q4, tracked as [Open Finding
-F-03](../project-management/OPEN-FINDINGS.md#blocking-gates-an-mvp-requirement)) — a
-separate, not-yet-scheduled enhancement, not a silently dropped requirement. Utilization's
-*definition* remains separately resolved (2026-08-21, PRD §16 Resolved Question 27) and
-unaffected; only its dashboard implementation is outstanding. This note carries no PASS/FAIL
-weight of its own and is not counted in the §19 Test Case Summary totals for TS-EXEC-001.
+| TC-EXEC-001-01 | KPI grid displays all nine tiles (Executive Dashboard) | 1. Log in as Executive. 2. Open Executive Dashboard (P-014). | Org-level asset dataset (same 15-asset seeded register as P-002) | The KPI grid displays all nine tiles: Total Assets, Available, Assigned, **Utilization**, In Maintenance, Expired Warranty, Software Licenses, Monthly Depreciation, and Monthly Cost | No — fully testable; identical shipped grid to `TC-DASH-01` since P-014 and P-002 document the same built page. Same Monthly Depreciation/Monthly Cost illustrative-figures caveat and presence-only scope from `TC-DASH-01` apply. **Historical PASS SUPERSEDED, not re-affirmed:** formally executed against the then-shipped **eight**-tile grid, recorded PASS (`RAISE-TRACEABILITY-MATRIX.md` §3/§4) — valid for what it tested at the time, but the grid genuinely grew to nine tiles on 2026-09-05 (PR #102, Utilization). This row's Expected Result is now the nine-tile grid; the prior PASS is preserved above as history but does not cover it. **Not yet re-executed against the nine-tile version by this update.** |
+| TC-EXEC-001-02 | Ten dashboard sections display (Executive Dashboard) | 1. Open Executive Dashboard (P-014) with the dashboard displayed. | Org-level asset/maintenance/warranty/license dataset | All ten sections are present: AI Insights, AI Portfolio Health, Oracle FA Reconciliation, Asset Lifecycle, Department Distribution, Asset Status, Asset Type, Pending Approvals, Recent Activities, and Maintenance Calendar | No — fully testable; identical shipped section list to `TC-DASH-02`. **PASS**, formally executed. Unaffected by the 2026-09-05 Utilization change — the section list did not change; this historical PASS is unmodified, not superseded. |
+| TC-EXEC-001-03a | Utilization tile displays a percentage and an assigned/assignable sub-label (Executive Dashboard) | 1. Log in as Executive. 2. Open Executive Dashboard (P-014). 3. Locate the Utilization tile within the KPI grid tested by `TC-EXEC-001-01`. 4. Read its displayed percentage value and sub-label. | Same 15-asset seeded register as `TC-DASH-03a` (12 assignable, 8 currently assigned) | The Utilization tile displays a percentage value (e.g. "66.7%") and a sub-label naming how many assets are currently assigned out of how many are currently assignable — identical in substance to `TC-DASH-03a`, since P-014 and P-002 document the same built page | No — fully testable; **not yet formally executed by this update, left unexecuted for a subsequent execution sweep — no PASS is claimed here.** Supporting context only, **not a substitute for formal execution of this case:** the same automated coverage cited under `TC-DASH-03a` (`frontend/src/lib/utilization.test.ts`, 6 unit tests; Dashboard page test asserting "66.7%" / "8 of 12 assignable assets") applies here, since it is the same built page, plus PR #102 live verification. None of that is recorded here as a formal `TC-EXEC-001-03a` execution result. |
+| TC-EXEC-001-03b | NBV tile confirmed absent, blocked on missing default useful-life values (Executive Dashboard) | 1. Open Executive Dashboard (P-014) with the KPI grid from `TC-EXEC-001-01` displayed. 2. Inspect the grid for a tile labeled NBV. | Same dataset as `TC-EXEC-001-01` | No NBV tile is present in the shipped grid — this documents today's accurate absence, not a target for NBV to be displayed | **BLOCKED (partial)** — identical reasoning to `TC-DASH-03b`: the absence-check itself is testable now and expected to pass structurally; **not yet formally executed by this update, no PASS claimed.** The NBV formula is confirmed (PRD §16 Resolved Question 46) — **specified but not yet buildable**, not unspecified — the sole remaining blocker is the missing default per-Asset-Category useful-life values (PRD §16 Open Question 3a), tracked as [Open Finding F-03](../project-management/OPEN-FINDINGS.md#blocking-gates-an-mvp-requirement) (**OPEN, narrowed 2026-09-05, not closed**). No illustrative/placeholder value is asserted for any category. |
+| TC-EXEC-001-03c | Risk tile — confirmed out of MVP scope (Executive Dashboard) | N/A — see Blocked column | N/A | N/A | **OUT OF SCOPE FOR MVP** — the Executive Dashboard will not carry a Risk KPI tile for MVP, by confirmed business decision (PRD §16 Resolved Question 47), identical to `TC-DASH-03c`. This is **not** a blocked test case and **not** a gap — retained as a row here only to preserve 1:1 traceability against `AC-EXEC-001-03c`. PRD §16 Q4 (definition of risk) remains open but belongs entirely to `RAISE-AI-RISK-001` (Pilot/Roadmap). Re-activate only if Risk is later promoted to MVP scope for this screen through the standard PRD → Design → Prototype → AC → Test Plan chain. |
 
 ---
 
@@ -1027,7 +1078,7 @@ been formally executed and are PASS**.
 | Suite | Total TCs | Fully Testable | Partially Blocked | Blocked (Full) | Out of Scope |
 |---|---|---|---|---|---|
 | TS-LOGIN | 3 | 0 | 3 | 0 | 0 |
-| TS-DASH | 3 | 2 | 1 | 0 | 0 |
+| TS-DASH | 5 | 3 | 1 | 0 | 1 (`TC-DASH-03c` — Risk, confirmed out of MVP scope) |
 | TS-ASSET-001 | 4 | 3 | 1 | 0 | 0 |
 | TS-ASSET-001-DETAIL | 2 | 2 | 0 | 0 | 0 |
 | TS-LIFE-001 | 4 | 0 | 3 | 0 | 1 (`TC-LIFE-001-03` — Disposal, Enterprise Roadmap) |
@@ -1036,18 +1087,66 @@ been formally executed and are PASS**.
 | TS-OPS-001 | 3 | 3 | 0 | 0 | 0 |
 | TS-OPS-002 | 9 | 9 | 0 | 0 | 0 |
 | TS-MAINT-001 | 9 | 3 | 6 | 0 | 0 |
-| TS-WARRANTY-001 | 6 | 6 | 0 | 0 | 0 |
+| TS-WARRANTY-001 | 7 | 6 | 1 | 0 | 0 |
 | TS-ORACLE-001 | 4 | 3 | 1 | 0 | 0 |
 | TS-ALERT-001 | 11 | 11 | 0 | 0 | 0 |
 | TS-AUDIT-001 | 3 | 1 | 2 | 0 | 0 |
-| TS-EXEC-001 | 2 | 2 | 0 | 0 | 0 |
+| TS-EXEC-001 | 5 | 3 | 1 | 0 | 1 (`TC-EXEC-001-03c` — Risk, confirmed out of MVP scope) |
 | TS-AI-SEARCH-001 | 3 | 2 | 1 | 0 | 0 |
 | TS-AI-STATES | 5 | 5 | 0 | 0 | 0 |
 | TS-AI-DOC-001 | 1 | 0 | 0 | 1 | 0 |
 | TS-AI-DOC-002 | 1 | 0 | 0 | 1 | 0 |
 | TS-AI-DOC-003 | 1 | 0 | 0 | 1 | 0 |
 | TS-AI-DOC-004 | 1 | 0 | 0 | 1 | 0 |
-| **Total** | **81** | **56** | **20** | **4** | **1** |
+| **Total** | **87** | **58** | **22** | **4** | **3** |
+
+**TS-DASH, TS-EXEC-001, and TS-WARRANTY-001 updated 2026-09-05 (sync to `RAISE-TEST-PLAN.md`
+v0.14 / `RAISE-ACCEPTANCE-CRITERIA.md` v0.14's just-corrected TS-DASH/TS-EXEC-001/
+TS-WARRANTY-001 sections, PRD v0.17 §16 Resolved Questions 46–48; PR #102, commit
+`321265f`, merged 2026-09-05 — see §4, §12, §16 Status Notes for full detail):**
+
+- **TS-DASH** moves from `3 | 2 | 1 | 0 | 0` to `5 | 3 | 1 | 0 | 1`. `TC-DASH-01`'s prior
+  2026-08-31 **PASS** (eight-tile grid) is **superseded, not invalidated** — it remains a
+  valid historical record for what it tested on that date, but its Expected Result is now
+  the shipped nine-tile grid (with the built, live Utilization tile) and is left unexecuted
+  against that new expected result. `TC-DASH-02` is unaffected, PASS unmodified. The former
+  single `TC-DASH-03` (also PASS 2026-08-31 on the "none of NBV/Risk/Utilization present"
+  combined check) is retired and **restructured into three cases**: `TC-DASH-03a`
+  (Utilization — now a positive, fully-testable case, unexecuted, no PASS claimed),
+  `TC-DASH-03b` (NBV — BLOCKED (partial), unexecuted), and `TC-DASH-03c` (Risk — **Out of
+  Scope**, confirmed by business decision, not a blocked case and not a gap). Net: 2 cases
+  added (5 total from 3), Fully Testable +1 (2→3), Partially Blocked unchanged in count
+  (1→1, contents changed), Out of Scope +1 (0→1).
+- **TS-EXEC-001** moves from `2 | 2 | 0 | 0 | 0` to `5 | 3 | 1 | 0 | 1`, mirroring TS-DASH
+  exactly (P-014 and P-002 document the same built page). `TC-EXEC-001-01`'s prior **PASS**
+  is likewise **superseded, not invalidated**, for the identical reason. `TC-EXEC-001-02` is
+  unaffected. Three new cases enter 1:1 against the newly numbered
+  `AC-EXEC-001-03a`/`-03b`/`-03c` (previously an unnumbered narrative note, not a separate
+  criterion, so no `TC-EXEC-001-03` existed before this update): `TC-EXEC-001-03a`
+  (Utilization, fully testable, unexecuted), `TC-EXEC-001-03b` (NBV, BLOCKED (partial),
+  unexecuted), `TC-EXEC-001-03c` (Risk, Out of Scope).
+- **TS-WARRANTY-001** moves from `6 | 6 | 0 | 0 | 0` to `7 | 6 | 1 | 0 | 0`. `TC-WARRANTY-001-01`
+  through `-06` are **untouched** — their 2026-09-01 PASS results stand unmodified, since the
+  Warranty section of P-018 did not change. One new case, `TC-WARRANTY-001-07`, is added
+  against the new `AC-WARRANTY-001-07` (P-018's new NBV useful-life section), entering
+  **BLOCKED (partial)** — blocked on both the section not being built and the missing
+  default per-Asset-Category useful-life values (PRD §16 Open Question 3a; Open Finding F-03,
+  OPEN, narrowed, not closed).
+- **Net effect on Grand Total:** moves from `81 | 56 | 20 | 4 | 1` to `87 | 58 | 22 | 4 | 3`
+  (6 test cases added across the three suites: 3 enter Fully Testable, 2 enter Partially
+  Blocked, 2 enter Out of Scope — TS-DASH/TS-EXEC-001 each contribute one Out of Scope row,
+  TS-WARRANTY-001 contributes none; totals cross-check: FT 56→58 (+2), PB 20→22 (+2), OOS
+  1→3 (+2), Full-Blocked unchanged at 4).
+- **DO NOT MARK ANY NEW OR RESTRUCTURED CASE AS PASS.** `TC-DASH-01`, `TC-EXEC-001-01`,
+  `TC-DASH-03a`/`-03b`, and `TC-EXEC-001-03a`/`-03b` are all left **unexecuted** by this
+  sync, for a separate, subsequent formal execution sweep. `TC-WARRANTY-001-07` cannot be
+  executed at all yet (section not built). Every historical PASS that remains valid on its
+  original, unchanged scope (`TC-DASH-02`, `TC-EXEC-001-02`, `TC-WARRANTY-001-01`
+  through `-06`, and every other suite's existing PASS) is left untouched.
+- **Open Finding F-03 stays OPEN, narrowed, not closed** — it now covers `TC-DASH-03b`,
+  `TC-EXEC-001-03b`, and the new `TC-WARRANTY-001-07`, all blocked on the same missing
+  default per-Asset-Category useful-life values (PRD §16 Open Question 3a).
+- No other suite's row is affected by this update.
 
 **TS-ALERT-001 updated a fifth time 2026-09-04 (real formal test execution of the
 confirmed Alerts access gate, real running app, merged `main` @ `d8ad01c`, PRD v0.16 §16
@@ -1341,6 +1440,13 @@ on 2026-08-21 (`RAISE-PRD.md` §14 item 7), so the capability it would
 exercise is intentionally not built in MVP, not merely undecided. None
 were skipped or silently marked pass/fail in advance.
 
+**2 more test cases (`TC-DASH-03c`, `TC-EXEC-001-03c`) are Out of Scope for MVP, added
+2026-09-05** — the Executive/Main Dashboard's Risk KPI tile was confirmed out of MVP scope
+by business decision (PRD §16 Resolved Question 47), identically for both suites (same
+built page). Neither is a blocked test case and neither is a gap; both are retained solely
+to preserve 1:1 traceability against `AC-DASH-03c`/`AC-EXEC-001-03c` so they are not later
+misread as missing coverage.
+
 ---
 
 ## 20. Test Case Review Checklist
@@ -1375,6 +1481,16 @@ Before moving to the Requirement Traceability Matrix / Development:
       PASS (§14); per-user filtering of alert rows (PRD §16 Q22a) is correctly left
       as NOT TESTABLE YET with no test case written, and no `employeeId`/`User`↔
       `Employee` link is proposed anywhere in this document
+- [x] TS-DASH/TS-EXEC-001's now-superseded `TC-DASH-01`/`TC-EXEC-001-01` PASS records
+      (2026-08-31, eight-tile grid) are preserved as history and explicitly marked
+      **superseded by the AC-DASH-01/AC-EXEC-001-01 criterion change**, not silently
+      overwritten or re-affirmed against the new nine-tile expected result (§4, §16);
+      the restructured `TC-DASH-03a`/`-03b`/`-03c` and `TC-EXEC-001-03a`/`-03b`/`-03c`
+      (mirroring `AC-DASH-03a`/`-03b`/`-03c` and `AC-EXEC-001-03a`/`-03b`/`-03c`) and the
+      new `TC-WARRANTY-001-07` (§12) are each left unexecuted, with no PASS claimed for
+      any new or restructured case by this sync; Risk (`TC-DASH-03c`/`TC-EXEC-001-03c`)
+      is correctly recorded as Out of Scope, not BLOCKED; Open Finding F-03 remains
+      OPEN (narrowed, not closed)
 
 ---
 
@@ -1407,6 +1523,90 @@ Suite ID → TC ID) into one master table for compliance review.
 ---
 
 ## Document Status
+
+**Version:** 0.22 (2026-09-05 — sync to `RAISE-TEST-PLAN.md` v0.14 / `RAISE-ACCEPTANCE-CRITERIA.md`
+v0.14's just-corrected TS-DASH/TS-EXEC-001/TS-WARRANTY-001 sections (PRD v0.17 §16 Resolved
+Questions 46–48, PR #102 commit `321265f` merged 2026-09-05). Restructures `TC-DASH-03`/
+adds `TC-EXEC-001-03a..c` into `-03a`/`-03b`/`-03c` matching the AC document; updates
+`TC-DASH-01`/`TC-EXEC-001-01` to the shipped nine-tile grid; adds `TC-WARRANTY-001-07`
+(BLOCKED). Explicitly marks the 2026-08-31 `TC-DASH-01`/`TC-DASH-03`/`TC-EXEC-001-01` PASS
+records as **superseded by the criterion change, not invalidated by regression** — preserved
+as history, not silently rewritten. No new or restructured case is marked PASS by this sync;
+every case this update touches is left unexecuted for a separate, subsequent formal
+execution sweep. Open Finding F-03 stays OPEN (narrowed, not closed). See the Change Log
+entry below and §4/§12/§16 Status Notes and §19's new narrative note for full detail)
+
+**Change Log — v0.21 → v0.22 (2026-09-05, sync to `RAISE-TEST-PLAN.md` v0.14 /
+`RAISE-ACCEPTANCE-CRITERIA.md` v0.14's just-corrected TS-DASH/TS-EXEC-001/TS-WARRANTY-001
+sections — no new test execution reported, all touched cases left unexecuted):**
+
+1. **Trigger.** `RAISE-ACCEPTANCE-CRITERIA.md` v0.14 and `RAISE-TEST-PLAN.md` v0.14
+   restructured `AC-DASH-03`/the `AC-EXEC-001` NBV/Risk/Utilization note into three
+   separately-reasoned sub-criteria each (`AC-DASH-03a`/`-03b`/`-03c`,
+   `AC-EXEC-001-03a`/`-03b`/`-03c`) and updated `AC-DASH-01`/`AC-EXEC-001-01` to the actual
+   shipped **nine**-tile KPI grid, following the built, live Utilization tile shipping in
+   PR #102 (commit `321265f`, merged 2026-09-05). A new criterion, `AC-WARRANTY-001-07`, was
+   added for P-018's new NBV useful-life configuration section (shape only, not built).
+2. **An already-recorded result is handled honestly, not silently rewritten.**
+   `TC-DASH-01` and `TC-DASH-03` (and, by the same substance, `TC-EXEC-001-01`) carried a
+   real, formally-executed **PASS** dated 2026-08-31, against an eight-tile grid and a
+   single combined "none of NBV/Risk/Utilization present" check respectively
+   (`RAISE-TRACEABILITY-MATRIX.md` §3/§4). That PASS **was valid at the time it was
+   executed** — on 2026-08-31 the grid genuinely had eight tiles and genuinely carried none
+   of the three proposal KPIs. It is now **superseded by the criterion change**, not by any
+   regression: re-running those original steps today would FAIL, precisely because the
+   Utilization tile was built and shipped correctly (PR #102) — not because anything broke.
+   Both historical PASS records and their 2026-08-31 execution date are preserved in §4/§16
+   as history; neither is deleted or quietly overwritten to imply the current nine-tile
+   grid was what was verified.
+3. **§4 TS-DASH rewritten.** `TC-DASH-01`'s Expected Result now lists all nine tiles
+   (adds Utilization); its 2026-08-31 PASS is recorded as superseded history, not
+   re-affirmed, and the row is left unexecuted against the new expected result.
+   `TC-DASH-02` is untouched, PASS unmodified (section list did not change). The former
+   single `TC-DASH-03` is retired and replaced by three new cases: `TC-DASH-03a`
+   (Utilization — new positive case: percentage value plus an "N of M assignable" sub-label;
+   fully testable, left unexecuted, no PASS claimed; automated `frontend/src/lib/
+   utilization.test.ts` coverage and the Dashboard page's "66.7%"/"8 of 12 assignable
+   assets" test, plus PR #102 live verification, are cited as supporting context only, not
+   as a substitute for formal execution), `TC-DASH-03b` (NBV — **BLOCKED (partial)**: formula
+   confirmed per PRD §16 Resolved Question 46, blocked solely on the missing default
+   per-Asset-Category useful-life values, PRD §16 Open Question 3a, Open Finding F-03 OPEN
+   narrowed not closed — "specified but not yet buildable," not "unspecified"), and
+   `TC-DASH-03c` (Risk — **Out of Scope for MVP**, confirmed by business decision, PRD §16
+   Resolved Question 47 — not a blocked case, not a gap).
+4. **§16 TS-EXEC-001 rewritten identically**, mirroring §4 exactly since P-014 and P-002
+   document the same built page: `TC-EXEC-001-01` updated to nine tiles with its prior PASS
+   recorded as superseded history; `TC-EXEC-001-02` untouched; three new cases
+   `TC-EXEC-001-03a`/`-03b`/`-03c` added 1:1 against the newly numbered
+   `AC-EXEC-001-03a`/`-03b`/`-03c` (previously an unnumbered narrative note, so no
+   `TC-EXEC-001-03` existed before this update).
+5. **§12 TS-WARRANTY-001 gains one new case, `TC-WARRANTY-001-07`**, against the new
+   `AC-WARRANTY-001-07` (P-018's NBV useful-life section) — **BLOCKED (partial)**, blocked
+   for two independent reasons stated precisely: the section is not built at all, and even
+   once built no default useful-life value per Asset Category can be asserted (PRD §16 Open
+   Question 3a, Open Finding F-03). `TC-WARRANTY-001-01` through `-06` are explicitly
+   untouched — their 2026-09-01 PASS results are unaffected.
+6. **§19 Test Case Summary** updated: TS-DASH moves from `3 | 2 | 1 | 0 | 0` to
+   `5 | 3 | 1 | 0 | 1`; TS-EXEC-001 moves from `2 | 2 | 0 | 0 | 0` to `5 | 3 | 1 | 0 | 1`;
+   TS-WARRANTY-001 moves from `6 | 6 | 0 | 0 | 0` to `7 | 6 | 1 | 0 | 0`. Grand **Total** row
+   moves from `81 | 56 | 20 | 4 | 1` to `87 | 58 | 22 | 4 | 3` (6 test cases added: 3 enter
+   Fully Testable, 2 enter Partially Blocked, 2 enter Out of Scope). A new narrative note is
+   added at the top of §19 with the full per-suite breakdown.
+7. **§20 Test Case Review Checklist** gained a new checklist item confirming the superseded
+   PASS records are preserved as history and explicitly marked superseded (not silently
+   rewritten), that no new/restructured case is marked PASS, and that Risk is correctly
+   recorded as Out of Scope rather than BLOCKED.
+8. **Open Finding F-03 stays OPEN, narrowed 2026-09-05, not closed** — it now covers
+   `TC-DASH-03b`, `TC-EXEC-001-03b`, and the new `TC-WARRANTY-001-07`. `OPEN-FINDINGS.md`
+   itself is out of scope for this sync (untouched, per the earlier-layer documents named in
+   this update's trigger).
+9. **No other suite required changes.** `TC-LOGIN-*`, `TC-ASSET-001-*`, `TC-ASSET-001-D-*`,
+   `TC-LIFE-001-*`, `TC-ASSET-002-*`, `TC-ASSET-003-*`, `TC-OPS-001-*`, `TC-OPS-002-*`,
+   `TC-MAINT-001-*`, `TC-ORACLE-001-*`, `TC-ALERT-001-*`, `TC-AUDIT-001-*`,
+   `TC-AI-SEARCH-001-*`, `TC-AI-STATES-*`, and `TC-AI-DOC-001-01`–`TC-AI-DOC-004-01` retain
+   their prior status, wording, and PASS results verbatim.
+10. **Header Source line and top-of-document Version line** updated to cite
+    `RAISE-TEST-PLAN.md` v0.14 and `RAISE-ACCEPTANCE-CRITERIA.md` v0.14.
 
 **Version:** 0.21 (2026-09-04 — sync to `RAISE-TEST-PLAN.md` v0.13 / `RAISE-ACCEPTANCE-CRITERIA.md`
 v0.13's confirmed Alerts access gate (PRD v0.16 §16 Resolved Question 45), plus a real formal

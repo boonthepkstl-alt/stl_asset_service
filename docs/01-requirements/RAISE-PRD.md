@@ -2,7 +2,41 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document Type:** Product Requirements Document
-**Version:** 0.16 Draft — Open Finding **F-08** (PRD §16 Q21–Q22, RBAC authentication
+**Version:** 0.17 Draft — Three business decisions confirmed 2026-09-05 about
+`RAISE-FR-EXEC-001`'s three Proposal-defined KPIs (NBV, Risk, Utilization — PRD §16
+Q3–Q4, Open Finding **F-03**, which remains **OPEN, narrowed not closed**): (1) **NBV
+formula** — straight-line depreciation, NBV = purchaseCost − (purchaseCost ÷
+usefulLifeYears × assetAgeInYears), computed from the existing `purchaseDate`/
+`purchaseCost` fields already present end-to-end on every Asset record (no new Asset
+field or data model needed); useful life is **configurable per Asset Category** via an
+admin Settings UI, the same precedent as [§16 Resolved Question 41](#16-open-questions)'s
+Warranty "Expiring" threshold; salvage/residual value is **zero**, and NBV is **clamped
+at 0**. The **default useful-life value per category is still undefined** — business was
+asked directly and answered "I will specify these myself" — recorded as new **§16 Open
+Question 3a**, not invented. Also recorded: the existing `currentValue` Asset field
+**cannot** serve as NBV (`go-template-main/service/assetService.go:101` sets it equal to
+`purchaseCost` on create and never recomputes it; seed fixtures hold inconsistent
+hand-written rates). (2) **Risk KPI confirmed NOT MVP** for the Executive Dashboard —
+this **confirms**, not changes, `RAISE-AI-RISK-001`'s already-recorded Priority "Pilot
+(not confirmed MVP)" / Scope "Roadmap / Pilot — not MVP unless confirmed." §16 Q4 (risk
+definition) remains open in the abstract but **no longer blocks
+`RAISE-FR-EXEC-001`'s MVP completeness** — it belongs to the Pilot/Roadmap requirement,
+not the P0 one. The shipped "Portfolio Risk Matrix" tab in the AI Decision Center
+(fixture-backed, 7 of 15 assets, three mutually inconsistent risk-band thresholds in
+`frontend/src/data/fixtures/decisionData.ts`) is recorded as an **as-built observation
+tied to `RAISE-AI-RISK-001`**, not a specified MVP feature. (3) **Utilization KPI status
+update** — no new business input was needed; its definition ([§16 Resolved Question 27]
+(#16-open-questions)) and calculation mechanics ([§16 Resolved Question 29]
+(#16-open-questions)) were already resolved 2026-08-21. Implemented in
+`frontend/src/lib/utilization.ts` plus the KPI tile (PR #102, merged 2026-09-05, commit
+`321265f`), live-verified at 66.7% / "8 of 12 assignable assets" against a 15-asset
+register. Recorded implementation fact: `AssetStatus` has only four values
+(`'Available' | 'Assigned' | 'In Maintenance' | 'Retired'`) — there is **no Disposed
+status** (Disposal is confirmed Enterprise Roadmap, [§16 Resolved Question 26]
+(#16-open-questions)) — so only two of Resolved Question 29's three named denominator
+exclusions currently apply; if a Disposed status is ever added it must be excluded too.
+See [§16 Resolved Questions 46–48](#16-open-questions) for full detail. Prior (v0.16):
+Open Finding **F-08** (PRD §16 Q21–Q22, RBAC authentication
 mechanism and role/permission matrix content) **partially** resolved 2026-09-04 — exactly
 two sub-questions, not F-08 as a whole: (1) **who may view the Alerts screen (P-012)** —
 **any authenticated user**, all four existing roles (`EMPLOYEE`, `IT_STAFF`,
@@ -400,7 +434,8 @@ below. `RAISE-AI-DOC-004` (Duplicate Detection) was asked about in the same sess
 | Source Reference | v0.1 draft §7.4 |
 | Traceability ID | RAISE-AI-RISK-001 |
 | Example Inputs (source-identified) | Asset age; maintenance/repair history; warranty status; Oracle FA information. |
-| Open Question | Exact risk model and scoring formula are not defined — see [§16 Q4](#16-open-questions). |
+| Open Question | Exact risk model and scoring formula are not defined — see [§16 Q4](#16-open-questions). **Confirmed 2026-09-05** ([§16 Resolved Question 47](#16-open-questions)): this requirement's Priority/Scope (Pilot, not MVP) is unchanged — the Executive Dashboard (`RAISE-FR-EXEC-001`) will not carry a Risk KPI tile for MVP, so §16 Q4 remains open but does not block any P0 requirement. |
+| As-Built Observation (not a requirement) | The shipped app already contains a "Portfolio Risk Matrix" tab in the AI Decision Center with a per-asset `riskScore`, a Portfolio Risk Index, and risk bands — recorded 2026-09-05 alongside [§16 Resolved Question 47](#16-open-questions). It is fixture-backed (`frontend/src/data/fixtures/decisionData.ts` covers only 7 of 15 assets with hand-written scores) and that one file uses three mutually inconsistent band thresholds (`>70` at line 256, `>75`/`>40` at line 529, and `80`/`60`/`30` at lines 469–472). Recorded as an as-built observation only — not a specified/confirmed MVP feature or business rule. |
 
 ### RAISE-AI-LIFECYCLE-001 — Lifecycle Prediction
 
@@ -454,11 +489,13 @@ below. `RAISE-AI-DOC-004` (Duplicate Detection) was asked about in the same sess
 | Dependencies | RAISE-FR-ASSET-001, RAISE-FR-ORACLE-001 |
 | Source Reference | v0.1 draft §8.1 |
 | Traceability ID | RAISE-FR-EXEC-001 |
-| Proposal-defined KPIs | NBV; Risk; Utilization. |
-| Utilization KPI Definition | **Resolved 2026-08-21** (business confirmation via `/update-prd` session): **Assignment-time-based** — Utilization = % of time an asset is assigned to a user/department, relative to total available time. This resolves [§16 Resolved Question 27](#16-open-questions); NBV and Risk KPI formulas remain undefined. |
-| Utilization Calculation Mechanics | **Resolved 2026-08-21** (business confirmation via `/update-prd` session — see [§16 Resolved Question 29](#16-open-questions)): (a) **Aggregation window = real-time snapshot** — Utilization is computed as a point-in-time value as of "now"; this is **not** a time-series/period aggregation (e.g., not "average utilization over the last 30/90 days"). (b) **Denominator exclusions** — assets with status Disposed, Retired, or Under Maintenance are **excluded** from the "total available time" denominator; only assets in an active/available-for-assignment state count toward the denominator. Numerator/assignment-time definition itself is unchanged from Resolved Question 27. |
+| Proposal-defined KPIs | NBV; Risk; Utilization. **Status as of 2026-09-05: see the three rows below** — NBV formula/method confirmed (default useful-life values still TBD); Risk confirmed NOT MVP for this dashboard; Utilization built and live. |
+| NBV KPI Definition | **Resolved 2026-09-05** (business confirmation, direct chat session — see [§16 Resolved Question 46](#16-open-questions)): **straight-line depreciation** — NBV = purchaseCost − (purchaseCost ÷ usefulLifeYears × assetAgeInYears), computed from the existing `purchaseDate` and `purchaseCost` fields already present end-to-end on every Asset record (`frontend/src/types/asset.ts`, `go-template-main/model/assetModel.go`, `sql/pg/V1__Assets_Table.sql`) — no new Asset field or data model is needed. Useful life is **configurable per Asset Category**, set by an admin in Settings, following the same precedent as [§16 Resolved Question 41](#16-open-questions)'s per-category Warranty "Expiring" threshold (`WarrantySettings.expiringThresholdDaysByCategory`) — not a single global constant. Salvage/residual value is **zero**; NBV is **clamped at 0** so it never goes negative. **The default useful-life value per Asset Category (IT Hardware, Mobile, Office Equipment, Infrastructure, Media Equipment) is still undefined** — business was asked directly and answered "I will specify these myself" — see new [§16 Open Question 3a](#16-open-questions). Do not invent or use an illustrative number as if confirmed. **Supporting fact recorded to prevent a wrong assumption:** the Asset record's existing `currentValue` field **cannot** serve as NBV — `go-template-main/service/assetService.go:101` sets `currentValue` equal to `purchaseCost` on create and never recomputes it, and seed fixtures hold hand-written values at inconsistent rates (asset `a1` is 85% of cost after 1.6 years; `a5` is 60% after 3.8 years). |
+| Risk KPI (MVP Status) | **Confirmed 2026-09-05** (business confirmation, direct chat session — see [§16 Resolved Question 47](#16-open-questions)): the Executive Dashboard will **NOT** carry a Risk KPI tile for MVP. This **confirms, not changes,** what this PRD already recorded — `RAISE-AI-RISK-001` remains Priority "Pilot (not confirmed MVP)" / Scope "Roadmap / Pilot — not MVP unless confirmed." [§16 Q4](#16-open-questions) (exact definition of risk) remains open in the abstract but **no longer blocks this requirement's MVP completeness** — it belongs to `RAISE-AI-RISK-001`, not to this P0 requirement. **As-built observation, not a requirement:** the shipped app already contains a "Portfolio Risk Matrix" tab in the AI Decision Center with a per-asset `riskScore`, a Portfolio Risk Index, and risk bands — left exactly as-is by this decision. It is fixture-backed (`frontend/src/data/fixtures/decisionData.ts` covers only 7 of 15 assets with hand-written scores) and that one file uses three mutually inconsistent band thresholds (`>70` at line 256, `>75`/`>40` at line 529, and `80`/`60`/`30` at lines 469–472). This observation is tied to `RAISE-AI-RISK-001` (Roadmap/Pilot), not to this MVP requirement — see that requirement's entry in [§7 AI Requirements](#7-ai-requirements). |
+| Utilization KPI Definition | **Resolved 2026-08-21** (business confirmation via `/update-prd` session): **Assignment-time-based** — Utilization = % of time an asset is assigned to a user/department, relative to total available time. This resolves [§16 Resolved Question 27](#16-open-questions). **Status update, 2026-09-05:** implemented and live — see the Utilization Calculation Mechanics row below and [§16 Resolved Question 48](#16-open-questions). NBV and Risk are addressed separately in the NBV KPI Definition and Risk KPI (MVP Status) rows above. |
+| Utilization Calculation Mechanics | **Resolved 2026-08-21** (business confirmation via `/update-prd` session — see [§16 Resolved Question 29](#16-open-questions)): (a) **Aggregation window = real-time snapshot** — Utilization is computed as a point-in-time value as of "now"; this is **not** a time-series/period aggregation (e.g., not "average utilization over the last 30/90 days"). (b) **Denominator exclusions** — assets with status Disposed, Retired, or Under Maintenance are **excluded** from the "total available time" denominator; only assets in an active/available-for-assignment state count toward the denominator. Numerator/assignment-time definition itself is unchanged from Resolved Question 27. **Built and live, 2026-09-05** (see [§16 Resolved Question 48](#16-open-questions)): implemented in `frontend/src/lib/utilization.ts` plus the Executive Dashboard KPI tile, PR #102 (merged 2026-09-05, commit `321265f`), live-verified reading 66.7% / "8 of 12 assignable assets" against a 15-asset register. **Implementation fact this decision could not have anticipated:** `AssetStatus` has only four values (`'Available' | 'Assigned' | 'In Maintenance' | 'Retired'`) — there is **no Disposed status**, because Disposal is confirmed Enterprise Roadmap ([§16 Resolved Question 26](#16-open-questions)). So of this row's three named denominator exclusions, only two (Retired, In Maintenance) currently have a status to exclude; if a Disposed status is ever added, it must be excluded too. |
 | AI-Generated Executive Summary | Described in proposal as a capability; scope/format not further defined. |
-| Open Question | NBV and Risk KPI formulas, thresholds, and dashboard layout remain undefined — see [§16 Q3 (partially resolved)](#16-open-questions). |
+| Open Question | **Narrowed 2026-09-05** (Open Finding F-03 remains open, not closed): NBV formula/method is now confirmed (see NBV KPI Definition row) but the **default useful-life value per Asset Category is still undefined** — see new [§16 Open Question 3a](#16-open-questions). Risk KPI is confirmed NOT MVP (see Risk KPI (MVP Status) row) — [§16 Q4](#16-open-questions) remains open but no longer blocks this requirement. Utilization is fully resolved and built (see [§16 Resolved Questions 27, 29, 48](#16-open-questions)). Dashboard layout itself remains undefined — see [§16 Q3](#16-open-questions). |
 
 ---
 
@@ -805,11 +842,33 @@ this PRD.
 **Business**
 1. What is the authoritative asset master?
 2. Which asset types are included in MVP?
-3. What is the exact definition of utilization (Executive Dashboard KPI)? — **Partially
-   resolved 2026-08-21, see [Resolved Question 27](#16-open-questions)**: the
-   *definition* of Utilization is now confirmed (assignment-time-based). The exact
-   *formula thresholds* and the NBV/Risk KPI formulas remain open.
-4. What is the exact definition of risk (RAISE-AI-RISK-001)?
+3. What is the exact definition of utilization (Executive Dashboard KPI)? — **Resolved
+   2026-08-21, see [Resolved Question 27](#16-open-questions)**: the *definition* of
+   Utilization is confirmed (assignment-time-based); calculation mechanics resolved,
+   see [Resolved Question 29](#16-open-questions); **built and live 2026-09-05, see
+   [Resolved Question 48](#16-open-questions)**. **NBV formula narrowed 2026-09-05,
+   see [Resolved Question 46](#16-open-questions)**: method confirmed
+   (straight-line depreciation, zero salvage, clamped at 0, per-Asset-Category
+   configurable useful life) — the *default useful-life value per category* is still
+   open, see [Open Question 3a](#16-open-questions) below. **Risk KPI confirmed NOT
+   MVP for the Executive Dashboard 2026-09-05, see [Resolved Question 47]
+   (#16-open-questions)** — the remaining risk-definition question moves to Q4 below,
+   which no longer blocks this requirement.
+3a. What are the default useful-life values per Asset Category (IT Hardware, Mobile,
+    Office Equipment, Infrastructure, Media Equipment) for NBV straight-line
+    depreciation (`RAISE-FR-EXEC-001`)? — Raised alongside [Resolved Question 46]
+    (#16-open-questions), 2026-09-05. Business was asked directly and answered **"I
+    will specify these myself"** — the numeric values have not been supplied. This is
+    the same shape as [Resolved Question 41](#16-open-questions)/[Open Question 15b]
+    (#16-open-questions): the mechanism (per-category configurability) is confirmed,
+    the exact numbers are not. **Do not invent or use an illustrative number as if
+    confirmed.** Tracked as the narrowed remainder of Open Finding **F-03** in
+    `OPEN-FINDINGS.md` (maintained separately, not edited by this change).
+4. What is the exact definition of risk (RAISE-AI-RISK-001)? — **Still open**, but
+   **confirmed 2026-09-05, see [Resolved Question 47](#16-open-questions), to no
+   longer block `RAISE-FR-EXEC-001`'s MVP completeness** — the Executive Dashboard
+   will not carry a Risk KPI tile for MVP, so this question belongs entirely to
+   `RAISE-AI-RISK-001` (already Pilot/Roadmap, not MVP), not to a P0 requirement.
 5. What business decisions must AI support first?
 
 **Oracle / Integration**
@@ -1393,6 +1452,114 @@ recorded here explicitly so it is not mistaken for a resolved item alongside 29�
     should be checked and updated to reflect this **partial** resolution in a separate
     pass — not edited by this change.
 
+46. **What is the NBV (Net Book Value) formula for the Executive Dashboard KPI
+    (`RAISE-FR-EXEC-001`)?** — Raised as part of [Open Question 3](#16-open-questions),
+    tracked as Open Finding **F-03** in `OPEN-FINDINGS.md` (maintained separately, not
+    edited by this resolution). Business confirmed, **2026-09-05, via direct chat
+    session, explicit Q&A:**
+
+    **Method: straight-line depreciation.** NBV = purchaseCost − (purchaseCost ÷
+    usefulLifeYears × assetAgeInYears), computed from the `purchaseDate` and
+    `purchaseCost` fields that already exist end-to-end on every Asset record
+    (`frontend/src/types/asset.ts`, `go-template-main/model/assetModel.go`,
+    `sql/pg/V1__Assets_Table.sql`). **No new Asset field and no new data model is
+    needed.**
+
+    **Useful life: configurable per Asset Category**, set by an admin in Settings —
+    deliberately following the exact precedent already established by
+    [Resolved Question 41](#16-open-questions) for the Warranty "Expiring" threshold
+    (`WarrantySettings.expiringThresholdDaysByCategory` in
+    `frontend/src/types/settings.ts`), **not** a single global constant.
+
+    **Salvage/residual value: zero.** The asset depreciates to 0 at the end of its
+    useful life, and NBV is **clamped at 0** so it never goes negative.
+
+    **Still pending — recorded as [Open Question 3a](#16-open-questions), not
+    answered:** the actual default useful-life values per Asset Category (IT
+    Hardware, Mobile, Office Equipment, Infrastructure, Media Equipment). Business was
+    asked directly and answered **"I will specify these myself"** — the numbers have
+    not been supplied. Do not invent them; do not treat an illustrative example as
+    confirmed. This is the same shape as [Resolved Question 41](#16-open-questions)'s
+    partial resolution (mechanism confirmed, exact numeric threshold still TBD).
+
+    **Supporting fact recorded to prevent a wrong future assumption:** the Asset
+    record already has a `currentValue` field, but it **cannot** serve as NBV —
+    `go-template-main/service/assetService.go:101` sets `currentValue` equal to
+    `purchaseCost` on create and never recomputes it, and the seed fixtures hold
+    hand-written values at inconsistent rates (asset `a1` is 85% of cost after 1.6
+    years; `a5` is 60% after 3.8 years). Using it would put a number on the dashboard
+    that never moves.
+
+    Updated in §8 (`RAISE-FR-EXEC-001` — new "NBV KPI Definition" row), §16 (this
+    entry; §16 Q3 narrowed; new Open Question 3a), the
+    [§17 Requirement Traceability Matrix](#17-requirement-traceability-matrix) row for
+    `RAISE-FR-EXEC-001`, and the [Pre-Finalization Quality Pass]
+    (#pre-finalization-quality-pass) (Ambiguous Requirements). **Open Finding F-03
+    remains OPEN — narrowed, not closed** — the per-category useful-life numbers are
+    still outstanding; `OPEN-FINDINGS.md` should be updated to reflect this narrowing
+    in a separate pass, not by this change.
+
+47. **Is the Risk KPI in MVP scope for the Executive Dashboard
+    (`RAISE-FR-EXEC-001`)?** — Raised as part of [Open Question 3](#16-open-questions)
+    and the "Requirements Needing Business Confirmation" item on whether Risk Scoring
+    should be pulled into MVP ([Pre-Finalization Quality Pass]
+    (#pre-finalization-quality-pass)), tracked as Open Finding **F-03** in
+    `OPEN-FINDINGS.md`. Business confirmed, **2026-09-05, via direct chat session:**
+
+    **No — the Executive Dashboard will NOT carry a Risk KPI tile for MVP.** This
+    **confirms**, rather than changes, what this PRD already recorded:
+    `RAISE-AI-RISK-001` is already Priority "Pilot (not confirmed MVP)" / Scope
+    "Roadmap / Pilot — not MVP unless confirmed." [Open Question 4](#16-open-questions)
+    ("What is the exact definition of risk?") therefore **remains open** but is **no
+    longer a blocker on `RAISE-FR-EXEC-001`'s MVP completeness** — it belongs to the
+    Pilot/Roadmap requirement, not the P0 one. **This distinction is the single most
+    useful correction in this update.**
+
+    **As-built observation, recorded and explicitly NOT a requirement:** the shipped
+    app already contains a "Portfolio Risk Matrix" tab in the AI Decision Center with
+    a per-asset `riskScore`, a Portfolio Risk Index, and risk bands. It is left
+    exactly as-is by this decision. It is fixture-backed
+    (`frontend/src/data/fixtures/decisionData.ts` covers only 7 of 15 assets with
+    hand-written scores) and that one file uses three **mutually inconsistent** band
+    thresholds (`>70` at line 256, `>75`/`>40` at line 529, and `80`/`60`/`30` at lines
+    469–472). This is recorded as an observation tied to `RAISE-AI-RISK-001`
+    (Roadmap/Pilot) so nobody mistakes it for a specified MVP feature.
+
+    Updated in §8 (`RAISE-FR-EXEC-001` — new "Risk KPI (MVP Status)" row), §7
+    (`RAISE-AI-RISK-001` entry, referenced not modified in scope/priority), §16 (this
+    entry; §16 Q3 and Q4 annotated), the [§17 Requirement Traceability Matrix]
+    (#17-requirement-traceability-matrix) row for `RAISE-FR-EXEC-001`, and the
+    [Pre-Finalization Quality Pass](#pre-finalization-quality-pass) (Ambiguous
+    Requirements, Requirements Needing Business Confirmation). **Open Finding F-03
+    remains OPEN — narrowed, not closed** by this decision either (it resolves the
+    Risk *scope* question, not the NBV *numbers* question); `OPEN-FINDINGS.md` should
+    be updated in a separate pass.
+
+48. **Status update: is the Utilization KPI (`RAISE-FR-EXEC-001`) actually built?** —
+    Not a new business decision — its definition ([Resolved Question 27]
+    (#16-open-questions)) and calculation mechanics ([Resolved Question 29]
+    (#16-open-questions)) were already resolved 2026-08-21; it was missing from the
+    dashboard only because nobody had built it. **Now implemented and live**:
+    `frontend/src/lib/utilization.ts` plus the Executive Dashboard KPI tile, PR #102
+    (merged 2026-09-05, commit `321265f`), live-verified reading **66.7% / "8 of 12
+    assignable assets"** against a 15-asset register.
+
+    **Implementation fact recorded because Resolved Question 29 could not have
+    anticipated it:** Resolved Question 29 names Disposed, Retired, and Under
+    Maintenance as the three denominator-exclusion states, but `AssetStatus` has only
+    four values (`'Available' | 'Assigned' | 'In Maintenance' | 'Retired'`) — there is
+    **no Disposed status**, because Disposal is confirmed Enterprise Roadmap
+    ([Resolved Question 26](#16-open-questions)). So two of the three named
+    exclusions apply today (Retired, In Maintenance) and the third (Disposed) has
+    nothing to exclude yet — **if a Disposed status is ever added, it must be
+    excluded too.**
+
+    Updated in §8 (`RAISE-FR-EXEC-001` — "Utilization KPI Definition" and "Utilization
+    Calculation Mechanics" rows updated to reflect built/live status), the
+    [§17 Requirement Traceability Matrix](#17-requirement-traceability-matrix) row for
+    `RAISE-FR-EXEC-001`, and the [Pre-Finalization Quality Pass]
+    (#pre-finalization-quality-pass) (Ambiguous Requirements).
+
 ---
 
 ## 17. Requirement Traceability Matrix
@@ -1410,7 +1577,7 @@ recorded here explicitly so it is not mistaken for a resolved item alongside 29�
 | RAISE-FR-ORACLE-001 | Oracle FA Integration | MVP | P0 | TBD (integration design) | v0.1 §6.8 |
 | RAISE-FR-ALERT-001 | Alerts | MVP | P0 | APPROVED — five MVP trigger conditions (Warranty EXPIRED/EXPIRING, Ticket OVERDUE/ON_HOLD, IT Hardware Handover PENDING) and fixed-per-condition High/Medium/Low severity confirmed 2026-09-04; MVP channel scope re-affirmed as single-channel/in-app (no new decision); "authorized user" access gate confirmed 2026-09-04 = any authenticated user, per-route code enforcement (§16 Resolved Question 45, partially resolving F-08) — per-user alert filtering still open (§16 Q22a) | v0.1 §6.9; trigger conditions/severity/channel-scope clarification confirmed 2026-09-04 (§16 Resolved Question 44); access-gate clarification confirmed 2026-09-04 (§16 Resolved Question 45) |
 | RAISE-FR-AUDIT-001 | Immutable Audit Log | MVP | P0 | TBD (retention/taxonomy) | v0.1 §6.10 |
-| RAISE-FR-EXEC-001 | Executive Dashboard | MVP | P0 | TBD (KPI formulas) | v0.1 §8.1 |
+| RAISE-FR-EXEC-001 | Executive Dashboard | MVP | P0 | TBD (NBV per-category useful-life default values — Open Finding F-03 narrowed, not closed) — Utilization KPI **built and live** (PR #102, merged 2026-09-05, commit 321265f); NBV formula/method confirmed 2026-09-05 (straight-line, zero salvage, clamped at 0, per-Asset-Category configurable useful life via Settings); Risk KPI confirmed **NOT MVP** for this dashboard (see RAISE-AI-RISK-001, unchanged Pilot/Roadmap status) | v0.1 §8.1; Utilization built 2026-09-05; NBV method and Risk MVP-exclusion confirmed 2026-09-05 (§16 Resolved Questions 46–48) |
 | RAISE-AI-SEARCH-001 | Natural Language Search | MVP | P0 | APPROVED | v0.1 §7.3 |
 | RAISE-AI-DOC-001 | OCR / Extraction | MVP | P0 | Acceptance detail defined — ready for downstream sync (numeric confidence threshold still TBD) | v0.1 §7 capability table; confirmed 2026-08-21; acceptance detail confirmed 2026-08-21 |
 | RAISE-AI-DOC-002 | Metadata | MVP | P0 | Acceptance detail defined — ready for downstream sync | v0.1 §7 capability table; confirmed 2026-08-21; acceptance detail confirmed 2026-08-21 |
@@ -1496,9 +1663,20 @@ Per instructions, ambiguity and gaps are surfaced here, not silently resolved.
 ### Ambiguous Requirements
 
 - **RAISE-FR-EXEC-001 (Executive Dashboard):** ~~"Utilization" is listed as a KPI with no
-  definition.~~ **Resolved 2026-08-21** — Utilization is now defined as assignment-time-based
-  (see [§8](#8-executive-intelligence) and [§16 Resolved Question 27](#16-open-questions)).
-  NBV and Risk KPI formulas remain undefined and are still open.
+  definition.~~ **Resolved 2026-08-21, built and live 2026-09-05** — Utilization is defined
+  as assignment-time-based and is now implemented (PR #102, commit `321265f`) (see
+  [§8](#8-executive-intelligence), [§16 Resolved Question 27](#16-open-questions), and
+  [§16 Resolved Question 48](#16-open-questions)). ~~NBV and Risk KPI formulas remain
+  undefined and are still open.~~ **Narrowed 2026-09-05** — NBV formula/method is now
+  confirmed (straight-line depreciation, zero salvage, clamped at 0, per-Asset-Category
+  configurable useful life via Settings) but the **default useful-life value per Asset
+  Category remains undefined** ([§16 Open Question 3a](#16-open-questions), Open
+  Finding **F-03** narrowed, not closed). Risk KPI is confirmed **NOT MVP** for this
+  dashboard (see [§16 Resolved Question 47](#16-open-questions)) — it no longer counts
+  as an open gap in this MVP requirement; the underlying risk-definition question
+  ([§16 Q4](#16-open-questions)) belongs to `RAISE-AI-RISK-001` instead. See the NBV KPI
+  Definition and Risk KPI (MVP Status) rows on `RAISE-FR-EXEC-001` in
+  [§8](#8-executive-intelligence).
 - **RAISE-AI-SEARCH-001 (Natural Language Search):** classified as "Current" capability in
   the AI capability table, yet the source gives no acceptance detail beyond a general
   example. It's unclear whether "Current" means already prototyped/demoed at the pitch,
@@ -1588,6 +1766,12 @@ Per instructions, ambiguity and gaps are surfaced here, not silently resolved.
 - Whether **Natural Language Search** is truly the only AI capability in MVP scope, or
   whether Risk Scoring should also be pulled into MVP as a pilot-within-MVP (the source
   lists it as "Pilot" but also uses it as an input to the flagship demo example).
+  **Partially resolved 2026-09-05** — business confirmed the Executive Dashboard
+  (`RAISE-FR-EXEC-001`) specifically will **NOT** carry a Risk KPI tile for MVP
+  ([§16 Resolved Question 47](#16-open-questions)), confirming `RAISE-AI-RISK-001`'s
+  existing Pilot/Roadmap status rather than pulling it into MVP. This resolves the
+  question **for the Executive Dashboard**; whether Risk Scoring is pulled into MVP
+  for any *other* screen/use-case is not addressed and remains open.
 - The **actor list** (§5) — whether any actor beyond IT Asset/Finance/Executive/Auditor
   (e.g., a general employee/asset holder role for check-out requests) is needed for
   Check-in/Check-out to function.
@@ -1685,9 +1869,70 @@ implements the requirement; Test Case passes; Requirement Compliance Review pass
 
 ## Document Status
 
-**Version:** 0.16 (Draft for Requirement Review)
+**Version:** 0.17 (Draft for Requirement Review)
 **Status:** Draft for Requirement Review
 **Primary Source:** RAISE — Enterprise Asset Intelligence Platform — Final(1).pdf, ADT-RAISE Hackathon Pitch Day, 26 July 2026
+
+**Change Log — v0.16 → v0.17 (2026-09-05, business confirmation via direct chat
+conversation, live session, explicit Q&A):**
+
+1. **Three business decisions confirmed about `RAISE-FR-EXEC-001`'s three
+   Proposal-defined KPIs (NBV, Risk, Utilization) — PRD §16 Q3–Q4, Open Finding
+   **F-03**. F-03 remains OPEN, narrowed not closed by this update.**
+   - **(a) NBV formula** (new [§16 Resolved Question 46](#16-open-questions)):
+     straight-line depreciation, NBV = purchaseCost − (purchaseCost ÷
+     usefulLifeYears × assetAgeInYears), from the existing `purchaseDate`/
+     `purchaseCost` fields already present end-to-end on every Asset record — no
+     new Asset field or data model needed. Useful life **configurable per Asset
+     Category** via Settings, the same precedent as [§16 Resolved Question 41]
+     (#16-open-questions)'s Warranty threshold. Salvage value **zero**; NBV
+     **clamped at 0**. **Default useful-life values per category remain
+     undefined** — business declined to supply them ("I will specify these
+     myself") — new [§16 Open Question 3a](#16-open-questions). Recorded: the
+     existing `currentValue` Asset field cannot serve as NBV
+     (`go-template-main/service/assetService.go:101` sets it equal to
+     `purchaseCost` on create and never recomputes it; seed fixtures hold
+     inconsistent hand-written rates).
+   - **(b) Risk KPI confirmed NOT MVP** (new [§16 Resolved Question 47]
+     (#16-open-questions)): the Executive Dashboard will not carry a Risk KPI
+     tile for MVP — **confirms**, not changes, `RAISE-AI-RISK-001`'s existing
+     Priority "Pilot (not confirmed MVP)" / Scope "Roadmap / Pilot" status. §16
+     Q4 remains open but no longer blocks `RAISE-FR-EXEC-001`'s MVP
+     completeness. The as-built "Portfolio Risk Matrix" tab (fixture-backed, 7
+     of 15 assets, three mutually inconsistent risk-band thresholds in
+     `frontend/src/data/fixtures/decisionData.ts`) is recorded as an
+     observation tied to `RAISE-AI-RISK-001`, not a requirement.
+   - **(c) Utilization KPI status update** (new [§16 Resolved Question 48]
+     (#16-open-questions)): no new business input needed — already resolved
+     2026-08-21 (Resolved Questions 27, 29); now **built and live**
+     (`frontend/src/lib/utilization.ts` plus the KPI tile, PR #102, merged
+     2026-09-05, commit `321265f`; live-verified 66.7% / "8 of 12 assignable
+     assets" against a 15-asset register). Recorded: `AssetStatus` has no
+     Disposed value today (Disposal is Enterprise Roadmap, Resolved Question
+     26), so only 2 of Resolved Question 29's 3 named denominator exclusions
+     currently apply — a future Disposed status must be excluded too.
+   Updated in §8 (`RAISE-FR-EXEC-001` — new "NBV KPI Definition" and "Risk KPI
+   (MVP Status)" rows; "Utilization KPI Definition" / "Utilization Calculation
+   Mechanics" rows updated to reflect built/live status; "Open Question" row
+   narrowed), §16 (Q3 updated, new Open Question 3a, Q4 annotated, new Resolved
+   Questions 46–48), §17 (Traceability Matrix row for `RAISE-FR-EXEC-001`), and
+   the Pre-Finalization Quality Pass (Ambiguous Requirements, Requirements
+   Needing Business Confirmation).
+2. **Impact on downstream documents:** `RAISE-DESIGN.md`, `RAISE-PROTOTYPE.md`,
+   `RAISE-ACCEPTANCE-CRITERIA.md`, `RAISE-TEST-PLAN.md`, `RAISE-TEST-CASES.md`,
+   and `RAISE-TRACEABILITY-MATRIX.md` currently reflect `RAISE-FR-EXEC-001`'s
+   KPI set as undefined/TBD and should be checked/updated — in particular to
+   (a) add the built Utilization KPI tile as a testable dashboard element, (b)
+   record the confirmed NBV formula while leaving the per-category default
+   useful-life values as a design-phase input still pending business
+   confirmation, and (c) record that no Risk KPI tile is in scope for this
+   screen. **This PRD update was scoped to `RAISE-PRD.md` only** per this
+   task's explicit boundary — the downstream documents above were not edited
+   by this change, nor was `OPEN-FINDINGS.md` (F-03 should be updated there, as
+   a narrowed-not-closed finding, in a separate pass). Downstream
+   synchronization (`/sync-design`, `/sync-prototype`,
+   `/sync-acceptance-criteria`, `/sync-test-plan`, `/sync-test-cases`,
+   `/sync-traceability-matrix`) should be run in a subsequent pass.
 
 **Change Log — v0.15 → v0.16 (2026-09-04, business confirmation via direct chat
 conversation, live session, explicit Q&A):**

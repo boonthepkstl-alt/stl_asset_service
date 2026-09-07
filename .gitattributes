@@ -1,0 +1,24 @@
+# Deliberately narrow. There is no `* text=auto` line, and that is a decision, not an
+# omission: a blanket rule would renormalize hundreds of tracked files in one
+# unreviewable commit, while other Claude Code sessions may be working in the same
+# directory (see CLAUDE.md).
+#
+# What this line does, stated accurately -- because the reason first written here was
+# wrong, and so was the one in .github/workflows/ci.yml:
+#
+# The repository ALREADY stores every Go file with LF. Measured, not assumed: all 64
+# were extracted with `git show :<path>` and none contained a CR, and `gofmt -l` over
+# that content flagged nothing. A Linux CI runner therefore already saw clean gofmt
+# output, and the CRLF that shows up locally on Windows is `core.autocrlf=true`
+# translating on checkout -- a working-tree artifact, never a repository state.
+#
+# So this line fixes nothing that was broken. It PREVENTS a future break: a contributor
+# with `core.autocrlf=false` on Windows would otherwise commit CRLF, and gofmt treats CR
+# as content, so that single commit would turn the gofmt gate red for reasons unrelated
+# to code quality. `eol=lf` makes the storage convention explicit instead of relying on
+# every contributor's local git configuration.
+#
+# The gate itself was never actually blocked by line endings. ci.yml said it was; that
+# claim was never tested and is false. It is added in this same change, and ci.yml's
+# comment is corrected rather than left standing.
+*.go text eol=lf

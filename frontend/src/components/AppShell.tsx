@@ -17,15 +17,9 @@ import { cn } from '@/lib/cn';
 import { navGroups, pageTitles } from '@/config/navigation';
 import { Avatar, Badge, Button, Dropdown, type DropdownItem } from '@/components/ui';
 import { useAuth } from '@/contexts/AuthContext';
+import { useAlerts } from '@/hooks/useAlerts';
+import type { AlertSeverity } from '@/lib/alerts';
 import { RaiseMark } from '@/components/RaiseMark';
-
-export interface AppShellNotification {
-  id: string;
-  title: string;
-  message: string;
-  timestamp: string;
-  read: boolean;
-}
 
 interface AppShellProps {
   current: string;
@@ -38,17 +32,23 @@ interface AppShellProps {
    * clickable back-link; the last crumb is always plain text since it is the current page.
    */
   breadcrumb: { label: string; href?: string }[];
-  /**
-   * Ported from ESAPS src/components/AppShell.tsx, which imported notifications directly
-   * from src/data/mockData.ts. That coupling is exactly what MIGRATION-PLAN.md/DEVELOPMENT-GUIDE.md
-   * warn against ("do not allow mock data to silently become production behavior"), so this
-   * foundation version takes notifications as a prop — defaulting to empty until a real
-   * /api/v1/notifications endpoint (see API-SPECIFICATION.md) is wired up in a later phase.
-   */
-  notifications?: AppShellNotification[];
+  // The bell no longer takes a `notifications` prop. One existed for compatibility with the
+  // ported ESAPS shell and defaulted to empty "until a real endpoint is wired up" -- but no
+  // caller ever populated it, so the bell rendered permanently empty. As of PRD Section 16
+  // Resolved Question 49 (Gap 17) the bell derives its own alerts through useAlerts(), the
+  // same hook the Alerts screen uses, so the prop was removed rather than left as dead
+  // surface area that lies about what the component does.
 }
 
-export function AppShell({ current, onNavigate, children, breadcrumb, notifications = [] }: AppShellProps) {
+// Severity colours match the Alerts screen's own badge variants, so a row reads the same
+// in both places (Prototype P-012).
+const SEVERITY_DOT: Record<AlertSeverity, string> = {
+  High: 'bg-error-500',
+  Medium: 'bg-warning-500',
+  Low: 'bg-surface-400',
+};
+
+export function AppShell({ current, onNavigate, children, breadcrumb }: AppShellProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
@@ -56,7 +56,22 @@ export function AppShell({ current, onNavigate, children, breadcrumb, notificati
   const [aiOpen, setAiOpen] = useState(false);
   const { user, logout } = useAuth();
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  // RAISE-FR-ALERT-001 header bell (PRD Section 16 Resolved Question 49, closing Gap 17).
+  //
+  // The bell shares the Alerts screen's derivation through useAlerts() rather than keeping a
+  // list of its own, so the two surfaces cannot disagree about what an alert is or what order
+  // they come in. It shows the FIRST FIVE in that shared order.
+  //
+  // Why "first five by severity" and not "5 most recent": business first asked for the most
+  // recent, which is not computable -- `Alert` carries no timestamp at all, because alerts
+  // are a read-time derivation with no persisted record. deriveAlerts sorts by severity.
+  // Business was shown this and confirmed the severity ordering, so no new rule is invented.
+  //
+  // There is deliberately no unread/read state: acknowledge, dismiss, read-unread and snooze
+  // are all still out of MVP scope, untouched by Resolved Question 49. The badge therefore
+  // counts alerts that currently exist, not unseen ones.
+  const { alerts } = useAlerts();
+  const alertCount = alerts.length;
   const meta = pageTitles[current] ?? { title: 'RAISE', subtitle: '' };
 
   // AppShell owns the root crumb so no page has to repeat (or mislabel) it. ROUTES.HOME ('/')
@@ -178,10 +193,12 @@ export function AppShell({ current, onNavigate, children, breadcrumb, notificati
           <div className="relative">
             <button
               onClick={() => setNotifOpen((o) => !o)}
+              aria-label={alertCount > 0 ? `Notifications, ${alertCount} alerts` : 'Notifications'}
+              aria-expanded={notifOpen}
               className="relative h-9 w-9 flex items-center justify-center rounded-md text-surface-500 hover:bg-surface-100 hover:text-surface-700 transition-colors"
             >
               <Bell className="h-5 w-5" />
-              {unreadCount > 0 && <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-error-500 ring-2 ring-white" />}
+              {alertCount > 0 && <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-error-500 ring-2 ring-white" />}
             </button>
             {notifOpen && (
               <>
@@ -189,28 +206,28 @@ export function AppShell({ current, onNavigate, children, breadcrumb, notificati
                 <div className="absolute right-0 mt-1 w-80 sm:w-96 bg-white rounded-lg border border-surface-200 shadow-lg z-50">
                   <div className="flex items-center justify-between px-4 py-3 border-b border-surface-200">
                     <h3 className="text-title font-semibold text-surface-900">Notifications</h3>
-                    <Badge variant="error">{unreadCount} new</Badge>
+                    <Badge variant="error">{alertCount}</Badge>
                   </div>
                   <div className="max-h-96 overflow-y-auto">
-                    {notifications.length === 0 ? (
+                    {alertCount === 0 ? (
                       <p className="px-4 py-6 text-body text-surface-400 text-center">
-                        No notifications yet — this will be wired to the real API in a later phase.
+                        No alerts right now.
                       </p>
                     ) : (
-                      notifications.slice(0, 5).map((n) => (
-                        <div key={n.id} className={cn('flex gap-3 px-4 py-3 border-b border-surface-100 hover:bg-surface-50 cursor-pointer', !n.read && 'bg-brand-50/40')}>
-                          <span className={cn('h-2 w-2 rounded-full mt-1.5 shrink-0', n.read ? 'bg-surface-300' : 'bg-brand-500')} />
+                      alerts.slice(0, 5).map((a) => (
+                        <div key={a.id} className="flex gap-3 px-4 py-3 border-b border-surface-100">
+                          <span className={cn('h-2 w-2 rounded-full mt-1.5 shrink-0', SEVERITY_DOT[a.severity])} />
                           <div className="min-w-0">
-                            <p className="text-body font-medium text-surface-900">{n.title}</p>
-                            <p className="text-caption text-surface-500 mt-0.5 line-clamp-2">{n.message}</p>
-                            <p className="text-caption text-surface-400 mt-1">{n.timestamp}</p>
+                            <p className="text-body font-medium text-surface-900">{a.label}</p>
+                            <p className="text-caption text-surface-500 mt-0.5 line-clamp-2">{a.description}</p>
+                            <p className="text-caption text-surface-400 mt-1">{a.record.code} · {a.record.name}</p>
                           </div>
                         </div>
                       ))
                     )}
                   </div>
                   <button onClick={() => { onNavigate('notifications'); setNotifOpen(false); }} className="w-full py-2.5 text-body font-medium text-brand-600 hover:bg-brand-50 transition-colors border-t border-surface-200">
-                    View all notifications
+                    View all alerts
                   </button>
                 </div>
               </>

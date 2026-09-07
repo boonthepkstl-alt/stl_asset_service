@@ -2,9 +2,9 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** System / Product Design
-**Version:** 0.15 Draft
+**Version:** 0.16 Draft
 **Status:** Draft for Design Review
-**Design Source:** [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.17
+**Design Source:** [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.18
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
 
@@ -252,7 +252,14 @@ now confirmed as a **read-time derivation** over already-existing Asset
 Request state (part of `D1`, see [§4.2](#42-custody--asset-operations)) — no
 Alert table, Alert entity, or persisted Alert record is introduced. See
 [§14 Alert Architecture](#14-alert-architecture) for the full derivation
-design.
+design. **Updated 2026-09-05 (PRD v0.18, §16 Resolved Question 49):** `A7`
+now also covers a second Presentation-layer surface — the header bell in
+`frontend/src/components/AppShell.tsx` — which reads the same `A7`
+derivation via a shared hook rather than its own node; this does not add a
+Data-layer node either, and does not change any other node in this diagram.
+See ["Header Bell — Second Surface Over the Same
+Derivation"](#header-bell--second-surface-over-the-same-derivation-resolved-2026-09-05-prd-16-resolved-question-49-resolving-raise-traceability-matrixmd-gap-17)
+in §14.
 
 ---
 
@@ -1847,6 +1854,88 @@ a freshly decided design choice. Email/Teams/LINE Notify multi-channel
 delivery remains Phase 2 / Enterprise Roadmap exactly as it already was (see
 "Roadmap" below).
 
+### Header Bell — Second Surface Over the Same Derivation (resolved 2026-09-05, PRD §16 Resolved Question 49, resolving `RAISE-TRACEABILITY-MATRIX.md` Gap 17)
+
+**Two distinct artifacts, previously conflated.** For a month, both PRD §16
+Resolved Question 35 (2026-08-21) and
+`docs/project-foundation-baseline/ESAPS-UI-FOUNDATION-BASELINE.md` (same day)
+used the name "NotificationCenter" to mean **different things**, which is
+part of why the resulting contradiction was hard to see: Resolved Question 35
+means the ESAPS reference page
+`esaps_ai_template/src/pages/NotificationCenter.tsx` (103 lines, business/UI
+reference only) — that page **remains entirely out of RAISE scope, no
+Traceability ID at any tier, unchanged**, exactly as Resolved Question 35
+already said (see [Out of Scope](#out-of-scope-no-design-area--by-business-decision)
+below; the baseline document's row mapping that page to
+`RAISE-FR-ALERT-001` as EXTEND was an error, since corrected in that file
+separately, not here). The header bell in RAISE's own
+`frontend/src/components/AppShell.tsx` is the **other** artifact: it was
+built in RAISE, was never ported from `esaps_ai_template/`, and Resolved
+Question 35 never referred to it. **This bell is confirmed in scope for
+`RAISE-FR-ALERT-001`.**
+
+**Same derivation, second surface — not a second Alert model.** The bell
+does **not** introduce a second alert concept, a second severity model, or
+any new stored record — it is a second display surface over the exact same
+read-time derivation described in ["MVP — Read-Time Derivation, No New
+Entity"](#mvp--read-time-derivation-no-new-entity) above. This is enforced
+structurally, not just by convention: `deriveAlerts()`'s logic was extracted
+into a shared hook, `frontend/src/hooks/useAlerts.ts`, and **both** the bell
+and the Alerts screen (P-012) call that same hook. Because both surfaces
+consume one shared derivation, they **cannot disagree** about what an alert
+is, how many exist, or their order — there is no code path by which the bell
+and P-012 could diverge on alert content, since both read the same output of
+the same function. No Alert table, Alert entity, or persisted Alert record is
+introduced by the bell any more than it already wasn't by the Alerts screen.
+
+**What the bell displays.** The **first five** alerts in the ordering the
+Alerts screen already uses — `deriveAlerts()`'s severity ordering, High →
+Medium → Low, from the five trigger conditions above — plus a link to the
+full Alerts screen at `ROUTES.NOTIFICATIONS` (`/notifications`).
+
+**Why "first five in severity order," not "5 most recent" (recorded because
+the obvious phrasing was rejected on evidence):** business's first request
+was "the 5 most recent alerts." That phrasing is **not computable**: the
+`Alert` interface (`frontend/src/lib/alerts.ts`) carries **no timestamp of
+any kind**, because alerts are a read-time derivation with no persisted
+record and therefore no creation time to sort by — `deriveAlerts()` sorts by
+**severity** only. Business was shown this and confirmed the bell shows the
+**first five of that same severity ordering**, so the bell and the Alerts
+screen agree with each other by construction and no new business rule is
+invented. Sorting by the underlying Asset/Ticket/Handover records' own dates
+was explicitly considered and **explicitly rejected** — it would be a new
+ordering rule with no existing definition, and none is introduced here.
+
+**Badge count — total, not unread.** The bell's badge shows the **total**
+number of alerts currently returned by the shared derivation. There is
+deliberately **no unread/read state anywhere in this design**: alert
+acknowledgement, dismissal, read/unread marking, and snooze all remain
+**out of MVP scope**, exactly as before RQ49 — this resolution does not
+touch any of them. The badge count is therefore a count of alerts that
+**currently exist** (per the read-time derivation), not a count of alerts
+**unseen** by the viewing user — there is no "seen" concept to count against.
+This document must not be read as implying an unread-count semantic anywhere
+the badge is described.
+
+**Accessibility and dead-prop cleanup (as-built, recorded for completeness).**
+The bell button previously had **no accessible name at all**; `aria-label`
+and `aria-expanded` have been added to it. Separately, `AppShell`'s
+`notifications` prop — which no caller ever populated (zero
+`<AppShell ... notifications=` call sites) and which rendered a permanently
+empty dropdown behind placeholder text reading "this will be wired to the
+real API in a later phase" — has been **removed**. The bell now derives its
+own alert list via the shared `useAlerts` hook rather than depending on a
+prop no one ever passed.
+
+**Still not decided by this resolution — unaffected, stays exactly as open
+as before:** alert acknowledgement, dismissal, read/unread state, or snooze;
+alert delivery, scheduling, or digesting; a notification-preference model;
+and per-user filtering of which alerts a given user sees ([Open Question
+22a](#25-design-open-questions)) — the bell shows the same alerts to every
+authenticated user, exactly as the Alerts screen does today. PRD Open Finding
+**F-03** (unrelated — Executive Dashboard NBV default values) is likewise
+untouched by this resolution.
+
 ### Explicitly Not Designed Here (per PRD's own non-decisions)
 
 Consistent with PRD §16 Resolved Question 44's explicit non-decisions, this
@@ -1889,19 +1978,21 @@ reusable identity link. This design does not propose adding a `User`↔
 would be unrequested scope. Recorded here only as the reason Q22a stays
 undesignable until the business (or a future requirement) answers it.
 
-**Open, not resolved by this design (must stay open):** whether the header
-bell-icon dropdown in `AppShell` (`NotificationCenter.tsx`) is in scope for
-`RAISE-FR-ALERT-001` at all. There is an unreconciled contradiction between
-PRD §16 Resolved Question 35 (which lists `NotificationCenter.tsx` as
-confirmed **entirely out of RAISE scope** and distinct from
-`RAISE-FR-ALERT-001` — see also [§22, "Out of
-Scope"](#out-of-scope-no-design-area--by-business-decision)) and
-`docs/project-foundation-baseline/ESAPS-UI-FOUNDATION-BASELINE.md` (which
-maps `NotificationCenter.tsx` **to** `RAISE-FR-ALERT-001` as EXTEND). This
-design does **not** pick a side and does **not** assign `NotificationCenter.tsx`
-a design area under this section — it is surfaced here, still open, for a
-future business confirmation round (see
-[§25 Design Open Questions](#25-design-open-questions)).
+**Resolved 2026-09-05 (was: "Open, not resolved by this design"):** whether
+the header bell-icon dropdown in `AppShell` is in scope for
+`RAISE-FR-ALERT-001`, and whether that conflicted with PRD §16 Resolved
+Question 35's "entirely out of RAISE scope" finding for the ESAPS reference
+page `NotificationCenter.tsx`, was tracked here as an open, unreconciled
+contradiction through Design v0.15. It is now resolved — see ["Header Bell —
+Second Surface Over the Same
+Derivation"](#header-bell--second-surface-over-the-same-derivation-resolved-2026-09-05-prd-16-resolved-question-49-resolving-raise-traceability-matrixmd-gap-17)
+above (PRD §16 Resolved Question 49): the two artifacts are different
+things — the ESAPS `NotificationCenter.tsx` page stays out of scope
+unchanged (Resolved Question 35 stands), and RAISE's own `AppShell` bell is
+confirmed in scope for `RAISE-FR-ALERT-001`. Nothing further remains open on
+this specific question; per-user alert filtering ([Open Question
+22a](#25-design-open-questions)) is a separate, still-open question,
+untouched by this resolution.
 
 ## Roadmap
 
@@ -2490,7 +2581,14 @@ Traceability ID at any tier** in this document:
   Check-in/Check-out)
 - `Auth.tsx` beyond Login (registration/password-reset/MFA-type screens)
 - `Inventory.tsx` (distinct from `RAISE-FR-ASSET-001` Asset Registry)
-- `NotificationCenter.tsx` (distinct from `RAISE-FR-ALERT-001` Alerts)
+- `NotificationCenter.tsx` (the ESAPS reference page,
+  `esaps_ai_template/src/pages/NotificationCenter.tsx` — distinct from
+  `RAISE-FR-ALERT-001` Alerts, and distinct from the header bell in RAISE's
+  own `frontend/src/components/AppShell.tsx`, which **is** in scope for
+  `RAISE-FR-ALERT-001` — see [§14, "Header Bell — Second Surface Over the
+  Same Derivation"](#header-bell--second-surface-over-the-same-derivation-resolved-2026-09-05-prd-16-resolved-question-49-resolving-raise-traceability-matrixmd-gap-17),
+  resolved 2026-09-05, PRD §16 Resolved Question 49, resolving
+  `RAISE-TRACEABILITY-MATRIX.md` Gap 17)
 - `Profile.tsx` (user self-service profile page)
 - `Reports.tsx` (distinct from `RAISE-FR-EXEC-001` Executive Dashboard)
 - `ErrorPages.tsx` (404/500/etc.) — treated as generic application
@@ -2555,7 +2653,7 @@ treated as mandatory.
 | RAISE-FR-WARRANTY-001 | Warranty (§5.2 — field list resolved 2026-08-29: `warrantyExpiry` only; 3-state status + per-Asset-Category Expiring threshold, default 90 days, resolved 2026-09-01) / Settings (§5.4 — threshold configuration home) |
 | RAISE-FR-LICENSE-001 | License Management — **Roadmap, not MVP** (§4.1A, §5.3; corrected 2026-08-21) |
 | RAISE-FR-ORACLE-001 | Oracle Integration |
-| RAISE-FR-ALERT-001 | Alert Architecture (§14 — five MVP trigger conditions and fixed-per-condition High/Medium/Low severity confirmed 2026-09-04; read-time derivation, no persisted Alert entity; access gate confirmed 2026-09-04 as any authenticated user, enforced via `ProtectedRoute allowedRoles`, see [§16 Security Architecture, "Alerts Screen Access Gate"](#alerts-screen-access-gate--resolved-2026-09-04-prd-v016-16-resolved-question-45)) |
+| RAISE-FR-ALERT-001 | Alert Architecture (§14 — five MVP trigger conditions and fixed-per-condition High/Medium/Low severity confirmed 2026-09-04; read-time derivation, no persisted Alert entity; access gate confirmed 2026-09-04 as any authenticated user, enforced via `ProtectedRoute allowedRoles`, see [§16 Security Architecture, "Alerts Screen Access Gate"](#alerts-screen-access-gate--resolved-2026-09-04-prd-v016-16-resolved-question-45); header bell in `AppShell` confirmed **in scope as a second surface** over the same shared derivation (`useAlerts` hook), showing the first 5 alerts in existing severity order plus a link to `ROUTES.NOTIFICATIONS`, resolved 2026-09-05 — see [§14, "Header Bell — Second Surface Over the Same Derivation"](#header-bell--second-surface-over-the-same-derivation-resolved-2026-09-05-prd-16-resolved-question-49-resolving-raise-traceability-matrixmd-gap-17), resolving `RAISE-TRACEABILITY-MATRIX.md` Gap 17 (§16 Resolved Question 49); ESAPS reference page `NotificationCenter.tsx` remains out of scope, unchanged) |
 | RAISE-FR-AUDIT-001 | Audit Architecture |
 | RAISE-FR-EXEC-001 | Executive Dashboard (§13 — Utilization KPI **built and live** 2026-09-05, PR #102; NBV formula confirmed 2026-09-05 but blocked on missing per-Asset-Category default useful-life values (§16 Open Question 3a); Risk KPI confirmed **NOT MVP** for this dashboard, by decision, not gap) / Settings (§5.4 — NBV useful-life configuration home, shape only) |
 | RAISE-FR-LIFE-001 | Lifecycle |
@@ -2647,7 +2745,21 @@ Domain](#54-settings-domain) for the NBV useful-life configuration shape, the
 same cross-reference pattern already used for the `RAISE-FR-WARRANTY-001`
 row. No new PRD Traceability ID is introduced by this change — NBV useful-life
 configuration is a design-layer extension of the existing Settings Domain,
-the same treatment already given to the Warranty threshold.
+the same treatment already given to the Warranty threshold. **As of Design
+v0.16 (PRD v0.18, §16 Resolved Question 49):** the `RAISE-FR-ALERT-001` row
+above now also covers the header bell in `frontend/src/components/AppShell.tsx`,
+confirmed as a **second Presentation-layer surface** over the same read-time
+derivation (shared via the new `frontend/src/hooks/useAlerts.ts` hook), not a
+second Alert model or a new Traceability ID. This resolves
+`RAISE-TRACEABILITY-MATRIX.md` Gap 17 and the contradiction the prior version
+of this document (§14) recorded as still-open between PRD §16 Resolved
+Question 35 and `docs/project-foundation-baseline/ESAPS-UI-FOUNDATION-BASELINE.md`.
+The resolution reaffirms, rather than reopens, Resolved Question 35 itself:
+the ESAPS reference page `esaps_ai_template/src/pages/NotificationCenter.tsx`
+remains out of scope, no row, no design area, unchanged — see the [Out of
+Scope](#out-of-scope-no-design-area--by-business-decision) bullet under §22.
+Per-user alert filtering (§16 Open Question 22a) and Open Finding F-03 are
+both untouched by this resolution and remain exactly as open as before.
 
 ---
 
@@ -2702,14 +2814,22 @@ design-relevant grouping — not a new set of questions.)
    restated (not newly decided) — see [§14 Alert
    Architecture](#14-alert-architecture). The "authorized user" viewer detail
    is now **also resolved, 2026-09-04** (PRD v0.16, §16 Resolved Question 45):
-   any authenticated user, any role — see Security item 22 below. **Still
-   open, not decided by either resolution:** alert acknowledgement/dismissal/
-   read-unread/snooze, alert delivery/scheduling/digesting, a
-   notification-preference model, per-user filtering of which alert rows a
-   given user sees (new item 22a below), and the unreconciled
-   `NotificationCenter.tsx` scope contradiction (PRD §16 Resolved Question 35
-   vs. `docs/project-foundation-baseline/ESAPS-UI-FOUNDATION-BASELINE.md` —
-   neither this design nor Resolved Question 44/45 picks a side).
+   any authenticated user, any role — see Security item 22 below. **The
+   header-bell scope contradiction is now also resolved, 2026-09-05** (PRD
+   §16 Resolved Question 49, resolving `RAISE-TRACEABILITY-MATRIX.md` Gap
+   17): the ESAPS reference page `NotificationCenter.tsx` stays out of scope
+   (Resolved Question 35 reaffirmed, the baseline document's contrary row
+   was an error), and RAISE's own `AppShell` header bell is a **different,
+   in-scope artifact** — a second surface over the same shared alert
+   derivation, showing the first 5 alerts in existing severity order plus a
+   link to `ROUTES.NOTIFICATIONS` — see [§14, "Header Bell — Second Surface
+   Over the Same
+   Derivation"](#header-bell--second-surface-over-the-same-derivation-resolved-2026-09-05-prd-16-resolved-question-49-resolving-raise-traceability-matrixmd-gap-17).
+   **Still open, not decided by any of these resolutions:** alert
+   acknowledgement/dismissal/read-unread/snooze, alert
+   delivery/scheduling/digesting, a notification-preference model, and
+   per-user filtering of which alert rows a given user sees (item 22a
+   below).
 
 ## Data
 
@@ -2921,18 +3041,68 @@ RAISE-COMPLIANCE-REVIEW.md
 
 ## Document Status
 
-**Version:** 0.15 (sync with PRD v0.17, §16 Resolved Questions 46–48 and new
-Open Question 3a: `RAISE-FR-EXEC-001`'s three proposal KPIs — NBV, Risk,
-Utilization — no longer share one undifferentiated "not yet implemented"
-status. Utilization is now built and live (PR #102, 2026-09-05); NBV's
-formula is confirmed (straight-line, zero salvage, clamped at 0,
-per-Asset-Category configurable useful life) but blocked on missing default
-useful-life values per category (new Open Question 3a); Risk is confirmed
-out of MVP scope for this dashboard by business decision, not a gap. All
-three are confirmed business decisions from a live user session —
+**Version:** 0.16 (sync with PRD v0.18, §16 Resolved Question 49: the
+long-standing `RAISE-TRACEABILITY-MATRIX.md` Gap 17 contradiction — whether
+the header bell in `frontend/src/components/AppShell.tsx` is in or out of
+scope for `RAISE-FR-ALERT-001` — is resolved. Two distinct artifacts had
+been conflated under the same "NotificationCenter" name: the ESAPS reference
+page `esaps_ai_template/src/pages/NotificationCenter.tsx` stays entirely out
+of RAISE scope (PRD §16 Resolved Question 35 reaffirmed; the
+`ESAPS-UI-FOUNDATION-BASELINE.md` row mapping it to `RAISE-FR-ALERT-001` was
+an error, corrected in that file separately); RAISE's own `AppShell` header
+bell is confirmed **in scope** for `RAISE-FR-ALERT-001`, as a second display
+surface over the same read-time alert derivation, sharing its logic with the
+Alerts screen (P-012) via the new `frontend/src/hooks/useAlerts.ts` hook.
+Bell shows the first 5 alerts in the existing severity ordering (High →
+Medium → Low) plus a link to `ROUTES.NOTIFICATIONS`; badge shows the total
+alert count, not an unread count (no unread/read state exists in MVP scope).
+This is a confirmed business decision from a live chat session —
 `## NEEDS_PRD_CONFIRMATION` is **not** raised by this sync. Documentation-only
-sync; no code change to this design pass itself, though it records already-
-merged PR #102.)
+sync; no design decision invents anything the PRD or the as-built code does
+not already state. Per-user alert filtering (PRD §16 Open Question 22a) and
+Open Finding F-03 are both untouched and remain exactly as open as before.)
+
+**Change Log — v0.15 → v0.16 (sync with PRD v0.17 → v0.18: header bell
+in/out-of-scope contradiction resolved; PRD §16 Resolved Question 49,
+resolving `RAISE-TRACEABILITY-MATRIX.md` Gap 17):**
+
+1. **§3.1 High-Level Architecture** — traceability note on the `A7` Alerts
+   node extended: `A7` now also covers the `AppShell` header bell as a
+   second Presentation-layer surface reading the same derivation via a
+   shared hook; no new Data-layer node, no change to any other node.
+2. **§14 Alert Architecture** — new subsection "Header Bell — Second Surface
+   Over the Same Derivation" added, recording: the two-distinct-artifacts
+   resolution (ESAPS `NotificationCenter.tsx` stays out of scope; RAISE's own
+   `AppShell` bell is in scope); the shared `useAlerts` hook as a structural
+   (not conventional) guarantee that the bell and Alerts screen cannot
+   disagree; the first-five-by-severity display rule and its rejected
+   "5 most recent" alternative (no timestamp field exists on `Alert`); the
+   total-count (not unread-count) badge semantic, with acknowledge/dismiss/
+   read-unread/snooze explicitly reaffirmed out of MVP scope; and the
+   accessibility (`aria-label`/`aria-expanded`) and dead-prop-removal
+   (`notifications` prop) as-built details. The prior "Open, not resolved by
+   this design" bell paragraph is rewritten to point to this new subsection
+   as resolved.
+3. **§22 Out of Scope** — `NotificationCenter.tsx` bullet expanded to name
+   the ESAPS page explicitly by path and cross-reference the new §14
+   subsection, so the bullet no longer reads as if it also covered the
+   `AppShell` bell.
+4. **§24 Design Traceability** — `RAISE-FR-ALERT-001` row and cross-check
+   paragraph both updated to record the bell resolution; no new
+   Traceability ID introduced (the bell is a design-layer surface over an
+   existing requirement, not a new requirement).
+5. **§25 Design Open Questions** — Business item 5a updated: the header-bell
+   scope contradiction is marked resolved and no longer listed among "still
+   open" items; item 22a (per-user alert filtering) is carried forward
+   unchanged, still open.
+6. **No `## NEEDS_PRD_CONFIRMATION` signal raised by this design pass.**
+   Every statement added traces directly to PRD v0.18 §16 Resolved Question
+   49 or to already-implemented code (`frontend/src/hooks/useAlerts.ts`,
+   `frontend/src/components/AppShell.tsx`, `frontend/src/lib/alerts.ts`) the
+   PRD itself cites. No capability was found during this pass that lacks a
+   requirement behind it.
+7. Header metadata updated: Version bumped to 0.16; Design Source updated to
+   reference PRD v0.18.
 
 **Change Log — v0.14 → v0.15 (sync with PRD v0.16 → v0.17: NBV formula
 confirmed but blocked on missing default values; Risk KPI confirmed NOT MVP

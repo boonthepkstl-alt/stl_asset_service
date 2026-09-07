@@ -2,9 +2,9 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Acceptance Criteria
-**Version:** 0.14 Draft
+**Version:** 0.15 Draft
 **Status:** Draft for Acceptance Review
-**Source:** [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.16 §27 (Prototype Traceability Matrix) + §5, §7–§23, §23A, §25A (per-screen specs / P-018 Settings / AI Scope Boundary / NFR Backlog Prototype Note) + §8/§20's corrected P-002/P-014 KPI grid (nine tiles, Utilization built and live) and NBV/Risk/Utilization status narrative + §23A's new NBV section (shape confirmed, not built) + §14's "IT Hardware Assignment Approval Workflow — Category-Scoped Exception" subsection + §18's P-012 Alerts (five confirmed MVP trigger conditions and fixed-per-condition severity; access gate confirmed 2026-09-04), cross-checked against [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.17 (§16 Resolved Questions 46–48, new Open Question 3a) and [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.15
+**Source:** [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.17 §27 (Prototype Traceability Matrix) + §5, §7–§23, §23A, §25A (per-screen specs / P-018 Settings / AI Scope Boundary / NFR Backlog Prototype Note) + §8/§20's corrected P-002/P-014 KPI grid (nine tiles, Utilization built and live) and NBV/Risk/Utilization status narrative + §23A's new NBV section (shape confirmed, not built) + §14's "IT Hardware Assignment Approval Workflow — Category-Scoped Exception" subsection + §18's P-012 Alerts (five confirmed MVP trigger conditions and fixed-per-condition severity; access gate confirmed 2026-09-04) + §6's new "Header Bell (`AppShell`) — Second Surface of P-012 Alerts, AS BUILT" subsection and §18's new "Ordering Rationale" subsection (both resolved 2026-09-05, PRD §16 Resolved Question 49, closing Gap 17), cross-checked against [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.18 (§16 Resolved Question 49) and [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.15
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
 
@@ -60,7 +60,7 @@ detail is "TBD" or "conceptual," the corresponding criterion is marked
 | [AC-MAINT-001](#12-ac-maint-001--p-009-maintenance) | P-009 | RAISE-FR-MAINT-001 | Partially testable (workflow shape testable; SLA/vendor/cost NOT TESTABLE YET) |
 | [AC-WARRANTY-001](#13-ac-warranty-001--p-010-warranty--p-018-settings) | P-010, P-018 | RAISE-FR-WARRANTY-001 (Warranty section); `RAISE-FR-EXEC-001` (P-018's new NBV section, NOT TESTABLE YET) | Warranty section: Testable (field list resolved 2026-08-29; per-category configurable threshold resolved 2026-09-01). NBV section (added 2026-09-05, PRD §16 Resolved Question 46): shape-only criterion, NOT TESTABLE YET pending PRD Open Question 3a |
 | [AC-ORACLE-001](#14-ac-oracle-001--p-011-oracle-fa--financial-view) | P-011 | RAISE-FR-ORACLE-001 | Partially testable |
-| [AC-ALERT-001](#15-ac-alert-001--p-012-alerts) | P-012 | RAISE-FR-ALERT-001 | Testable for the five confirmed trigger conditions and fixed-per-condition severity (resolved 2026-09-04, PRD §16 Resolved Question 44; closes Open Finding F-05's trigger-rules cause), and now also testable for the access gate itself (resolved 2026-09-04, PRD §16 Resolved Question 45 — any authenticated user, all four roles; partially resolves Open Finding F-08 for this screen only) — only Warranty EXPIRED is actually implemented as of this date, the other four are not yet built (verification deferred to Test Case execution, not decided here); per-user filtering of alert rows is a separate, newly-raised, still-open question (PRD §16 Q22a) with no criterion written for it |
+| [AC-ALERT-001](#15-ac-alert-001--p-012-alerts) | P-012 (+ header bell, `AppShell`, global chrome) | RAISE-FR-ALERT-001 | Testable for the five confirmed trigger conditions and fixed-per-condition severity (resolved 2026-09-04, PRD §16 Resolved Question 44; closes Open Finding F-05's trigger-rules cause), and now also testable for the access gate itself (resolved 2026-09-04, PRD §16 Resolved Question 45 — any authenticated user, all four roles; partially resolves Open Finding F-08 for this screen only) — only Warranty EXPIRED is actually implemented as of this date, the other four are not yet built (verification deferred to Test Case execution, not decided here); per-user filtering of alert rows is a separate, newly-raised, still-open question (PRD §16 Q22a) with no criterion written for it. **Updated 2026-09-05 (PRD §16 Resolved Question 49, closing Gap 17):** the `AppShell` header bell — a second display surface over this same requirement — is now **built and shipped**, and AC-ALERT-001-12..17 test it directly as passing/testable criteria, not NOT TESTABLE YET; the group's former "bell-icon scope contradiction" left-open note is resolved and removed |
 | [AC-AUDIT-001](#16-ac-audit-001--p-013-audit-log) | P-013 | RAISE-FR-AUDIT-001 | Partially testable |
 | [AC-EXEC-001](#17-ac-exec-001--p-014-executive-dashboard) | P-014 | RAISE-FR-EXEC-001 | Testable (rewritten 2026-08-31 to match as-built dashboard, Open Finding F-22; updated 2026-09-05, PRD §16 Resolved Questions 46–48 — KPI grid now nine tiles; Utilization is now a passing, testable criterion (built and live, PR #102); NBV is NOT TESTABLE YET (formula confirmed, default useful-life values undefined, PRD Open Question 3a); Risk is confirmed out of MVP scope by business decision, not a gap) |
 | [AC-AI-SEARCH-001](#18-ac-ai-search-001--p-015-ai-assistant) | P-015 | RAISE-AI-SEARCH-001 | Partially testable |
@@ -842,6 +842,28 @@ whether alert rows should eventually be filtered to only those "relevant" to the
 viewing user (PRD §16 Q22a) — is **not** decided by this resolution; see the NOT
 TESTABLE YET / left-open notes below.
 
+**Status Note — Updated 2026-09-05 to Add the Header Bell Second Surface, AS BUILT
+(PRD §16 Resolved Question 49; Design §14 "Header Bell — Second Surface Over the Same
+Derivation"; Prototype v0.17 §6 "Header Bell (`AppShell`)" and §18 "Ordering Rationale";
+resolves `RAISE-TRACEABILITY-MATRIX.md` Gap 17)**
+
+This group previously left the header bell-icon dropdown (`AppShell`) as an unreconciled
+scope contradiction — see the (now-removed) "Left open, not decided here" bullet in the
+prior revision. That contradiction is resolved: PRD §16 Resolved Question 35 (out of
+scope) refers only to the ESAPS reference page
+`esaps_ai_template/src/pages/NotificationCenter.tsx`, unchanged and still out of scope;
+the header bell built in RAISE's own `frontend/src/components/AppShell.tsx` is a
+**different, independently-built artifact**, never ported from the ESAPS page, confirmed
+**in scope** for `RAISE-FR-ALERT-001` as a second display surface over the exact same
+read-time derivation this screen already uses (both surfaces consume
+`frontend/src/hooks/useAlerts.ts`) — not a second Alert model, not a second requirement,
+and not a second screen ID. **The feature is built and shipped**, so AC-ALERT-001-12
+through -17 below are written as directly testable criteria now, not NOT TESTABLE YET.
+This is unrelated to, and does not affect, the still-open PRD §16 Q22a per-user-filtering
+question (see below) — the bell shows the same alerts to every authenticated user,
+exactly as the Alerts screen itself does; nothing about the bell narrows or personalizes
+the alert set.
+
 **Read-time derivation, no persisted Alert record (Design §14).** None of the criteria
 below imply an Alert table, Alert entity, or stored alert state — no read/unread, no
 acknowledge/dismiss, no snooze. Each criterion is phrased as "given the underlying
@@ -927,6 +949,44 @@ verified passing — whether each criterion actually passes is decided at
   the Alerts route carries no route-specific role restriction (PRD §16 Resolved
   Question 45; Design §16 "Alerts Screen Access Gate").
 
+**Header bell (`AppShell`) — second surface over this same requirement, built and
+shipped (PRD §16 Resolved Question 49; Design §14; Prototype §6/§18):**
+
+- **AC-ALERT-001-12** — Given the header bell badge derives its count from the same
+  shared `useAlerts` hook (`frontend/src/hooks/useAlerts.ts`) that this screen (P-012)
+  itself uses, when an authenticated user views the header on any authenticated page,
+  then the badge shows the **total** alert count currently returned by that shared
+  derivation (live-verified against the seeded register: **19**) — the same total this
+  screen itself derives, not a separately computed or independently-sourced count.
+- **AC-ALERT-001-13** — Given the header bell button is clicked, when the dropdown
+  panel opens, then it lists **exactly five** rows — not all currently-existing alerts
+  — each showing the condition label, the description, and the affected record
+  formatted as `CODE · Name` (live-verified: `AST-0003 · iPhone 15 Pro` through
+  `AST-0007 · Cisco Catalyst 9300`, all High severity in this dataset).
+- **AC-ALERT-001-14** — Given both the header bell and this screen read the same
+  shared `useAlerts` hook, sorted by severity (High → Medium → Low, per "Ordering
+  Rationale" below), when the bell dropdown's five rows are compared against this
+  screen's own first five rows, then they are identical in content, count, and order —
+  the bell shows **the first five in the same severity ordering this screen uses**, not
+  "5 most recent" (not computable — see "Ordering Rationale" below). This is the
+  criterion the business decision (PRD §16 Resolved Question 49) turned on: the two
+  surfaces must agree by construction, not by coincidence of a given dataset.
+- **AC-ALERT-001-15** — Given the bell dropdown's **"View all alerts"** control, when a
+  user selects it, then the user is navigated to `ROUTES.NOTIFICATIONS` (`/notifications`)
+  — i.e., this screen (P-012 Alerts) itself.
+- **AC-ALERT-001-16** — Given acknowledge, dismiss, read/unread, and snooze affordances
+  are confirmed absent from the header bell by the same business decision that resolved
+  its scope (PRD §16 Resolved Question 49) — unchanged, still out of MVP scope, exactly
+  as this screen already documents them (AC-ALERT-001-09 above) — when the bell
+  dropdown is inspected, then none of these affordances is present anywhere in it. The
+  badge (AC-ALERT-001-12) counts alerts that **currently exist**, not an unseen/unread
+  count — there is no read/unread concept anywhere in this design (Design §14), and
+  nothing in this criterion should be read as implying one.
+- **AC-ALERT-001-17** — Given the bell button previously had **no accessible name at
+  all**, when the button is inspected, then it exposes an `aria-label` naming its
+  purpose and current count (e.g., "Notifications, 19 alerts") and an `aria-expanded`
+  attribute reflecting whether the dropdown panel is currently open.
+
 **RESOLVED (was: NOT TESTABLE YET — AC-ALERT-001-01's "authorized user" gate):**
 PRD v0.16 §16 Resolved Question 45 and Design v0.14 §16 confirm "authorized user," for
 this screen, means **any authenticated user** — all four roles, none excluded. This is
@@ -946,27 +1006,50 @@ Q21) is untouched.
   `id`/`username`/`fullName`/`role`) — the Handovers screen (P-008) matches recipients
   by comparing `fullName` strings as a documented MVP limitation, not a reusable
   identity link. No criterion above tests per-user filtering, and none should be
-  inferred from AC-ALERT-001-01..11.
+  inferred from AC-ALERT-001-01..17 — the header bell (AC-ALERT-001-12..17) is
+  unaffected by this open question and shows the same alerts to every authenticated
+  user, exactly as this screen itself does; it does not filter by user.
+
+**Ordering Rationale reference — "First Five in Severity Order," Not "5 Most Recent"
+(resolved 2026-09-05, PRD §16 Resolved Question 49; Design §14; recorded once, in full,
+in Prototype §18 "Ordering Rationale," not duplicated here):** AC-ALERT-001-13/-14 test
+that the header bell dropdown shows the **first five alerts in severity order**
+(High → Medium → Low), the same ordering this screen itself already used before the
+bell existed — not "5 most recent." Business's first request was "the 5 most recent
+alerts"; that phrasing is **not computable** because the `Alert` interface
+(`frontend/src/lib/alerts.ts`) carries no timestamp field of any kind — alerts are a
+read-time derivation with no persisted record and therefore no creation time to sort
+by. Business was shown this and confirmed the severity ordering instead, so the bell
+and this screen agree by construction (both read `frontend/src/hooks/useAlerts.ts`).
+Sorting by the underlying Asset/Ticket/Handover records' own dates was explicitly
+considered and explicitly rejected — it would be a new ordering rule with no existing
+definition, and none is introduced here.
+
+**Resolved, no longer left open (was: "Left open, not decided here" — see Change Log
+below for what changed):**
+
+- ~~**Header bell-icon dropdown (`NotificationCenter.tsx` in `AppShell`)** — whether it
+  is in scope for `RAISE-FR-ALERT-001` at all remains an unreconciled contradiction~~
+  **Resolved 2026-09-05** (PRD §16 Resolved Question 49; Design §14 "Header Bell —
+  Second Surface Over the Same Derivation," resolving `RAISE-TRACEABILITY-MATRIX.md`
+  Gap 17). The apparent contradiction was between two different artifacts, not a real
+  conflict: PRD §16 Resolved Question 35 (out of scope) refers only to the ESAPS
+  reference page `esaps_ai_template/src/pages/NotificationCenter.tsx`, unchanged; the
+  `AppShell` header bell is a separate, RAISE-built artifact, confirmed **in scope** and
+  now tested directly by AC-ALERT-001-12..17 above.
 
 **Left open, not decided here (do not write criteria for these):**
 
-- **Header bell-icon dropdown (`NotificationCenter.tsx` in `AppShell`)** —
-  whether it is in scope for `RAISE-FR-ALERT-001` at all remains an
-  unreconciled contradiction: PRD §16 Resolved Question 35 states it is
-  entirely out of RAISE scope and distinct from this requirement, while
-  [`ESAPS-UI-FOUNDATION-BASELINE.md`](../project-foundation-baseline/ESAPS-UI-FOUNDATION-BASELINE.md)
-  line 88 maps it to `RAISE-FR-ALERT-001` as EXTEND. PRD v0.16, Design
-  v0.14, and Prototype v0.15 all carry this contradiction forward as
-  still open. No criterion above tests the bell icon; none should be
-  inferred from AC-ALERT-001-01..11.
 - Alert acknowledgement, dismissal, read/unread, snooze,
   delivery/scheduling/digesting, and notification preferences remain out
   of MVP scope entirely and are not addressed by any criterion above
   (Prototype §18 "Open Questions — Left Open, Not Decided Here"; Design
-  §14 "Explicitly Not Designed Here").
+  §14 "Explicitly Not Designed Here") — unaffected by the header bell resolution;
+  AC-ALERT-001-16 documents their confirmed absence from the bell specifically.
 - **Per-user filtering of alert rows (PRD §16 Q22a)** — see the NOT TESTABLE YET note
   above; not decided by the access-gate resolution, and no `employeeId` field or other
-  `User`↔`Employee` link is proposed here.
+  `User`↔`Employee` link is proposed here. Unaffected by the header bell resolution —
+  the bell shows the same unfiltered alert set as this screen.
 
 ---
 
@@ -1330,6 +1413,22 @@ them as final:
 No criterion in this document silently resolves these — each affected
 criterion above carries its own **NOT TESTABLE YET** note.
 
+**Resolved since last revision (2026-09-05, PRD v0.18 §16 Resolved Question 49, per
+confirmed business decision — resolves `RAISE-TRACEABILITY-MATRIX.md` Gap 17):** the
+header bell-icon dropdown (`AppShell`) scope contradiction — previously carried in
+AC-ALERT-001's own "Left open, not decided here" list (§15), never a row in this table
+— is resolved, not merely narrowed: PRD §16 Resolved Question 35 (out of scope) refers
+only to the ESAPS reference page `esaps_ai_template/src/pages/NotificationCenter.tsx`,
+unchanged; the `AppShell` header bell is a separate, RAISE-built artifact, confirmed in
+scope as a second display surface over `RAISE-FR-ALERT-001`, **built and shipped**. Six
+new criteria, AC-ALERT-001-12 through -17 (§15), test it directly as passing/testable —
+badge total-count parity with the Alerts screen's own derivation, the five-row dropdown
+content, severity-order parity with the Alerts screen, the "View all alerts"
+navigation, confirmed absence of acknowledge/dismiss/read-unread/snooze affordances,
+and the `aria-label`/`aria-expanded` accessibility fix. This is unrelated to, and does
+not narrow, the still-open **Q22a** row above — the bell shows the same unfiltered
+alert set to every authenticated user as the Alerts screen itself.
+
 **Resolved since last revision (2026-09-05, PRD v0.17 §16 Resolved Questions
 46–48, per confirmed business decision):** the prior single "Q3 NBV/Risk KPI
 formulas" and "Q4 Definition of Risk" table rows are replaced by one narrowed
@@ -1601,11 +1700,20 @@ Before moving to Test Plan:
       this screen only — the general role/permission-matrix content for every other
       screen remains NOT TESTABLE YET (PRD §16 Q22), and per-user filtering of alert
       rows (PRD §16 Q22a, newly raised) is explicitly left open with no criterion
-      written for it and no `employeeId`/`User`↔`Employee` link proposed; the header
-      bell-icon dropdown scope contradiction (PRD §16 Resolved Question 35 vs.
-      `ESAPS-UI-FOUNDATION-BASELINE.md` line 88) is named but left unresolved, with no
-      criterion written for it; only Warranty EXPIRED is noted as actually implemented
-      as of 2026-09-04, without any criterion claiming the other four have been verified
+      written for it and no `employeeId`/`User`↔`Employee` link proposed; only Warranty
+      EXPIRED is noted as actually implemented as of 2026-09-04, without any criterion
+      claiming the other four have been verified. **Updated 2026-09-05 (PRD §16 Resolved
+      Question 49, closing Gap 17):** the former header bell-icon dropdown scope
+      contradiction (PRD §16 Resolved Question 35 vs.
+      `ESAPS-UI-FOUNDATION-BASELINE.md` line 88) is now **resolved, not left open** — the
+      `AppShell` header bell is confirmed a separate, RAISE-built, in-scope second
+      display surface over this same requirement, **built and shipped**, and is tested
+      directly by six new, passing/testable criteria, AC-ALERT-001-12..17 (badge total
+      count parity with this screen's own derivation; five-row dropdown content;
+      severity-order parity; "View all alerts" navigation; confirmed absence of
+      acknowledge/dismiss/read-unread/snooze affordances; `aria-label`/`aria-expanded`
+      accessibility fix) — none of these six is marked NOT TESTABLE YET, and none
+      implies per-user filtering (PRD §16 Q22a remains separately open, untouched)
 
 ---
 
@@ -1639,11 +1747,65 @@ as blocked pending business confirmation.
 
 ## Document Status
 
-**Version:** 0.14 (re-synced against `RAISE-PROTOTYPE.md` v0.16 §8/§20/§23A, `RAISE-PRD.md`
-v0.17 §16 Resolved Questions 46–48 and new Open Question 3a, and `RAISE-DESIGN.md` v0.15
-§5.4/§13, 2026-09-05 — P-002/P-014 Executive Dashboard KPI grid correction (Utilization
-built and live; NBV and Risk each recorded on their own, no-longer-shared terms) and new
-P-018 NBV configuration section (shape only, not built))
+**Version:** 0.15 (re-synced against `RAISE-PROTOTYPE.md` v0.17 §6/§18, `RAISE-PRD.md`
+v0.18 §16 Resolved Question 49, and `RAISE-DESIGN.md` v0.15 §14, 2026-09-05 — new
+`AppShell` header bell second surface over P-012 Alerts, built and shipped, resolving
+`RAISE-TRACEABILITY-MATRIX.md` Gap 17)
+
+**Change Log — v0.14 → v0.15 (2026-09-05, PRD v0.18 §16 Resolved Question 49, per
+confirmed business decision — resolves Gap 17):**
+
+1. **Root cause.** `RAISE-PROTOTYPE.md` v0.17 added a new "Header Bell (`AppShell`) —
+   Second Surface of P-012 Alerts, AS BUILT" subsection (§6 Global Layout) and a new
+   "Ordering Rationale" subsection (§18 P-012), resolving the prior scope contradiction
+   between PRD §16 Resolved Question 35 (ESAPS `NotificationCenter.tsx` out of scope)
+   and `ESAPS-UI-FOUNDATION-BASELINE.md` line 88 (mapping the bell to
+   `RAISE-FR-ALERT-001` as EXTEND). The two statements were about two different
+   artifacts: the ESAPS reference page (still out of scope, unchanged) and RAISE's own,
+   independently-built `frontend/src/components/AppShell.tsx` bell (confirmed in scope,
+   built and shipped). This document is corrected to match — all decisions applied here
+   are already business-confirmed (PRD §16 Resolved Question 49, dated 2026-09-05); no
+   `## NEEDS_PRD_CONFIRMATION` is raised.
+2. **AC-ALERT-001 (§15) gains a new Status Note** explaining the resolution, and **six
+   new criteria, AC-ALERT-001-12 through -17**, all written as directly
+   testable/passing (not NOT TESTABLE YET, since the feature is built and shipped):
+   badge total-alert-count parity with this screen's own shared `useAlerts` derivation
+   (live-verified: 19); the dropdown's exactly-five-row content (condition label,
+   description, `CODE · Name` affected record); severity-order parity between the
+   bell's five rows and this screen's own first five rows (the criterion the business
+   decision most turned on); the "View all alerts" navigation to `/notifications`;
+   confirmed absence of acknowledge/dismiss/read-unread/snooze affordances (careful not
+   to imply a read/unread model — the badge counts alerts that currently exist, not
+   unseen ones); and the bell button's new `aria-label`/`aria-expanded` accessibility
+   fix (it previously had no accessible name at all). AC-ALERT-001-01 through -11 are
+   **unchanged**.
+3. **A new "Ordering Rationale reference" note is added under AC-ALERT-001 (§15)**,
+   pointing to Prototype §18's full "Ordering Rationale" (not duplicated here): business
+   first asked for "the 5 most recent alerts," which is not computable because `Alert`
+   carries no timestamp field of any kind (alerts are a read-time derivation with no
+   persisted record); `deriveAlerts()` sorts by severity only, and business confirmed
+   the bell shows the first five of that same severity ordering. Sorting by the
+   underlying records' own dates was considered and explicitly rejected.
+4. **The former "Left open, not decided here" bell-icon-dropdown bullet (§15) is
+   replaced** with a resolved pointer to the new criteria — it is no longer an open
+   scope contradiction. The acknowledge/dismiss/read-unread/snooze and per-user-filtering
+   bullets in the same list are kept, each updated to note they are unaffected by (not
+   narrowed by) this resolution.
+5. **AC Index (§3)** — the AC-ALERT-001 row is updated to name the header bell as part
+   of this group's scope and to record that it is now built, shipped, and tested by
+   AC-ALERT-001-12..17, not left as an unresolved contradiction.
+6. **Not-Yet-Testable Summary (§20)** — a new "Resolved since last revision
+   (2026-09-05, PRD §16 Resolved Question 49)" note is added, explicitly stating this
+   resolution does not narrow the still-open Q22a row (per-user filtering) — the bell
+   shows the same unfiltered alert set as the Alerts screen itself.
+7. **Acceptance Criteria Review Checklist (§21)** — the AC-ALERT-001 checklist item is
+   updated to record that the header bell scope contradiction is resolved (not merely
+   named) and that six new criteria test it directly as passing/testable.
+8. **PRD §16 Open Question 22a (per-user alert filtering) is explicitly unaffected and
+   stays open** — no criterion in this revision implies the bell filters by user; it
+   shows the same alerts to every authenticated user, exactly as the Alerts screen does.
+9. This revision does not touch `RAISE-PROTOTYPE.md`, `OPEN-FINDINGS.md`, or any earlier
+   layer — only this document.
 
 **Change Log — v0.13 → v0.14 (2026-09-05, PRD v0.17 §16 Resolved Questions 46–48, per
 confirmed business decision):**

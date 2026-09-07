@@ -61,27 +61,42 @@ It is the **only** remaining item that would move a Compliance Review verdict.
 `RAISE-FR-EXEC-001` is the single requirement sitting at `PASS (partial)` while otherwise
 complete, and `TC-EXEC-001-03b` / `TC-DASH-03b` are the cases holding it there.
 
-**The deliverable chain is already specified end-to-end for this work — a correction to
-this file's own earlier claim, recorded rather than quietly fixed.** The run of
-2026-09-07 after `CHECKPOINT-2026-09-07-008` listed "the chain sync" among F-03's remaining
-work and named only two test cases. **Both were checked against the chain documents on
-`c4d2e24` and both were incomplete:**
+**The chain specifies one half of this work and only documents the absence of the other —
+and this file has now been wrong about it in both directions, so the evidence is set out in
+full rather than summarised.**
 
-| Layer | Already written |
-|---|---|
-| Prototype v0.17 | **§23A P-018 Settings** — the NBV section, with a Status Banner |
-| AC v0.16 | `AC-WARRANTY-001-07` (Settings NBV section), `AC-DASH-03b`, `AC-EXEC-001-03b` |
-| Test Cases v0.26 | **`TC-WARRANTY-001-07`** — *"P-018 Settings NBV section shows all 5 categories with editable useful-life inputs"*, whose expected result already names `NBVSettings: Record<AssetCategory, usefulLifeYears>` — plus `TC-DASH-03b` and `TC-EXEC-001-03b` |
-| Matrix v2.6 | Q3a recorded as the blocker of all three ACs |
+*First error (the run after `CHECKPOINT-2026-09-07-007`):* "the chain sync" was listed among
+F-03's remaining work and only two test cases were named, missing `TC-WARRANTY-001-07`
+entirely. *Second error (the revision of `a92aeb5`, correcting the first):* it swung to
+"specified end-to-end … no specification work remains", **which is false for the Dashboard
+half.** Checked line by line against the chain documents on `a92aeb5`:
 
-All three cases read **BLOCKED (partial)** for two precisely stated reasons: the section is
-not built, and no default value can be asserted. Neither reason is "unspecified".
+| Half | Specified as | Evidence |
+|---|---|---|
+| **Settings NBV section** | ✅ **presence — buildable against a spec** | Prototype v0.17 **§23A**; `AC-WARRANTY-001-07`; `TC-WARRANTY-001-07` — *"P-018 Settings NBV section shows all 5 categories with editable useful-life inputs"*, whose expected result already names `NBVSettings: Record<AssetCategory, usefulLifeYears>` |
+| **Dashboard / Executive NBV tile** | 🔴 **absence only — no forward spec exists** | `AC-DASH-03b`: *"when a user inspects it for an NBV tile, **then no such tile is present**"* · `AC-EXEC-001-03b`: *"**then no such tile is present**"* · `TC-DASH-03b` expected result: *"No NBV tile is present in the shipped grid — **this documents today's accurate absence, not a target for NBV to be displayed**"* · Prototype:783: *"**No NBV tile exists on this dashboard today, and none can be built**"* |
 
-**What this changes about the plan:** no specification work remains. F-03 is **five
-numbers, two UI pieces, and the execution of three existing test cases** — the chain edits
-afterwards are *execution recording* (statuses and verdicts), not a spec sync. The earlier
-framing made the task sound larger than it is, and it omitted `TC-WARRANTY-001-07`
-entirely.
+**The consequence is concrete, not stylistic.** `TC-DASH-03b` and `TC-EXEC-001-03b` are
+**not** cases that a built NBV tile would pass — **they assert its absence, so building the
+tile makes them fail.** And `TC-DASH-01` / `TC-EXEC-001-01` assert a **nine-tile** grid in a
+fixed order and are already recorded **PASS**; a tenth tile invalidates those records too.
+
+**What this changes about the plan.** F-03 is *not* "five numbers, two UI pieces and three
+executions". It is:
+
+1. the five values, recorded in PRD §16 with authority;
+2. **a specification pass for the Dashboard tile** — AC → Test Plan → Test Cases, through
+   the `.claude/skills` subagents — turning the absence criteria into presence criteria and
+   settling the nine-vs-ten tile count. **This cannot be written until DoR-3 is answered**,
+   because the answer determines what the criteria say;
+3. the two UI pieces;
+4. execution: `TC-WARRANTY-001-07` (already a presence case), plus the rewritten Dashboard
+   cases and a re-execution of `TC-DASH-01` / `TC-EXEC-001-01` against the new tile count.
+
+**Same class of defect as F-50**, which this session fixed in the findings register: a
+tracking document misdescribing state. The lesson it repeats is the session's own — *a claim
+in a document deserves the same verification as a test result* — and here the claim needing
+it was this file's correction of itself.
 
 **Everything else about it is already built or specified — verified in source this run:**
 
@@ -115,15 +130,23 @@ Threshold precedent (`Settings/index.tsx:144-161`, which loops `Object.keys` ove
 `expiringThresholdDaysByCategory`), and a Dashboard NBV tile fed by `computePortfolioNbv`
 the way the Utilization tile is fed by `computeUtilization` (`Dashboard/index.tsx:29,66,74`).
 
-**Then execution, not specification:** `TC-WARRANTY-001-07`, `TC-DASH-03b` and
-`TC-EXEC-001-03b` are formally executed — all three exist today and are BLOCKED — and their
-recorded statuses, the matrix row and the Compliance Review verdict are updated through the
-`.claude/skills` subagents to reflect the result.
+**Specification first for the Dashboard half, then execution — not execution alone.**
+`TC-WARRANTY-001-07` is already a presence case and needs only executing. The Dashboard
+cases do not: `AC-DASH-03b` / `AC-EXEC-001-03b` and their test cases must be **rewritten
+from absence criteria to presence criteria** through the `.claude/skills` subagents, and the
+nine-tile count in `AC-DASH-01` / `AC-EXEC-001-01` settled, before anything there can be
+executed. Only then are statuses, the matrix row and the Compliance Review verdict updated.
 
 ### Acceptance Criteria
 
-`AC-WARRANTY-001-07` (Settings NBV section), `AC-DASH-03b` and `AC-EXEC-001-03b` — all three
-already written, all three currently NOT TESTABLE YET on Q3a alone.
+- `AC-WARRANTY-001-07` (Settings NBV section) — **already a presence criterion**, NOT
+  TESTABLE YET on Q3a alone.
+- `AC-DASH-03b` / `AC-EXEC-001-03b` — **currently absence criteria** (*"then no such tile is
+  present"*). A built tile does not satisfy them; it contradicts them. They must be rewritten
+  before they can serve as this work's acceptance criteria.
+- `AC-DASH-01` / `AC-EXEC-001-01` — assert **nine tiles** and are recorded PASS; a tenth tile
+  requires them to be re-specified and re-executed.
+
 `RAISE-FR-EXEC-001` moves `PASS (partial)` → full `PASS` **only after execution**, never on
 implementation alone (Completion Rule, and `SESSION-CLOSEOUT-PROTOCOL.md` Rule 14).
 
@@ -149,10 +172,17 @@ the existing tile.
 **Code:** `frontend/src/types/settings.ts`, `frontend/src/pages/Settings/`,
 `frontend/src/pages/Dashboard/`, `frontend/src/services/dashboard-service.ts`.
 
-**Chain, for execution recording only** (via the `.claude/skills` subagents, never edited
-directly in the main thread): `RAISE-TEST-CASES.md`, `RAISE-TRACEABILITY-MATRIX.md`,
-`RAISE-COMPLIANCE-REVIEW.md` — plus `RAISE-PRD.md` §16 **before** any code, to record the
-five values as a Resolved Question and close Q3a.
+**Chain** — via the `.claude/skills` subagents, never edited directly in the main thread —
+in two distinct passes that must not be conflated:
+
+1. **Before any code:** `RAISE-PRD.md` §16, to record the five values as a Resolved Question
+   and close Q3a.
+2. **Specification, also before the Dashboard code:** `RAISE-ACCEPTANCE-CRITERIA.md`,
+   `RAISE-TEST-PLAN.md`, `RAISE-TEST-CASES.md` — rewriting the NBV absence criteria as
+   presence criteria and settling the tile count. **Gated on DoR-3**, which determines what
+   they say.
+3. **Execution recording, after:** `RAISE-TEST-CASES.md` statuses,
+   `RAISE-TRACEABILITY-MATRIX.md`, `RAISE-COMPLIANCE-REVIEW.md`.
 
 **Tracking:** `OPEN-FINDINGS.md`, `PROJECT-CHECKPOINTS.md`, `DEVELOPMENT-LOG.md`,
 `CURRENT-STATUS.md`.
@@ -163,7 +193,7 @@ five values as a Resolved Question and close Q3a.
 |---|---|
 | **DoR-1** | The **five values** supplied in full, in years, with no gaps and no "approximately". |
 | **DoR-2** | Recorded as a **new Resolved Question in PRD §16**, closing Q3a, through the `update-prd` subagent — a number that exists only in a chat message has no authority the chain can cite. |
-| **DoR-3** | A decision on presentation beside the **existing static "Monthly Depreciation" tile** (`Dashboard/index.tsx:78`, fed by `mockData.ts:755` `monthlyDepreciation: 42800`, labelled *illustrative*). A real NBV figure would sit next to a fabricated depreciation figure. **That tile must not be changed or removed without a requirement or business decision behind it.** |
+| **DoR-3** | A decision on presentation beside the **existing static "Monthly Depreciation" tile** (`Dashboard/index.tsx:78`, fed by `mockData.ts:755` `monthlyDepreciation: 42800`, labelled *illustrative*). A real NBV figure would sit next to a fabricated depreciation figure. **That tile must not be changed or removed without a requirement or business decision behind it.** **This is the gate on the specification pass, not merely a presentation preference:** the chain asserts a **nine-tile** grid in a fixed order, `TC-DASH-01` / `TC-EXEC-001-01` are recorded **PASS** against it, and the NBV criteria currently assert the tile's **absence**. Until the answer is known, the rewritten acceptance criteria cannot be written, so **no Dashboard code can begin** even if the five values arrive first. |
 | **DoR-4** | Confirmation that an Asset whose `category` falls outside the five keeps its current behaviour — `computeAssetNbv` returns `purchaseCost` unchanged. `AssetCategory` is `string` (`types/asset.ts:17`), an open type, not an enum of five, so this case is reachable by data alone. The behaviour is deliberate and test-pinned (R-36); what is needed is business acceptance of it, not a code change. |
 | **DoR-5** | A short re-assessment **after** the numbers arrive and **before** any code, per the vertical-slice sequence. |
 
@@ -220,8 +250,16 @@ one.
 
 ## Document Status
 
-**Status:** Live — regenerated 2026-09-07 from merged `main` `456dda2`, then **revised the
-same day against `c4d2e24`** to correct this file's own account of F-03's remaining work
-(the chain was already specified; `TC-WARRANTY-001-07` had been omitted) and to add the
-Definition of Ready. The revision changed no verdict and no recommendation.
+**Status:** Live — regenerated 2026-09-07 from merged `main` `456dda2`, then revised twice
+the same day, both times to correct this file's own account of F-03's remaining work:
+
+1. against `c4d2e24` — the chain sync was overstated as outstanding and
+   `TC-WARRANTY-001-07` had been omitted; the Definition of Ready was added.
+2. against `a92aeb5` — **that first correction overshot.** It claimed the chain was
+   "specified end-to-end", which holds for the Settings half and is **false for the
+   Dashboard half**, where every criterion and test case specifies the NBV tile's
+   **absence**. Recorded with the verbatim evidence in "Why This Is Next".
+
+Neither revision changed a verdict or the recommendation. The second added a dependency:
+a specification pass, itself gated on DoR-3.
 **Supersedes:** the run of 2026-09-07 recorded after `CHECKPOINT-2026-09-07-007`.

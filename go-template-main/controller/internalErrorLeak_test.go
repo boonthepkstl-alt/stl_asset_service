@@ -86,6 +86,7 @@ func TestNoRawErrorTextIn5xxResponses(t *testing.T) {
 			"were refactored (e.g. behind a shared error helper), update this test to match "+
 			"rather than letting it pass vacuously", scanned)
 }
+
 // Guards Open Finding F-41: a 404 response body must never carry the raw underlying Go error
 // string either.
 //

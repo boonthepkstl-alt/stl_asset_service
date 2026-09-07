@@ -1,0 +1,33 @@
+# Deliberately narrow. There is no `* text=auto` line, and that is a decision, not an
+# omission: a blanket rule would renormalize hundreds of tracked files in one
+# unreviewable commit, while other Claude Code sessions may be working in the same
+# directory (see CLAUDE.md).
+#
+# What this line does, stated accurately -- because the reason first written here was
+# wrong, and so was the one in .github/workflows/ci.yml:
+#
+# The repository ALREADY stores every Go file with LF. Measured, not assumed: all 64
+# were extracted with `git show :<path>` and none contained a CR. The CRLF that shows
+# up locally on Windows is `core.autocrlf=true` translating on checkout -- a
+# working-tree artifact, never a repository state.
+#
+# One claim written here first was WRONG, and is corrected rather than deleted: that
+# gofmt over the repository content "flagged nothing", so CI had always been clean.
+# The evidence offered was that the 42 files gofmt flagged locally and the 42 stored
+# CRLF locally were the same 42 -- which proves the SETS match, not that CRLF was the
+# only reason each file was flagged. It was not.
+# `controller/internalErrorLeak_test.go` was genuinely misformatted (a missing blank
+# line before the F-41 guard, introduced in PR #103) and the CRLF noise had masked it.
+# The gate caught it on its first run, which is the best outcome available and the
+# reason it is worth having.
+#
+# So this line fixes nothing that was broken. It PREVENTS a future break: a contributor
+# with `core.autocrlf=false` on Windows would otherwise commit CRLF, and gofmt treats CR
+# as content, so that single commit would turn the gofmt gate red for reasons unrelated
+# to code quality. `eol=lf` makes the storage convention explicit instead of relying on
+# every contributor's local git configuration.
+#
+# The gate itself was never actually blocked by line endings. ci.yml said it was; that
+# claim was never tested and is false. It is added in this same change, and ci.yml's
+# comment is corrected rather than left standing.
+*.go text eol=lf

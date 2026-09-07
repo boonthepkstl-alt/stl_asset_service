@@ -4155,6 +4155,138 @@ Three exported sentinels. The two genuine authentication cases keep **401** and 
 
 ---
 
+## CHECKPOINT-2026-09-07-005
+
+**Phase:** Cross-Cutting Work (CI and repository hygiene) — not tied to one product phase
+**Feature:** `.github/workflows/ci.yml`, `.gitattributes`
+**Task:** Add a `gofmt` gate (**F-49 → R-34**), which turned out never to have been blocked
+
+**What this was planned as, and what it became.** The task was "add `.gitattributes` so the `gofmt` gate becomes possible" — third on a plan whose stated payoff was unblocking a documented CI gap. The gate was possible all along. **The reason recorded for skipping it, in `ci.yml` and again in R-20, was false, and I wrote both.**
+
+`ci.yml` said Go sources *"are committed with CRLF line endings, so `gofmt -l` lists every file in the module on a Linux runner"*. Measured instead of assumed: all 64 Go files extracted with `git show :<path>` — the content a runner actually checks out — contained **zero CRs**. The CRLF is `core.autocrlf=true` translating on a Windows working tree, which no runner sees.
+
+**The root cause is precise and worth keeping, because the observation was real.** `gofmt -l` genuinely does flag 42 of 64 files locally, and R-20 even says it was confirmed with `gofmt -d`. But the check ran against the **working tree** and the conclusion was stated about **CI**. A true measurement, an untested inference.
+
+### Then I overstated the evidence, and the gate caught that too
+
+Before touching anything I established that the 42 files gofmt flagged locally and the 42 stored CRLF locally were the **same 42**, and concluded *"zero real formatting problems among them"*.
+
+**That does not follow.** Set equality proves the sets match, not that CRLF was the *only* reason each file was flagged. **On its very first run the new gate failed** on `controller/internalErrorLeak_test.go` — a genuine missing blank line before the F-41 guard, introduced when that test was appended in PR #103, which the CRLF noise had masked because the file was flagged regardless.
+
+Fixed, then re-verified the way it should have been done first: all 64 files converted to LF as a set and gofmt'd — **0 flagged**. **The gate justified itself on its first run**, which is a better outcome than the claim it replaced.
+
+### What each piece actually does
+
+| | |
+|---|---|
+| **gofmt gate** | Added. On failure it prints the offending files **and** a `gofmt -d` diff, so a red build is actionable rather than merely red |
+| **`.gitattributes`** | `*.go text eol=lf` — **not a fix**, nothing was broken. Prevention: a contributor with `core.autocrlf=false` would otherwise commit CRLF and turn the new gate red for a reason unrelated to code quality |
+| **Renormalisation** | **Zero files.** The work R-20 called *"its own change, normalising line endings across the repo"* did not exist |
+
+Deliberately narrow: **no `* text=auto`**, because a blanket rule would renormalise hundreds of tracked files in one unreviewable commit while other sessions may be working in the same directory.
+
+All three false records were **corrected in place rather than deleted** — `ci.yml`'s note, `.gitattributes`' own header, and F-49/R-34 — each now saying what the evidence supported and what it did not.
+
+**Files changed:** `.gitattributes` (new), `.github/workflows/ci.yml`, `controller/internalErrorLeak_test.go`, `OPEN-FINDINGS.md`. **No Go source logic changed.**
+
+**Validation:** merged `main` `75fae5b` — backend `go build`/`vet`/`test` clean; YAML validated; **CI green, with the new gate passing after the defect it found was fixed**.
+
+**Findings:** **F-49 raised and resolved in the same revision → R-34.** R-20's parenthetical corrected.
+
+**Status:** ✅ Complete for its confirmed scope.
+
+**Known Issues:** None. The gate is now the guard for this class, so a future CRLF commit or real misformat fails loudly.
+**Remaining Work:** None.
+**Next Step:** `CHECKPOINT-2026-09-07-006` — the F-38 aliasing defect.
+
+---
+
+## CHECKPOINT-2026-09-07-006
+
+**Phase:** Cross-Cutting Work (frontend correctness) — Employee domain has no PRD requirement to file under
+**Feature:** `pages/EmployeeDetail` audit tab
+**Task:** Fix the stale-derivation half of **F-38** (**R-35**)
+
+**The defect.** `EmployeeDetail` held the shared `employeeAuditLogs` fixture in `useState(fixtureAudit)` and derived its rows through a `useMemo` keyed on that value. `EditEmployee` appends with `fixtureAudit.unshift(...)` — mutating **in place** — and an array's identity never changes when its contents do, so **the memo could not recompute from a write, ever, in a mounted instance**. Masked only because `EditEmployee` navigates back and the page remounts.
+
+### The route to the fix is the record worth keeping, because I got it wrong twice
+
+**Attempt 1 — add `fixtureAudit.length` to the memo's deps.** ESLint rejected it on exactly the right grounds: *"outer scope values like 'fixtureAudit.length' aren't valid dependencies because mutating them doesn't re-render the component."* A module array cannot be a reactive input and no dependency list can make it one. **The linter was right and I was wrong.**
+
+**Attempt 2 — read the live array but keep the memo with deps `[employee]`.** This is **purely cosmetic**: the memo still caches after mount, so a later append stays just as invisible. It removes a misleading `useState` and fixes no behaviour.
+
+**I would have shipped attempt 2 as a bug fix.** What stopped it was mutation-testing the guard: restoring the original aliasing left the test **passing**, because the test's first version appended *before* mount. **A vacuous test that agreed with a broken fix** — the exact failure mode this project's other guards are written to avoid, reproduced by me in the same session I was auditing for it.
+
+**What works:** stop caching. The filter runs on every render over the live array; the list is a handful of rows, so the memo bought nothing.
+
+### The test, and what it does not claim
+
+It appends **after** mount — the only arrangement that separates broken from fixed — and forces re-renders through tab clicks the way a user would. **Verified by mutation: with the original snapshot+memo restored it fails by name.**
+
+It asserts an append is visible **on the next render**, and deliberately **not** reactivity: nothing notifies this page when another module mutates an array, and the comment at the fix says so rather than implying more.
+
+Targeting the tab took two corrections, both recorded in the test so the next person does not repeat them: the sidebar has its own "Audit" item, so `getByText` hits that first; and the sidebar button is named exactly `"Audit"` while the tab carries its row count, so matching the trailing count is what separates them.
+
+**Deliberately not done:** giving Employee audit a real backend. **No `RAISE-FR-EMP-*` requirement exists in the PRD** to trace one to, so building it would be unrequirement-backed scope.
+
+**Files changed:** `pages/EmployeeDetail/index.tsx`, `pages/EmployeeDetail/audit-aliasing.test.tsx` (new), `OPEN-FINDINGS.md`. **Suite 51 files / 262 tests → 52 / 263.**
+
+**Validation:** merged `main` `9bca98b` — frontend `tsc`/lint/build clean; backend clean; CI green.
+
+**Findings:** **F-38 half resolved → R-35.** The backend half stays open, and is not narrowed by this.
+
+**Status:** ✅ Complete for its confirmed scope.
+
+**Known Issues:** The Employee audit trail still has no backend and `EditEmployee` still writes by mutating a module fixture. That is mock-mode behaviour, now honest about what it does rather than dressed as component state.
+
+**A merge-conflict note, because the resolution mattered:** this branch and PR #115 both appended to `OPEN-FINDINGS.md`. Resolved by keeping **both** sides — F-49 from `main` plus this branch's **updated** F-38 row. Taking `main`'s side wholesale would have silently reverted the R-35 record, since `main` still carried the pre-fix F-38 text.
+
+**Remaining Work:** None for this half.
+**Next Step:** `CHECKPOINT-2026-09-07-007` — the NBV groundwork.
+
+---
+
+## CHECKPOINT-2026-09-07-007
+
+**Phase:** Phase 8 — Executive Dashboard & Reporting
+**Feature:** NBV KPI (`RAISE-FR-EXEC-001`)
+**Task:** Implement RQ46's formula ahead of its defaults (**F-03 groundwork → R-36**)
+
+**The framing this corrects is mine.** F-03 had been reported, repeatedly and in this project's own tracking, as blocked outright on five numbers. **It was not.** RQ46 confirms the formula, the configuration shape, the salvage value and the clamp; only the per-category defaults are missing — and the precedent for building the rest without them already existed in the same codebase, where `lib/alerts.ts` takes `warrantyThresholdFor` as a parameter rather than embedding RQ41's 90 days.
+
+**Built:** `frontend/src/lib/nbv.ts` — `computeAssetNbv` and `computePortfolioNbv`. Pure, `asOf` injectable, useful life **injected**, and **zero defaults defined anywhere** in the module or its tests. Nothing invents a number business has not supplied, and the tile still cannot render until Settings has real values to feed it.
+
+**Verified by three mutations against RQ46's own clauses**, each failing a different count of tests: removing the clamp (1), ignoring the asset's category (2), returning 0 instead of purchase cost for an unconfigured category (3).
+
+### Two judgement calls recorded rather than silently made
+
+**An unconfigured or NaN useful life returns `purchaseCost` unchanged** — not 0, not NaN. "Not yet depreciated" is honest; 0 would claim the asset is worthless and NaN would render as "NaN" on a KPI tile. This is the case that occurs *first*, since the tile ships before every category has a life set.
+
+**No status filter is applied.** RQ29(b)'s Retired/In-Maintenance exclusion is **Utilization's** confirmed rule and RQ46 states no equivalent — a retired asset still has a book value, so excluding one would have been inventing a business rule. Both are pinned by tests.
+
+**The trap RQ46 warns about is pinned too:** the module never reads `Asset.currentValue`. A test feeds a wildly contradictory value and asserts the result does not move, because `assetService.go:101` sets that field to `purchaseCost` on create and never recomputes it — any implementation reaching for it would look right on seeded data and be wrong forever after.
+
+**What the tests taught me mid-task:** the first version hand-wrote dates like `'2024-09-07'` and expected exactly 2.0 years. A 365.25-day year makes that 1.9986, so three assertions failed by cents. **The code was right and my expectations were naive** — fixed by deriving dates as exact multiples of the module's own year length, so the assertions could stay strict instead of loosening the tolerance until they passed.
+
+**Files changed:** `lib/nbv.ts` (new), `lib/nbv.test.ts` (new, 15 tests), `OPEN-FINDINGS.md`. **Suite 52 files / 263 tests → 53 / 278.**
+
+**Validation:** merged `main` `c22c5e2` — frontend `tsc`/lint/build clean, 53 files / 278 tests; backend clean; CI green.
+
+**A process note, reported rather than hidden:** PR #117 was merged while its Frontend check still read `pending`. The run was confirmed green afterwards and `main` was re-validated locally, so no harm resulted — but the check should have been waited on rather than relied on, and every other PR this session was.
+
+**Findings:** **F-03 groundwork built → R-36.** F-03 **stays open** on the defaults.
+
+**Status:** ✅ Complete for its confirmed scope.
+
+**Known Issues:** No Settings field, no tile, no chain sync — all three need the numbers. `RAISE-FR-EXEC-001` remains `PASS (partial)` and `TC-EXEC-001-03b`/`TC-DASH-03b` remain BLOCKED; nothing about this changes a verdict, and the chain was deliberately not synced for a module that cannot yet render.
+
+**Remaining Work:** the five default useful-life values, then Settings + tile + chain sync + execution.
+**Next Step:** **F-03's per-Asset-Category useful-life defaults.** Still the only remaining item that would move a Compliance Review verdict from `PASS (partial)` to a full `PASS`.
+
+**The claim this session kept getting wrong, recorded once here rather than repeated:** "no engineering work is waiting" was asserted **four** times and was wrong **three** — F-47, F-43(b), and this. The one time it held was the third audit, which found only bookkeeping errors. **In every wrong case the blocker was a premise written down without being checked, and in two of the three the premise was the AI's own.**
+
+---
+
 ## Level 2 — Feature Checkpoints
 
 ### FEATURE-CHECKPOINT-project-tracking-governance

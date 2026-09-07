@@ -9,7 +9,27 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-09-07, after PR #112 merged (`96d076f`). **The
+**As of:** 2026-09-07, after PR #117 merged (`c22c5e2`). Suite **53 test
+files / 278 tests**; matrix **v2.6** with zero open gaps; Compliance Review
+**v1.2**. CI now also gates `gofmt` (**F-49** → **R-34**).
+
+**Three more findings closed by auditing this file's own claim that nothing
+buildable remained, bringing the tally to five.** **F-49 → R-34:** the reason
+recorded for having no `gofmt` gate was false — the repository stores LF, and
+the CRLF was `core.autocrlf` on a Windows working tree; the gate then **failed
+on its first run** on a real misformat that the CRLF noise had masked.
+**F-38 half → R-35:** the Employee audit tab could never reflect a write in a
+mounted page. **F-03 groundwork → R-36:** RQ46's NBV formula is implemented,
+with the per-category useful life injected and **no defaults defined**, so F-03
+was never blocked outright as this file had said.
+
+**The claim, and the score.** "No engineering work is waiting" was asserted
+**four** times this session and was wrong **three** — the one time it held was
+the third audit, which found only bookkeeping errors. **In every wrong case the
+blocker was a premise written down without being checked, and in two of the
+three the premise was the AI's own.** Treat the section below as a hypothesis.
+
+Earlier the same day, PR #112 merged (`96d076f`). **The
 traceability matrix carries zero open gaps** (v2.6, Gaps 1—20 all resolved) and
 **`RAISE-FR-ALERT-001` is a full, unqualified `PASS`** on both surfaces.
 Suite **51 test files / 262 tests**.
@@ -502,35 +522,36 @@ paragraph, which is a summary of a summary and can drift.
 Triaged against [`RAISE-TRACEABILITY-MATRIX.md`](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md)
 §3–§5 — re-check that file before picking an item, it may have changed.
 
-**Buildable now:** **None — but that claim has now been audited twice and was
-wrong both times**, so treat it as a hypothesis rather than a conclusion. The
-two items it missed (F-47, F-43 half b) are both closed as of 2026-09-07,
-and both were blocked only by a premise nobody had verified.
+**Buildable now:** **None — and that claim has now been audited three times and
+was wrong twice**, so it is recorded as a hypothesis, not a conclusion. What
+the audits found each time is listed in the "As of" note above.
 
-**One decision would convert a requirement outright: F-03.** NBV is fully
-designed and blocked on exactly one input — the default useful-life years per
-Asset Category (PRD Open Question 3a). The formula (straight-line), the
-configuration shape (per category, in Settings, following RQ41's precedent),
-the salvage value (zero) and the clamp (at 0) are all confirmed. **Only five
-numbers are missing, not a model**, and they are deliberately not being
-guessed because they become money on an executive dashboard. It is the only
-remaining finding whose resolution would move a Compliance Review verdict
-from `PASS (partial)` to a full `PASS`.
+**F-03 is down to five numbers, and everything else about it is built.**
+`frontend/src/lib/nbv.ts` implements RQ46 in full — straight-line from
+`purchaseDate`/`purchaseCost`, salvage zero, clamped at 0 — with the
+per-category useful life **injected** and **no default defined anywhere**, so
+nothing invents a value business has not supplied. 15 tests, three mutations
+against RQ46's own clauses. What still needs the numbers: the Settings field,
+the dashboard tile, the chain sync and a formal execution. Until then
+`RAISE-FR-EXEC-001` stays **`PASS (partial)`** and `TC-EXEC-001-03b` /
+`TC-DASH-03b` stay BLOCKED.
 
 **Open and genuinely requiring a decision:** **F-43 half (a)** — whether the 15
-request-parse 4xx sites should keep echoing Go's decoder text
-(usability versus disclosure; F-41 warned a blanket sweep is the wrong shape
-of fix); **PRD Q22a** — the missing `User`→`Employee` link and what "relevant
-to me" means; **F-09/F-35/F-36/F-37/F-39** — smaller independent product
-questions, none blocking a P0 verdict today.
+request-parse 4xx sites keep echoing Go's decoder text (half (b) is closed,
+R-32, and was never a decision); **PRD Q22a** — the missing
+`User`→`Employee` link and what "relevant to me" means;
+**F-09**/**F-35**/**F-36**/**F-37**/**F-39** — smaller independent product
+questions, none blocking a P0 verdict today (F-09 and F-35 were reclassified
+out of "Blocking" on 2026-09-07, F-48 → R-33, because they gate nothing).
 
 **Blocked on a dependency:** **F-04** (Oracle FA integration mechanism), which
 also blocks **F-31**; **F-06**/**F-07** (AI citation format and document
 intelligence thresholds).
 
-**Minor, no decision needed:** **F-38** (the Employee audit trail is a
-mock-mode fixture shim with no backend), **F-40** (a flaky navigate-away test
-pattern — all known sites fixed, a pattern to watch rather than a task).
+**Minor:** **F-38**'s backend half — the Employee audit trail has no backend and
+`EditEmployee` writes by mutating a module fixture. Not fixable within scope:
+**no `RAISE-FR-EMP-*` requirement exists** to trace an audit source to. **F-40**
+— a flaky navigate-away test pattern, all known sites fixed.
 
 Everything below this line describes the state *before* F-05 was
 resolved and is kept for the contrast it draws:

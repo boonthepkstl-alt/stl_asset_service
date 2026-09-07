@@ -4058,6 +4058,103 @@ Its step said to read a numeral on the **closed** bell button without opening th
 
 ---
 
+## CHECKPOINT-2026-09-07-003
+
+**Phase:** Cross-Cutting Work (the deliverable chain's own terminal artifact) — not tied to one product phase
+**Feature:** `RAISE-COMPLIANCE-REVIEW.md` — the document that answers "is this MVP compliant?"
+**Task:** Audit the claim *"no engineering work is waiting"*, and re-verify the Compliance Review against Traceability Matrix v2.6 (**F-47 → R-31**)
+
+**Why this task existed at all.** The previous close-out reported that the project was decision-limited with nothing buildable left. When asked to decide what to do next, the honest move was to **check that claim rather than repeat it** — and it was wrong twice over. This checkpoint covers the first finding; `CHECKPOINT-2026-09-07-004` covers the second.
+
+### What was found
+
+`RAISE-COMPLIANCE-REVIEW.md` sat at **v1.0, consolidating Traceability Matrix v1.4**, while the matrix had reached **v2.6**. Twelve revisions behind. Two verdicts had gone stale **in opposite directions**, and the dangerous one was upward:
+
+| Requirement | v1.0 said | Matrix v2.6 records | |
+|---|---|---|---|
+| `RAISE-FR-EXEC-001` | **`PASS`** | **`PASS (partial)`** | **Overstated** |
+| `RAISE-FR-ALERT-001` | `PASS (partial)` | **full `PASS`** | Understated |
+
+**Overstating compliance is the worst failure mode for this document specifically** — it is the artifact a reviewer would trust to tell them whether the MVP is done.
+
+**Why the overstatement was subtle, and worth recording:** v1.0 excused the NBV gap as *"a separate, still-open question"* and called the dashboard's confirmed scope fully `PASS` regardless. **That reasoning was sound when it was written.** It stopped holding when PRD §16 Resolved Questions 46–48 confirmed the NBV formula, put Risk out of MVP scope and recorded Utilization as built — which turned an *external* question into **an unmet part of the requirement's own confirmed scope**, with an AC criterion and a `BLOCKED` test case behind it. No single PR broke it; the ground moved underneath it.
+
+### The part of §4 worth reading
+
+**The headline figure did not change.** 8 of 17 at a full `PASS`, 47%, before and after — because the two movements cancelled exactly.
+
+**A stable number concealing two opposite movements is precisely why this document's currency matters.** The summary would have read unchanged and correct while one of its members was wrong. §4 now says so in place, rather than presenting a quietly different table.
+
+### Also corrected
+
+- **§5** listed **F-02, F-05, F-18, F-19** as open when all four had been resolved (R-19, R-23, R-21, R-22). F-03 and F-08 now read as *narrowed*; F-14, F-41, F-44, F-45, F-46 added as resolved; the Minor/Tech Debt list replaced with what is actually outstanding (F-38, F-40, F-43).
+- **§7** claimed *"Gaps 1–13 resolved"* when the matrix records **Gaps 1–20 resolved with none open**.
+- **New §1a Revision Note** records what moved and why.
+
+### The root cause was a process gap, and it was closed with the finding
+
+**v1.0 itself said *"no action is required to finish this review."*** That is why nothing in the close-out protocol ever pointed back at it, and every close-out since updated the matrix without touching the document that consumes it.
+
+The document's **Next Action** now reads: *re-verify in the same pass that closes a gap or resolves a finding, not when someone happens to check.* And **`CLAUDE.md` — which still claimed this file did not exist** — now lists `11-compliance-review/` in its `docs/` tree with that warning attached.
+
+**Files changed:** `RAISE-COMPLIANCE-REVIEW.md` v1.0 → **v1.1**, `CLAUDE.md`, `OPEN-FINDINGS.md`. **Code changes: none.**
+
+**Validation:** merged `main` `f74a92a` — no code touched, so no new test run is claimed beyond `main`'s existing green state (51 test files / 262 tests; backend clean); CI green.
+
+**Findings:** **F-47 raised and resolved in the same revision → R-31.**
+
+**Status:** ✅ Complete for its confirmed scope.
+
+**Known Issues:** None outstanding for this document. Its accuracy now depends on the process rule above being followed, which is untested until the next verdict moves.
+**Remaining Work:** None.
+**Next Step:** The second thing the audit found — **F-43's (b) half**, whose recorded premise was also wrong. See `CHECKPOINT-2026-09-07-004`.
+
+---
+
+## CHECKPOINT-2026-09-07-004
+
+**Phase:** Cross-Cutting Work (backend error-response hygiene) — not tied to one product phase
+**Feature:** API error responses (`go-template-main/controller/`, `service/`)
+**Task:** Fix the half of **F-43** that turned out not to be a decision at all (**R-32**)
+
+**The defect.** `authService.Login` returned three bare `errors.New` values the controller could not tell apart, so it answered **401 for all three** — including `util.GenerateToken` failing, which is a **server-side signing fault, not a rejected password**. The response body also carried that error's own text.
+
+### A premise correction came first, and it is the reason this was buildable
+
+F-43's own row recorded that fixing this *"changes login response text the frontend may rely on."* **That was never verified, and it is false:**
+
+- `HttpAuthRepository.login` returns `response.data` and reads no error body.
+- `pages/Login/index.tsx` catches and displays its own fixed string, `"Invalid username or password"`.
+
+No UI text depends on the server's message. **With that checked, the (b) half stopped being a product decision and became a plain defect** — a server fault reported as an authentication failure. It had been sitting in the 🟡 "needs a business decision" column on a premise nobody had tested, including me when I wrote it.
+
+### The fix, and what was deliberately left alone
+
+Three exported sentinels. The two genuine authentication cases keep **401** and their **byte-identical original wording** — deliberately *not* tidied up in passing, because that text is observable API behaviour and a caller legitimately reads it. The signing failure maps to **500** with a fixed message and the detail in the log only: F-19's rule, extended to the one 4xx site that was reporting a server error.
+
+**No new guard was needed.** The existing `TestNoRawErrorTextIn5xxResponses` covers the new 5xx automatically and would fail if it ever carried `err.Error()`.
+
+**4 new tests.** One asserts the two messages **literally, byte for byte**, because changing them changes the API. **Verified by mutation:** swapping the two sentinels fails `TestLoginWrongCredentialsIsItsOwnSentinel` by name. The happy path is **not** exercised — it needs real JWT config and a viper-backed demo account — and the tests say so rather than implying wider coverage.
+
+**A heuristic that now agrees with reality:** the 4xx audit script re-classifies this site from `PARSE` to **`SENTINEL`**. That had been a known false positive of its 14-line context window; the code now matches what the classification claims.
+
+**Files changed:** `service/authService.go`, `service/authService_test.go` (new), `controller/authController.go`, `OPEN-FINDINGS.md`. **API changes:** a `util.GenerateToken` failure now answers **500** with `{"status":"error","message":"Failed to complete sign-in"}` instead of a 401 carrying the signing error's text. The two authentication responses are **unchanged**, wording included.
+
+**Validation:** merged `main` `96d076f` — backend `go build`/`vet`/`test` clean; frontend untouched, `tsc`/lint/build clean and **51 test files / 262 tests** passing; CI green.
+
+**Findings:** **F-43 narrowed, not closed → R-32.**
+
+**Status:** ✅ Complete for its confirmed scope.
+
+**Known Issues:** **F-43's (a) half remains open** — the 15 request-parse sites still echo Go's decoder text. That one *is* a genuine usability-versus-disclosure trade nobody has decided, and F-41 explicitly warned that a blanket sweep is the wrong shape of fix. It is not narrowed by this work, only separated from the half that was never a decision.
+
+**Remaining Work:** None for the (b) half.
+**Next Step:** **F-03's five per-Asset-Category useful-life values** — still the only remaining item that would move a requirement in the Compliance Review from `PASS (partial)` to a full `PASS`.
+
+**A note on this session's own claims, recorded because it happened twice:** the previous close-out asserted that nothing buildable remained. Auditing that claim produced **two** buildable items — this one and F-47 — and in both cases the blocker was a premise written down without being checked. The lesson is not "the backlog was wrong"; it is that **a finding's own scoping note deserves the same verification as a test result**, since a wrong one quietly parks real work in the decision-blocked column.
+
+---
+
 ## Level 2 — Feature Checkpoints
 
 ### FEATURE-CHECKPOINT-project-tracking-governance

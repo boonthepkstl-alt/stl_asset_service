@@ -2,10 +2,15 @@ import type { DashboardStats } from '@/types/dashboard';
 
 // RAISE-FR-EXEC-001's Utilization KPI.
 //
-// Unlike NBV and Risk (the other two proposal-defined KPIs, still open as PRD §16 Q3/Q4 and
-// Open Finding F-03), Utilization's definition and calculation mechanics were BOTH confirmed
-// by business well before this was built -- PRD §16 Resolved Question 27 (2026-08-21) and
-// Resolved Question 29 (2026-08-21). Nothing here is a new decision; it implements those two.
+// Utilization's definition and calculation mechanics were BOTH confirmed by business well
+// before this was built -- PRD §16 Resolved Question 27 (2026-08-21) and Resolved Question 29
+// (2026-08-21). Nothing here is a new decision; it implements those two.
+//
+// The other two proposal-defined KPIs are no longer open questions either, and neither belongs
+// in this module: NBV's formula was confirmed by PRD §16 Resolved Question 46 and lives in
+// lib/nbv.ts (still awaiting its per-category useful-life defaults, Open Finding F-03), and
+// Risk scoring was put OUT of MVP scope by Resolved Question 47. An earlier version of this
+// comment cited "PRD §16 Q3/Q4" as still open -- that was stale on both halves (F-51).
 //
 // RQ27 -- definition: assignment-time-based. Utilization is the share of an asset's available
 // time during which it is assigned to a user/department.

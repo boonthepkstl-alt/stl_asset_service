@@ -5,8 +5,13 @@ import type { DistributionCount } from '@/types/dashboard';
 
 // The Asset-derived subset of DashboardStats -- deliberately excludes softwareLicenseCount
 // (License has no backend table; dashboard-service.ts still sources that from licenseService)
-// and any NBV/Risk-scored figure (PRD §16 Q3/Q4 remain open). See go-template-main/model/
-// dashboardModel.go's DashboardStatsModel, which this mirrors field-for-field.
+// and any NBV/Risk-scored figure. Neither of those two is an open question any more, and the
+// exclusion stands for a different reason in each case: NBV's formula is confirmed (PRD §16
+// Resolved Question 46) and computed in lib/nbv.ts from Asset fields plus a configured
+// per-category useful life, which this endpoint does not carry (F-03); Risk scoring is OUT of
+// MVP scope (Resolved Question 47), so there is nothing to expose. An earlier version of this
+// comment justified the exclusion with "PRD §16 Q3/Q4 remain open" -- stale on both (F-51).
+// See go-template-main/model/dashboardModel.go's DashboardStatsModel, mirrored field-for-field.
 export interface AssetDashboardStats {
   totalAssets: number;
   available: number;

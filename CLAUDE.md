@@ -77,6 +77,9 @@ docs/
     RAISE-API-DB-SPEC.md              As-built — endpoint/schema ที่มีอยู่จริงใน go-template-main
   10-detailed-design/
     RAISE-DETAILED-DESIGN.md          As-built — business logic ที่มีอยู่จริง
+  11-compliance-review/
+    RAISE-COMPLIANCE-REVIEW.md        ปลายสายของ chain — consolidate matrix เทียบโค้ดจริง
+                                      ⚠ ต้อง re-verify พร้อมกับ matrix ทุกครั้ง (เคยค้าง 12 revision)
   project-management/
     CURRENT-STATUS.md                 Snapshot ปัจจุบัน (overwrite ทับของเดิม ไม่ append) — ดูก่อนเสมอ
     DEVELOPMENT-LOG.md                PR-by-PR log แบบละเอียด
@@ -138,7 +141,9 @@ Development ← เริ่มไปแล้วจริง ตั้งแต
         ← บันทึก as-built ย้อนหลังจากโค้ดจริง (ไม่ใช่ pre-code spec, ไม่ renumber 07)
         │
         ▼
-RAISE-COMPLIANCE-REVIEW.md (ยังไม่มีไฟล์ — ยังไม่มี agent/skill สำหรับขั้นนี้)
+11. RAISE-COMPLIANCE-REVIEW.md ← มีไฟล์แล้วจริง (docs/11-compliance-review/)
+        ยังไม่มี agent/skill สำหรับขั้นนี้ — เขียน/รีวิวตรงในเทรดหลักได้
+        ⚠ ต้อง re-verify ทุกครั้งที่ verdict ใน matrix ขยับ ไม่ใช่ตอนนึกได้
         │
         └──► Finding / Gap ──► Fix / Re-test (ดู OPEN-FINDINGS.md สำหรับรายการปัจจุบัน)
 ```

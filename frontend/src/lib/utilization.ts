@@ -6,11 +6,17 @@ import type { DashboardStats } from '@/types/dashboard';
 // before this was built -- PRD §16 Resolved Question 27 (2026-08-21) and Resolved Question 29
 // (2026-08-21). Nothing here is a new decision; it implements those two.
 //
-// The other two proposal-defined KPIs are no longer open questions either, and neither belongs
-// in this module: NBV's formula was confirmed by PRD §16 Resolved Question 46 and lives in
-// lib/nbv.ts (still awaiting its per-category useful-life defaults, Open Finding F-03), and
-// Risk scoring was put OUT of MVP scope by Resolved Question 47. An earlier version of this
-// comment cited "PRD §16 Q3/Q4" as still open -- that was stale on both halves (F-51).
+// Neither of the other two proposal-defined KPIs belongs in this module, and the reason is no
+// longer "the question is open" in either case:
+//   - NBV: its formula was confirmed by PRD §16 Resolved Question 46 and is implemented in
+//     lib/nbv.ts. What remains open is Q3a -- the per-Asset-Category useful-life defaults
+//     (Open Finding F-03) -- not the formula, and not anything this module would compute.
+//   - Risk: PRD §16 Q4 (the exact definition of risk) is STILL OPEN, but Resolved Question 47
+//     confirmed the Executive Dashboard carries no Risk KPI tile for MVP, so Q4 belongs to
+//     RAISE-AI-RISK-001 (Pilot/Roadmap) and no longer bears on this requirement at all.
+// An earlier version of this comment cited "PRD §16 Q3/Q4 remain open" as the reason for the
+// exclusion. That reason was stale -- Q3's formula half is resolved and Q4's openness stopped
+// being relevant here -- though Q3a and Q4 themselves do remain open (F-51).
 //
 // RQ27 -- definition: assignment-time-based. Utilization is the share of an asset's available
 // time during which it is assigned to a user/department.

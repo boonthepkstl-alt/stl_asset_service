@@ -113,9 +113,32 @@ jobs:
         if: '!cancelled()'
         run: go test ./...
 
-      # NOTE: `gofmt` is deliberately NOT a gate here. This repo has no .gitattributes
-      # and its Go sources are committed with CRLF line endings, so `gofmt -l` lists
-      # every file in the module on a Linux runner -- a repo-wide storage condition,
-      # not a formatting defect in any given file (confirmed with `gofmt -d`). Gating on
-      # it would make CI red on arrival for reasons unrelated to code quality. Fixing it
-      # properly means normalising line endings across the repo, which is its own change.
+      # `gofmt` IS a gate, as of 2026-09-07. The note that used to sit here said it could
+      # not be, because "its Go sources are committed with CRLF line endings, so `gofmt -l`
+      # lists every file in the module on a Linux runner". **That was never tested and is
+      # false.** All 64 Go files were extracted with `git show :<path>` -- the content a
+      # runner actually checks out -- and none contained a CR. The CRLF is
+      # `core.autocrlf=true` translating on a Windows working tree, which a Linux runner
+      # never sees, so the line-ending reason never applied to CI.
+      #
+      # It did NOT follow that CI was already clean, and the first version of this note said
+      # so wrongly. On its very first run this gate failed, correctly, on
+      # controller/internalErrorLeak_test.go -- a real missing blank line introduced in
+      # PR #103 that the CRLF noise had been masking locally. Fixed in the same change.
+      #
+      # `.gitattributes` now pins `*.go text eol=lf` so a contributor with
+      # `core.autocrlf=false` cannot commit CRLF and turn this gate red for a reason that
+      # has nothing to do with code quality.
+      - name: Format check
+        if: '!cancelled()'
+        run: |
+          unformatted=$(gofmt -l .)
+          if [ -n "$unformatted" ]; then
+            echo "::error::gofmt would reformat these files:"
+            echo "$unformatted"
+            echo
+            echo "Run: gofmt -w ."
+            gofmt -d $unformatted
+            exit 1
+          fi
+          echo "gofmt: all files formatted"

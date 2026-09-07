@@ -117,10 +117,14 @@ jobs:
       # not be, because "its Go sources are committed with CRLF line endings, so `gofmt -l`
       # lists every file in the module on a Linux runner". **That was never tested and is
       # false.** All 64 Go files were extracted with `git show :<path>` -- the content a
-      # runner actually checks out -- and none contained a CR; `gofmt -l` over that content
-      # flagged nothing. The CRLF is `core.autocrlf=true` translating on a Windows working
-      # tree, which a Linux runner never sees. This gate could have been added when this
-      # workflow was written.
+      # runner actually checks out -- and none contained a CR. The CRLF is
+      # `core.autocrlf=true` translating on a Windows working tree, which a Linux runner
+      # never sees, so the line-ending reason never applied to CI.
+      #
+      # It did NOT follow that CI was already clean, and the first version of this note said
+      # so wrongly. On its very first run this gate failed, correctly, on
+      # controller/internalErrorLeak_test.go -- a real missing blank line introduced in
+      # PR #103 that the CRLF noise had been masking locally. Fixed in the same change.
       #
       # `.gitattributes` now pins `*.go text eol=lf` so a contributor with
       # `core.autocrlf=false` cannot commit CRLF and turn this gate red for a reason that

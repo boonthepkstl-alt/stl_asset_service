@@ -7,10 +7,19 @@
 # wrong, and so was the one in .github/workflows/ci.yml:
 #
 # The repository ALREADY stores every Go file with LF. Measured, not assumed: all 64
-# were extracted with `git show :<path>` and none contained a CR, and `gofmt -l` over
-# that content flagged nothing. A Linux CI runner therefore already saw clean gofmt
-# output, and the CRLF that shows up locally on Windows is `core.autocrlf=true`
-# translating on checkout -- a working-tree artifact, never a repository state.
+# were extracted with `git show :<path>` and none contained a CR. The CRLF that shows
+# up locally on Windows is `core.autocrlf=true` translating on checkout -- a
+# working-tree artifact, never a repository state.
+#
+# One claim written here first was WRONG, and is corrected rather than deleted: that
+# gofmt over the repository content "flagged nothing", so CI had always been clean.
+# The evidence offered was that the 42 files gofmt flagged locally and the 42 stored
+# CRLF locally were the same 42 -- which proves the SETS match, not that CRLF was the
+# only reason each file was flagged. It was not.
+# `controller/internalErrorLeak_test.go` was genuinely misformatted (a missing blank
+# line before the F-41 guard, introduced in PR #103) and the CRLF noise had masked it.
+# The gate caught it on its first run, which is the best outcome available and the
+# reason it is worth having.
 #
 # So this line fixes nothing that was broken. It PREVENTS a future break: a contributor
 # with `core.autocrlf=false` on Windows would otherwise commit CRLF, and gofmt treats CR

@@ -48,7 +48,7 @@ what produced the corrections recorded in the previous two runs.
 ## Primary Next Step
 
 **F-03 — the five per-Asset-Category useful-life defaults, then the Settings field, the
-NBV tile, the chain sync and a formal execution.**
+NBV tile, and the execution of three test cases that are already written.**
 
 **Status: `BLOCKED` — business-input pending.** Not `IMPLEMENTED`, not `VALIDATING`. No
 engineering step can begin, and **no default may be invented to unblock it** — PRD §16 Open
@@ -60,6 +60,28 @@ as if confirmed."*
 It is the **only** remaining item that would move a Compliance Review verdict.
 `RAISE-FR-EXEC-001` is the single requirement sitting at `PASS (partial)` while otherwise
 complete, and `TC-EXEC-001-03b` / `TC-DASH-03b` are the cases holding it there.
+
+**The deliverable chain is already specified end-to-end for this work — a correction to
+this file's own earlier claim, recorded rather than quietly fixed.** The run of
+2026-09-07 after `CHECKPOINT-2026-09-07-008` listed "the chain sync" among F-03's remaining
+work and named only two test cases. **Both were checked against the chain documents on
+`c4d2e24` and both were incomplete:**
+
+| Layer | Already written |
+|---|---|
+| Prototype v0.17 | **§23A P-018 Settings** — the NBV section, with a Status Banner |
+| AC v0.16 | `AC-WARRANTY-001-07` (Settings NBV section), `AC-DASH-03b`, `AC-EXEC-001-03b` |
+| Test Cases v0.26 | **`TC-WARRANTY-001-07`** — *"P-018 Settings NBV section shows all 5 categories with editable useful-life inputs"*, whose expected result already names `NBVSettings: Record<AssetCategory, usefulLifeYears>` — plus `TC-DASH-03b` and `TC-EXEC-001-03b` |
+| Matrix v2.6 | Q3a recorded as the blocker of all three ACs |
+
+All three cases read **BLOCKED (partial)** for two precisely stated reasons: the section is
+not built, and no default value can be asserted. Neither reason is "unspecified".
+
+**What this changes about the plan:** no specification work remains. F-03 is **five
+numbers, two UI pieces, and the execution of three existing test cases** — the chain edits
+afterwards are *execution recording* (statuses and verdicts), not a spec sync. The earlier
+framing made the task sound larger than it is, and it omitted `TC-WARRANTY-001-07`
+entirely.
 
 **Everything else about it is already built or specified — verified in source this run:**
 
@@ -89,15 +111,21 @@ Equipment, Infrastructure and Media Equipment. Business was asked directly and a
 ### Expected Output
 
 `NBVSettings` on `PlatformSettings`, a Settings section modelled on the Warranty
-Threshold precedent, a Dashboard NBV tile fed by `computePortfolioNbv`, the chain synced
-through the `.claude/skills` subagents, and `TC-EXEC-001-03b` / `TC-DASH-03b` formally
-executed.
+Threshold precedent (`Settings/index.tsx:144-161`, which loops `Object.keys` over
+`expiringThresholdDaysByCategory`), and a Dashboard NBV tile fed by `computePortfolioNbv`
+the way the Utilization tile is fed by `computeUtilization` (`Dashboard/index.tsx:29,66,74`).
+
+**Then execution, not specification:** `TC-WARRANTY-001-07`, `TC-DASH-03b` and
+`TC-EXEC-001-03b` are formally executed — all three exist today and are BLOCKED — and their
+recorded statuses, the matrix row and the Compliance Review verdict are updated through the
+`.claude/skills` subagents to reflect the result.
 
 ### Acceptance Criteria
 
-`AC-EXEC-001-03b` and the Dashboard's corresponding criterion. `RAISE-FR-EXEC-001` moves
-`PASS (partial)` → full `PASS` **only after execution**, never on implementation alone
-(Completion Rule, and `SESSION-CLOSEOUT-PROTOCOL.md` Rule 14).
+`AC-WARRANTY-001-07` (Settings NBV section), `AC-DASH-03b` and `AC-EXEC-001-03b` — all three
+already written, all three currently NOT TESTABLE YET on Q3a alone.
+`RAISE-FR-EXEC-001` moves `PASS (partial)` → full `PASS` **only after execution**, never on
+implementation alone (Completion Rule, and `SESSION-CLOSEOUT-PROTOCOL.md` Rule 14).
 
 ### Validation
 
@@ -118,9 +146,26 @@ the existing tile.
 
 ### Files to Update
 
-`frontend/src/types/settings.ts`, `frontend/src/pages/Settings/`, `frontend/src/pages/Dashboard/`,
-`frontend/src/services/dashboard-service.ts`; then the chain via subagents; then
-`OPEN-FINDINGS.md`, `PROJECT-CHECKPOINTS.md`, `DEVELOPMENT-LOG.md`, `CURRENT-STATUS.md`.
+**Code:** `frontend/src/types/settings.ts`, `frontend/src/pages/Settings/`,
+`frontend/src/pages/Dashboard/`, `frontend/src/services/dashboard-service.ts`.
+
+**Chain, for execution recording only** (via the `.claude/skills` subagents, never edited
+directly in the main thread): `RAISE-TEST-CASES.md`, `RAISE-TRACEABILITY-MATRIX.md`,
+`RAISE-COMPLIANCE-REVIEW.md` — plus `RAISE-PRD.md` §16 **before** any code, to record the
+five values as a Resolved Question and close Q3a.
+
+**Tracking:** `OPEN-FINDINGS.md`, `PROJECT-CHECKPOINTS.md`, `DEVELOPMENT-LOG.md`,
+`CURRENT-STATUS.md`.
+
+### Definition of Ready — all five must hold before any code is written
+
+| # | Criterion |
+|---|---|
+| **DoR-1** | The **five values** supplied in full, in years, with no gaps and no "approximately". |
+| **DoR-2** | Recorded as a **new Resolved Question in PRD §16**, closing Q3a, through the `update-prd` subagent — a number that exists only in a chat message has no authority the chain can cite. |
+| **DoR-3** | A decision on presentation beside the **existing static "Monthly Depreciation" tile** (`Dashboard/index.tsx:78`, fed by `mockData.ts:755` `monthlyDepreciation: 42800`, labelled *illustrative*). A real NBV figure would sit next to a fabricated depreciation figure. **That tile must not be changed or removed without a requirement or business decision behind it.** |
+| **DoR-4** | Confirmation that an Asset whose `category` falls outside the five keeps its current behaviour — `computeAssetNbv` returns `purchaseCost` unchanged. `AssetCategory` is `string` (`types/asset.ts:17`), an open type, not an enum of five, so this case is reachable by data alone. The behaviour is deliberate and test-pinned (R-36); what is needed is business acceptance of it, not a code change. |
+| **DoR-5** | A short re-assessment **after** the numbers arrive and **before** any code, per the vertical-slice sequence. |
 
 ### Next Checkpoint
 
@@ -175,5 +220,8 @@ one.
 
 ## Document Status
 
-**Status:** Live — regenerated 2026-09-07 from merged `main` `456dda2`.
+**Status:** Live — regenerated 2026-09-07 from merged `main` `456dda2`, then **revised the
+same day against `c4d2e24`** to correct this file's own account of F-03's remaining work
+(the chain was already specified; `TC-WARRANTY-001-07` had been omitted) and to add the
+Definition of Ready. The revision changed no verdict and no recommendation.
 **Supersedes:** the run of 2026-09-07 recorded after `CHECKPOINT-2026-09-07-007`.

@@ -3945,6 +3945,119 @@ Executed as `ADMIN`. The substitution does not weaken the result: the dashboard 
 
 ---
 
+## CHECKPOINT-2026-09-07-001
+
+**Phase:** Phase 7 — Alerts & Notifications
+**Feature:** Alerts (`RAISE-FR-ALERT-001`) — the header bell as a second display surface
+**Task:** Resolve **Gap 17**, the last gap open in the matrix, and wire the header bell to real alerts
+
+**Why this was a decision and not an engineering problem.** Gap 17 had been open since 2026-09-04 as a straight contradiction between two documents written on the *same day*:
+
+| Source | Says about `NotificationCenter.tsx` |
+|---|---|
+| PRD §16 **Resolved Question 35** (2026-08-21) | one of seven ESAPS pages **entirely out of RAISE scope**, no Traceability ID at any tier |
+| `ESAPS-UI-FOUNDATION-BASELINE.md` (2026-08-21) | → `RAISE-FR-ALERT-001`, **EXTEND** |
+
+**Why it survived a month, which is the part worth recording:** **both documents said "NotificationCenter" while meaning different artifacts.** RQ35 meant the ESAPS *page* (`esaps_ai_template/src/pages/NotificationCenter.tsx`, 103 lines, reference only). The baseline's reviewer was thinking of in-app alert capability, which RAISE does have. Nobody was wrong about the product; they were describing different things with one name.
+
+That is why the question was put to business as **two** questions rather than forcing a single side.
+
+### The decision (business Q&A → PRD v0.18 §16 Resolved Question 49)
+
+1. **RQ35 stands; the baseline row is the error.** Corrected in place to **DO NOT USE**, with the reason recorded there — the baseline's own source table already names the PRD chain the **"Sole requirement authority"**, so its own stated principle settled it.
+2. **The `AppShell` bell is a different artifact and IS in scope.** Built in RAISE, never ported from `esaps_ai_template/`; RQ35 never referred to it.
+3. **The bell shows the first five alerts plus a link to the Alerts screen.**
+
+### The ordering, where the AI stopped instead of guessing
+
+Business first asked for **"the 5 most recent"**. That is **not computable**: `Alert` (`frontend/src/lib/alerts.ts`) carries **no timestamp of any kind**, because alerts are a read-time derivation with no persisted record, and `deriveAlerts` sorts by **severity**.
+
+Quietly redefining "recent" as "severe" would have been inventing a business rule. The problem went back to business, which confirmed **the first five of the existing severity ordering**. Sorting by the underlying records' own dates was considered and **rejected** as a new rule needing its own definition.
+
+### Implementation
+
+`frontend/src/hooks/useAlerts.ts` extracted from the Alerts page and consumed by **both** surfaces, so the bell and the page **cannot disagree** about what an alert is, how many there are, or their order. That is the property the decision turns on, so it is enforced **structurally, not by convention**.
+
+**Two things fixed because they were genuinely broken, not to make tests pass:**
+
+- **The dead `notifications` prop was removed.** No caller ever passed it, so the bell had been rendering permanently empty behind a placeholder reading *"this will be wired to the real API in a later phase."* A prop that no longer does anything is a type that lies about its component — the same reason `APIError.error` was made optional in PR #103.
+- **`aria-label` and `aria-expanded` added.** The bell was an icon-only button with **no accessible name at all** — found because a test could not address it, which is the opposite of changing code to satisfy a test.
+
+**Tests:** 5 new, all rendering the real Alerts page so the bell's rows and the page's rows are compared **in one render**. One asserts no Low-severity alert reaches the bell, which is what proves the shared ordering is actually shared. **Verified by mutation:** slicing 7 instead of 5 fails 2 of them.
+
+**Live-verified as ADMIN:** badge 19, exactly five rows (`AST-0003` … `AST-0007`, all High), `aria-label` "Notifications, 19 alerts", "View all alerts" → `/notifications` whose first rows were identical. No app console errors.
+
+**Chain propagated — all six downstream layers:** Design 0.15→**0.16** (§14 gains "Header Bell — Second Surface Over the Same Derivation"), Prototype 0.16→**0.17** (§6 global chrome — deliberately *not* a new `P-0xx` ID, since it is chrome, not a screen), AC 0.14→**0.15** (six new criteria `-12..-17`, all testable now), Test Plan 0.14→**0.15**, Test Cases 0.23→**0.24** (six new cases, all left unexecuted), Matrix 2.4→**2.5**.
+
+**Files changed:** 6 chain documents + `ESAPS-UI-FOUNDATION-BASELINE.md` + 4 frontend source/test files. **Suite 50 files / 257 tests → 51 / 262.**
+
+**Validation:** merged `main` `6a6bcac` — frontend `tsc`/lint/build clean, 51 files / 262 tests passing; backend `go build`/`vet`/`test` clean; CI green.
+
+**Status:** ✅ Complete for its confirmed scope.
+
+**Known Issues — and the honest part:** **Gap 17 closed, but this did not leave the matrix gap-free.** `RAISE-FR-ALERT-001` was **re-derived downward** from a full `PASS` to `PASS (partial)`, because six new cases were testable but unexecuted — the requirement's confirmed scope grew faster than execution evidence for it. **Gap 20** was opened to track that sweep, and every place that previously read *"only Gap 17 remains"* was corrected.
+
+Also flagged rather than smoothed over: RQ49 and the layers below record the decision as **2026-09-05**, matching the dates this session had been using, while the matrix agent dated its own revision **2026-09-07**, the actual date. Both are internally consistent; the discrepancy is real and was left visible rather than back-dated.
+
+**Remaining Work:** the Gap 20 execution sweep.
+**Next Step:** execute `TC-ALERT-001-12..17` — no business decision required, only execution.
+
+---
+
+## CHECKPOINT-2026-09-07-002
+
+**Phase:** Phase 7 — Alerts & Notifications
+**Feature:** Alerts (`RAISE-FR-ALERT-001`) — header bell
+**Task:** Execute the six cases **Gap 20** was opened for, and re-derive the requirement's verdict
+
+**Execution:** merged `main` `6a6bcac`, real running app. `localStorage`/`sessionStorage` cleared to **zero entries before** sign-in — not ceremony: a stale `ADMIN` session produced a **false result** during the F-08 execution, and reporting that observation as a defect would have been wrong. Signed in through the real login form as `admin@raise.dev` (`ADMIN`). No app console errors.
+
+| Case | Result | Evidence |
+|---|---|---|
+| `TC-ALERT-001-13` | **PASS** | Exactly five rows: `AST-0003 · iPhone 15 Pro` … `AST-0007 · Cisco Catalyst 9300`, each with label + description + record |
+| `TC-ALERT-001-14` | **PASS** | Bell's five vs P-012's first five — **identical in content, count and order**; automated comparison returned `true` |
+| `TC-ALERT-001-15` | **PASS** | "View all alerts" → `/notifications`, panel closed |
+| `TC-ALERT-001-16` | **PASS** | Enumerating every `button`/`a`/`input`/`select`/`[role=button]` in the panel returned **exactly one**: "View all alerts" |
+| `TC-ALERT-001-17` | **PASS** | `aria-label` "Notifications, 19 alerts"; `aria-expanded` `false` → `true` |
+| `TC-ALERT-001-12` | **PASS**, after its spec was corrected | see below |
+
+`-14` is the case the whole ordering decision rested on. It was run exactly as its procedure demands — bell's rows recorded, then "View all alerts" to reach P-012 **in the same session with no reload** — so the comparison is against live data, not a remembered list.
+
+### `TC-ALERT-001-12` could not be executed as written, and the cause was the AI's own
+
+Its step said to read a numeral on the **closed** bell button without opening the dropdown. The closed button renders **no numeral** — only a presence dot.
+
+**It was not marked PASS, and the procedure was not rewritten mid-execution.** That is the discipline **F-42** established: editing a procedure while running it destroys the evidence that it was wrong.
+
+**Recorded as an AI-introduced specification error (F-46), not a product defect and not a business decision.** The criterion was drafted during the 2026-09-05 chain sync from the AI's own imprecise description — *"the bell badge shows the TOTAL alert count"* — which was true of the **panel** badge and was mis-read as the **header** badge. **PRD RQ49 never asked for a header numeral**, and the pre-existing bell already used a dot. So the product matched the business decision; the specification over-reached beyond it.
+
+**Business chose to correct the specification, not the product**, and the fix ran in the order that makes it trustworthy: `AC-ALERT-001-12` rewritten in place (AC **0.16**) → Test Plan **0.16** → `TC-ALERT-001-12` corrected in Test Cases **0.25** and **left unexecuted there**, so the steps could not be shaped around whatever passed → executed in **0.26**: **PASS**. The closed button's own rendered text was **empty** and its single child was a class-only dot span with no text — a *positive* confirmation, not merely a failure to find a numeral; `aria-label` "Notifications, 19 alerts"; panel badge "19"; P-012's own pagination "Showing 1-10 of 19"; an automated equality check across all three returned **true**.
+
+### Verdict — `RAISE-FR-ALERT-001` is a full, unqualified `PASS`
+
+**All seventeen `TC-ALERT-001-01..17` are executed and passing — none BLOCKED, none unexecuted.**
+
+**The verdict was weighed, not assumed.** **PRD §16 Q22a** (per-user alert filtering) was considered explicitly: it is raised but **unspecified**, the AC layer deliberately wrote **no criterion** for it, and it is **not specifiable today** — no `User`↔`Employee` link exists (`User` carries only `id`/`username`/`fullName`/`role`; Handovers matches recipients by `fullName` string comparison, a documented MVP limitation, not a reusable identity link). The matrix records *how* it was weighed rather than leaving it implicit.
+
+**Gap 20 CLOSED. `RAISE-TRACEABILITY-MATRIX.md` v2.6 is the first revision in this document's history with ZERO open gaps** — Gaps 1 through 20 all resolved.
+
+**F-45 fixed in the same pass (R-29):** `TC-EXEC-001-01` and `-03a` step 1 now read "Log in as any authenticated user" instead of naming an "Executive" role the app does not have. **Wording only** — both keep their recorded PASS and their 2026-09-05 execution history untouched, since the defect was in how the step was written, never in what was verified.
+
+**Files changed:** AC 0.15→**0.16**, Test Plan 0.15→**0.16**, Test Cases 0.24→**0.26**, Matrix 2.5→**2.6**, `OPEN-FINDINGS.md`. **Code changes: none** — an execution and a specification correction.
+
+**Validation:** merged `main` `282e758` — frontend `tsc`/lint/build clean, **51 test files / 262 tests passing**; backend `go build`/`vet`/`test` clean; CI green.
+
+**Findings:** **F-45 → R-29.** **F-46 raised and resolved in the same revision → R-30.**
+
+**Status:** ✅ Complete for its confirmed scope.
+
+**Known Issues:** None for `RAISE-FR-ALERT-001`. **PRD Q22a** stays open as future scope, blocked behind the missing `User`↔`Employee` link. **F-03** is unaffected and stays open on the NBV useful-life defaults; `RAISE-FR-EXEC-001` stays `PASS (partial)`.
+
+**Remaining Work:** None for Alerts. The requirement is complete for its confirmed MVP scope, on both surfaces.
+**Next Step:** **F-03's per-Asset-Category useful-life defaults** — five numbers, and the only remaining item that would convert another requirement outright. Everything else open is a decision with no engineering work waiting behind it.
+
+---
+
 ## Level 2 — Feature Checkpoints
 
 ### FEATURE-CHECKPOINT-project-tracking-governance
@@ -3973,7 +4086,7 @@ Executed as `ADMIN`. The substitution does not weaken the result: the dashboard 
 **Maps to Phase(s):** Phase 7 — Alerts & Notifications
 **Maps to Requirement(s):** `RAISE-FR-ALERT-001`
 
-**Task Checkpoints included:** `CHECKPOINT-2026-08-29-006` (TS-ALERT-001 sweep, F-32 raised), `CHECKPOINT-2026-09-01-004` (F-32 resolved, scoped screen built), `CHECKPOINT-2026-09-04-005` (F-05 → R-23, specification only), `CHECKPOINT-2026-09-04-006` (Gap 16 built, `TC-ALERT-001-03..10` executed — 7 PASS, 1 BLOCKED), `CHECKPOINT-2026-09-04-007` (`TC-ALERT-001-09` corrected and executed, F-42 → R-24, Gap 18 and Gap 16 closed), `CHECKPOINT-2026-09-04-008` (access gate, F-08 partial → R-25, requirement to full `PASS`) — see Level 1 above for each one's detail.
+**Task Checkpoints included:** `CHECKPOINT-2026-08-29-006` (TS-ALERT-001 sweep, F-32 raised), `CHECKPOINT-2026-09-01-004` (F-32 resolved, scoped screen built), `CHECKPOINT-2026-09-04-005` (F-05 → R-23, specification only), `CHECKPOINT-2026-09-04-006` (Gap 16 built, `TC-ALERT-001-03..10` executed — 7 PASS, 1 BLOCKED), `CHECKPOINT-2026-09-04-007` (`TC-ALERT-001-09` corrected and executed, F-42 → R-24, Gap 18 and Gap 16 closed), `CHECKPOINT-2026-09-04-008` (access gate, F-08 partial → R-25, requirement to full `PASS`), `CHECKPOINT-2026-09-07-001` (Gap 17 resolved, header bell wired as a second surface) and `CHECKPOINT-2026-09-07-002` (Gap 20 execution sweep, F-46 raised and resolved, requirement returned to a full `PASS` on both surfaces) — see Level 1 above for each one's detail.
 
 **Progress Summary:** The feature went from **a route that returned the app's generic 404** to a complete, executed requirement in four moves, and the order matters: the 404 was found by *formal test execution*, not by browsing (`CHECKPOINT-2026-08-29-006`, **F-32**); a scoped single-condition screen shipped 2026-09-01, deliberately rendering severity as the literal **"Not yet defined"** rather than inventing a High/Medium/Low mapping nobody had approved; business then fixed the content (PRD §16 **Resolved Question 44** — five conditions with fixed per-type severities) and the four remaining conditions were built and executed; finally business fixed the access gate (**Resolved Question 45** — any authenticated user), which was the last thing holding the requirement at partial.
 
@@ -3981,17 +4094,17 @@ The architecture held throughout: `frontend/src/lib/alerts.ts` is a **pure deriv
 
 **Acceptance Criteria Status:** **Met** — `AC-ALERT-001` (`AC-ALERT-001-01..11`) → `TS-ALERT-001` → `TC-ALERT-001-01..11`. `RAISE-TRACEABILITY-MATRIX.md` v2.2 §3 records the row's Test Status as **`PASS`**, upgraded from `PASS (partial)`; `RAISE-TEST-CASES.md` v0.21 records all 11 cases as executed. No criterion in the group remains NOT TESTABLE YET.
 
-**Status:** ✅ Feature-complete for current scope.
+**Status:** ✅ Feature-complete for current scope — **now covering two surfaces**, the Alerts screen (P-012) and the header bell (global chrome), after Gap 17 and Gap 20 closed on 2026-09-07.
 
 **Known Issues:**
-- **Gap 17** — the header bell-icon dropdown across other pages is still hardcoded empty, and its *scope* is contradicted between two project documents (PRD §16 Resolved Question 35 vs `ESAPS-UI-FOUNDATION-BASELINE.md` line 88). Untouched, **no side picked** — this is a documentation decision, not an engineering task, and the only gap still open in the matrix.
+- **Gap 17 — RESOLVED 2026-09-07 (this bullet superseded, kept to show what changed).** It previously read: *"the header bell-icon dropdown across other pages is still hardcoded empty, and its scope is contradicted between two project documents… the only gap still open in the matrix."* Both halves are now closed. **Why it took a month to see:** the two documents said "NotificationCenter" while meaning **different artifacts** — RQ35 meant the ESAPS *page*, the baseline's reviewer meant in-app alert capability, which RAISE does have. PRD §16 **Resolved Question 49** confirms RQ35 stands for the ESAPS page (the baseline row was the error, since corrected to DO NOT USE) **and** that RAISE's own `AppShell` bell is a separate, in-scope artifact. It is now wired and verified — see `CHECKPOINT-2026-09-07-001`/`-002`.
 - **PRD Q22a** — should a user see only the alerts relevant to them? Raised, unspecified, and **not specifiable today**: there is no link between the authenticated `User` and an `Employee` (`User` carries only `id`/`username`/`fullName`/`role`). It was weighed explicitly and judged outside the requirement's confirmed scope rather than left as an unmet criterion.
 - **F-08 narrowed, not closed (R-25)** — only the Alerts access gate was answered. Role/permission content for every other screen, and the authentication mechanism itself (Q21, F-11, F-12), remain open.
 - The app ships a **Role Management screen with an editable, persisted 15-module × 6-action permission matrix that nothing reads**. Under Resolved Question 45 it enforces nothing and is presentational only — recorded in PRD v0.16 and Design v0.14 so no reader mistakes it for working access control.
 
 **Remaining Work:** None within engineering's reach for `RAISE-FR-ALERT-001`. Both remaining items are decisions.
 
-**Next Recommended Task:** **Gap 17** is the cheapest item in this feature once somebody says which document is right — `deriveAlerts` already exists and the bell only needs wiring. Outside this feature, **F-03** (Dashboard NBV/Risk formulas) is the higher-leverage decision: `RAISE-FR-EXEC-001` is in exactly the position Alerts was in — passing on its confirmed scope and missing two tiles **because no formula exists**, not because nobody wrote the code.
+**Next Recommended Task:** **None inside this feature.** `RAISE-FR-ALERT-001` is complete for its confirmed MVP scope on **both** surfaces — all seventeen `TC-ALERT-001-01..17` executed and passing — and **Gap 17 and Gap 20 are both closed, leaving the traceability matrix with zero open gaps for the first time in its history** (v2.6). The only item still attached to this feature is **PRD Q22a** (per-user filtering), which is not specifiable today: no `User`↔`Employee` link exists. Outside this feature, **F-03**'s five per-Asset-Category useful-life numbers are the highest-leverage remaining decision — the only one that would convert another requirement outright.
 
 ---
 
@@ -4031,7 +4144,7 @@ The architecture held throughout: `frontend/src/lib/alerts.ts` is a **pure deriv
 
 **Remaining Work:** NBV — `lib/nbv.ts`, the Settings per-category field, the tile, tests, chain sync and execution. All of it is designed; none of it can start without the five default useful-life values.
 
-**Next Recommended Task:** **Supply F-03's per-Asset-Category useful-life defaults.** One answer completes this feature and takes `RAISE-FR-EXEC-001` to a full `PASS`, exactly as the access-gate answer completed `RAISE-FR-ALERT-001`. Outside this feature, **Gap 17** is now the only open gap in the entire matrix, and the cheapest item remaining once somebody says which of two contradicting documents is right.
+**Next Recommended Task:** **Supply F-03's per-Asset-Category useful-life defaults.** One answer completes this feature and takes `RAISE-FR-EXEC-001` to a full `PASS`, exactly as the access-gate answer completed `RAISE-FR-ALERT-001`. Outside this feature, **Gap 17 has since been resolved (2026-09-07) and Gap 20 closed with it**, so the matrix now carries **zero open gaps** (v2.6) — F-03 is the only remaining item that would convert a requirement outright.
 
 ---
 

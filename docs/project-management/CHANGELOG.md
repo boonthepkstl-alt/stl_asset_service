@@ -14,6 +14,39 @@ changes user-visible or API-visible behavior. Pure documentation-sync PRs
 
 ---
 
+## 2026-09-07
+
+### Added
+- **The bell icon in the header now actually works** — it used to open a
+  dropdown that always said "No notifications yet", on every page, for
+  everyone. It now shows how many alerts exist, lists the five most
+  serious of them with what each one is and which asset, ticket or
+  handover it concerns, and offers "View all alerts" to open the full
+  Alerts screen. The five it shows are the first five you would see on
+  the Alerts screen itself, in the same order, because both read exactly
+  the same list — so the bell can never tell you something the Alerts
+  screen disagrees with.
+- **Screen-reader users can now use the bell** — it previously had no
+  name at all, so it was announced as an unlabelled button. It now
+  announces itself along with the current count, e.g. "Notifications, 19
+  alerts", and reports whether the dropdown is open or closed.
+
+### Changed
+- **The bell shows a dot rather than a number on the button itself.** The
+  count is in the panel that opens, and is read out to screen readers.
+  This is unchanged behaviour, noted here only because our own
+  documentation had briefly described it wrongly.
+
+### Not changed, deliberately
+- **There is still no way to acknowledge, dismiss, snooze or mark an
+  alert as read** — anywhere, in the bell or on the Alerts screen. An
+  alert appears while its underlying situation is true and disappears on
+  its own when that situation is resolved. The number on the bell is
+  therefore a count of what is currently true, **not** a count of what
+  you have not yet looked at.
+- **Everyone signed in sees the same alerts.** Filtering alerts down to
+  the ones relevant to each person is not built and is not yet specified.
+
 ## 2026-09-05
 
 ### Added

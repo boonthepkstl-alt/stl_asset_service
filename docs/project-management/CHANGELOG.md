@@ -37,6 +37,20 @@ changes user-visible or API-visible behavior. Pure documentation-sync PRs
   This is unchanged behaviour, noted here only because our own
   documentation had briefly described it wrongly.
 
+### Fixed
+- **A failure to issue your sign-in token no longer looks like a wrong
+  password.** If the server could not sign the authentication token — its
+  own fault, not yours — the API replied `401 Unauthorized`, the same answer
+  it gives when the password is genuinely wrong, and included the internal
+  signing error text in the reply. It now replies `500` with
+  `{"message": "Failed to complete sign-in"}`, and the detail goes to the
+  server log only. **API note:** a token-signing failure is now a `500`
+  rather than a `401`. **The two real sign-in failures are unchanged, wording
+  included** — a wrong password still answers `401 invalid credentials`, and a
+  missing username or password still answers `401 username and password are
+  required`. The login screen shows the same message it always has, because
+  it never displayed the server's text in the first place.
+
 ### Not changed, deliberately
 - **There is still no way to acknowledge, dismiss, snooze or mark an
   alert as read** — anywhere, in the bell or on the Alerts screen. An

@@ -9,7 +9,24 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-09-07, after PR #109 merged (`282e758`) — **`Gap 17` and
+**As of:** 2026-09-07, after PR #112 merged (`96d076f`). **The
+traceability matrix carries zero open gaps** (v2.6, Gaps 1—20 all resolved) and
+**`RAISE-FR-ALERT-001` is a full, unqualified `PASS`** on both surfaces.
+Suite **51 test files / 262 tests**.
+
+**Two findings were produced by auditing this file's own previous claim that
+nothing buildable remained** — and in both cases the blocker was a premise
+written down without being checked. **F-47 → R-31:** the Compliance Review,
+the chain's terminal deliverable, had fallen **twelve matrix revisions**
+behind and was **overstating** `RAISE-FR-EXEC-001` as a full `PASS`; it is
+re-verified to v1.1, and the process gap that let it drift is closed with it.
+**F-43 half (b) → R-32:** a token-signing failure was answering `401` with its
+own error text; the recorded reason for not fixing it — "changes login
+response text the frontend may rely on" — was false, so it was never a
+decision at all. **The lesson, recorded because it happened twice: a
+finding's own scoping note deserves the same verification as a test result.**
+
+Earlier the same day, PR #109 merged (`282e758`) — **`Gap 17` and
 `Gap 20` are both closed, and `RAISE-TRACEABILITY-MATRIX.md` v2.6 is the
 first revision in its history with ZERO open gaps** (Gaps 1–20 all
 resolved). The header bell is wired to real alerts as a **second surface**
@@ -485,32 +502,35 @@ paragraph, which is a summary of a summary and can drift.
 Triaged against [`RAISE-TRACEABILITY-MATRIX.md`](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md)
 §3–§5 — re-check that file before picking an item, it may have changed.
 
-**Buildable now:** **None.** The last buildable item — the **Gap 20**
-execution sweep — was completed 2026-09-07
-(`CHECKPOINT-2026-09-07-002`): all six header-bell cases executed against
-the real running app and passing, Gap 20 closed.
+**Buildable now:** **None — but that claim has now been audited twice and was
+wrong both times**, so treat it as a hypothesis rather than a conclusion. The
+two items it missed (F-47, F-43 half b) are both closed as of 2026-09-07,
+and both were blocked only by a premise nobody had verified.
 
-**The traceability matrix now carries zero open gaps** (v2.6, Gaps 1–20 all
-resolved) — the first time in the document's history. Two requirements
-stand as full, unqualified `PASS`: `RAISE-FR-ALERT-001` (both surfaces,
-all seventeen cases) and the earlier ones recorded in the matrix.
-`RAISE-FR-EXEC-001` remains **`PASS (partial)`**, held by NBV alone.
+**One decision would convert a requirement outright: F-03.** NBV is fully
+designed and blocked on exactly one input — the default useful-life years per
+Asset Category (PRD Open Question 3a). The formula (straight-line), the
+configuration shape (per category, in Settings, following RQ41's precedent),
+the salvage value (zero) and the clamp (at 0) are all confirmed. **Only five
+numbers are missing, not a model**, and they are deliberately not being
+guessed because they become money on an executive dashboard. It is the only
+remaining finding whose resolution would move a Compliance Review verdict
+from `PASS (partial)` to a full `PASS`.
 
-**One decision would convert another requirement outright: F-03.** NBV is
-fully designed and blocked on exactly one input — the default useful-life
-years per Asset Category (PRD Open Question 3a). The formula
-(straight-line), the configuration shape (per category, in Settings,
-following RQ41's precedent), the salvage value (zero) and the clamp (at 0)
-are all confirmed. Only five numbers are missing, and they are deliberately
-not being guessed because they become money on an executive dashboard.
+**Open and genuinely requiring a decision:** **F-43 half (a)** — whether the 15
+request-parse 4xx sites should keep echoing Go's decoder text
+(usability versus disclosure; F-41 warned a blanket sweep is the wrong shape
+of fix); **PRD Q22a** — the missing `User`→`Employee` link and what "relevant
+to me" means; **F-09/F-35/F-36/F-37/F-39** — smaller independent product
+questions, none blocking a P0 verdict today.
 
-**Every open item is a decision, not engineering work:** **F-03**'s five
-numbers; **F-43**'s usability-versus-disclosure trade on request-parse 4xx
-bodies, plus the 401 that reports a token-signing failure; **PRD Q22a**'s
-missing `User`↔`Employee` link; and the older integration questions
-(**F-04** Oracle FA, which also blocks **F-31**, and **F-06**/**F-07**'s AI
-thresholds). **F-40** (flaky navigate-away assertions) has all known sites
-fixed and is a pattern to watch rather than a task.
+**Blocked on a dependency:** **F-04** (Oracle FA integration mechanism), which
+also blocks **F-31**; **F-06**/**F-07** (AI citation format and document
+intelligence thresholds).
+
+**Minor, no decision needed:** **F-38** (the Employee audit trail is a
+mock-mode fixture shim with no backend), **F-40** (a flaky navigate-away test
+pattern — all known sites fixed, a pattern to watch rather than a task).
 
 Everything below this line describes the state *before* F-05 was
 resolved and is kept for the contrast it draws:

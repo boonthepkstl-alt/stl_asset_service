@@ -3,104 +3,177 @@
 **Live output of [`NEXT-STEP-PROTOCOL.md`](NEXT-STEP-PROTOCOL.md).**
 Overwritten in place each time the protocol is re-run.
 
-**Run date:** 2026-09-07, after `CHECKPOINT-2026-09-07-007`. **This protocol has now
-concluded "nothing buildable remains" four times and been wrong three.** The three
-wrong ones produced F-47, F-43 half (b), F-49, F-38 half and F-03 groundwork — all
-closed. The one correct one was the third audit, which found only bookkeeping errors.
+**Run date:** 2026-09-07, after `CHECKPOINT-2026-09-07-008` (PR #119 merged and closed out).
+**This run reaches the same conclusion as the last one, and this time the conclusion
+survived being checked:** the only work of substance left is **F-03**, and it is blocked
+on business input, not on engineering.
 
-**Derived from** a direct read of merged `main` at `c22c5e2`: PRD **v0.18**, Design
-**v0.16**, Prototype **v0.17**, AC **v0.16**, Test Plan **v0.16**, Test Cases
-**v0.26**, Traceability Matrix **v2.6**, Compliance Review **v1.2**,
-`OPEN-FINDINGS.md`, and the source tree.
+**Derived from** a direct read of merged `main` at `456dda2` (PR #119 = `1594fab`): PRD
+**v0.18**, Design **v0.16**, Prototype **v0.17**, AC **v0.16**, Test Plan **v0.16**, Test
+Cases **v0.26**, Traceability Matrix **v2.6**, Compliance Review **v1.2**,
+`OPEN-FINDINGS.md`, and the source tree. **Every claim below was verified against source,
+tests or CI** — no scoping note, checkpoint or prior statement was taken on trust, which is
+what produced the corrections recorded in the previous two runs.
 
 ---
 
 ## Current State
 
-- **Validation:** frontend `tsc`/lint/build clean, **53 test files / 278
-  tests**; backend `go build`/`vet`/`test` clean; CI green on `main`, and CI
-  now also gates `gofmt` (F-49 → R-34). Local runs are deterministic
-  (`pool: 'threads'`, F-44 → R-27).
+- **Validation, run rather than assumed on `456dda2`:** frontend `tsc` 0, ESLint clean
+  (`--max-warnings 0`), **53 test files / 278 tests pass**, `vite build` clean; backend
+  `go build`/`vet`/`test` clean. **`gofmt` checked the R-34 way** — over all **64** Go
+  files converted to LF content, the form a CI runner checks out, rather than the CRLF
+  working tree — **flags nothing**. CI green on the merge commit, with the Backend job's
+  per-step conclusions read individually: Build, Vet, Test and **Format check** all
+  `success`.
+- **Traceability Matrix v2.6 carries zero open gaps** (Gaps 1–20 all resolved).
+- **Compliance Review v1.2 verdicts, read from the file:** 8 requirements at full `PASS`
+  (`ASSET-001/-002/-003`, `OPS-001/-002`, `MAINT-001`, `WARRANTY-001`, `ALERT-001`), one at
+  **`PASS (partial)`** (`EXEC-001`), two `FAIL` (`AI-SEARCH-001`, `ORACLE-001`), five
+  `BLOCKED` (`LIFE-001`, `AI-DOC-001..004`).
+- **No latent engineering work exists in the source.** **Zero** `TODO`/`FIXME`/`HACK`/`XXX`
+  across `frontend/src` and `go-template-main`. The only skipped tests are the company
+  template's eight DB-conditional `t.Skip`s in `sampleController_test.go` — no RAISE test is
+  skipped, and nothing is failing.
+- **Every non-passing requirement carries its own recorded "no further engineering action"
+  finding**, quoted from Compliance Review v1.2 rather than inferred: `AI-SEARCH-001` — *"No
+  further engineering action is expected until that decision lands"* (F-33);
+  `ORACLE-001` — the same sentence (F-31, gated on F-04); `AI-DOC-001..004` — *"Awaits a
+  business answer on the confidence-threshold value"* (F-07); `LIFE-001` — *"the partial
+  sub-items require PRD-level lifecycle-stage detail not yet defined"*, with Disposal
+  correctly excluded as Roadmap (RQ26), *"not a defect"*.
 
-## What this run demonstrated
+---
 
-**The same thing three more times, which is what makes it a pattern rather than an
-anecdote.**
+## Primary Next Step
 
-| Item | What had parked it | What was actually true |
-|---|---|---|
-| **F-49** | `ci.yml` said Go sources are *"committed with CRLF … so `gofmt -l` lists every file on a Linux runner"* | They are committed with **LF**. The CRLF was `core.autocrlf` on a Windows working tree. The gate was never blocked — and **failed on its first run** on a real misformat the CRLF noise had masked |
-| **F-38 half** | Filed as "deferred tech debt" | A latent correctness defect: the audit memo could never recompute from a write |
-| **F-03 groundwork** | This document said F-03 was blocked outright on five numbers | Only the *defaults* were. RQ46 confirmed the formula, and `lib/alerts.ts` already showed how to build against an injected lookup |
+**F-03 — the five per-Asset-Category useful-life defaults, then the Settings field, the
+NBV tile, the chain sync and a formal execution.**
 
-**Two of those three premises were written by this AI**, including the one in this
-document. F-49 went further and produced a *second* overstatement inside its own fix:
-proving that the locally-flagged and locally-CRLF file sets were identical was taken to
-mean "no real formatting problems exist", which set equality does not show. The gate
-disproved it immediately.
+**Status: `BLOCKED` — business-input pending.** Not `IMPLEMENTED`, not `VALIDATING`. No
+engineering step can begin, and **no default may be invented to unblock it** — PRD §16 Open
+Question 3a states the constraint explicitly: *"Do not invent or use an illustrative number
+as if confirmed."*
 
-**The rule, unchanged and now five-for-five: a finding's own scoping note deserves the
-same verification as a test result.** A wrong one parks real work where nothing looks
-for it again.
+### Why This Is Next
 
-**A second rule, earned this run: a fix is not verified until the guard fails without
-it.** The F-38 fix was cosmetic on its second attempt and would have shipped as a bug
-fix — the guard test still passed with the original bug restored, because it exercised
-the wrong arrangement. Mutation-testing the guard, not just running it, is what caught
-that.
+It is the **only** remaining item that would move a Compliance Review verdict.
+`RAISE-FR-EXEC-001` is the single requirement sitting at `PASS (partial)` while otherwise
+complete, and `TC-EXEC-001-03b` / `TC-DASH-03b` are the cases holding it there.
+
+**Everything else about it is already built or specified — verified in source this run:**
+
+| Piece | State on `456dda2` |
+|---|---|
+| Formula | ✅ `frontend/src/lib/nbv.ts` implements RQ46 in full — straight-line, zero salvage, clamped at 0 (R-36) |
+| Tests | ✅ `nbv.test.ts`, 15 tests, three mutations against RQ46's own clauses |
+| Configuration shape | ✅ Design v0.16 already specifies it: `NBVSettings: Record<AssetCategory, usefulLifeYears>` |
+| Settings-page precedent | ✅ the existing "Warranty Expiring Threshold" section — the same one-value-per-category shape, ~13 lines |
+| The five numbers | 🔴 **absent** |
+
+**The absence was verified, not assumed.** A repository-wide search for a per-category
+useful-life value — across `docs/`, `frontend/src` and `go-template-main`, in English and
+Thai — returns **only statements that it is undefined**: PRD §16 Q3a, PRD §5/§13/§17, and
+Design v0.16 §-NBV (*"no computable useful-life input, so no NBV tile can be built"*).
+`grep usefulLife` outside `nbv.ts`/`nbv.test.ts` returns **nothing**. `PlatformSettings`
+carries no depreciation key. `lib/nbv.ts` has **zero consumers**. **No number with any
+claim to authority exists anywhere in the repository**, so there is nothing to check the
+authority *of*.
+
+### Dependencies
+
+**One, and it is not technical:** the five values for IT Hardware, Mobile, Office
+Equipment, Infrastructure and Media Equipment. Business was asked directly and answered
+**"I will specify these myself"** (PRD §16 Q3a, 2026-09-05); the values have not arrived.
+
+### Expected Output
+
+`NBVSettings` on `PlatformSettings`, a Settings section modelled on the Warranty
+Threshold precedent, a Dashboard NBV tile fed by `computePortfolioNbv`, the chain synced
+through the `.claude/skills` subagents, and `TC-EXEC-001-03b` / `TC-DASH-03b` formally
+executed.
+
+### Acceptance Criteria
+
+`AC-EXEC-001-03b` and the Dashboard's corresponding criterion. `RAISE-FR-EXEC-001` moves
+`PASS (partial)` → full `PASS` **only after execution**, never on implementation alone
+(Completion Rule, and `SESSION-CLOSEOUT-PROTOCOL.md` Rule 14).
+
+### Validation
+
+`tsc`, ESLint, Vitest, `vite build`; `go build`/`vet`/`test`; `gofmt` over LF content; CI
+green on the PR head **before** merge — the one process slip of 2026-09-07 was merging
+PR #117 while its Frontend check still read `pending`, and it is not to be repeated.
+
+### Risks / Blockers
+
+**Blocked outright.** The only risk of proceeding is the one the PRD names: inventing a
+number, which would produce a tile that looks authoritative and is fabricated. **A second,
+narrower risk worth recording now** so it is not discovered mid-task: the Dashboard already
+renders a **"Monthly Depreciation"** tile (`pages/Dashboard/index.tsx:78`) fed by a static
+ESAPS-inherited fixture (`mockData.ts:755`, `monthlyDepreciation: 42800`) and labelled
+*illustrative*. A real NBV tile would sit beside a fake depreciation figure. That is a
+presentation decision for whoever specifies the numbers, **not** licence to change or remove
+the existing tile.
+
+### Files to Update
+
+`frontend/src/types/settings.ts`, `frontend/src/pages/Settings/`, `frontend/src/pages/Dashboard/`,
+`frontend/src/services/dashboard-service.ts`; then the chain via subagents; then
+`OPEN-FINDINGS.md`, `PROJECT-CHECKPOINTS.md`, `DEVELOPMENT-LOG.md`, `CURRENT-STATUS.md`.
+
+### Next Checkpoint
+
+`CHECKPOINT-2026-09-07-009` (or the next date's `-001`), on receipt of the five values.
+
+---
 
 ## Candidate Evaluation
 
-### 🟢 Buildable now
-
-**None — recorded as a hypothesis, not a conclusion.** It has been wrong three times
-out of four. If it is worth re-testing, the productive method has been to take one
-finding's scoping note and open the file it describes, rather than re-reading the
-register.
-
-### 🟡 Needs a business/product decision
-
-| Candidate | What it needs | Why it matters |
+| Candidate | Class | Verified basis for the classification |
 |---|---|---|
-| **F-03 (NBV)** | Five numbers: default useful-life years for IT Hardware, Mobile, Office Equipment, Infrastructure, Media Equipment | **Highest leverage, and the only one that converts a requirement outright.** As of 2026-09-07 the formula is **built** — `lib/nbv.ts`, RQ46 in full, useful life injected, **no defaults defined**, 15 tests, three mutations. What still needs the numbers: the Settings field, the tile, the chain sync and an execution |
-| **F-43 half (a)** | Whether the 15 request-parse 4xx sites should keep echoing Go's decoder text | A genuine usability-versus-disclosure trade. **Half (b) is closed** (R-32) — it was never a decision, only a premise nobody had checked. F-41 warned that a blanket sweep is the wrong shape of fix |
-| **PRD Q22a** | How to link the authenticated `User` to an `Employee`, and what "relevant to me" means per condition and role | Not specifiable today — `User` carries only `id`/`username`/`fullName`/`role`; Handovers matches by `fullName` string, a documented MVP limitation, not a reusable identity link |
-| **F-09 / F-35 / F-36 / F-37 / F-39** | Asset master field list; asset-code scheme; the Employee-ID convention the app's own seed data contradicts; login provisioning; what "Modify Specs" should edit | Smaller, independent product questions, none blocking a P0 verdict today |
+| **F-03** (NBV defaults → tile) | 🟡 **business input** | The five values exist nowhere in the repository; formula, tests, config shape and UI precedent all exist |
+| **F-43(a)** decoder text | 🟡 business decision | **21 sites reproduced exactly** by re-running the classifier this run (18 `BadRequest`, 2 `Conflict`, 1 `Unauthorized`). **New precision:** 4 of the 21 are in `sampleController.go`, company-template code, so **17 are RAISE-domain**. Whether to strip Go's decoder text is a product decision |
+| **PRD Q22a** "relevant to me" | 🔴 technical dependency | `User` is `{id, username, fullName, role}`; `grep employeeId` across auth types, `AuthContext` and `authModel.go` returns **nothing**. Unspecifiable until a `User`↔`Employee` link exists |
+| **F-09 · F-35 · F-36 · F-37 · F-39** | 🟡 business decision | `F-35`: codes are `AST-<uuid[:8]>` (`assetService.go:86`), no type/dept tables. `F-37`: `grep password\|provision` in `employeeService.go` returns **nothing**. `F-39`: "Modify Specs" (`EmployeeDetail:310`) targets `/employees/:id/edit`, whose fields are department, deskLocation, jobTitle, location, **manager**, phone, status — **no spec field among them** |
+| **F-04 → F-31** Oracle FA | 🔴 technical dependency | `ReconciliationPage` is a `ModulePage` placeholder; the Oracle references in `main.go:45–72` are the company template's generic DB pool, not an FA integration |
+| **F-06 / F-07** AI | 🔴 technical dependency | **No AI engine exists.** Every `Gemini`/`LLM` hit in `frontend/src` is a comment explaining its absence, plus one fixture string; `ai-decision-service.ts:117` states it directly |
+| **F-38** backend half | ⚪ out of scope | **No `RAISE-FR-EMP-*` requirement exists** to trace an Employee audit source to |
+| **F-13 / F-15 / F-16 / F-17** | ⚪ out of scope | Infrastructure the PRD does not cover; `F-17` is why no performance target is testable |
+| **A fresh 🟢 item** | ⚪ **none found** | Zero TODOs, zero skipped RAISE tests, zero failing gates, zero open matrix gaps, and every non-passing requirement carries its own "no further engineering action" finding |
 
-### 🔴 Blocked on a dependency
+**Two corrections this run makes to earlier statements of its own, recorded rather than
+quietly fixed:**
 
-| Candidate | Blocked on |
-|---|---|
-| **F-04** (Oracle FA integration) | Integration method, mapping, sync and security all undefined (PRD §16 Q6–Q10) |
-| **F-31** (Financial View, P-011) | Depends on F-04 |
-| **F-06 / F-07** (AI search citations, document intelligence) | Thresholds, field lists and merge rules undefined |
+1. **`Employee.manager` and `Employee.managerId` exist end-to-end** — `types/employee.ts:23-24`,
+   `employeeModel.go:19-20`, and the SQL — and `manager` is an editable field on the Edit
+   Employee form. A previous run listed that form's fields **without** `manager`. It changes
+   no verdict, but it matters to anyone reasoning about the RQ43 handover workflow, whose
+   scope note says no *new* manager relationship field was being introduced — because one
+   already existed.
+2. **F-43(a)'s 21 sites are not all RAISE code.** Four are in the company template's
+   `sampleController.go`. The finding's count was right; its implied scope was wider than the
+   product.
 
-### Minor, no decision needed
-
-**F-40** — a flaky navigate-away test pattern; all known sites fixed, a pattern to watch
-rather than a task. **F-38's backend half** — the Employee audit trail has no backend and
-`EditEmployee` writes by mutating a module fixture. Not fixable within scope: **no
-`RAISE-FR-EMP-*` requirement exists** to trace an audit source to. Its stale-derivation
-half is closed (R-35).
+---
 
 ## Recommendation
 
-> **No 🟢 buildable task is currently available. The next action should be
-> a business decision, not implementation.**
+**Do not start engineering work. `F-03 = business-input pending.**
 
-**Recommended Next Task:** Obtain **F-03**'s per-Asset-Category useful-life defaults.
+There is no second-best task to fall back on. The previous run's fallback — the two stale
+statements — was taken and closed by PR #119, and this run found no replacement for it:
+**every remaining finding is gated on a business answer or a technical dependency, and each
+gate was verified in source this run rather than read off a prior note.**
 
-**Reason:** it is now the narrowest it has ever been. Two of F-03's three KPIs turned out
-never to have been decision-blocked, and as of 2026-09-07 the third's **formula is built and
-tested** — what remains is **five numbers, not a model, and not code**. It is the only
-remaining item that would move a Compliance Review verdict from `PASS (partial)` to a full
-`PASS`.
+The one thing that unblocks the highest-value work is **five numbers**: the useful life in
+years for **IT Hardware, Mobile, Office Equipment, Infrastructure, Media Equipment**. On
+receipt, `RAISE-FR-EXEC-001` can reach a full `PASS` — the last P0 verdict still short of
+one.
 
-**Required Decisions Before It:** just those five values. Everything else
-is confirmed in PRD §16 Resolved Question 46.
+---
 
-**Proposed Implementation Phase:** the remaining work sits in **Phase 8 — Executive
-Dashboard & Reporting** and is now short: seed the Settings per-category field, wire the
-tile to `computePortfolioNbv`, sync the chain, execute. `lib/nbv.ts` is already merged and
-tested, so none of that is design work — the same sequence completed three times already,
-for Utilization, the header bell, and Gap 20.
+## Document Status
+
+**Status:** Live — regenerated 2026-09-07 from merged `main` `456dda2`.
+**Supersedes:** the run of 2026-09-07 recorded after `CHECKPOINT-2026-09-07-007`.

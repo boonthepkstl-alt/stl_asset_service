@@ -4321,6 +4321,42 @@ Targeting the tab took two corrections, both recorded in the test so the next pe
 
 ---
 
+## CHECKPOINT-2026-09-07-009
+
+**Phase:** Phase 8 — Executive Dashboard & Reporting (planning only; no product code touched)
+**Feature:** NBV KPI (`RAISE-FR-EXEC-001`) — readiness, not implementation
+**Task:** F-03 Business Input Gate → **F-52 raised**, and two corrections to this project's own account of what F-03 still needs
+
+**Requirement traced:** `RAISE-FR-EXEC-001` (P0/MVP) — but **nothing was implemented against it.** This checkpoint records planning and tracking accuracy only. The requirement stays **`PASS (partial)`** and F-03 stays **business-input pending**.
+
+**What was actually produced.** A Business Input Gate review against merged `main`, which found no approved useful-life value anywhere in the repository (searched `docs/`, `frontend/src` and `go-template-main` in English and Thai; every hit is a statement that the values are undefined — PRD §16 Q3a is still open and the highest Resolved Question is **49**). The only number-bearing hit was `nbv.test.ts:65` (`// 2-year life`), **a test input, deliberately not treated as a business value.** No number was proposed, and none was drawn from general knowledge.
+
+**F-52 — the Dashboard NBV tile has no forward specification.** Every layer of the chain specifies the tile's **absence**, so a built tile would contradict the criteria meant to accept it. Quoted in the register rather than paraphrased: `AC-DASH-03b` / `AC-EXEC-001-03b` *"then no such tile is present"*; `TC-DASH-03b` *"No NBV tile is present in the shipped grid — this documents today's accurate absence, **not a target for NBV to be displayed**"*; `RAISE-PROTOTYPE.md`:783 *"No NBV tile exists on this dashboard today, and none can be built"*. **Two concrete consequences:** `TC-DASH-03b`/`TC-EXEC-001-03b` would **FAIL** once the tile ships, and `AC-DASH-01`/`AC-EXEC-001-01`'s **nine-tile** assertion — recorded PASS by `TC-DASH-01`/`TC-EXEC-001-01` — is invalidated by a tenth tile. **Explicitly recorded as NOT a defect in those documents:** each correctly described a state in which the tile could not be built. It becomes a gap only when F-03 unblocks, which is why it was raised now instead of discovered mid-implementation. Filed under **Blocking**, leading with its current status per the lesson of F-50, and **left open with the reason stated**: the specification pass is gated on DoR-3, and writing the criteria first would mean inventing the presentation decision.
+
+**The Settings half is unaffected and genuinely specified** — Prototype §23A, `AC-WARRANTY-001-07` and `TC-WARRANTY-001-07` (*"shows all 5 categories with editable useful-life inputs"*) describe presence, not absence, and need only the values. **So the five numbers alone unblock the Settings section but not the tile.**
+
+**Two corrections to this project's own records, and the sequence is the point.** `NEXT-STEP.md` first understated F-03 by listing "the chain sync" as outstanding while omitting `TC-WARRANTY-001-07` entirely (fixed at `a92aeb5`). **That fix then overshot** — it claimed the chain was *"specified end-to-end … no specification work remains"*, which is true of the Settings half and **false** of the Dashboard half (fixed at `eeefad7`). F-03's own register row carried the same flattening (*"the Settings defaults, the tile and the chain sync remain"*) and now names F-52, so the gap is discoverable from the finding it blocks — the cross-reference discipline established when F-42 was fixed. **The claim that needed verifying this time was a correction of the AI's own, written the same day.**
+
+**Files changed:** `docs/project-management/NEXT-STEP.md` (regenerated `c4d2e24`, then revised twice), `docs/project-management/OPEN-FINDINGS.md` (**F-52** added; **F-03**'s row corrected). **Zero product code touched** — `git diff --stat 456dda2..HEAD` lists exactly those two documents.
+
+**Validation, run rather than assumed on `3356e2f`:** frontend `tsc` **0**, ESLint clean, **53 test files / 278 tests pass**; backend `go build`/`vet`/`test` clean; **`gofmt` over all 64 Go files converted to LF content flags nothing** (the R-34 method — the CRLF working tree would flag 41 regardless). **CI green on every one of the four commits.** Register integrity checked mechanically: **37 `F-` rows, all five cells**; `openlist.py` OPEN **19 → 20** with F-52 correctly counted open; `leadcheck.py` flags nothing new.
+
+**Divergence from `CHECKPOINT-2026-09-07-008`, recorded rather than glossed.** Its Next Step was **F-03's five useful-life values**. Unchanged as the right next step; it did not happen because **the values have not been supplied**. No default was invented to make progress possible, per PRD §16 Q3a's explicit constraint (*"Do not invent or use an illustrative number as if confirmed"*).
+
+**Process note:** the four commits went **directly to `main`**, with no branch and no PR, because this round's standing instruction forbade creating either. A deliberate, recorded deviation from the project's PR-per-change convention. **`DEVELOPMENT-LOG.md`'s maintenance rule is "one row per merged PR", and these commits have no PR** — the row added there is keyed to the commit range instead, with the deviation stated in the row itself rather than a PR number invented for it.
+
+**Status:** ✅ Complete for its confirmed scope — the gate was assessed, the missing inputs named, and one real specification gap raised before it could be hit mid-build. **Explicitly NOT a step toward implementation:** nothing is closer to being built than it was at `456dda2`.
+
+**Known Issues:** **F-52 is open by design** and cannot be closed until DoR-3 is answered. **F-03 remains business-input pending.** `RAISE-FR-EXEC-001` remains **`PASS (partial)`**; `TC-EXEC-001-03b`, `TC-DASH-03b` and `TC-WARRANTY-001-07` remain **BLOCKED**. `.claude/scheduled_tasks.lock` shows modified in the working tree — an MCP runtime lock, deliberately never committed.
+
+**Remaining Work:** none that engineering can do unilaterally.
+
+**Next Step:** **obtain and record the five per-Asset-Category useful-life values, plus answers to DoR-3 and DoR-4** (`NEXT-STEP.md`). Three business inputs, no engineering step available before them — and DoR-3 gates the Dashboard half independently of the numbers.
+
+**What this checkpoint adds to the pattern.** Of the last four findings raised in this project, **three were stale or false statements in documents rather than product defects** (F-50, F-51, and F-52's trigger), and **F-51 and F-52 were both found by verifying a correction the AI had just written**. The rule keeps earning its place, in a sharper form than before: *a claim in a document deserves the same verification as a test result — including the claim that fixed the last one.*
+
+---
+
 ## Level 2 — Feature Checkpoints
 
 ### FEATURE-CHECKPOINT-project-tracking-governance

@@ -9,9 +9,21 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-09-07, after PR #119 merged (`1594fab`). Suite **53 test
-files / 278 tests**; matrix **v2.6** with zero open gaps; Compliance Review
-**v1.2**. CI gates `gofmt` as well as build/vet/test and lint/type/build.
+**As of:** 2026-09-07, at `3356e2f` — PR #119 merged (`1594fab`), then four
+documentation commits made **directly to `main`, with no branch and no PR**, because the
+session instruction for that round forbade creating either. Suite **53 test files / 278
+tests**; matrix **v2.6** with zero open gaps; Compliance Review **v1.2**. CI gates `gofmt`
+as well as build/vet/test and lint/type/build, and was green on all four commits.
+
+**F-52 raised: the Dashboard NBV tile has no forward specification.** Every layer of the
+chain specifies the tile's **absence** — `AC-DASH-03b`/`AC-EXEC-001-03b` say *"then no
+such tile is present"*, `TC-DASH-03b` says *"not a target for NBV to be displayed"*, and
+Prototype:783 says *"none can be built"* — so `TC-DASH-03b`/`TC-EXEC-001-03b` would
+**fail** once the tile ships, and the **nine-tile** grid that `TC-DASH-01`/`TC-EXEC-001-01`
+already PASSED is invalidated by a tenth tile. **Not a defect in those documents:** each
+described a state in which the tile could not be built. It is open by design, gated on the
+presentation decision (DoR-3), because writing the criteria first would mean inventing that
+decision.
 
 **Two more findings closed, both of them stale *statements* rather than product
 defects, bringing the tally to seven.** **F-50 → R-37:** this project's own
@@ -564,9 +576,10 @@ audit unchanged**, so it is recorded as a hypothesis, not a conclusion. **The ex
 tally is deliberately not restated here:** the "As of" note above counts *assertions*
 (four, three wrong) while this line previously counted *audits* (three, two wrong), and
 the two counters were never reconciled against evidence. Rather than bump a number
-that cannot be checked, the falsifiable part is stated plainly: **the most recent
-audit, 2026-09-07 after PR #118, again found work this line said did not exist** —
-F-50 and F-51, both closed by PR #119. What
+that cannot be checked, the falsifiable part is stated plainly: **the last two audits each
+found work this line said did not exist.** The audit after PR #118 found **F-50** and
+**F-51**, both closed by PR #119. The audit after PR #119 — the F-03 Business Input
+Gate — found **F-52**, which is open by design. What
 the audits found each time is listed in the "As of" note above.
 
 **F-03 is down to five numbers, and everything else about it is built.**
@@ -574,10 +587,15 @@ the audits found each time is listed in the "As of" note above.
 `purchaseDate`/`purchaseCost`, salvage zero, clamped at 0 — with the
 per-category useful life **injected** and **no default defined anywhere**, so
 nothing invents a value business has not supplied. 15 tests, three mutations
-against RQ46's own clauses. What still needs the numbers: the Settings field,
-the dashboard tile, the chain sync and a formal execution. Until then
-`RAISE-FR-EXEC-001` stays **`PASS (partial)`** and `TC-EXEC-001-03b` /
-`TC-DASH-03b` stay BLOCKED.
+against RQ46's own clauses. **What remains, split precisely rather than lumped as "the chain sync"**
+(corrected 2026-09-07, after this file and `NEXT-STEP.md` had both flattened it): the
+**Settings NBV section** is genuinely specified as a *presence* criterion already
+(Prototype §23A, `AC-WARRANTY-001-07`, `TC-WARRANTY-001-07`) and needs only the values; the
+**Dashboard/Executive tile** is not specified at all in that sense and needs a specification
+pass first (**F-52**), itself gated on DoR-3. **So the five numbers alone unblock the
+Settings half but not the tile.** Until all of it lands, `RAISE-FR-EXEC-001` stays
+**`PASS (partial)`** and `TC-EXEC-001-03b` / `TC-DASH-03b` / `TC-WARRANTY-001-07` stay
+BLOCKED.
 
 **Open and genuinely requiring a decision:** **F-43 half (a)** — whether the 15
 request-parse 4xx sites keep echoing Go's decoder text (half (b) is closed,

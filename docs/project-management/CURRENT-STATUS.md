@@ -9,7 +9,18 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-09-05, after PR #106 merged (`5100678`) — the Executive
+**As of:** 2026-09-07, after PR #109 merged (`282e758`) — **`Gap 17` and
+`Gap 20` are both closed, and `RAISE-TRACEABILITY-MATRIX.md` v2.6 is the
+first revision in its history with ZERO open gaps** (Gaps 1–20 all
+resolved). The header bell is wired to real alerts as a **second surface**
+over the same read-time derivation, and **`RAISE-FR-ALERT-001` is a full,
+unqualified `PASS`** — all seventeen `TC-ALERT-001-01..17` executed and
+passing on both surfaces. Suite **51 test files / 262 tests**. Two findings
+closed on the way: **F-45 → R-29** (a test step named a role the app does
+not have) and **F-46 → R-30** (an **AI-introduced specification error** —
+a criterion describing a numeral on the closed bell button that the product
+does not render; the specification was corrected, not the product).
+Previously, on 2026-09-05, PR #106 merged (`5100678`) — the Executive
 Dashboard KPI round is complete except for NBV. All seven chain documents
 were re-synced (PRD **0.17** → Matrix **2.4**), the four Gap 19 test cases
 were formally executed and **PASS**, and **`RAISE-FR-EXEC-001` sits at
@@ -474,36 +485,32 @@ paragraph, which is a summary of a summary and can drift.
 Triaged against [`RAISE-TRACEABILITY-MATRIX.md`](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md)
 §3–§5 — re-check that file before picking an item, it may have changed.
 
-**Buildable now:** **None — and for the first time that is not a bad sign.**
-The last buildable item, the **Gap 19 execution sweep**, was completed
-2026-09-05 (`CHECKPOINT-2026-09-05-004`): all four cases executed against
-the real running app and **PASS**, Gap 19 closed.
+**Buildable now:** **None.** The last buildable item — the **Gap 20**
+execution sweep — was completed 2026-09-07
+(`CHECKPOINT-2026-09-07-002`): all six header-bell cases executed against
+the real running app and passing, Gap 20 closed.
 
-**`RAISE-FR-EXEC-001` is `PASS (partial)`, held by NBV alone.** It was
-deliberately **not** returned to a full `PASS` after that sweep, because
-`TC-DASH-03b`/`TC-EXEC-001-03b` remain BLOCKED and a full PASS would
-misstate the evidence. **NBV is fully designed and blocked on exactly one
-input** — the default useful-life years per Asset Category (PRD Open
-Question 3a, **F-03** still open). The formula, the Settings shape, the
-salvage rule and the clamp are all confirmed; only the five numbers are
-missing, and they are deliberately not being guessed because they become
-money on an executive dashboard.
+**The traceability matrix now carries zero open gaps** (v2.6, Gaps 1–20 all
+resolved) — the first time in the document's history. Two requirements
+stand as full, unqualified `PASS`: `RAISE-FR-ALERT-001` (both surfaces,
+all seventeen cases) and the earlier ones recorded in the matrix.
+`RAISE-FR-EXEC-001` remains **`PASS (partial)`**, held by NBV alone.
 
-**`Gap 17` is now the only open gap in the whole matrix** — the bell-icon
-scope contradiction between PRD §16 Resolved Question 35 and
-`ESAPS-UI-FOUNDATION-BASELINE.md` line 88. It is a **documentation
-decision**, not an engineering task: two project documents contradict each
-other and somebody has to say which is right. `deriveAlerts` already
-exists, so the bell only needs wiring once that is settled.
+**One decision would convert another requirement outright: F-03.** NBV is
+fully designed and blocked on exactly one input — the default useful-life
+years per Asset Category (PRD Open Question 3a). The formula
+(straight-line), the configuration shape (per category, in Settings,
+following RQ41's precedent), the salvage value (zero) and the clamp (at 0)
+are all confirmed. Only five numbers are missing, and they are deliberately
+not being guessed because they become money on an executive dashboard.
 
-**Every open item is now a decision, not engineering work:** **F-03**'s five
-numbers, **Gap 17**'s document conflict, **F-43**'s
-usability-versus-disclosure trade on request-parse 4xx bodies, and **PRD
-Q22a**'s missing `User`↔`Employee` link. Two minor items need no decision
-and no urgency: **F-45** (two test cases name an "Executive" role the app
-does not have — a two-line wording fix) and **F-40** (flaky navigate-away
-assertions, all known sites fixed, a pattern to watch rather than a task).
-
+**Every open item is a decision, not engineering work:** **F-03**'s five
+numbers; **F-43**'s usability-versus-disclosure trade on request-parse 4xx
+bodies, plus the 401 that reports a token-signing failure; **PRD Q22a**'s
+missing `User`↔`Employee` link; and the older integration questions
+(**F-04** Oracle FA, which also blocks **F-31**, and **F-06**/**F-07**'s AI
+thresholds). **F-40** (flaky navigate-away assertions) has all known sites
+fixed and is a pattern to watch rather than a task.
 
 Everything below this line describes the state *before* F-05 was
 resolved and is kept for the contrast it draws:

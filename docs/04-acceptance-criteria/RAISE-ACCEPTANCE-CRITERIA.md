@@ -2,9 +2,9 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Acceptance Criteria
-**Version:** 0.15 Draft
+**Version:** 0.16 Draft
 **Status:** Draft for Acceptance Review
-**Source:** [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.17 §27 (Prototype Traceability Matrix) + §5, §7–§23, §23A, §25A (per-screen specs / P-018 Settings / AI Scope Boundary / NFR Backlog Prototype Note) + §8/§20's corrected P-002/P-014 KPI grid (nine tiles, Utilization built and live) and NBV/Risk/Utilization status narrative + §23A's new NBV section (shape confirmed, not built) + §14's "IT Hardware Assignment Approval Workflow — Category-Scoped Exception" subsection + §18's P-012 Alerts (five confirmed MVP trigger conditions and fixed-per-condition severity; access gate confirmed 2026-09-04) + §6's new "Header Bell (`AppShell`) — Second Surface of P-012 Alerts, AS BUILT" subsection and §18's new "Ordering Rationale" subsection (both resolved 2026-09-05, PRD §16 Resolved Question 49, closing Gap 17), cross-checked against [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.18 (§16 Resolved Question 49) and [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.15
+**Source:** [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.17 §27 (Prototype Traceability Matrix) + §5, §7–§23, §23A, §25A (per-screen specs / P-018 Settings / AI Scope Boundary / NFR Backlog Prototype Note) + §8/§20's corrected P-002/P-014 KPI grid (nine tiles, Utilization built and live) and NBV/Risk/Utilization status narrative + §23A's new NBV section (shape confirmed, not built) + §14's "IT Hardware Assignment Approval Workflow — Category-Scoped Exception" subsection + §18's P-012 Alerts (five confirmed MVP trigger conditions and fixed-per-condition severity; access gate confirmed 2026-09-04) + §6's new "Header Bell (`AppShell`) — Second Surface of P-012 Alerts, AS BUILT" subsection and §18's new "Ordering Rationale" subsection (both resolved 2026-09-05, PRD §16 Resolved Question 49, closing Gap 17), cross-checked against [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.18 (§16 Resolved Question 49) and [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.15. No source-layer document changed for v0.16 — this revision only corrects an over-specified criterion within this document itself (AC-ALERT-001-12); see Document Status Change Log below.
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
 
@@ -60,7 +60,7 @@ detail is "TBD" or "conceptual," the corresponding criterion is marked
 | [AC-MAINT-001](#12-ac-maint-001--p-009-maintenance) | P-009 | RAISE-FR-MAINT-001 | Partially testable (workflow shape testable; SLA/vendor/cost NOT TESTABLE YET) |
 | [AC-WARRANTY-001](#13-ac-warranty-001--p-010-warranty--p-018-settings) | P-010, P-018 | RAISE-FR-WARRANTY-001 (Warranty section); `RAISE-FR-EXEC-001` (P-018's new NBV section, NOT TESTABLE YET) | Warranty section: Testable (field list resolved 2026-08-29; per-category configurable threshold resolved 2026-09-01). NBV section (added 2026-09-05, PRD §16 Resolved Question 46): shape-only criterion, NOT TESTABLE YET pending PRD Open Question 3a |
 | [AC-ORACLE-001](#14-ac-oracle-001--p-011-oracle-fa--financial-view) | P-011 | RAISE-FR-ORACLE-001 | Partially testable |
-| [AC-ALERT-001](#15-ac-alert-001--p-012-alerts) | P-012 (+ header bell, `AppShell`, global chrome) | RAISE-FR-ALERT-001 | Testable for the five confirmed trigger conditions and fixed-per-condition severity (resolved 2026-09-04, PRD §16 Resolved Question 44; closes Open Finding F-05's trigger-rules cause), and now also testable for the access gate itself (resolved 2026-09-04, PRD §16 Resolved Question 45 — any authenticated user, all four roles; partially resolves Open Finding F-08 for this screen only) — only Warranty EXPIRED is actually implemented as of this date, the other four are not yet built (verification deferred to Test Case execution, not decided here); per-user filtering of alert rows is a separate, newly-raised, still-open question (PRD §16 Q22a) with no criterion written for it. **Updated 2026-09-05 (PRD §16 Resolved Question 49, closing Gap 17):** the `AppShell` header bell — a second display surface over this same requirement — is now **built and shipped**, and AC-ALERT-001-12..17 test it directly as passing/testable criteria, not NOT TESTABLE YET; the group's former "bell-icon scope contradiction" left-open note is resolved and removed |
+| [AC-ALERT-001](#15-ac-alert-001--p-012-alerts) | P-012 (+ header bell, `AppShell`, global chrome) | RAISE-FR-ALERT-001 | Testable for the five confirmed trigger conditions and fixed-per-condition severity (resolved 2026-09-04, PRD §16 Resolved Question 44; closes Open Finding F-05's trigger-rules cause), and now also testable for the access gate itself (resolved 2026-09-04, PRD §16 Resolved Question 45 — any authenticated user, all four roles; partially resolves Open Finding F-08 for this screen only) — only Warranty EXPIRED is actually implemented as of this date, the other four are not yet built (verification deferred to Test Case execution, not decided here); per-user filtering of alert rows is a separate, newly-raised, still-open question (PRD §16 Q22a) with no criterion written for it. **Updated 2026-09-05 (PRD §16 Resolved Question 49, closing Gap 17):** the `AppShell` header bell — a second display surface over this same requirement — is now **built and shipped**, and AC-ALERT-001-12..17 test it directly as passing/testable criteria, not NOT TESTABLE YET; the group's former "bell-icon scope contradiction" left-open note is resolved and removed. **Corrected 2026-09-07:** AC-ALERT-001-12 previously over-specified a numeral on the closed bell button; rewritten to state the actual built behavior (dot indicator when closed; numeral in `aria-label` and the opened panel's header badge, identical to this screen's own derived total) — an AI-introduced specification error in the criterion, not a product defect; AC-ALERT-001-01..11 and -13..17 unaffected |
 | [AC-AUDIT-001](#16-ac-audit-001--p-013-audit-log) | P-013 | RAISE-FR-AUDIT-001 | Partially testable |
 | [AC-EXEC-001](#17-ac-exec-001--p-014-executive-dashboard) | P-014 | RAISE-FR-EXEC-001 | Testable (rewritten 2026-08-31 to match as-built dashboard, Open Finding F-22; updated 2026-09-05, PRD §16 Resolved Questions 46–48 — KPI grid now nine tiles; Utilization is now a passing, testable criterion (built and live, PR #102); NBV is NOT TESTABLE YET (formula confirmed, default useful-life values undefined, PRD Open Question 3a); Risk is confirmed out of MVP scope by business decision, not a gap) |
 | [AC-AI-SEARCH-001](#18-ac-ai-search-001--p-015-ai-assistant) | P-015 | RAISE-AI-SEARCH-001 | Partially testable |
@@ -952,12 +952,44 @@ verified passing — whether each criterion actually passes is decided at
 **Header bell (`AppShell`) — second surface over this same requirement, built and
 shipped (PRD §16 Resolved Question 49; Design §14; Prototype §6/§18):**
 
-- **AC-ALERT-001-12** — Given the header bell badge derives its count from the same
-  shared `useAlerts` hook (`frontend/src/hooks/useAlerts.ts`) that this screen (P-012)
-  itself uses, when an authenticated user views the header on any authenticated page,
-  then the badge shows the **total** alert count currently returned by that shared
-  derivation (live-verified against the seeded register: **19**) — the same total this
-  screen itself derives, not a separately computed or independently-sourced count.
+**Status Note — Corrected 2026-09-07 (AC-ALERT-001-12 over-specified; product unchanged,
+criterion rewritten — recorded here so a later reader knows why the wording changed).**
+AC-ALERT-001-12 previously stated that "the badge shows the **total** alert count" as if
+that numeral appeared on the closed header bell button itself. Live verification against
+merged `main` `6a6bcac` shows this is not what is built: the closed bell button renders
+only a **dot** presence indicator when at least one alert exists — no numeral on the
+button face. The numeral appears in two other places only: the button's `aria-label`
+(already separately tested by AC-ALERT-001-17) and a numeric badge **inside the dropdown
+panel header**, visible only once the panel is opened. This gap traces to how the
+criterion was drafted during the 2026-09-05 sync (see the v0.14 → v0.15 Change Log
+entry above): the source description said "the bell badge shows the TOTAL alert count,"
+which was true of the **panel** badge and was misread, while drafting the criterion, as
+describing the **closed header button**. PRD §16 Resolved Question 49 never specified a
+numeral on the closed button, and the pre-existing bell already used a dot before this
+feature was added — so the product matches the business decision as confirmed; only the
+criterion over-reached beyond it. This was an AI-introduced specification error made
+while writing this document, not a business decision and not a product defect. Business
+has confirmed the fix is to correct the criterion, not the product. AC-ALERT-001-12 is
+rewritten below to state what is actually built while still testing the property the
+business decision (PRD §16 Resolved Question 49) turned on: that the bell's total is the
+**same** total P-012 itself derives, not an independently sourced one. No PASS/executed
+status is asserted here — that is decided at `RAISE-TEST-CASES.md` on real execution.
+AC-ALERT-001-01..11 and AC-ALERT-001-13..17 are unaffected by this correction. PRD §16
+Open Question 22a and Open Finding F-03 are unrelated to this correction and remain open.
+
+- **AC-ALERT-001-12** — Given the header bell's **closed** button and its **open**
+  dropdown panel both read the same shared `useAlerts` hook
+  (`frontend/src/hooks/useAlerts.ts`) that this screen (P-012) itself uses, when an
+  authenticated user views the header on any authenticated page with at least one alert
+  present, then (1) the closed button shows only a **presence indicator (a dot)** — no
+  numeral appears on the button face itself; (2) the **numeral** for the total alert
+  count is exposed instead via the button's accessible name (`aria-label`, e.g.
+  "Notifications, 19 alerts" — also separately tested by AC-ALERT-001-17) and, once the
+  user opens the dropdown, via a numeric badge in the **panel header**; and (3) that
+  numeral is **identical** to the total this screen (P-012) itself derives from the same
+  shared derivation (live-verified: **19**, matching this screen's own pagination text
+  "Showing 1-10 of 19") — the same total this screen itself derives, not a separately
+  computed or independently-sourced count.
 - **AC-ALERT-001-13** — Given the header bell button is clicked, when the dropdown
   panel opens, then it lists **exactly five** rows — not all currently-existing alerts
   — each showing the condition label, the description, and the affected record
@@ -1747,10 +1779,48 @@ as blocked pending business confirmation.
 
 ## Document Status
 
-**Version:** 0.15 (re-synced against `RAISE-PROTOTYPE.md` v0.17 §6/§18, `RAISE-PRD.md`
-v0.18 §16 Resolved Question 49, and `RAISE-DESIGN.md` v0.15 §14, 2026-09-05 — new
-`AppShell` header bell second surface over P-012 Alerts, built and shipped, resolving
-`RAISE-TRACEABILITY-MATRIX.md` Gap 17)
+**Version:** 0.16 (self-correction, 2026-09-07 — AC-ALERT-001-12 was over-specified
+against the built product; no source-layer document changed)
+
+**Change Log — v0.15 → v0.16 (2026-09-07, self-correction of AC-ALERT-001-12, business
+confirmed the fix is to correct the criterion rather than the product):**
+
+1. **Root cause.** AC-ALERT-001-12, as written in v0.15 (2026-09-05 sync), stated "the
+   badge shows the **total** alert count," implying that numeral appears on the closed
+   header bell button. Live verification against merged `main` `6a6bcac` shows the
+   closed button renders only a **dot** presence indicator when any alert exists — no
+   numeral on the button face. The numeral appears only via the button's `aria-label`
+   (already separately tested by AC-ALERT-001-17) and via a numeric badge **inside the
+   dropdown panel header**, once opened — matching P-012's own pagination text ("Showing
+   1-10 of 19"). The v0.15 criterion was drafted from an imprecise source description
+   ("the bell badge shows the TOTAL alert count") that was true of the **panel** badge
+   and was misread, while drafting, as describing the **closed header button**. PRD §16
+   Resolved Question 49 never specified a numeral on the closed button, and the
+   pre-existing bell already used a dot before this feature was added — the product
+   matches the confirmed business decision; only the criterion over-reached. This was an
+   AI-introduced specification error in this document, not a business decision and not a
+   product defect.
+2. **AC-ALERT-001-12 (§15) is rewritten**, in place, to state what is actually built: (1)
+   the closed button shows a presence indicator (a dot), not a numeral; (2) the numeric
+   total is exposed via the button's `aria-label` and via the opened dropdown panel's
+   header badge; and (3) that total is identical to the total P-012 itself derives from
+   the same shared `useAlerts` hook (live-verified: 19, matching P-012's own "Showing
+   1-10 of 19"). The criterion number is unchanged — it is not split into new numbers,
+   since AC-ALERT-001-13 through -17 are already written and executed against.
+3. **A new Status Note is added under AC-ALERT-001 (§15)**, immediately above the
+   rewritten criterion, recording the correction and its cause for a later reader. No
+   PASS/executed status is asserted anywhere in this correction — that is decided at
+   `RAISE-TEST-CASES.md` on real execution.
+4. **AC-ALERT-001-01 through -11 and AC-ALERT-001-13 through -17 are unchanged** by this
+   correction.
+5. **AC Index (§3)** — the AC-ALERT-001 row gains a short note recording this correction
+   and that it does not affect the other sixteen criteria in the group.
+6. **PRD §16 Open Question 22a stays open. Open Finding F-03 stays open.** Neither is
+   touched by this correction — it concerns only AC-ALERT-001-12's wording, not the
+   per-user-filtering question or any other open item.
+7. This revision does not touch `RAISE-PROTOTYPE.md`, `OPEN-FINDINGS.md`, or any earlier
+   layer — only this document, and only AC-ALERT-001-12 and its surrounding index/status
+   text within it.
 
 **Change Log — v0.14 → v0.15 (2026-09-05, PRD v0.18 §16 Resolved Question 49, per
 confirmed business decision — resolves Gap 17):**

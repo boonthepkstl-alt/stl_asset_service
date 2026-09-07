@@ -2,11 +2,29 @@ package service
 
 import (
 	"errors"
+	"fmt"
 	"singer/go-template-new-2026-06/logger"
 	"singer/go-template-new-2026-06/model"
 	"singer/go-template-new-2026-06/util"
 
 	"github.com/spf13/viper"
+)
+
+// Sentinel errors so authController can tell an authentication failure (the caller's
+// fault, 401) from a token-signing failure (ours, 5xx). Before Open Finding F-43 every
+// one of these came back as a bare errors.New and the controller answered 401 for all
+// three, which reported a server-side signing failure as if the user had typed the wrong
+// password -- and put the signing error's own text in the response body.
+//
+// The two authentication messages keep their exact original wording: they are the only
+// part of this that a caller legitimately reads.
+var (
+	ErrMissingCredentials = errors.New("username and password are required")
+	ErrInvalidCredentials = errors.New("invalid credentials")
+	// ErrTokenGeneration wraps the signing failure. The controller maps it to a 5xx and
+	// discards the detail, which stays in the server log (Open Finding F-19's rule,
+	// extended here to the one 4xx site that was reporting a server error).
+	ErrTokenGeneration = errors.New("failed to issue authentication token")
 )
 
 type AuthService interface {
@@ -23,7 +41,7 @@ func (s *authService) Login(username, password string) (*model.TokenResponse, er
 	log := logger.GetLogger()
 
 	if username == "" || password == "" {
-		return nil, errors.New("username and password are required")
+		return nil, ErrMissingCredentials
 	}
 
 	demoUsername := viper.GetString("AUTH_DEMO_USERNAME")
@@ -45,13 +63,13 @@ func (s *authService) Login(username, password string) (*model.TokenResponse, er
 
 	if username != demoUsername || password != demoPassword {
 		log.Warnf("Login failed for user: %s", username)
-		return nil, errors.New("invalid credentials")
+		return nil, ErrInvalidCredentials
 	}
 
 	token, expiresAt, err := util.GenerateToken(username, username, demoRole, demoFullName)
 	if err != nil {
 		log.Errorf("Failed to generate token: %v", err)
-		return nil, err
+		return nil, fmt.Errorf("%w: %v", ErrTokenGeneration, err)
 	}
 
 	return &model.TokenResponse{

@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"errors"
 	"net/http"
 	"singer/go-template-new-2026-06/logger"
 	"singer/go-template-new-2026-06/model"
@@ -54,10 +55,23 @@ func (a *authController) Login(c *fiber.Ctx) error {
 
 	tokenResp, err := a.authService.Login(req.Username, req.Password)
 	if err != nil {
-		log.Warnf("Login attempt failed for user %q: %v", req.Username, err)
-		return c.Status(http.StatusUnauthorized).JSON(fiber.Map{
+		// Open Finding F-43(b). This branch used to answer 401 for every error the service
+		// returned, with err.Error() in the body -- including util.GenerateToken failing,
+		// which is a server-side signing fault, not a rejected password. Reporting it as an
+		// authentication failure told the caller the wrong thing and leaked the signing
+		// error's own text; the two genuine authentication cases are sentinels and keep
+		// their exact wording, which is the only part a caller legitimately reads.
+		if errors.Is(err, service.ErrMissingCredentials) || errors.Is(err, service.ErrInvalidCredentials) {
+			log.Warnf("Login attempt failed for user %q: %v", req.Username, err)
+			return c.Status(http.StatusUnauthorized).JSON(fiber.Map{
+				"status":  "error",
+				"message": err.Error(),
+			})
+		}
+		log.Errorf("Login failed for user %q on a server-side error: %v", req.Username, err)
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
 			"status":  "error",
-			"message": err.Error(),
+			"message": "Failed to complete sign-in",
 		})
 	}
 

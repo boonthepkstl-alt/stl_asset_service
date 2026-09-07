@@ -26,7 +26,7 @@ import { Card, CardHeader, Button, Badge, StatusBadge, Avatar, Tabs, EmptyState,
 import { AppShell } from '@/components/AppShell';
 import { DataTable, type Column } from '@/components/DataTable';
 import { getAssetIcon } from '@/data/asset-icons';
-import { employeeHistoryEvents as fixtureHistory, employeeAuditLogs as fixtureAudit, type EmployeeHistoryEvent, type EmployeeAuditLog } from '@/data/fixtures/mockData';
+import { employeeHistoryEvents as fixtureHistory, employeeAuditLogs as fixtureAudit, type EmployeeHistoryEvent } from '@/data/fixtures/mockData';
 import type { PriorityLevel } from '@/data/fixtures/requisitionData';
 import { useEmployee } from '@/hooks/useEmployee';
 import { useEmployeeAssignments } from '@/hooks/useEmployeeAssignments';
@@ -66,9 +66,33 @@ export function EmployeeDetailPage() {
 
   const { tickets, refetch: refetchTickets } = useTickets({});
   const [historyEvents, setHistoryEvents] = useState<EmployeeHistoryEvent[]>(fixtureHistory);
-  // Read-only here: audit entries are written by pages/EditEmployee (which prepends to the
-  // same shared fixture array), so a remount of this page picks them up.
-  const [auditLogs] = useState<EmployeeAuditLog[]>(fixtureAudit);
+  // Open Finding F-38. This used to be `useState(fixtureAudit)`, which was a lie about
+  // its own semantics: useState implies a snapshot, but the value was the *same mutable
+  // reference* pages/EditEmployee prepends to with `fixtureAudit.unshift(...)`. The
+  // employeeAudit memo below was keyed on it, and an array's identity never changes when
+  // its contents are mutated -- so the memo could never recompute from a write.
+  //
+  // The fix is to stop caching the derived list at all: `employeeAudit` below filters the
+  // live module array on every render, with no useMemo and no snapshot.
+  //
+  // Two smaller fixes were tried first and both were wrong, recorded so they are not tried
+  // again. (1) Keying the memo on `fixtureAudit.length`: react-hooks/exhaustive-deps rejects
+  // it, correctly -- "outer scope values ... aren't valid dependencies because mutating them
+  // doesn't re-render the component". (2) Reading the live array but keeping the memo with
+  // deps `[employee]`: that is purely cosmetic. The memo still caches after mount, so a
+  // later append is just as invisible as before -- it removes a misleading `useState` and
+  // fixes no behaviour. A mutation test caught that: the guard test still passed with the
+  // original aliasing restored.
+  //
+  // **What this fixes and what it does not, precisely:** an append is now reflected on the
+  // next render for any reason. It is still not reactive -- nothing notifies this page when
+  // another module mutates an array, and no hook can create that notification. A real fix is
+  // a backed audit source, which is out of scope: no RAISE-FR-EMP-* requirement exists to
+  // trace it to. The filter is over a handful of rows, so dropping the memo costs nothing.
+  //
+  // Today the flow works because EditEmployee navigates back here and this page remounts.
+  // The hazard was always future code appending while it is mounted, and that case now
+  // degrades to "stale until the next render" instead of "stale forever".
 
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
   const [isNewTicketModalOpen, setIsNewTicketModalOpen] = useState(false);
@@ -91,7 +115,7 @@ export function EmployeeDetailPage() {
   }, [tickets, employee, assignedAssets]);
 
   const employeeHistory = useMemo(() => (employee ? historyEvents.filter((h) => h.employeeId === employee.id) : []), [historyEvents, employee]);
-  const employeeAudit = useMemo(() => (employee ? auditLogs.filter((a) => a.employeeId === employee.id) : []), [auditLogs, employee]);
+  const employeeAudit = employee ? fixtureAudit.filter((a) => a.employeeId === employee.id) : [];
   const employeeLicenses = useMemo(() => {
     if (!employee) return [];
     return allLicenses

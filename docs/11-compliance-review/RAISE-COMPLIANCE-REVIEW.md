@@ -1,6 +1,6 @@
 # RAISE — Requirement Compliance Review
 
-**Document Status:** Draft v1.1 — **Re-verified 2026-09-07 against Traceability Matrix v2.6.** v1.0 consolidated matrix **v1.4** and had since fallen twelve revisions behind, during which two verdicts moved — one of them **upward, overstating compliance**, which is the worst failure mode for this document in particular. See the Revision Note at §1a.
+**Document Status:** Draft v1.2 — **Re-verified 2026-09-07 against Traceability Matrix v2.6.** v1.0 consolidated matrix **v1.4** and had since fallen twelve revisions behind, during which two verdicts moved — one of them **upward, overstating compliance**, which is the worst failure mode for this document in particular. See the Revision Note at §1a. **v1.2, same day:** §5 and §7 corrected after an audit found F-09 and F-35 filed as blocking while gating nothing — applying the very rule v1.1 added, that this document is re-verified in the same pass that changes a finding.
 **Scope note:** this is the first artifact in the deliverable chain that
 consumes real source code rather than producing the spec for it. It
 consolidates [`RAISE-TRACEABILITY-MATRIX.md`](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md)
@@ -187,7 +187,16 @@ per-Asset-Category useful-life values — **narrowed**, R-28: the formula is con
 only the five numbers are missing), F-04 (Oracle FA integration mechanism), F-06 (NL
 Search citation format), F-07 (Document Intelligence thresholds/fields), F-08 (Auth
 mechanism / role-permission matrix content — **narrowed**, R-25: resolved for the
-Alerts screen only), F-09 (Asset master field list).
+Alerts screen only).
+
+**Reclassified at v1.2 (2026-09-07), not resolved:** **F-09** (asset master field
+list) and **F-35** (asset code scheme) were both filed as blocking. Neither gates any
+verdict in §3 — F-09 appears **zero** times in the traceability matrix, and this
+document's own `RAISE-FR-ASSET-001` row already says it *"does not block this row's
+current PASS"*; F-35 appears in neither document and that requirement is a full `PASS`
+on the current `AST-####` scheme. Both remain **open**, as scope questions rather than
+blockers (`OPEN-FINDINGS.md` F-48 → R-33). **Nothing was downgraded in substance** —
+only in how it is filed, which is what a reader triages from.
 
 **Resolved since v1.0, and listed here because v1.0 named them as open:** F-02
 (Check-in/Check-out workflow detail → R-19), F-05 (Alert trigger rules and severity
@@ -262,12 +271,20 @@ can say so without recommending a business priority: F-03 needs five numbers, no
 model.** Its formula, configuration shape, salvage value and clamp are all confirmed
 (PRD §16 Resolved Question 46); only the default per-Asset-Category useful-life values
 are missing. It is the only remaining open finding whose resolution would move a
-requirement in §3 from `PASS (partial)` to a full `PASS`. Ordering the rest — F-04, F-06, F-07, F-08, F-09 — remains a business scheduling question, and this
+requirement in §3 from `PASS (partial)` to a full `PASS`. Ordering the rest — F-04, F-06, F-07, F-08 — remains a business scheduling question, and this
 document still does not recommend an order for them.
 
 ---
 
 ## Document Status
+
+**Version:** 1.2 (2026-09-07 — §5/§7 corrected: F-09 and F-35 reclassified as scope questions, not blockers)
+
+**Change Log — v1.1 → v1.2 (2026-09-07, same day)**
+
+1. **§5** — F-09 removed from the Blocking list and a paragraph added recording that F-09 and F-35 were both filed as blocking while gating no verdict in §3. Neither is resolved; both are reclassified. F-09 appears **zero** times in the traceability matrix, and this document's own `RAISE-FR-ASSET-001` row already said it does not block that row's PASS — an internal contradiction this document had been carrying.
+2. **§7** — F-09 dropped from the "ordering the rest" list, which had implied it competed with F-04/F-06/F-07/F-08 for scheduling.
+3. **Why this revision exists at all:** v1.1 added the rule *"re-verify in the same pass that closes a gap or resolves a finding, not when someone happens to check."* An audit changed how F-09 and F-35 are filed in `OPEN-FINDINGS.md` (F-48 → R-33) on the same day — so this document was re-verified in that same pass rather than left to drift again. **The rule's first exercise.**
 
 **Version:** 1.1 (2026-09-07 — re-verified against `RAISE-TRACEABILITY-MATRIX.md` **v2.6**)
 **Author:** Re-verified by Claude Code, consolidating existing chain evidence — no new test execution was performed for this revision; every verdict cites an execution already recorded in the matrix and `RAISE-TEST-CASES.md` v0.26

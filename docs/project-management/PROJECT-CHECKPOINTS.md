@@ -4287,6 +4287,40 @@ Targeting the tab took two corrections, both recorded in the test so the next pe
 
 ---
 
+## CHECKPOINT-2026-09-07-008
+
+**Phase:** N/A — project tracking / documentation accuracy, not a product capability
+**Feature:** Findings register and source-comment accuracy
+**Task:** Correct two stale statements that misreport what is still open (**F-50 → R-37**, **F-51 → R-38**)
+
+**Requirement traced:** **N/A — recorded honestly.** Neither half traces to a `RAISE-FR-*`/`RAISE-AI-*`/`RAISE-NFR-*` ID. This is the tracking layer correcting itself, the same classification as `FEATURE-CHECKPOINT-project-tracking-governance`. **It unblocks nothing and moves no verdict** — stated up front so the value is not mistaken for progress on a requirement.
+
+**F-50 → R-37 — the register's own F-42 row read as open.** The status cell opened with *"Open — and it is the single item keeping Gap 16 open"* and disclosed **RESOLVED 2026-09-04 (R-24)** only at **character 656**, with no separator. Every claim in that lead was false by then: R-24 sits in the Resolved table, and `RAISE-TRACEABILITY-MATRIX.md` records **Gap 16 and Gap 18 both CLOSED** as of v2.1. **The evidence that it actually misleads a parser is direct, not hypothetical:** a script written during the 2026-09-07 assessment to enumerate open findings read the lead and classified F-42 as **OPEN**. **Fix:** the current status is placed first and the pre-2026-09-04 reasoning demoted to an explicitly labelled *History, superseded and kept for the record* clause — **nothing deleted**, per this file's stated maintenance rule. The row now names F-50, so the defect is discoverable from the row it affected. **Measured before/after on the same two scripts:** `leadcheck.py` `LATE-DISCLOSURE (resolved@656)` → `ok (resolved@2)`; `openlist.py` OPEN count **20 → 19** with F-42 no longer listed (rows 34 → 36, the two new findings). **Blast radius verified contained to the register** — `CURRENT-STATUS.md`, `NEXT-STEP.md` and `RAISE-COMPLIANCE-REVIEW.md` were each checked and none describes F-42 as open. A scan of all 34 `F-` rows found **only this one** with the late-disclosure shape; F-03, F-08 and F-43 also open with "Open", correctly, because they are still open. Sibling of **F-48**.
+
+**F-51 → R-38 — three source comments gave a stale reason for excluding NBV/Risk.** `frontend/src/lib/utilization.ts`, `frontend/src/services/dashboard-repository.ts` and `go-template-main/model/dashboardModel.go` each fenced themselves off from the two figures on the stated grounds that *"PRD §16 Q3/Q4 remain open"*. All three now cite **RQ46** as the authority for the NBV formula and **RQ47** for Risk carrying no MVP dashboard tile, and each states its own reason for not computing the figure: NBV needs a configured per-category useful life none of the three carries, and Risk has nothing to expose. **The fences themselves were correct and are untouched** — none of the three modules should compute either figure, and none does.
+
+**This task's own error, caught in review of PR #119 before merge.** The first version of the fix wrote *"neither is an open question any more"* and *"stale on both halves"* in all three comments and in both register rows. **Checked against `RAISE-PRD.md` §16 rather than against the PR's own summary, and both were wrong:** §16 **Q4 reads `Still open` verbatim** — what RQ47 changed is that it no longer bears on `RAISE-FR-EXEC-001`, since the dashboard carries no Risk tile, so Q4 belongs entirely to `RAISE-AI-RISK-001` (Pilot/Roadmap) — and Q3's remainder is **Q3a**, the per-Asset-Category useful-life defaults, **which is F-03 itself**. What was actually stale is the *reason*, not the questions, and that distinction is the entire content of the finding. **Same failure mode as F-49's set-equality overstatement:** a true observation carried one inference too far. Corrected in place — each comment and both rows now quote the wrong wording, name it as wrong, and say plainly that Q3a and Q4 remain open.
+
+**Files changed:** `OPEN-FINDINGS.md`, `frontend/src/lib/utilization.ts`, `frontend/src/services/dashboard-repository.ts`, `go-template-main/model/dashboardModel.go`. **Comment-only, proved two independent ways rather than asserted:** the diff filtered for non-comment changed lines is **empty**, and all three source files with comments stripped are **byte-identical to `main` at `4b1f53d`**. Suite unchanged at **53 files / 278 tests** — no test was added, because there is no behaviour to guard; the guard here is the two scripts' before/after readings.
+
+**Validation:** merged `main` `1594fab`. Frontend `tsc` 0, ESLint clean (`--max-warnings 0`), **53 files / 278 tests pass**, `build` clean. Backend `go build`/`vet`/`test` clean. **`gofmt` checked the R-34 way** — against LF content, not the CRLF working tree, since `core.autocrlf=true` makes a local `gofmt -l` flag 41 files regardless — and `model/dashboardModel.go` is clean. **CI green on the merge commit itself**, with the Backend job's per-step conclusions read individually: Build, Vet, Test and **Format check** all `success`.
+
+**Divergence from the previous checkpoint, recorded rather than glossed.** `CHECKPOINT-2026-09-07-007` named its Next Step as **F-03's five per-Asset-Category useful-life defaults**. That is *still* the correct next step and *still* the highest-ROI item; it did not happen because **the numbers have not been supplied** (business answered "I will specify these myself", PRD §16 Open Question 3a). This session did the only 🟢 work that needed no business decision instead. **No default was invented to make progress possible** — the constraint PRD §16 Q3a states explicitly (*"Do not invent or use an illustrative number as if confirmed"*) held.
+
+**Process note:** committed **directly to `main`**, not through a PR, for the close-out documents only — the session instruction for this round forbade creating any new branch or PR. PR #119 itself went through the normal branch → CI → merge path. This is a deliberate, recorded deviation from the project's PR-per-change convention, not an oversight.
+
+**Status:** ✅ Complete for its confirmed scope — both findings closed, both fixes verified by measurement rather than inspection.
+
+**Known Issues:** none introduced. **F-03 remains open** on its five numbers; `RAISE-FR-EXEC-001` remains **`PASS (partial)`** and `TC-EXEC-001-03b`/`TC-DASH-03b` remain **BLOCKED**. Nothing in this task touches either, and no verdict moved in either direction. `.claude/scheduled_tasks.lock` shows as modified in the working tree — an MCP runtime lock, deliberately never committed, as on all nineteen prior PRs.
+
+**Remaining Work:** none for this task.
+
+**Next Step:** **F-03's per-Asset-Category useful-life defaults** — unchanged from `CHECKPOINT-2026-09-07-007`, and now the *only* remaining item that would move a Compliance Review verdict. **Blocked on business input, not on engineering.**
+
+**The pattern this checkpoint adds to the record.** Three of this session's findings (F-47, F-49, F-50/F-51) were stale or false *statements* rather than product defects, and two of them were produced by this AI. F-51 went further: **the fix for a stale statement was itself stale**, caught only because Phase 1 of the review read the PRD instead of the PR description. The rule that keeps earning its place: **a claim in a document deserves the same verification as a test result** — including a claim written five minutes ago.
+
+---
+
 ## Level 2 — Feature Checkpoints
 
 ### FEATURE-CHECKPOINT-project-tracking-governance

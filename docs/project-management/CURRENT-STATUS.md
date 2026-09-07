@@ -9,9 +9,46 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-09-07, after PR #117 merged (`c22c5e2`). Suite **53 test
+**As of:** 2026-09-07, after PR #119 merged (`1594fab`). Suite **53 test
 files / 278 tests**; matrix **v2.6** with zero open gaps; Compliance Review
-**v1.2**. CI now also gates `gofmt` (**F-49** → **R-34**).
+**v1.2**. CI gates `gofmt` as well as build/vet/test and lint/type/build.
+
+**Two more findings closed, both of them stale *statements* rather than product
+defects, bringing the tally to seven.** **F-50 → R-37:** this project's own
+findings register described **F-42 as open** three days after it closed — the row
+opened with *"Open — and it is the single item keeping Gap 16 open"* and
+disclosed **RESOLVED (R-24)** only at character **656**. It was caught by its own
+victim: a script written to enumerate open findings read the lead and counted
+F-42 as open. Fixed by putting the current status first, with the superseded
+reasoning kept under a labelled *History* clause. **F-51 → R-38:** three source
+comments justified excluding NBV/Risk on the grounds that *"PRD §16 Q3/Q4 remain
+open"*; they now cite **RQ46** for the NBV formula and **RQ47** for Risk carrying
+no MVP dashboard tile. **The fences themselves were correct and are untouched.**
+
+**And that fix was itself stale, which is the more useful half of the record.**
+Its first version wrote *"neither is an open question any more"* in all three
+comments and both register rows. **`RAISE-PRD.md` §16 contradicts that directly:**
+**Q4 reads `Still open`** — RQ47 changed only that it no longer bears on
+`RAISE-FR-EXEC-001` — and Q3's remainder is **Q3a**, the per-category
+useful-life defaults, **which is F-03 itself**. What was stale is the *reason*, not
+the questions. Caught in review before merge, by reading §16 instead of the PR's
+own summary; corrected in place.
+
+**The claim, and the score.** "No engineering work is waiting" was asserted **four**
+times this session and was wrong **three** — the one time it held was the third
+audit, which found only bookkeeping errors. **In every wrong case the blocker was a
+premise written down without being checked, in two of the three the premise was the
+AI's own, and once — F-51 — the correction to such a premise was itself one.**
+Treat the section below as a hypothesis.
+
+Earlier the same day, PR #117 merged (`c22c5e2`), carrying the NBV groundwork
+(**F-03 groundwork → R-36**): RQ46's formula is implemented with the per-category
+useful life **injected** and **no defaults defined**, so F-03 was never blocked
+outright as this file had once said. Alongside it, **F-49 → R-34** (the reason
+recorded for having no `gofmt` gate was false — the repository stores LF, and the
+gate then **failed on its first run** on a real misformat the CRLF noise had masked)
+and **F-38 half → R-35** (the Employee audit tab could never reflect a write in a
+mounted page).
 
 **Three more findings closed by auditing this file's own claim that nothing
 buildable remained, bringing the tally to five.** **F-49 → R-34:** the reason
@@ -522,8 +559,14 @@ paragraph, which is a summary of a summary and can drift.
 Triaged against [`RAISE-TRACEABILITY-MATRIX.md`](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md)
 §3–§5 — re-check that file before picking an item, it may have changed.
 
-**Buildable now:** **None — and that claim has now been audited three times and
-was wrong twice**, so it is recorded as a hypothesis, not a conclusion. What
+**Buildable now:** **None, again — and this claim has never once survived a full
+audit unchanged**, so it is recorded as a hypothesis, not a conclusion. **The exact
+tally is deliberately not restated here:** the "As of" note above counts *assertions*
+(four, three wrong) while this line previously counted *audits* (three, two wrong), and
+the two counters were never reconciled against evidence. Rather than bump a number
+that cannot be checked, the falsifiable part is stated plainly: **the most recent
+audit, 2026-09-07 after PR #118, again found work this line said did not exist** —
+F-50 and F-51, both closed by PR #119. What
 the audits found each time is listed in the "As of" note above.
 
 **F-03 is down to five numbers, and everything else about it is built.**

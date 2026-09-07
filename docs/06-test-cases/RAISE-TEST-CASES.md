@@ -2,9 +2,9 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Test Cases
-**Version:** 0.24 Draft
+**Version:** 0.26 Draft
 **Status:** Draft for Test Case Review
-**Source:** [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.15 §7 (Test Suites, including "TS-ALERT-001 gains header bell second-surface coverage") + §8 (Blocked Items) + §8.1 (Fully-Blocked Suites — AI Document Intelligence Capabilities) + §3.3 (PRD §10 NFR Backlog — No Suite), expanding [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.15
+**Source:** [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.16 §7 (Test Suites, including "TS-ALERT-001 gains header bell second-surface coverage" and its 2026-09-07 `AC-ALERT-001-12` correction) + §8 (Blocked Items) + §8.1 (Fully-Blocked Suites — AI Document Intelligence Capabilities) + §3.3 (PRD §10 NFR Backlog — No Suite), expanding [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.16
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
 
@@ -904,6 +904,69 @@ PRD §16 Open Question 22a (per-user alert filtering) is unaffected by this addi
 stays open: the bell shows the same unfiltered alert set as P-012 itself, to every
 authenticated user, and none of the six new cases below implies otherwise.
 
+**Status Note — Formal Execution of `TC-ALERT-001-13` through `-17`, and Correction of
+`TC-ALERT-001-12`, 2026-09-07 (AC document v0.16 §15, Test Plan v0.16 §7 Status Note).**
+`TC-ALERT-001-13` through `-17` were formally executed against merged `main` `6a6bcac`,
+the real running app (Vite dev server, `http://localhost:5173`), on 2026-09-07 — **all
+five recorded PASS**, signed in as `admin@raise.dev` with `localStorage`/`sessionStorage`
+cleared to zero entries beforehand (not ceremony — a stale `ADMIN` session produced a
+false result during the F-08 execution, and reporting it would have been wrong). See
+each row below for its individual evidence. `TC-ALERT-001-14` — the case the business
+decision most turned on — was executed exactly per the Test Plan's instruction: one
+session, no reload, the bell's five rows recorded first, then "View all alerts" used to
+reach P-012 in that same session for a like-for-like comparison; the two lists were
+identical in content, count, and order.
+
+`TC-ALERT-001-12` **could not be executed as originally written** and is **not** marked
+PASS by *this* note (see the next Status Note below for its own, later, formal execution
+and PASS against the corrected procedure). Its original step 2 asked the tester to read
+a numeral rendered on the closed bell button — but the closed button renders no numeral,
+only a presence dot. `AC-ALERT-001-12`
+has been corrected (AC document v0.16 §15) to describe what is actually built, and this
+case's steps and expected result are rewritten in place, below, to match. **The cause is
+recorded honestly:** the criterion and this procedure were drafted during the 2026-09-05
+chain sync from an imprecise description ("the bell badge shows the TOTAL alert count")
+that was true of the *panel* badge and was mis-read as the *header* badge — an
+**AI-introduced specification error**, not a business decision and not a product defect;
+PRD §16 Resolved Question 49 never specified a numeral on the closed button, and the
+pre-existing bell already used a dot, so the product matches the business decision as
+built. Business confirmed on 2026-09-07 that the fix is to correct the specification, not
+the product. `TC-ALERT-001-12` is left **explicitly UNEXECUTED** against its corrected
+procedure below — the correction lands before execution, so the steps cannot be shaped
+around whatever happens to pass, the same discipline applied to `TC-ALERT-001-09` / Open
+Finding F-42. Supporting context observed during the failed original attempt (`aria-label`
+"Notifications, 19 alerts," panel header badge "19," P-012's pagination "Showing 1-10 of
+19," all three agreeing) is recorded at that row only as context, explicitly not an
+execution result.
+
+**Status Note — Formal Execution of `TC-ALERT-001-12` Against Its Corrected Procedure,
+2026-09-07 (this document v0.25's corrected steps; AC document v0.16 §15;
+Test Plan v0.16 §7).** The corrected procedure recorded immediately above was left
+deliberately unexecuted in v0.25 — the correction was made to land *before* execution,
+so the steps could not be shaped around whatever happened to pass. It has now been
+executed against that corrected procedure, on merged `main` `6a6bcac`, the real running
+app (Vite dev server, `http://localhost:5173`), on 2026-09-07 — **PASS.**
+`localStorage`/`sessionStorage` were cleared to zero entries before signing in; sign-in
+was through the real login form as `admin@raise.dev`, session confirmed in-app as
+`{id: u-admin, fullName: "Demo Admin", role: "ADMIN"}`, landing on `/dashboard`. Step 2:
+the closed button's own rendered text was empty (`innerText` contained no characters at
+all, so no digit could be present); enumerating its child `<span>` elements returned
+exactly one, a class-only element (`absolute top-1.5 right-1.5 h-2 w-2 rounded-full
+bg-error-500 ring-2 ring-white`) with empty text content — the presence dot, and nothing
+else — a positive confirmation of the corrected expectation, not merely a failure to find
+a numeral. Step 3: the button's `aria-label` read literally "Notifications, 19 alerts."
+Step 4: opening the dropdown, the panel header badge read "19." Step 5: using "View all
+alerts" to reach `/notifications` in the same session, P-012's own pagination text read
+literally "Showing 1-10 of 19." Step 6: an automated equality check across all three
+numerals — the `aria-label` numeral, the panel header badge, and P-012's own total —
+returned `true`: 19 = 19 = 19. With this, all six cases `TC-ALERT-001-12` through `-17`
+are executed and **PASS**; `-13` through `-17` were recorded PASS above against the same
+commit, `-12` here against its corrected procedure. This execution supersedes no prior
+entry — no execution result existed for this case before now; the earlier failed attempt
+against the original, uncorrected procedure remains recorded above exactly as observed,
+unmodified. PRD §16 Open Question 22a (per-user alert filtering) is unaffected and stays
+open.
+
 | TC ID | Title | Steps | Test Data | Expected Result | Blocked |
 |---|---|---|---|---|---|
 | TC-ALERT-001-01 | Triggered alert displays with severity/asset | 1. Trigger an alert-worthy condition. 2. Open Alerts. | 1 asset meeting an alert condition | Alert shown with severity, description, associated asset | No — **PASS on the display mechanism**, fully testable against the as-built Alerts screen (P-012), scoped to `AC-ALERT-001-01`'s structural-display criterion (`RAISE-ACCEPTANCE-CRITERIA.md` §15): an alert lists severity/description/asset when opened. Which specific severity/trigger-rule values are correct remains **NOT TESTABLE YET** (PRD §6.9 Open Question, Open Finding F-05) — a separate, still-unresolved question this case does not claim to close. The "authorized user" gate remains testable only structurally since the role/permission model is undefined (PRD §16 Q22), unaffected by this update. **Formally executed 2026-09-01 against the real running app — PASS:** navigated to `/notifications` (previously 404'd; now renders the Alerts screen with 11 rows, matching the Dashboard's "Expired Warranty: 11" tile exactly); confirmed the row for AST-0013 (Dell OptiPlex 7090) displays Severity "Not yet defined," Description "Warranty expired 2024-03-15," and the associated Asset as a clickable link; clicking it navigated correctly to that asset's Asset Detail page. Also covered by an automated test in `frontend/src/pages/Alerts/index.test.tsx`. **Access-gate half formally executed 2026-09-04 against the real running app (merged `main` @ `d8ad01c`) — PASS:** signed in as each of the four demo accounts in turn (`admin@raise.dev`/`ADMIN`, `manager@raise.dev`/`IT_MANAGER`, `itstaff@raise.dev`/`IT_STAFF`, `employee@raise.dev`/`EMPLOYEE`), clearing stored session between each, and navigated to `/notifications`. All four reached Alerts directly — no Forbidden page, no redirect — each rendering all 19 seeded alert rows. This closes the access-gate half of `AC-ALERT-001-01` per PRD v0.16 §16 Resolved Question 45 / Design v0.14 §16 (any authenticated user, all four roles, none excluded); the display-mechanism half above remains exactly as originally executed 2026-09-01, preserved as history, not overwritten. Per-user filtering of which alerts a given role/user sees remains **NOT TESTABLE YET** (PRD §16 Q22a, newly raised, not decided — no `User`↔`Employee` link exists) — this execution confirms only that all four roles can reach the screen and see alerts, not that each should see a different subset; no test case exists for that separate question. |
@@ -917,12 +980,12 @@ authenticated user, and none of the six new cases below implies otherwise.
 | TC-ALERT-001-09 | Alert rows disappear once the underlying condition no longer holds | 1. Open Alerts (P-012) and confirm that seeded ticket `REQ-2026-0041` ("Data Center Core Switch SFP+ Fiber Module Replacement") appears as two separate rows: one with condition "Maintenance Ticket Overdue," one with condition "Maintenance Ticket On Hold." Note the total alert count shown on the page. 2. Navigate to that ticket's Maintenance Request detail view within P-009 (Ticket Detail) and use its Status control to complete the ticket, selecting the "Done" option (wired to `ticketService.updateExecutionStatus`, which maps `Done` to status `DONE`). 3. Return to Alerts (P-012). | Seeded ticket `REQ-2026-0041`, initially with `targetResolutionDate` 2026-08-16 (passed) and status `ON_HOLD` — satisfying both the Maintenance Ticket Overdue and Maintenance Ticket On Hold conditions at once | Both of `REQ-2026-0041`'s rows (Maintenance Ticket Overdue and Maintenance Ticket On Hold) no longer appear on Alerts once its status is `DONE`, and the total alert count has dropped by 2 accordingly — nothing was acknowledged, dismissed, or marked read anywhere in this procedure (no such affordance exists on the Alerts screen), consistent with no persisted Alert record (Design v0.13 §14 read-time derivation) | No — **formally executed 2026-09-04 against the real running app (merged `main` @ `30f176c`), signed in as `admin@raise.dev` (ADMIN) — PASS:** Step 1: Alerts (P-012) showed 19 total alerts; `REQ-2026-0041` appeared as exactly two rows — `High` / "Maintenance Ticket Overdue" / "Target resolution date 2026-08-16 has passed" and `Medium` / "Maintenance Ticket On Hold" / "Ticket is on hold." Step 2: on that ticket's detail view within P-009, used the real Update Status control, selected `Done`, entered the Resolution Notes field the UI reveals only for `Done`, and saved via "Save Update" — the product's own `ticketService.updateExecutionStatus` path, no test-only hook, no direct data manipulation; the app showed an "Updated" confirmation. Step 3: returned to Alerts; total alert count was 17, a drop of exactly 2; a scan of every row across both pages found zero rows referencing `REQ-2026-0041`. Nothing was acknowledged, dismissed, cleared, marked read, or snoozed anywhere — a scan of every button on the Alerts screen found no such affordance at all, consistent with no persisted Alert record (Design v0.13 §14 read-time derivation); the rows disappeared purely because both underlying conditions stopped holding once the ticket's status became `DONE`. No console errors were produced. This single state change cleared two different conditions at once (`REQ-2026-0041` satisfied both Overdue and On Hold simultaneously), a stronger demonstration of the read-time-derivation property than the original, unrunnable warranty-based procedure would have given. This is the last `TC-ALERT-001-*` case to be executed — all 10 are now executed and PASS. **Procedure corrected 2026-09-04 (Open Finding F-42 / Gap 18) — history retained, not silently swapped.** The original step 2 ("Edit that Asset's `warrantyExpiry` to a future date") was attempted and formally found unrunnable on 2026-09-04, because the product has no asset-edit capability anywhere: `frontend/src/services/asset-repository.ts` exposes only `create`, `assign`, and `checkIn` — no `updateAsset` method, no update endpoint consumed, and no edit-asset UI anywhere in `frontend/src/pages/`. That was a defect in this test case's written procedure only — not in the implementation (the underlying AC-ALERT-001-09 read-time-derivation invariant was separately confirmed to hold, via a different, product-supported trigger: lowering the IT Hardware "Expiring" threshold from 90 to 3 days through the real Settings UI, P-018, which removed the Warranty Expiring row for AST-0012 and dropped the alert total 19 → 18, restoring to 19 when reverted) and not in AC-ALERT-001-09's specification (which remains correct as written and is unchanged by this correction). This row's steps, test data, and expected result were rewritten to point at a state change the product genuinely supports — verified in source before writing this correction: `frontend/src/pages/TicketDetail/index.tsx` exposes a real Status control with a "Done" option wired to `ticketService.updateExecutionStatus` (`frontend/src/services/ticket-repository.ts`), which maps `Done` to status `DONE`; seeded ticket `REQ-2026-0041` satisfies both the Overdue and On Hold conditions simultaneously, so completing it to `DONE` is a stronger demonstration of the read-time property than the single-row warranty case would have been (two rows disappear from one state change, with no dismiss/acknowledge step anywhere). No corresponding capability was added to the product to make this correction possible — only the test procedure changed, pointing at a capability (Ticket Status → Done) that already existed. The corrected procedure was executed exactly as written in the pass recorded immediately above, confirming it is genuinely runnable and closing the F-42 / Gap 18 defect in substance. |
 | TC-ALERT-001-10 | No condition beyond the five confirmed appears as a row | 1. Open Alerts (P-012). 2. Review every row shown, including its condition label. | Existing seeded Assets/tickets/Assignment Approval Requests | No row's condition is anything other than one of the five confirmed (Warranty Expired, Maintenance Ticket Overdue, Warranty Expiring, Maintenance Ticket On Hold, IT Hardware Handover Pending) — specifically, no preventive-maintenance-due row (no next-service-date field exists) and no software-license-expiry row (`RAISE-FR-LICENSE-001` is Roadmap) appears | No — **formally executed 2026-09-04 against the real running app (merged `main` @ `c2e6b76`, PR #97) — PASS:** all 19 seeded rows across both pages (10 per page) were read. Every row's condition was one of the five confirmed (Warranty Expired ×11, Maintenance Ticket Overdue ×3, Warranty Expiring ×1, Maintenance Ticket On Hold ×1, IT Hardware Handover Pending ×3). No sixth condition appeared; in particular no preventive-maintenance-due and no software-license-expiry row. |
 | TC-ALERT-001-11 | Unauthenticated visitor is redirected to Login | 1. Ensure no session is stored (clear `localStorage`/`sessionStorage`, confirm no token/user object remains). 2. Request `/notifications` directly. | No authenticated session (verified cleared) | Visitor is redirected to `/login`; the login form is rendered; no alert data is displayed | No — **formally executed 2026-09-04 against the real running app (merged `main` @ `d8ad01c`) — PASS:** with `localStorage`/`sessionStorage` cleared (no token, no stored user), requesting `/notifications` directly redirected to `/login`, which rendered the login form; no alert data was displayed anywhere. **Procedural note:** an initial attempt appeared to show the Alerts screen to an unauthenticated visitor — this was found to be a false result caused by a stale `ADMIN` session (`raise_user` = `Demo Admin`/`ADMIN`) left in `localStorage` from an earlier execution in the same browser profile, not a real gap in `ProtectedRoute` behavior. The session was verified and cleared, and the case was re-run properly to produce the PASS recorded above; this is documented here so the case is not re-run in a dirty profile and a false result reported. Existing `ProtectedRoute` behavior; the Alerts route carries no route-specific role restriction (PRD §16 Resolved Question 45; Design §16 "Alerts Screen Access Gate"). |
-| TC-ALERT-001-12 | Header bell badge shows the same total alert count P-012 itself derives | 1. Sign in as any authenticated demo user (e.g., `admin@raise.dev`, `ADMIN`) against the seeded 15-asset register. 2. Without opening the bell dropdown, read the numeric badge rendered on the header bell button in `AppShell` (top navigation, present on every authenticated page). 3. In the same session, navigate to Alerts (`/notifications`, P-012) and read the total alert count that screen itself shows (count every row across both pages if paginated). 4. Compare the two numbers. | Seeded 15-asset register — 19 alerts, per the shared `useAlerts` hook (`frontend/src/hooks/useAlerts.ts`) | The header bell badge shows **19**, identical to the total P-012 Alerts derives from the same `useAlerts` hook — not a separately computed or independently-sourced count | No — not blocked, not yet executed. Fully testable now; the feature is built and shipped (AC-ALERT-001-12). Formal execution deliberately deferred to a subsequent step. |
-| TC-ALERT-001-13 | Bell dropdown lists exactly five rows, each with condition label, description, and `CODE · Name` | 1. Sign in as any authenticated demo user. 2. Click the header bell button to open its dropdown panel. 3. Count the number of alert rows rendered in the panel. 4. For each of the rows, read the condition label, the description text, and the affected-record identifier shown beneath it. | Seeded 15-asset register — 19 alerts total, more than five | The dropdown lists **exactly five** rows — not all 19 currently-existing alerts — each showing the condition label, the description, and the affected record formatted as `CODE · Name` (e.g., `AST-0003 · iPhone 15 Pro`) | No — not blocked, not yet executed. Fully testable now; the feature is built and shipped (AC-ALERT-001-13). Formal execution deliberately deferred to a subsequent step. |
-| TC-ALERT-001-14 | Bell's five rows match P-012's own first five rows in content, count, and order (same session, same data) | 1. Sign in as any authenticated demo user. 2. Click the header bell button and, without closing it or reloading, record the five rows shown, in the order rendered (condition label, `CODE · Name`, severity). 3. In that same session (do not sign out or reload data), navigate to Alerts (`/notifications`, P-012) and read its own first five rows, in the order rendered on the page. 4. Compare the bell's recorded five rows against P-012's first five rows for content, count, and order. | Seeded 15-asset register — 19 alerts, both surfaces reading the same `useAlerts` hook | The bell's five rows are identical in content, count, and order to P-012's own first five rows, both sorted High → Medium → Low — the bell shows the first five in the same severity ordering P-012 uses, not "5 most recent" (not computable — `Alert` carries no timestamp field; see this suite's Ordering Rationale note above) | No — not blocked, not yet executed. Fully testable now; the feature is built and shipped (AC-ALERT-001-14 — the criterion the business decision most turned on). Formal execution deliberately deferred to a subsequent step. |
-| TC-ALERT-001-15 | "View all alerts" navigates to `/notifications` | 1. Sign in as any authenticated demo user. 2. Click the header bell button to open its dropdown panel. 3. Click the "View all alerts" control at the bottom of the panel. 4. Observe the resulting route/page. | Seeded 15-asset register — 19 alerts | Selecting "View all alerts" navigates to `ROUTES.NOTIFICATIONS` (`/notifications`) — i.e., to P-012 Alerts itself — and the dropdown panel closes | No — not blocked, not yet executed. Fully testable now; the feature is built and shipped (AC-ALERT-001-15). Formal execution deliberately deferred to a subsequent step. |
-| TC-ALERT-001-16 | No acknowledge/dismiss/read-unread/snooze affordance exists anywhere in the bell | 1. Sign in as any authenticated demo user. 2. Click the header bell button to open its dropdown panel. 3. Inspect every interactive element rendered inside the panel — the header area, each of the five alert rows, and the footer — noting each one's function. 4. Compare the found controls against acknowledge, dismiss, mark-read/unread, and snooze affordances. | Seeded 15-asset register — 19 alerts | The only interactive elements in the panel are the bell toggle button itself and the "View all alerts" control; no per-row or panel-level acknowledge, dismiss, read/unread, or snooze affordance is present anywhere — consistent with AC-ALERT-001-09's existing documentation of the same confirmed absences on P-012 itself. The badge count is a currently-exists count, not an unseen/unread count | No — not blocked, not yet executed. Fully testable now (L2 — negative/absence check); the feature is built and shipped (AC-ALERT-001-16). Formal execution deliberately deferred to a subsequent step. |
-| TC-ALERT-001-17 | Bell button exposes an accessible name and `aria-expanded` | 1. Sign in as any authenticated demo user. 2. With the bell dropdown closed, inspect the bell button element (browser dev tools / accessibility tree) and read its `aria-label` and `aria-expanded` attribute values. 3. Click the bell button to open the dropdown. 4. Re-inspect the same button and re-read `aria-expanded`. | Seeded 15-asset register — 19 alerts | Closed: `aria-label` names the button's purpose and current count (e.g., "Notifications, 19 alerts") and `aria-expanded="false"`. Open: `aria-expanded="true"`, same `aria-label` | No — not blocked, not yet executed. Fully testable now; the feature is built and shipped (AC-ALERT-001-17). Formal execution deliberately deferred to a subsequent step. |
+| TC-ALERT-001-12 | Closed bell button shows a presence dot (no numeral); the numeral is exposed via `aria-label` and the panel header badge, and matches P-012's own total | 1. Sign in as any authenticated demo user (e.g., `admin@raise.dev`, `ADMIN`) against the seeded 15-asset register. 2. With the bell dropdown **closed**, inspect the bell button in `AppShell` (top navigation, present on every authenticated page) and confirm whether a numeral is rendered on the button face itself, or only a presence-indicator dot. 3. Read the button's `aria-label` for the numeral it names. 4. Click the bell button to open the dropdown panel and read the numeric badge shown in the **panel header**. 5. In the same session, navigate to Alerts (`/notifications`, P-012) and read the total alert count that screen itself shows (count every row across both pages if paginated, or read its pagination text). 6. Compare the `aria-label` numeral, the panel header badge numeral, and P-012's own total. | Seeded 15-asset register — 19 alerts, per the shared `useAlerts` hook (`frontend/src/hooks/useAlerts.ts`) | (1) The **closed** button shows only a presence dot when at least one alert exists — no numeral appears on the button face. (2) The numeral is exposed instead via the button's `aria-label` (e.g., "Notifications, 19 alerts" — also separately tested by `TC-ALERT-001-17`) and, once opened, via a numeric badge in the panel header. (3) That numeral is **identical** to the total P-012 Alerts itself derives from the same `useAlerts` hook (expected: 19) — not a separately computed or independently-sourced count. | No — not blocked. **Formally executed 2026-09-07 against the real running app (merged `main` @ `6a6bcac`), signed in as `admin@raise.dev` (`{id: u-admin, fullName: "Demo Admin", role: "ADMIN"}`, session confirmed in-app; `localStorage`/`sessionStorage` cleared to zero entries before sign-in) — PASS:** Step 2 — the closed button's own rendered text was **empty** (`innerText` contained no characters at all, so no digit could be present); enumerating its child `<span>` elements returned exactly one, a class-only element (`absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-error-500 ring-2 ring-white`) with **empty text content** — the presence dot, and nothing else — a positive confirmation of the corrected expectation, not merely a failure to find a numeral. Step 3 — `aria-label` read literally "Notifications, 19 alerts." Step 4 — the panel header badge, once opened, read "19." Step 5 — P-012's own total, read in the same session via "View all alerts," showed pagination text "Showing 1-10 of 19." Step 6 — an automated equality check across all three numerals (`aria-label`, panel header badge, P-012's own total) returned `true`: 19 = 19 = 19. All six cases `TC-ALERT-001-12` through `-17` are now executed and **PASS**. This case was executed only against the corrected procedure recorded here — the correction (AC document v0.16 §15, Test Plan v0.16 §7 Status Note) landed *before* execution, so the steps could not be shaped around whatever happened to pass, the same discipline applied to `TC-ALERT-001-09` / Open Finding F-42. **Cause of the correction recorded honestly, not softened:** this case's original steps (and `AC-ALERT-001-12` as originally drafted) asserted that "the numeric badge" appears on the **closed** header bell button itself; that assertion was found unrunnable on 2026-09-07 and traces to an imprecise description during the 2026-09-05 chain sync ("the bell badge shows the TOTAL alert count") that was true of the **panel** badge and was mis-read as the **header** badge — an **AI-introduced specification error**, not a business decision and not a product defect: PRD §16 Resolved Question 49 never specified a numeral on the closed button, and the pre-existing bell already used a dot, so the product matches the business decision as built. Business confirmed on 2026-09-07 that the fix is to correct the specification, not the product. **Supporting context, preserved as recorded, not an execution result of this row's PASS above:** during the earlier failed attempt at the original, uncorrected procedure, the substance was separately observed — `aria-label` "Notifications, 19 alerts," panel header badge "19," and P-012's own pagination reading "Showing 1-10 of 19" — all three agreeing; that observation is retained here as history, not overwritten, and this new PASS supersedes no prior entry, since no execution result existed for this case before now. |
+| TC-ALERT-001-13 | Bell dropdown lists exactly five rows, each with condition label, description, and `CODE · Name` | 1. Sign in as any authenticated demo user. 2. Click the header bell button to open its dropdown panel. 3. Count the number of alert rows rendered in the panel. 4. For each of the rows, read the condition label, the description text, and the affected-record identifier shown beneath it. | Seeded 15-asset register — 19 alerts total, more than five | The dropdown lists **exactly five** rows — not all 19 currently-existing alerts — each showing the condition label, the description, and the affected record formatted as `CODE · Name` (e.g., `AST-0003 · iPhone 15 Pro`) | No — **formally executed 2026-09-07 against the real running app (merged `main` @ `6a6bcac`), signed in as `admin@raise.dev` (`{id: u-admin, fullName: "Demo Admin", role: "ADMIN"}`, session confirmed in-app; `localStorage`/`sessionStorage` cleared to zero entries before sign-in) — PASS:** the dropdown rendered exactly five rows, each with condition label, description, and record: `Warranty Expired` / "Warranty expired 2026-03-22" / `AST-0003 · iPhone 15 Pro`; `Warranty Expired` / (2025-06-10) / `AST-0004 · HP LaserJet Pro M404`; `Warranty Expired` / (2025-11-05) / `AST-0005 · Dell PowerEdge R750`; `Warranty Expired` / (2026-05-18) / `AST-0006 · iPad Pro 12.9"`; `Warranty Expired` / (2026-02-28) / `AST-0007 · Cisco Catalyst 9300`. All five `High`. Nineteen alerts exist in total, so the five-row truncation is real, not an artefact of a short dataset. No console errors (only Vite HMR WebSocket reconnect noise). |
+| TC-ALERT-001-14 | Bell's five rows match P-012's own first five rows in content, count, and order (same session, same data) | 1. Sign in as any authenticated demo user. 2. Click the header bell button and, without closing it or reloading, record the five rows shown, in the order rendered (condition label, `CODE · Name`, severity). 3. In that same session (do not sign out or reload data), navigate to Alerts (`/notifications`, P-012) and read its own first five rows, in the order rendered on the page. 4. Compare the bell's recorded five rows against P-012's first five rows for content, count, and order. | Seeded 15-asset register — 19 alerts, both surfaces reading the same `useAlerts` hook | The bell's five rows are identical in content, count, and order to P-012's own first five rows, both sorted High → Medium → Low — the bell shows the first five in the same severity ordering P-012 uses, not "5 most recent" (not computable — `Alert` carries no timestamp field; see this suite's Ordering Rationale note above) | No — **formally executed 2026-09-07 against the real running app (merged `main` @ `6a6bcac`), same session as `TC-ALERT-001-13`, no reload — PASS, and this is the case the business decision most turned on:** executed exactly as the procedure requires — the bell's five rows were recorded, "View all alerts" was then used to reach P-012, and the page's own first five rows were read and compared. The two lists were **identical in content, count, and order**; an automated string comparison of the normalised record identifiers returned `true`, with P-012's severities reading High/High/High/High/High. |
+| TC-ALERT-001-15 | "View all alerts" navigates to `/notifications` | 1. Sign in as any authenticated demo user. 2. Click the header bell button to open its dropdown panel. 3. Click the "View all alerts" control at the bottom of the panel. 4. Observe the resulting route/page. | Seeded 15-asset register — 19 alerts | Selecting "View all alerts" navigates to `ROUTES.NOTIFICATIONS` (`/notifications`) — i.e., to P-012 Alerts itself — and the dropdown panel closes | No — **formally executed 2026-09-07 against the real running app (merged `main` @ `6a6bcac`) — PASS:** "View all alerts" navigated to `/notifications` and the dropdown panel closed. |
+| TC-ALERT-001-16 | No acknowledge/dismiss/read-unread/snooze affordance exists anywhere in the bell | 1. Sign in as any authenticated demo user. 2. Click the header bell button to open its dropdown panel. 3. Inspect every interactive element rendered inside the panel — the header area, each of the five alert rows, and the footer — noting each one's function. 4. Compare the found controls against acknowledge, dismiss, mark-read/unread, and snooze affordances. | Seeded 15-asset register — 19 alerts | The only interactive elements in the panel are the bell toggle button itself and the "View all alerts" control; no per-row or panel-level acknowledge, dismiss, read/unread, or snooze affordance is present anywhere — consistent with AC-ALERT-001-09's existing documentation of the same confirmed absences on P-012 itself. The badge count is a currently-exists count, not an unseen/unread count | No — **formally executed 2026-09-07 against the real running app (merged `main` @ `6a6bcac`) — PASS:** an enumeration of every `button`, `a`, `input`, `select`, and `[role="button"]` inside the panel returned exactly one element: "View all alerts." No per-row or panel-level acknowledge, dismiss, mark-read/unread, or snooze affordance exists anywhere. |
+| TC-ALERT-001-17 | Bell button exposes an accessible name and `aria-expanded` | 1. Sign in as any authenticated demo user. 2. With the bell dropdown closed, inspect the bell button element (browser dev tools / accessibility tree) and read its `aria-label` and `aria-expanded` attribute values. 3. Click the bell button to open the dropdown. 4. Re-inspect the same button and re-read `aria-expanded`. | Seeded 15-asset register — 19 alerts | Closed: `aria-label` names the button's purpose and current count (e.g., "Notifications, 19 alerts") and `aria-expanded="false"`. Open: `aria-expanded="true"`, same `aria-label` | No — **formally executed 2026-09-07 against the real running app (merged `main` @ `6a6bcac`) — PASS:** closed, `aria-label` read literally "Notifications, 19 alerts" and `aria-expanded="false"`; open, `aria-expanded="true"`, same `aria-label`. |
 
 ---
 
@@ -1003,11 +1066,23 @@ user" rather than naming a role that does not exist in the system. This wording 
 recorded here as an execution finding; correcting the step text itself is deferred to a
 separate pass, consistent with this document's scope as execution reporting, not a spec change.
 
+**Status Note — Open Finding F-45 wording defect corrected 2026-09-07 (step text only,
+recorded PASS results and execution history unmodified).** `TC-EXEC-001-01`'s and
+`TC-EXEC-001-03a`'s step 1 previously read "Log in as Executive" — the wording defect
+flagged as Open Finding F-45 in the Status Note immediately above, deliberately left
+unfixed at the time because rewriting a procedure mid-execution destroys the evidence it
+was wrong. Both step 1s are now changed to "Log in as any authenticated user," noting at
+each that the dashboard route carries no role restriction (PRD §16 Resolved Question
+45's confirmed any-authenticated-user gate) — this narrows nothing, since execution was
+already performed as `ADMIN` under exactly that gate. Only the step wording changes; the
+recorded **PASS** results and execution history for both cases (2026-09-05, merged `main`
+@ `5f232a8`) are preserved unmodified below.
+
 | TC ID | Title | Steps | Test Data | Expected Result | Blocked |
 |---|---|---|---|---|---|
-| TC-EXEC-001-01 | KPI grid displays all nine tiles (Executive Dashboard) | 1. Log in as Executive. 2. Open Executive Dashboard (P-014). | Org-level asset dataset (same 15-asset seeded register as P-002) | The KPI grid displays all nine tiles: Total Assets, Available, Assigned, **Utilization**, In Maintenance, Expired Warranty, Software Licenses, Monthly Depreciation, and Monthly Cost | No — fully testable; identical shipped grid to `TC-DASH-01` since P-014 and P-002 document the same built page. Same Monthly Depreciation/Monthly Cost illustrative-figures caveat and presence-only scope from `TC-DASH-01` apply. **Historical PASS SUPERSEDED (eight-tile grid), preserved as history, not re-affirmed** (see Status Note above). **Formally re-executed 2026-09-05 against the real running app (merged `main` @ `5f232a8`) — PASS:** same evidence as `TC-DASH-01` — P-014 and P-002 are the same built page, confirmed by the H1 reading "Executive Dashboard" on route `/dashboard`; all nine tiles present with the same displayed values recorded under `TC-DASH-01`. **Execution deviation recorded (see Status Note above):** step 1 says "Log in as Executive," but no Executive role exists in the app (`UserRole` has only `ADMIN`/`IT_MANAGER`/`IT_STAFF`/`EMPLOYEE`) — "Executive" is a PRD persona, not a role. Execution was performed as `ADMIN`; this does not weaken the result since the route carries no role restriction (PRD Resolved Question 45). This execution is the **first** against the nine-tile grid; it supersedes nothing. |
+| TC-EXEC-001-01 | KPI grid displays all nine tiles (Executive Dashboard) | 1. Log in as any authenticated user (the dashboard route carries no role restriction — PRD §16 Resolved Question 45). 2. Open Executive Dashboard (P-014). | Org-level asset dataset (same 15-asset seeded register as P-002) | The KPI grid displays all nine tiles: Total Assets, Available, Assigned, **Utilization**, In Maintenance, Expired Warranty, Software Licenses, Monthly Depreciation, and Monthly Cost | No — fully testable; identical shipped grid to `TC-DASH-01` since P-014 and P-002 document the same built page. Same Monthly Depreciation/Monthly Cost illustrative-figures caveat and presence-only scope from `TC-DASH-01` apply. **Historical PASS SUPERSEDED (eight-tile grid), preserved as history, not re-affirmed** (see Status Note above). **Formally re-executed 2026-09-05 against the real running app (merged `main` @ `5f232a8`) — PASS:** same evidence as `TC-DASH-01` — P-014 and P-002 are the same built page, confirmed by the H1 reading "Executive Dashboard" on route `/dashboard`; all nine tiles present with the same displayed values recorded under `TC-DASH-01`. **Execution deviation recorded (see Status Note above):** step 1 says "Log in as Executive," but no Executive role exists in the app (`UserRole` has only `ADMIN`/`IT_MANAGER`/`IT_STAFF`/`EMPLOYEE`) — "Executive" is a PRD persona, not a role. Execution was performed as `ADMIN`; this does not weaken the result since the route carries no role restriction (PRD Resolved Question 45). This execution is the **first** against the nine-tile grid; it supersedes nothing. |
 | TC-EXEC-001-02 | Ten dashboard sections display (Executive Dashboard) | 1. Open Executive Dashboard (P-014) with the dashboard displayed. | Org-level asset/maintenance/warranty/license dataset | All ten sections are present: AI Insights, AI Portfolio Health, Oracle FA Reconciliation, Asset Lifecycle, Department Distribution, Asset Status, Asset Type, Pending Approvals, Recent Activities, and Maintenance Calendar | No — fully testable; identical shipped section list to `TC-DASH-02`. **PASS**, formally executed. Unaffected by the 2026-09-05 Utilization change — the section list did not change; this historical PASS is unmodified, not superseded. All ten sections were incidentally re-confirmed present during the 2026-09-05 execution sweep (same session as `TC-EXEC-001-01`/`-03a`) — recorded as **incidental confirmation only, not a re-execution** of this case; the existing PASS remains this case's formal execution record. |
-| TC-EXEC-001-03a | Utilization tile displays a percentage and an assigned/assignable sub-label (Executive Dashboard) | 1. Log in as Executive. 2. Open Executive Dashboard (P-014). 3. Locate the Utilization tile within the KPI grid tested by `TC-EXEC-001-01`. 4. Read its displayed percentage value and sub-label. | Same 15-asset seeded register as `TC-DASH-03a` (12 assignable, 8 currently assigned) | The Utilization tile displays a percentage value (e.g. "66.7%") and a sub-label naming how many assets are currently assigned out of how many are currently assignable — identical in substance to `TC-DASH-03a`, since P-014 and P-002 document the same built page | No — fully testable. **Formally executed 2026-09-05 against the real running app (merged `main` @ `5f232a8`) — PASS:** same evidence as `TC-DASH-03a` — same page, same tile: "66.7%," label "Utilization," sub-label "8 of 12 assignable assets," and the same two-independent-readings evidence recorded under `TC-DASH-03a` (Asset Status section: Available 4 + Assigned 8 = the Utilization denominator of 12, with In Maintenance 2 and Retired 1 excluded, demonstrating PRD Resolved Question 29(b)). **Execution deviation recorded (see Status Note above):** step 1 says "Log in as Executive" — no such role exists; execution performed as `ADMIN`, substitution does not weaken the result (no role restriction on this route, PRD Resolved Question 45). |
+| TC-EXEC-001-03a | Utilization tile displays a percentage and an assigned/assignable sub-label (Executive Dashboard) | 1. Log in as any authenticated user (the dashboard route carries no role restriction — PRD §16 Resolved Question 45). 2. Open Executive Dashboard (P-014). 3. Locate the Utilization tile within the KPI grid tested by `TC-EXEC-001-01`. 4. Read its displayed percentage value and sub-label. | Same 15-asset seeded register as `TC-DASH-03a` (12 assignable, 8 currently assigned) | The Utilization tile displays a percentage value (e.g. "66.7%") and a sub-label naming how many assets are currently assigned out of how many are currently assignable — identical in substance to `TC-DASH-03a`, since P-014 and P-002 document the same built page | No — fully testable. **Formally executed 2026-09-05 against the real running app (merged `main` @ `5f232a8`) — PASS:** same evidence as `TC-DASH-03a` — same page, same tile: "66.7%," label "Utilization," sub-label "8 of 12 assignable assets," and the same two-independent-readings evidence recorded under `TC-DASH-03a` (Asset Status section: Available 4 + Assigned 8 = the Utilization denominator of 12, with In Maintenance 2 and Retired 1 excluded, demonstrating PRD Resolved Question 29(b)). **Execution deviation recorded (see Status Note above):** step 1 says "Log in as Executive" — no such role exists; execution performed as `ADMIN`, substitution does not weaken the result (no role restriction on this route, PRD Resolved Question 45). |
 | TC-EXEC-001-03b | NBV tile confirmed absent, blocked on missing default useful-life values (Executive Dashboard) | 1. Open Executive Dashboard (P-014) with the KPI grid from `TC-EXEC-001-01` displayed. 2. Inspect the grid for a tile labeled NBV. | Same dataset as `TC-EXEC-001-01` | No NBV tile is present in the shipped grid — this documents today's accurate absence, not a target for NBV to be displayed | **BLOCKED (partial)** — identical reasoning to `TC-DASH-03b`: the absence-check itself is testable now and expected to pass structurally. **Not formally executed as a standalone case; incidentally observed during the 2026-09-05 execution sweep:** no NBV tile appeared, as expected, consistent with the ongoing block — this observation does not change the BLOCKED (partial) status and is not recorded as a PASS. The NBV formula is confirmed (PRD §16 Resolved Question 46) — **specified but not yet buildable**, not unspecified — the sole remaining blocker is the missing default per-Asset-Category useful-life values (PRD §16 Open Question 3a), tracked as [Open Finding F-03](../project-management/OPEN-FINDINGS.md#blocking-gates-an-mvp-requirement) (**OPEN, narrowed 2026-09-05, not closed**). No illustrative/placeholder value is asserted for any category. |
 | TC-EXEC-001-03c | Risk tile — confirmed out of MVP scope (Executive Dashboard) | N/A — see Blocked column | N/A | N/A | **OUT OF SCOPE FOR MVP** — the Executive Dashboard will not carry a Risk KPI tile for MVP, by confirmed business decision (PRD §16 Resolved Question 47), identical to `TC-DASH-03c`. This is **not** a blocked test case and **not** a gap — retained as a row here only to preserve 1:1 traceability against `AC-EXEC-001-03c`. During the 2026-09-05 execution sweep, no Risk KPI tile appeared in the grid, consistent with this confirmed decision; the "High Risk" text visible elsewhere on the page belongs to the AI Insights severity labels, not to a Risk KPI tile. PRD §16 Q4 (definition of risk) remains open but belongs entirely to `RAISE-AI-RISK-001` (Pilot/Roadmap). Re-activate only if Risk is later promoted to MVP scope for this screen through the standard PRD → Design → Prototype → AC → Test Plan chain. |
 
@@ -1222,6 +1297,34 @@ implementation-time live-verification recorded in §14's Status Note are context
 not a formal execution of any of these six cases. No other suite's row is affected by
 this update; PRD §16 Open Question 22a (per-user alert filtering) remains open and
 unaffected.
+
+**Five test cases formally executed and one corrected, 2026-09-07 (real formal test
+execution against the real running app, merged `main` @ `6a6bcac`; see §14's newest
+Status Note for full detail — no column totals below change, matching the precedent set
+by `TC-ALERT-001-09`'s execution above, since "not blocked, not yet executed" and "PASS"
+are distinct from a column-count change):** `TC-ALERT-001-13` through `-17` — all five
+left unexecuted by the 2026-09-07 header-bell-coverage sync above — are now formally
+executed and recorded **PASS**. `TC-ALERT-001-12` is **not** recorded PASS: its original
+steps could not be executed as written (the closed bell button renders no numeral, only a
+dot), so `AC-ALERT-001-12` and this case's steps/expected result were corrected in place
+(AC document v0.16 §15) and the corrected case is left **explicitly UNEXECUTED**,
+consistent with the same discipline applied to `TC-ALERT-001-09` / Open Finding F-42 —
+the correction lands before execution, not after. `TS-ALERT-001`'s row remains `17 | 17 |
+0 | 0 | 0` — none of the six was ever BLOCKED, and this update changes execution status
+(recorded within each row, not in this summary's columns), not testability
+classification. Grand **Total** row is unchanged at `93 | 64 | 22 | 4 | 3`. No other
+suite's row is affected; PRD §16 Open Question 22a remains open and unaffected.
+
+**`TC-ALERT-001-12` formally executed 2026-09-07 (real formal test execution against the
+real running app, merged `main` @ `6a6bcac`, against the corrected procedure recorded by
+the entry immediately above — see §14's newest Status Note for full detail; no column
+totals below change, for the same reason given above):** the corrected procedure was
+left deliberately unexecuted by that immediately-preceding entry so the correction could
+land before, not after, execution; it has now been executed and recorded **PASS**. With
+this, all six of `TC-ALERT-001-12` through `-17` are executed and PASS. `TS-ALERT-001`'s
+row remains `17 | 17 | 0 | 0 | 0` and Grand **Total** remains `93 | 64 | 22 | 4 | 3` — this
+is an execution-status change only, not a testability reclassification; no other suite's
+row is affected; PRD §16 Open Question 22a remains open and unaffected.
 
 **Four test cases formally executed 2026-09-05 (real formal test execution against the real
 running app, merged `main` @ `5f232a8`, closing the open items tracked as Matrix Gap 19 in
@@ -1659,6 +1762,38 @@ Before moving to the Requirement Traceability Matrix / Development:
       tests at `AppShell.bell.test.tsx` and implementation-time live-verification are
       recorded as context only, explicitly not as an execution result of any of these
       six cases
+- [x] `TC-ALERT-001-13` through `-17` formally executed 2026-09-07 against merged `main`
+      @ `6a6bcac`, real running app, signed in as `admin@raise.dev` with
+      `localStorage`/`sessionStorage` cleared to zero entries before sign-in — all five
+      recorded **PASS**; `TC-ALERT-001-14` (the criterion the business decision most
+      turned on) was executed exactly per the Test Plan's one-session, no-reload
+      instruction, and the bell's five rows were found identical in content, count, and
+      order to P-012's own first five
+- [x] `TC-ALERT-001-12`, as of v0.25, **not** marked PASS: its original steps asked for a
+      numeral on the closed bell button, but the closed button renders only a dot —
+      `AC-ALERT-001-12` is corrected in place (AC document v0.16 §15) to describe the
+      dot/`aria-label`/panel-header-badge behavior actually built, this case's steps and
+      expected result are rewritten to match, and the corrected case is left explicitly
+      UNEXECUTED (same discipline as `TC-ALERT-001-09` / Open Finding F-42 — correction
+      lands before execution). The cause is recorded honestly as an AI-introduced
+      specification error from the 2026-09-05 sync (panel badge wording mis-read as header
+      badge), not a business decision and not a product defect; business confirmed
+      2026-09-07 the fix is to correct the specification, not the product
+- [x] `TC-ALERT-001-12` formally executed 2026-09-07 against its corrected procedure
+      (merged `main` @ `6a6bcac`, real running app, signed in as `admin@raise.dev`,
+      `localStorage`/`sessionStorage` cleared to zero entries before sign-in) —
+      **PASS**: closed button's own text empty, its one `<span>` child confirmed as the
+      dot with empty text content; `aria-label` "Notifications, 19 alerts"; panel header
+      badge "19"; P-012's own total (via "View all alerts," same session) "Showing 1-10
+      of 19"; all three numerals equal (19 = 19 = 19). All six of `TC-ALERT-001-12`
+      through `-17` are now executed and PASS; the earlier failed attempt against the
+      original, uncorrected procedure remains recorded as history, unmodified; this new
+      entry supersedes no prior execution result, since none existed for this case before
+- [x] `TC-EXEC-001-01`/`-03a`'s Open Finding F-45 "Log in as Executive" step-wording
+      defect is corrected to "Log in as any authenticated user," noting the dashboard
+      route's confirmed no-role-restriction gate (PRD §16 Resolved Question 45) at each —
+      step wording only; both cases' recorded **PASS** results and execution history
+      (2026-09-05, merged `main` @ `5f232a8`) are preserved unmodified
 
 ---
 
@@ -1691,6 +1826,109 @@ Suite ID → TC ID) into one master table for compliance review.
 ---
 
 ## Document Status
+
+**Version:** 0.26 (2026-09-07 — formal execution of `TC-ALERT-001-12` against its
+v0.25-corrected procedure, recorded **PASS** (merged `main` @ `6a6bcac`, the real running
+app). This is execution reporting only: no other test case is touched, no earlier-layer
+document (`RAISE-TEST-PLAN.md`, `RAISE-ACCEPTANCE-CRITERIA.md`, or earlier) is touched,
+and `OPEN-FINDINGS.md` is untouched. With this, all six of `TC-ALERT-001-12` through `-17`
+are executed and PASS. See the Change Log entry below for full detail.)
+
+**Change Log — v0.25 → v0.26 (2026-09-07):**
+
+1. **Trigger.** Formal execution of `TC-ALERT-001-12` against the corrected procedure
+   that v0.25 landed but deliberately left unexecuted, so the correction could not be
+   shaped around whatever happened to pass. This is the sixth and final of the header-bell
+   second-surface cases (`TC-ALERT-001-12` through `-17`) to reach a recorded PASS.
+2. **§14 TS-ALERT-001.** A new Status Note records the 2026-09-07 execution and its
+   evidence, immediately following the v0.25 note that recorded the correction and left
+   the case unexecuted. `TC-ALERT-001-12`'s row is updated in place to record **PASS**
+   with full step-by-step evidence (empty button text / single empty-text `<span>`
+   confirmed as the dot; `aria-label` "Notifications, 19 alerts"; panel header badge
+   "19"; P-012's own total "Showing 1-10 of 19"; automated equality check across all
+   three numerals returned `true`). The v0.25 record of *why* the case was corrected —
+   the AI-introduced specification error and the fact that the correction deliberately
+   preceded execution — is preserved verbatim within the row and the earlier Status
+   Note; the earlier failed attempt's observations remain recorded as they were. This
+   new entry supersedes no prior execution result, since none existed for this case
+   before now.
+3. **§19 Test Case Summary.** A new narrative note is added recording this execution;
+   `TS-ALERT-001`'s row is unchanged at `17 | 17 | 0 | 0 | 0` and Grand **Total** is
+   unchanged at `93 | 64 | 22 | 4 | 3` — execution status is recorded within the row,
+   not in this summary's testability-classification columns.
+4. **§20 Test Case Review Checklist.** A new checked item records this formal execution
+   and its evidence, immediately following the existing item that recorded the v0.25
+   correction (left unmodified).
+5. **No other case is touched.** `TC-ALERT-001-01` through `-11` and `-13` through `-17`
+   keep exactly what they record; `TC-DASH-*`, `TC-EXEC-001-*`, and `TC-WARRANTY-001-07`
+   are unaffected. PRD §16 Open Question 22a (per-user alert filtering) stays open.
+   `RAISE-TEST-PLAN.md`, `RAISE-ACCEPTANCE-CRITERIA.md`, every earlier-layer document,
+   and `OPEN-FINDINGS.md` are untouched by this update.
+
+---
+
+**Version:** 0.25 (2026-09-07 — formal execution of `TC-ALERT-001-13` through `-17`
+(all five **PASS**, against merged `main` @ `6a6bcac`, the real running app), correction
+of `TC-ALERT-001-12` to match `RAISE-ACCEPTANCE-CRITERIA.md` v0.16 §15's corrected
+`AC-ALERT-001-12` (closed bell button shows a dot, not a numeral; the numeral is exposed
+via `aria-label` and the panel header badge instead) with the corrected case left
+explicitly UNEXECUTED, and a step-wording-only fix to `TC-EXEC-001-01`/`-03a`'s Open
+Finding F-45 defect ("Log in as Executive" → "Log in as any authenticated user"), with
+their recorded PASS results and execution history unmodified. See the Change Log entry
+below for full detail.)
+
+**Change Log — v0.24 → v0.25 (2026-09-07):**
+
+1. **Trigger.** Three items: (a) a formal execution pass against the real running app
+   (merged `main` @ `6a6bcac`) for `TC-ALERT-001-13` through `-17`, left unexecuted by
+   the v0.24 sync; (b) `RAISE-ACCEPTANCE-CRITERIA.md` v0.16 §15's self-correction of
+   `AC-ALERT-001-12` (over-specified in v0.15 — asserted a numeral on the **closed**
+   bell button that the product does not have; the numeral is exposed only via
+   `aria-label` and, once opened, the panel header badge), mirrored here in
+   `RAISE-TEST-PLAN.md` v0.16 §7; and (c) Open Finding F-45 (`TC-EXEC-001-01`/`-03a`'s
+   "Log in as Executive" step wording — no Executive role exists in the app),
+   deliberately left unfixed at the time it was found so as not to destroy the evidence
+   it was wrong, now corrected.
+2. **§14 TS-ALERT-001.** A new Status Note records the 2026-09-07 execution and
+   correction. `TC-ALERT-001-13` through `-17` are each rewritten with their formal
+   execution evidence and recorded **PASS**. `TC-ALERT-001-12`'s Title, Steps, and
+   Expected Result are rewritten in place to match the corrected `AC-ALERT-001-12`: the
+   closed button shows a dot (no numeral); the numeral is read from `aria-label` and the
+   panel header badge; that numeral must equal P-012's own total. `TC-ALERT-001-12` is
+   left **explicitly UNEXECUTED** against its corrected procedure — the same discipline
+   applied to `TC-ALERT-001-09` / Open Finding F-42, correction before execution, not
+   after — with the substance separately observed during the failed original attempt
+   recorded as supporting context only, not an execution result. The cause is recorded
+   honestly as an AI-introduced specification error made during the 2026-09-05 chain
+   sync (the panel badge's wording was mis-read as describing the header button), not a
+   business decision and not a product defect; business confirmed 2026-09-07 the fix is
+   to correct the specification.
+3. **§16 TS-EXEC-001.** `TC-EXEC-001-01`'s and `TC-EXEC-001-03a`'s step 1 changed from
+   "Log in as Executive" to "Log in as any authenticated user," each now noting the
+   dashboard route's confirmed no-role-restriction gate (PRD §16 Resolved Question 45).
+   A new Status Note records this as a step-wording-only fix to the previously-flagged
+   Open Finding F-45 defect; both cases' recorded **PASS** results and execution history
+   (2026-09-05, merged `main` @ `5f232a8`) are preserved unmodified — no PASS is altered
+   and no new execution is claimed by this wording change.
+4. **§19 Test Case Summary.** `TS-ALERT-001`'s row is unchanged at `17 | 17 | 0 | 0 | 0`
+   (execution status changes recorded within each row, not in this summary's
+   testability-classification columns); Grand **Total** row is unchanged at
+   `93 | 64 | 22 | 4 | 3`. A new narrative note records the five executions, the one
+   correction, and that no column total changes.
+5. **§20 Test Case Review Checklist.** Three new checked items record: the five
+   `TC-ALERT-001-13..17` executions and their evidence; `TC-ALERT-001-12`'s correction
+   and why it is left unexecuted; and the `TC-EXEC-001-01`/`-03a` step-wording fix with
+   PASS results preserved.
+6. **No other suite or test case is touched.** `TC-ALERT-001-01` through `-11`,
+   `TC-DASH-*`, the rest of `TC-EXEC-001-*`, `TC-WARRANTY-001-07`, and every other
+   suite's existing test cases and historical PASS results are left exactly as
+   recorded. PRD §16 Open Question 22a (per-user alert filtering) stays open; nothing
+   here implies per-user filtering. `RAISE-TEST-PLAN.md`, `OPEN-FINDINGS.md`, and every
+   earlier-layer document are untouched by this update (this document only mirrors, in
+   its own words, the correction `RAISE-ACCEPTANCE-CRITERIA.md` v0.16 and
+   `RAISE-TEST-PLAN.md` v0.16 already made).
+
+---
 
 **Version:** 0.24 (2026-09-07 — sync to `RAISE-TEST-PLAN.md` v0.15's newly-added
 `TS-ALERT-001` header-bell coverage (PRD v0.18 §16 Resolved Question 49, closing

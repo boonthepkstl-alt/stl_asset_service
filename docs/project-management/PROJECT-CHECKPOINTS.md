@@ -4581,6 +4581,42 @@ Targeting the tab took two corrections, both recorded in the test so the next pe
 
 ---
 
+## CHECKPOINT-2026-09-08-007
+
+**Phase:** N/A — requirements accuracy, not a product capability
+**Feature:** Maintenance / Ticket SLA (`RAISE-FR-MAINT-001`)
+**Task:** Raise **F-54** — the product ships SLA commitments no business decision authorises
+
+**Requirement traced:** `RAISE-FR-MAINT-001`, at full **`PASS`** and **unmoved**. **Nothing was built or changed** — one row added to `OPEN-FINDINGS.md`. Stated first so this is not read as progress on the requirement.
+
+**The finding, with the evidence that makes it airtight.** The app defines `SLA_HOURS = { Critical: 2, High: 8, Medium: 24, Low: 48 }` in `frontend/src/services/ticket-service.ts:14`, mirrors it in `go-template-main/service/ticketService.go:19-26` (whose own comment says it mirrors the frontend *"exactly"*), stamps `slaTargetHours` on every created ticket from it, and labels the priority selector **"Critical (2h SLA)"** … **"Low (48h SLA)"** — so a requester reads a time commitment at the moment of filing. **Meanwhile the chain says the opposite in its own words:** PRD states *"Still TBD: SLA per stage"*, **no §16 Resolved Question covers SLA at all**, Prototype §15 P-009 lists **`Priority (conceptual — TBD)`**, and AC §12 says *"SLA per stage… remain **TBD** and are marked **NOT TESTABLE YET**"*. **No Prototype, AC or Test Case names a numeric SLA value anywhere**, verified by grep across all three.
+
+**Origin traced rather than assumed:** the values are inherited from the ESAPS reference (`src/data/requisitionData.ts:231,328` seed `slaTargetHours: 8` / `24`). **RAISE did not invent them** — but inheriting an unconfirmed number is not the same as having it confirmed, and `CLAUDE.md` classes that app as **REFERENCE ONLY**.
+
+**Why this is worth a finding rather than a shrug: it is F-03 inverted.** F-03 is five business numbers correctly *withheld* from the product — refused across four separate requests, under PRD §16 Q3a's explicit *"Do not invent or use an illustrative number as if confirmed."* **SLA is four business numbers already invented and shipped**, in both tiers, displayed as a promise. **The same rule was applied with enormous care to the numbers nobody uses, and never once applied to the numbers in production.** That asymmetry is the actual finding; the four integers are just where it surfaced.
+
+**What the finding explicitly does NOT claim.** It does **not** invalidate `RAISE-FR-MAINT-001`'s full `PASS`. That verdict rests on the confirmed 4-stage transitions (PRD §16 Resolved Question 33), and the AC **deliberately excluded** SLA as NOT TESTABLE YET — so **no executed test asserts an SLA value and no verdict rests on one.** The accurate classification, and the one used in the register, is **unrequested scope carrying unauthorised business values** — not a failed requirement. Filed under *Unresolved (scope question, not yet blocking a build)* for that reason.
+
+**How I found it, including the part that reflects badly.** Tracing the `priority` field that **PR #122** carried onto the new full-page form — hours earlier the same day. **It was visible during that PR and waved through as "pre-existing"**, and `CHECKPOINT-2026-09-08-004` even records me noting Prototype's *"Priority (conceptual — TBD)"* against a shipped Priority select and choosing not to fold it in. **The note was right; the conclusion that it therefore needed nothing was wrong.** "Pre-existing" is a reason not to fix something inside an unrelated PR; it is not a reason not to record it.
+
+**Deliberately not done: any code change.** Removing the SLA labels or altering the four values would be **inventing the business decision in the opposite direction** — the same error the numbers already represent, committed by me instead of inherited. **Three ways to close it, all business decisions:** (a) confirm the values as they stand, recorded as a Resolved Question — cheapest, and the shipped behaviour is then correct as-is; (b) supply different values — a one-line change per tier plus the labels; (c) decide MVP makes no SLA promise — the labels and `slaTargetHours` come out, the only option that changes what users see.
+
+**Files changed:** `OPEN-FINDINGS.md` only (**F-54**), then this close-out. **Zero product code, zero chain documents.**
+
+**Validation on `main` `64dcdcd`:** frontend `tsc` **0**, ESLint clean, **54 files / 286 tests pass**; register integrity **39 `F-` rows, all five cells**. `CHANGELOG.md` deliberately **not** updated — its rule covers user-visible behaviour, and recording a finding changes none.
+
+**Status:** ✅ Complete for its confirmed scope — the finding is recorded with its evidence, its limits, and its three exits. **Explicitly not a fix**, and the product still ships the unauthorised values today.
+
+**Known Issues:** **F-54 is open and will stay open until business answers.** Unlike F-03, **the product is asserting something in the meantime** — which is why it is worth watching even though it gates no verdict.
+
+**Remaining Work:** none that engineering can do unilaterally.
+
+**Next Step:** two business inputs are now outstanding, and they are different in kind. **F-03's per-Asset-Type useful-life values** remain the only item that would move a Compliance Review verdict. **F-54's SLA decision** moves no verdict but is the only one where **the product is currently making a claim it has no authority for.**
+
+**What this checkpoint adds to the pattern.** Today's three half-applied changes were all about *coverage* — fixing one instance and missing its siblings. This one is different and sharper: **the observation was made, written down, and then reasoned away.** Prototype's "TBD" next to a shipped Priority select was noticed in `CHECKPOINT-2026-09-08-004` and dismissed as pre-existing. **The failure was not in seeing; it was in deciding that seeing was enough.** The rule worth carrying: **when a note says the spec and the code disagree, that note is a finding already — file it, even if fixing it belongs to someone else.**
+
+---
+
 ## Level 2 — Feature Checkpoints
 
 ### FEATURE-CHECKPOINT-project-tracking-governance

@@ -127,7 +127,7 @@ illustrative number as if confirmed."*
 
 ### Dependencies
 
-One, and it is not technical: **one useful-life value per Asset Type** — as seeded,
+One for this task, and it is not technical: **one useful-life value per Asset Type** — as seeded,
 **Laptop, Monitor, Headphones, Smartphone, Tablet, Printer, Projector, Router, Server,
 Camera**. **Not** the five per-Category values this section asked for before **RQ52**
 re-keyed the configuration (see Primary Next Step above); and **not a fixed list of ten**,
@@ -198,6 +198,7 @@ the model instead of supplying numbers.
 | **F-52** build/execution half | 🔴 dependency | Same values; specification half closed today |
 | **F-53** chain re-key to Type | ✅ **RESOLVED** (R-39) | Closed the same day it was created, after the deferral was reversed on evidence |
 | **Gap 21** re-execution | 🔴 dependency | Cannot re-execute a ten-tile grid that does not exist |
+| **F-54** SLA values | 🟡 **business decision, and the only one the product is already asserting** | Raised 2026-09-08. `ticket-service.ts:14` and `ticketService.go:19-26` ship `{2, 8, 24, 48}` and the UI labels them as SLA, while PRD/Prototype/AC all say SLA is **TBD** and no test asserts a value. Moves no verdict; three exits, all business decisions |
 | **F-43(a)** decoder text | 🟡 business decision | 21 sites (17 RAISE-domain, 4 in the company template's `sampleController.go`) |
 | **PRD Q22a** | 🔴 dependency | No `User`↔`Employee` link exists |
 | **F-09 · F-35 · F-36 · F-37 · F-39** | 🟡 business decision | Independent product questions, none gating a P0 verdict |
@@ -208,6 +209,12 @@ the model instead of supplying numbers.
 ---
 
 ## Recommendation
+
+**Two business inputs are outstanding, and they are different in kind.** **F-03** is the only
+one that would move a Compliance Review verdict. **F-54** moves no verdict but is the only one
+where the product is **already making a claim it has no authority for** — four SLA numbers
+shipped in both tiers while the chain calls SLA TBD. If only one can be answered, F-03 unblocks
+work; F-54 stops an unauthorised promise.
 
 **Supply one useful-life value per Asset Type.** The model question is now settled and the
 decisions are

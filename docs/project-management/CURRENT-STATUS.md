@@ -9,7 +9,34 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-09-08, after **PR #122** merged (`71ba972`). Suite **54 test files /
+**As of:** 2026-09-08, at `64dcdcd`. Suite **54 test files / 286 tests**; CI green.
+
+**F-54 raised: the product ships SLA commitments no business decision authorises.**
+`ticket-service.ts:14` and `ticketService.go:19-26` both define
+`{ Critical: 2, High: 8, Medium: 24, Low: 48 }`, every ticket is stamped with
+`slaTargetHours` from it, and the priority selector reads **"Critical (2h SLA)"** …
+**"Low (48h SLA)"** — a time commitment shown as the requester files. **The chain
+says the opposite in its own words:** PRD *"Still TBD: SLA per stage"*, no §16 Resolved
+Question on SLA at all, Prototype §15 P-009 `Priority (conceptual — TBD)`, and AC §12
+*"SLA per stage… remain TBD and are marked NOT TESTABLE YET"*. **No Prototype, AC or Test
+Case names a numeric SLA value anywhere.**
+
+**It is F-03 inverted, and that asymmetry is the real finding.** F-03 is five business
+numbers correctly *withheld* — refused across four requests under PRD §16 Q3a's *"Do
+not invent or use an illustrative number as if confirmed."* **SLA is four already
+invented and shipped, in both tiers, displayed as a promise.** The rule was applied with
+enormous care to the numbers nobody uses and never once to the numbers in production.
+
+**What F-54 does not claim:** it does **not** invalidate `RAISE-FR-MAINT-001`'s full
+`PASS`. That rests on the confirmed 4-stage transitions (RQ33), and the AC deliberately
+excluded SLA as NOT TESTABLE YET — **no executed test asserts an SLA value.** Filed as
+*unrequested scope carrying unauthorised business values*, not a failed requirement.
+
+**Two business inputs are now outstanding, different in kind.** **F-03** remains the only
+item that would move a Compliance Review verdict. **F-54** moves no verdict but is the
+only one where **the product is currently making a claim it has no authority for.**
+
+Earlier the same day, after **PR #122** merged (`71ba972`). Suite **54 test files /
 286 tests**; CI green.
 
 **Every way of starting an IT requisition now opens the same full page.** The form was

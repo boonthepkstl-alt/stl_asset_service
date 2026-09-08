@@ -2,11 +2,42 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Prototype Specification
-**Version:** 0.17 Draft
+**Version:** 0.18 Draft
 **Status:** Draft for Prototype Review
-**Source:** [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.18 + [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.16 (§14 "Header Bell — Second Surface Over the Same Derivation" resolved 2026-09-05, §23 Prototype Preparation, §9A Document Intelligence Capabilities, §4.2 Custody & Asset Operations — Check-in/Check-out workflow/permission/holder-model resolved, plus the new "IT Hardware Assignment Approval Workflow" category-scoped exception, §5.1 Maintenance Domain, §5.2 Warranty Domain — 3-state status model + per-Asset-Category Expiring threshold resolved, §5.3 License Domain, §5.4 Settings Domain — now with a second confirmed configuration driver (NBV per-Asset-Category useful-life, shape only), §4.1B Settings / Platform Configuration, §6.4 ReconciliationPage / "Phase 6" Label, §13 Executive Intelligence — Utilization built and live, NBV formula confirmed but blocked on missing default values, Risk confirmed NOT MVP by decision, §14 Alert Architecture — five MVP trigger conditions and fixed-per-condition severity resolved, §16 Security Architecture — MVP Enforcement Level, Alerts Screen Access Gate resolved 2026-09-04, §16A Other Non-Functional Requirements — Design Backlog, §15/§22 Out of Scope)
+**Source:** [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.19 + [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.17 (§13 Executive Intelligence — NBV KPI tile placement confirmed as a tenth tile on both P-002/P-014, Monthly Depreciation tile kept unchanged, NBV-for-unconfigured-Asset-Category behavior confirmed, default useful-life values still Open Question 3a, §14 "Header Bell — Second Surface Over the Same Derivation" resolved 2026-09-05, §23 Prototype Preparation, §9A Document Intelligence Capabilities, §4.2 Custody & Asset Operations — Check-in/Check-out workflow/permission/holder-model resolved, plus the "IT Hardware Assignment Approval Workflow" category-scoped exception, §5.1 Maintenance Domain, §5.2 Warranty Domain — 3-state status model + per-Asset-Category Expiring threshold resolved, §5.3 License Domain, §5.4 Settings Domain — second confirmed configuration driver (NBV per-Asset-Category useful-life, shape only), §4.1B Settings / Platform Configuration, §6.4 ReconciliationPage / "Phase 6" Label, §14 Alert Architecture — five MVP trigger conditions and fixed-per-condition severity resolved, §16 Security Architecture — MVP Enforcement Level, Alerts Screen Access Gate resolved 2026-09-04, §16A Other Non-Functional Requirements — Design Backlog, §15/§22 Out of Scope)
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
+
+**Version note (2026-09-07 re-sync, v0.17 → v0.18, PRD §16 Resolved Questions 50/51 /
+Design §13 "NBV — Formula Confirmed, Default Values Still Missing" further narrowed):**
+`RAISE-PRD.md` v0.19 §16 Resolved Questions 50 and 51 and `RAISE-DESIGN.md` v0.17 §13
+jointly confirm two further business decisions about `RAISE-FR-EXEC-001`'s NBV KPI,
+narrowing (not closing) Open Finding F-03: **(1) NBV KPI tile placement is confirmed**
+(Resolved Question 50) — the NBV KPI is specified as a **tenth tile** on the KPI grid,
+on **both** **[§8 P-002 Main Dashboard](#8-p-002-main-dashboard)** and **[§20 P-014
+Executive Dashboard](#20-p-014-executive-dashboard)** (they render the same grid); the
+existing "Monthly Depreciation" tile is **kept unchanged** — not removed, not replaced,
+not relabelled, not re-pointed at real data; business explicitly accepted that a real
+computed NBV figure will sit directly beside a fabricated illustrative depreciation
+figure on the same grid. Every place in P-002/P-014 that previously stated "no NBV tile
+exists... and none can be built" is corrected: the tile **is now specified**; it remains
+**NOT built and NOT yet buildable** only because the five default useful-life values are
+still missing (Open Question 3a), not because the tile itself is undefined. **(2) NBV
+for an Asset Category with no configured useful life is confirmed** (Resolved Question
+51) — `computeAssetNbv` returns the asset's `purchaseCost` unchanged (not yet
+depreciated); this confirms already-implemented, test-pinned behavior (R-36 in
+`OPEN-FINDINGS.md`) and requires no code change; reachable by data alone because
+`AssetCategory` is an open `string` type, not an enum of the five. **[§23A P-018
+Settings](#23a-p-018-settings)**'s NBV section is updated with this behavior note; its
+own status (shape confirmed only, NOT built) is unchanged. **PRD §16 Open Question 3a
+(the five per-Asset-Category default useful-life values) remains fully OPEN — no
+illustrative or placeholder number is invented anywhere in this pass.** **[§27 Prototype
+Traceability Matrix](#27-prototype-traceability-matrix)**'s P-014 and P-018 rows are
+updated to match. Every existing traceability reference back to `RAISE-FR-EXEC-001` is
+kept intact. `RAISE-PRD.md` and `RAISE-DESIGN.md` are not modified by this pass; Open
+Finding **F-03 stays OPEN**, narrowed not closed; no `## NEEDS_PRD_CONFIRMATION` signal is
+raised (both decisions are already business-confirmed, dated 2026-09-07). See the
+"Document Status" section's Change Log for full detail.
 
 **Version note (2026-09-05 re-sync, v0.16 → v0.17, PRD §16 Resolved Question 49 /
 Design §14 "Header Bell — Second Surface Over the Same Derivation," resolving
@@ -708,11 +739,17 @@ this same page.
 
 Provide an overview of asset information (general navigation entry point).
 
-## Sections (As Built) — Updated 2026-09-05, KPI grid now 9 tiles (PR #102)
+## Sections (Specified: Ten Tiles) — Updated 2026-09-07, NBV tile specified as tenth tile (PRD §16 Resolved Question 50)
+
+**Nine of the ten KPI tiles are built and live** (as of PR #102 / commit
+`321265f`, merged 2026-09-05); **the tenth (NBV) is specified — placement and
+formula confirmed — but NOT built and NOT yet buildable**, blocked on PRD §16
+Open Question 3a (see "NBV/Risk/Utilization — Status" below).
 
 ```text
 ┌──────────────────────────────────────────────────────────────────────┐
-│                         Dashboard (As Built)                        │
+│              Dashboard KPI Grid — Specified: Ten Tiles               │
+│         (nine built and live; NBV specified, not yet built)          │
 ├────────────┬────────────┬────────────┬────────────┬────────────────┤
 │Total Assets│ Available  │  Assigned  │Utilization │In Maintenance   │
 ├────────────┴────────────┴────────────┴────────────┼────────────────┤
@@ -720,7 +757,15 @@ Provide an overview of asset information (general navigation entry point).
 ├────────────┬────────────┬─────────────────────────┴────────────────┤
 │  Software  │  Monthly   │  Monthly Cost                            │
 │  Licenses  │Depreciation│  (both illustrative — no depreciation     │
-│            │(illustrative)│ model exists yet)                       │
+│            │(illustrative,│ model exists yet — kept unchanged       │
+│            │kept unchanged)│ by PRD §16 Resolved Question 50)       │
+├────────────┴────────────┴───────────────────────────────────────────┤
+│    NBV     │ TENTH TILE — placement CONFIRMED (PRD §16 Resolved      │
+│            │ Question 50), formula CONFIRMED, but NOT BUILT and NOT  │
+│            │ YET BUILDABLE — blocked on PRD §16 Open Question 3a     │
+│            │ (five per-Asset-Category default useful-life values    │
+│            │ still missing). See "NBV/Risk/Utilization — Status"     │
+│            │ below.                                                   │
 ├────────────┴────────────┴───────────────────────────────────────────┤
 │ AI Insights                                                          │
 │ AI Portfolio Health                                                  │
@@ -735,11 +780,18 @@ Provide an overview of asset information (general navigation entry point).
 └──────────────────────────────────────────────────────────────────────┘
 ```
 
-**KPI grid (9 tiles, as of PR #102 / commit `321265f`, merged 2026-09-05 —
-previously 8):** Total Assets, Available, Assigned, **Utilization**, In
-Maintenance, Expired Warranty, Software Licenses, Monthly Depreciation
-(illustrative — no depreciation model has been built), Monthly Cost
-(illustrative, same caveat).
+**KPI grid — specified as 10 tiles as of PRD v0.19 §16 Resolved Question 50
+(2026-09-07); 9 of the 10 are built and live as of PR #102 / commit
+`321265f`, merged 2026-09-05 (previously 8):** Total Assets, Available,
+Assigned, **Utilization**, In Maintenance, Expired Warranty, Software
+Licenses, Monthly Depreciation (illustrative — no depreciation model has been
+built; **kept unchanged** by this decision — not removed, not replaced, not
+relabelled, not re-pointed at real data), Monthly Cost (illustrative, same
+caveat), and **NBV** (tenth tile — placement and formula confirmed, but
+**not built and not yet buildable**, blocked on PRD §16 Open Question 3a; see
+below). Business explicitly accepted that, once built, a real computed NBV
+figure will sit directly beside the fabricated illustrative Monthly
+Depreciation figure on the same grid.
 
 **Sections (10):** AI Insights, AI Portfolio Health, Oracle FA
 Reconciliation (a.k.a. "Oracle FA Synced"), Asset Lifecycle
@@ -752,10 +804,10 @@ Maintenance/Warranty/License data — this entry does not invent one, with one
 exception: the Utilization tile below does have a PRD-defined formula, and it
 is now implemented against that formula.
 
-## NBV/Risk/Utilization — Status as of 2026-09-05 (PRD v0.17 §16 Resolved Questions 46–48)
+## NBV/Risk/Utilization — Status as of 2026-09-07 (PRD v0.19 §16 Resolved Questions 46–48, 50–51)
 
 The PRD identifies NBV, Risk, and Utilization as proposal-defined KPIs under
-`RAISE-FR-EXEC-001`. As of 2026-09-05, the three no longer share one status —
+`RAISE-FR-EXEC-001`. As of 2026-09-07, the three no longer share one status —
 each is recorded on its own terms below (Open Finding
 [F-03](../project-management/OPEN-FINDINGS.md#blocking-gates-an-mvp-requirement)
 stays **OPEN**, narrowed by this update, not closed):
@@ -774,18 +826,32 @@ stays **OPEN**, narrowed by this update, not closed):
   only 12 are assignable (Disposed/Retired/Under-Maintenance excluded), which
   is why "8 of 12" and the dashboard's separate "Total Assets" tile (15) show
   different numbers side by side — this is expected, not a discrepancy.
-- **NBV — formula CONFIRMED, but NOT built and NOT yet buildable (PRD §16
-  Resolved Question 46).** Straight-line depreciation, computed from the
-  existing `purchaseDate`/`purchaseCost` fields already on the Asset record —
-  no new field or data model needed. Useful life is configurable **per Asset
-  Category** via the new NBV section of **P-018 Settings** (see [§23A P-018
-  Settings](#23a-p-018-settings)); salvage value is zero; NBV is clamped at 0.
-  **No NBV tile exists on this dashboard today, and none can be built** until
-  PRD §16 [Open Question 3a](../01-requirements/RAISE-PRD.md#16-open-questions)
-  (the default useful-life value per Asset Category) is answered — business
-  was asked directly and answered "I will specify these myself"; the numbers
-  have not been supplied. **This entry does not invent an illustrative or
-  placeholder NBV value or tile.**
+- **NBV — placement and formula CONFIRMED, but NOT built and NOT yet
+  buildable (PRD §16 Resolved Questions 46, 50, 51).** Straight-line
+  depreciation, computed from the existing `purchaseDate`/`purchaseCost`
+  fields already on the Asset record — no new field or data model needed.
+  Useful life is configurable **per Asset Category** via the new NBV section
+  of **P-018 Settings** (see [§23A P-018 Settings](#23a-p-018-settings));
+  salvage value is zero; NBV is clamped at 0. **Tile placement — confirmed
+  2026-09-07 (PRD §16 Resolved Question 50):** the NBV KPI is specified as a
+  **tenth tile** on this KPI grid, on both this screen and P-014 Executive
+  Dashboard (they render the same grid). The existing "Monthly Depreciation"
+  tile is **kept unchanged** — not removed, not replaced, not relabelled, and
+  not re-pointed at real data by this decision; it stays static and
+  explicitly illustrative, and business explicitly accepted that a real
+  computed NBV figure will sit directly beside it. **Behavior for an Asset
+  Category with no configured useful life — confirmed 2026-09-07 (PRD §16
+  Resolved Question 51):** the computation returns the asset's `purchaseCost`
+  unchanged, treating the asset as not yet depreciated (see "NBV for an Asset
+  Category with No Configured Useful Life" in [§23A P-018
+  Settings](#23a-p-018-settings) for full detail). **The tile itself is
+  specified, not absent — but it is still NOT built and NOT yet buildable**
+  until PRD §16 [Open Question
+  3a](../01-requirements/RAISE-PRD.md#16-open-questions) (the five
+  per-Asset-Category default useful-life values) is answered — business was
+  asked directly and answered "I will specify these myself"; the numbers have
+  not been supplied. **This entry does not invent an illustrative or
+  placeholder useful-life or NBV value anywhere.**
 - **Risk — CONFIRMED OUT OF MVP SCOPE for this dashboard, by business
   decision (PRD §16 Resolved Question 47).** This is a decision, not a gap:
   the Executive Dashboard will **not** carry a Risk KPI tile for MVP. PRD §16
@@ -1902,11 +1968,17 @@ divergent specs, to avoid re-introducing the drift that caused F-22.
 Provide an organization-level executive view (`RAISE-FR-EXEC-001`),
 realized by the same dashboard page documented in P-002.
 
-## Sections (As Built) — Updated 2026-09-05, KPI grid now 9 tiles (PR #102)
+## Sections (Specified: Ten Tiles) — Updated 2026-09-07, NBV tile specified as tenth tile (PRD §16 Resolved Question 50)
+
+**Nine of the ten KPI tiles are built and live** (as of PR #102 / commit
+`321265f`, merged 2026-09-05); **the tenth (NBV) is specified — placement and
+formula confirmed — but NOT built and NOT yet buildable**, blocked on PRD §16
+Open Question 3a (see "NBV/Risk/Utilization — Status" below).
 
 ```text
 ┌──────────────────────────────────────────────────────────────────────┐
-│                         Dashboard (As Built)                        │
+│              Dashboard KPI Grid — Specified: Ten Tiles               │
+│         (nine built and live; NBV specified, not yet built)          │
 ├────────────┬────────────┬────────────┬────────────┬────────────────┤
 │Total Assets│ Available  │  Assigned  │Utilization │In Maintenance   │
 ├────────────┴────────────┴────────────┴────────────┼────────────────┤
@@ -1914,7 +1986,15 @@ realized by the same dashboard page documented in P-002.
 ├────────────┬────────────┬─────────────────────────┴────────────────┤
 │  Software  │  Monthly   │  Monthly Cost                            │
 │  Licenses  │Depreciation│  (both illustrative — no depreciation     │
-│            │(illustrative)│ model exists yet)                       │
+│            │(illustrative,│ model exists yet — kept unchanged       │
+│            │kept unchanged)│ by PRD §16 Resolved Question 50)       │
+├────────────┴────────────┴───────────────────────────────────────────┤
+│    NBV     │ TENTH TILE — placement CONFIRMED (PRD §16 Resolved      │
+│            │ Question 50), formula CONFIRMED, but NOT BUILT and NOT  │
+│            │ YET BUILDABLE — blocked on PRD §16 Open Question 3a     │
+│            │ (five per-Asset-Category default useful-life values    │
+│            │ still missing). See "NBV/Risk/Utilization — Status"     │
+│            │ below.                                                   │
 ├────────────┴────────────┴───────────────────────────────────────────┤
 │ AI Insights                                                          │
 │ AI Portfolio Health                                                  │
@@ -1929,11 +2009,18 @@ realized by the same dashboard page documented in P-002.
 └──────────────────────────────────────────────────────────────────────┘
 ```
 
-**KPI grid (9 tiles, as of PR #102 / commit `321265f`, merged 2026-09-05 —
-previously 8):** Total Assets, Available, Assigned, **Utilization**, In
-Maintenance, Expired Warranty, Software Licenses, Monthly Depreciation
-(illustrative — no depreciation model has been built), Monthly Cost
-(illustrative, same caveat).
+**KPI grid — specified as 10 tiles as of PRD v0.19 §16 Resolved Question 50
+(2026-09-07); 9 of the 10 are built and live as of PR #102 / commit
+`321265f`, merged 2026-09-05 (previously 8):** Total Assets, Available,
+Assigned, **Utilization**, In Maintenance, Expired Warranty, Software
+Licenses, Monthly Depreciation (illustrative — no depreciation model has been
+built; **kept unchanged** by this decision — not removed, not replaced, not
+relabelled, not re-pointed at real data), Monthly Cost (illustrative, same
+caveat), and **NBV** (tenth tile — placement and formula confirmed, but
+**not built and not yet buildable**, blocked on PRD §16 Open Question 3a; see
+below). Business explicitly accepted that, once built, a real computed NBV
+figure will sit directly beside the fabricated illustrative Monthly
+Depreciation figure on the same grid.
 
 **Sections (10):** AI Insights, AI Portfolio Health, Oracle FA
 Reconciliation (a.k.a. "Oracle FA Synced"), Asset Lifecycle
@@ -1946,10 +2033,10 @@ Maintenance/Warranty/License data — this entry does not invent one, with one
 exception: the Utilization tile below does have a PRD-defined formula, and it
 is now implemented against that formula.
 
-## NBV/Risk/Utilization — Status as of 2026-09-05 (PRD v0.17 §16 Resolved Questions 46–48)
+## NBV/Risk/Utilization — Status as of 2026-09-07 (PRD v0.19 §16 Resolved Questions 46–48, 50–51)
 
 The PRD identifies NBV, Risk, and Utilization as proposal-defined KPIs under
-`RAISE-FR-EXEC-001`. As of 2026-09-05, the three no longer share one status —
+`RAISE-FR-EXEC-001`. As of 2026-09-07, the three no longer share one status —
 each is recorded on its own terms below (Open Finding
 [F-03](../project-management/OPEN-FINDINGS.md#blocking-gates-an-mvp-requirement)
 stays **OPEN**, narrowed by this update, not closed):
@@ -1968,18 +2055,32 @@ stays **OPEN**, narrowed by this update, not closed):
   only 12 are assignable (Disposed/Retired/Under-Maintenance excluded), which
   is why "8 of 12" and the dashboard's separate "Total Assets" tile (15) show
   different numbers side by side — this is expected, not a discrepancy.
-- **NBV — formula CONFIRMED, but NOT built and NOT yet buildable (PRD §16
-  Resolved Question 46).** Straight-line depreciation, computed from the
-  existing `purchaseDate`/`purchaseCost` fields already on the Asset record —
-  no new field or data model needed. Useful life is configurable **per Asset
-  Category** via the new NBV section of **P-018 Settings** (see [§23A P-018
-  Settings](#23a-p-018-settings)); salvage value is zero; NBV is clamped at 0.
-  **No NBV tile exists on this dashboard today, and none can be built** until
-  PRD §16 [Open Question 3a](../01-requirements/RAISE-PRD.md#16-open-questions)
-  (the default useful-life value per Asset Category) is answered — business
-  was asked directly and answered "I will specify these myself"; the numbers
-  have not been supplied. **This entry does not invent an illustrative or
-  placeholder NBV value or tile.**
+- **NBV — placement and formula CONFIRMED, but NOT built and NOT yet
+  buildable (PRD §16 Resolved Questions 46, 50, 51).** Straight-line
+  depreciation, computed from the existing `purchaseDate`/`purchaseCost`
+  fields already on the Asset record — no new field or data model needed.
+  Useful life is configurable **per Asset Category** via the new NBV section
+  of **P-018 Settings** (see [§23A P-018 Settings](#23a-p-018-settings));
+  salvage value is zero; NBV is clamped at 0. **Tile placement — confirmed
+  2026-09-07 (PRD §16 Resolved Question 50):** the NBV KPI is specified as a
+  **tenth tile** on this KPI grid, on both this screen and P-002 Main
+  Dashboard (they render the same grid). The existing "Monthly Depreciation"
+  tile is **kept unchanged** — not removed, not replaced, not relabelled, and
+  not re-pointed at real data by this decision; it stays static and
+  explicitly illustrative, and business explicitly accepted that a real
+  computed NBV figure will sit directly beside it. **Behavior for an Asset
+  Category with no configured useful life — confirmed 2026-09-07 (PRD §16
+  Resolved Question 51):** the computation returns the asset's `purchaseCost`
+  unchanged, treating the asset as not yet depreciated (see "NBV for an Asset
+  Category with No Configured Useful Life" in [§23A P-018
+  Settings](#23a-p-018-settings) for full detail). **The tile itself is
+  specified, not absent — but it is still NOT built and NOT yet buildable**
+  until PRD §16 [Open Question
+  3a](../01-requirements/RAISE-PRD.md#16-open-questions) (the five
+  per-Asset-Category default useful-life values) is answered — business was
+  asked directly and answered "I will specify these myself"; the numbers have
+  not been supplied. **This entry does not invent an illustrative or
+  placeholder useful-life or NBV value anywhere.**
 - **Risk — CONFIRMED OUT OF MVP SCOPE for this dashboard, by business
   decision (PRD §16 Resolved Question 47).** This is a decision, not a gap:
   the Executive Dashboard will **not** carry a Risk KPI tile for MVP. PRD §16
@@ -2289,7 +2390,7 @@ Actions: [ Save Changes ]   [ Reset ]   (not implemented)
   a new risk. The role list, permission matrix, and authentication mechanism remain
   **TBD**, same as every other admin-gated area in this document.
 
-### NBV section — confirmed shape only, NOT built (added 2026-09-05, PRD §16 Resolved Question 46; Design v0.15 §5.4)
+### NBV section — confirmed shape only, NOT built (added 2026-09-05, PRD §16 Resolved Question 46; Design v0.15 §5.4; KPI-tile placement and unconfigured-category behavior further confirmed 2026-09-07, PRD §16 Resolved Questions 50–51; Design v0.17 §13)
 
 - **Same confirmed pattern as the Warranty section above:** one row per current Asset
   Category, admin-editable, following the exact same shape already established for the
@@ -2310,6 +2411,28 @@ Actions: [ Save Changes ]   [ Reset ]   (not implemented)
   for the same blocker as it affects the NBV KPI tile).
 - **Admin-only access**, same enforcement-level caveat as the Warranty section above —
   no new RBAC decision is introduced by this section.
+
+#### NBV for an Asset Category with No Configured Useful Life — confirmed 2026-09-07 (PRD §16 Resolved Question 51)
+
+- **Behavior:** if an Asset's Category has no row configured in this section (no
+  `usefulLifeYears` value), `computeAssetNbv` returns the asset's **`purchaseCost`
+  unchanged** — the asset is treated as **not yet depreciated**. This is **not** a
+  new decision requiring a code change — it **confirms already-implemented,
+  test-pinned behavior** in `frontend/src/lib/nbv.ts`, recorded as **R-36** in
+  `OPEN-FINDINGS.md`.
+- **Reachable by data alone, not only by misconfiguration:** `AssetCategory`
+  (`frontend/src/types/asset.ts:17`) is declared as an open `string` type, **not** an
+  enum of the five categories shown in the wireframe above, so an Asset Category
+  added later (or any value outside the five seeded categories) carries no configured
+  row here and falls into this behavior automatically.
+- **Alternatives put to business and rejected:** returning **0** (would assert the
+  asset is worthless); returning **NaN** (would render as the literal string "NaN" on
+  the NBV KPI tile); **excluding** such assets from the portfolio NBV total (would
+  silently understate the portfolio).
+- **No default useful-life number is invented by this rule** — it governs only the
+  case where a category has *no* configured value; it does not supply one. PRD §16
+  Open Question 3a (the five per-Asset-Category default useful-life values) remains
+  fully **OPEN** and is unaffected by this rule.
 
 ## Scope Boundary
 
@@ -2348,12 +2471,13 @@ Settings
 
 `RAISE-FR-WARRANTY-001` (built driver of the Warranty section, per Design §4.1B) and
 `RAISE-FR-EXEC-001` (shape-confirmed, not-yet-built driver of the NBV section, per PRD
-§16 Resolved Question 46 / Design v0.15 §5.4) — Design §4.1B/§5.4 explicitly frame this
-screen as design-layer only (not its own PRD Traceability ID). Also depends on
-`RAISE-FR-ASSET-002` (Category, as the configuration key for both sections) and
-`RAISE-NFR-SEC-RBAC-001` (admin-only access, MVP enforcement level UI-only per PRD §16
-Resolved Question 38). See PRD §16 Resolved Questions 41/46 and Design §4.1B/§5.4 for the
-full requirement/design basis.
+§16 Resolved Question 46 / Design v0.15 §5.4; KPI-tile placement and unconfigured-category
+behavior further confirmed per PRD §16 Resolved Questions 50–51 / Design v0.17 §13) —
+Design §4.1B/§5.4 explicitly frame this screen as design-layer only (not its own PRD
+Traceability ID). Also depends on `RAISE-FR-ASSET-002` (Category, as the configuration key
+for both sections) and `RAISE-NFR-SEC-RBAC-001` (admin-only access, MVP enforcement level
+UI-only per PRD §16 Resolved Question 38). See PRD §16 Resolved Questions 41/46/50/51 and
+Design §4.1B/§5.4/§13 for the full requirement/design basis.
 
 ---
 
@@ -2696,7 +2820,7 @@ not be treated as approved MVP functionality.
 | P-011 Oracle FA | RAISE-FR-ORACLE-001 | Planned |
 | P-012 Alerts | RAISE-FR-ALERT-001 | Planned — five MVP trigger conditions (Warranty EXPIRED/EXPIRING, Maintenance ticket OVERDUE/ON_HOLD, IT Hardware Handover PENDING) and fixed-per-condition High/Medium/Low severity resolved 2026-09-04 (PRD §16 Resolved Question 44; Design §14 Alert Architecture); read-time derivation, no persisted Alert entity, no new detail screen — links to existing P-004 Asset Detail / P-009 Maintenance Request Detail / P-008 Assignment Approval Request detail by condition type. **Access gate resolved 2026-09-04 (PRD §16 Resolved Question 45; Design §16 "Alerts Screen Access Gate"):** any authenticated user (all four roles), enforced per-route in code (`ProtectedRoute allowedRoles`) — partially resolves Open Finding F-08 for this screen only; role/permission matrix content for every other screen, and per-user filtering of alert rows (PRD §16 Q22a), remain open. **Header bell-icon dropdown in/out-of-scope contradiction resolved 2026-09-05 (PRD §16 Resolved Question 49; Design §14 "Header Bell — Second Surface Over the Same Derivation," resolving `RAISE-TRACEABILITY-MATRIX.md` Gap 17):** the ESAPS reference page `NotificationCenter.tsx` stays out of scope unchanged (Resolved Question 35 stands); RAISE's own `AppShell` header bell is a different artifact, confirmed **in scope** as a second display surface over this same requirement — same shared derivation, first five alerts in severity order, badge = total count, no read/unread model. See §6 Global Layout for the full as-built description |
 | P-013 Audit | RAISE-FR-AUDIT-001 | Planned |
-| P-014 Executive | RAISE-FR-EXEC-001 | Planned — corrected 2026-08-31 to match as-built dashboard (Open Finding F-22); same built page as P-002 Main Dashboard. **Updated 2026-09-05 (PRD §16 Resolved Questions 46–48):** Utilization KPI now **built and live** (KPI grid grows to 9 tiles); NBV formula confirmed but **blocked, not built** on missing per-Asset-Category default useful-life values (Open Question 3a); Risk KPI **confirmed out of MVP scope by business decision** (not a gap) — Open Finding F-03 narrowed, not closed |
+| P-014 Executive | RAISE-FR-EXEC-001 | Planned — corrected 2026-08-31 to match as-built dashboard (Open Finding F-22); same built page as P-002 Main Dashboard. **Updated 2026-09-05 (PRD §16 Resolved Questions 46–48):** Utilization KPI now **built and live**; NBV formula confirmed but **blocked, not built** on missing per-Asset-Category default useful-life values (Open Question 3a); Risk KPI **confirmed out of MVP scope by business decision** (not a gap) — Open Finding F-03 narrowed, not closed. **Further updated 2026-09-07 (PRD §16 Resolved Questions 50–51):** NBV KPI tile placement confirmed as a **tenth tile** on the KPI grid (grid specified as 9 built + 1 specified-not-built = 10 tiles, both P-002 and P-014); Monthly Depreciation tile kept unchanged; NBV-for-unconfigured-Asset-Category behavior confirmed (returns `purchaseCost` unchanged). NBV tile remains **specified but NOT built and NOT yet buildable** — Open Finding F-03 still narrowed, not closed; Open Question 3a (five default useful-life values) still fully OPEN |
 | P-015 AI Assistant | RAISE-AI-SEARCH-001 | Planned |
 | P-004 Asset Detail (incidental) | RAISE-AI-DOC-001 (OCR / Extraction) | Planned — no dedicated screen; TBD acceptance behavior |
 | P-004 Asset Detail (incidental) | RAISE-AI-DOC-002 (Metadata) | Planned — no dedicated screen; TBD acceptance behavior |
@@ -2704,7 +2828,7 @@ not be treated as approved MVP functionality.
 | P-003 Asset Registry (incidental) | RAISE-AI-DOC-004 (Duplicate Detection) | Planned — no dedicated screen; TBD acceptance behavior |
 | P-016 License Inventory | RAISE-FR-LICENSE-001 | **Roadmap, not MVP** — exploratory prototype screen mirroring already-built `frontend/src/pages/Licenses/`; field model/alert rule/seat tracking/vendor-cost tracking all TBD |
 | P-017 License Detail | RAISE-FR-LICENSE-001 | **Roadmap, not MVP** — exploratory prototype screen mirroring already-built `frontend/src/pages/LicenseDetail/`; same TBD items as P-016 |
-| P-018 Settings | RAISE-FR-WARRANTY-001, RAISE-FR-EXEC-001 (Design §4.1B/§5.4 — not itself a separate PRD Traceability ID) | Warranty section Implemented — new 2026-09-01 (PRD §16 Resolved Question 41; Design §4.1B/§5.4): admin-only Warranty section, one editable per-Asset-Category threshold, default 90 days, Save Changes / Reset. **NBV section added 2026-09-05 (PRD §16 Resolved Question 46; Design v0.15 §5.4) — shape confirmed only, NOT built:** per-Asset-Category useful-life value, blocked on missing default numbers (Open Question 3a) |
+| P-018 Settings | RAISE-FR-WARRANTY-001, RAISE-FR-EXEC-001 (Design §4.1B/§5.4 — not itself a separate PRD Traceability ID) | Warranty section Implemented — new 2026-09-01 (PRD §16 Resolved Question 41; Design §4.1B/§5.4): admin-only Warranty section, one editable per-Asset-Category threshold, default 90 days, Save Changes / Reset. **NBV section added 2026-09-05 (PRD §16 Resolved Question 46; Design v0.15 §5.4) — shape confirmed only, NOT built:** per-Asset-Category useful-life value, blocked on missing default numbers (Open Question 3a). **Further confirmed 2026-09-07 (PRD §16 Resolved Questions 50–51; Design v0.17 §13):** the driven NBV KPI tile's placement (tenth tile, both P-002/P-014) and the unconfigured-Asset-Category behavior (returns `purchaseCost` unchanged, confirming already-implemented `frontend/src/lib/nbv.ts`/R-36) are now both confirmed; this section's own status is unchanged — still shape confirmed only, NOT built, still blocked on Open Question 3a |
 
 **Cross-check against [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) §17 (PRD v0.9):**
 every row's requirement ID exists in the PRD's Requirement Traceability Matrix, and every
@@ -2909,9 +3033,59 @@ The next artifact should be **Acceptance Criteria**, not source code.
 
 ## Document Status
 
-**Version:** 0.17 (2026-09-05, PRD v0.18 §16 Resolved Question 49 / Design v0.16 §14
-"Header Bell — Second Surface Over the Same Derivation," resolving
-`RAISE-TRACEABILITY-MATRIX.md` Gap 17)
+**Version:** 0.18 (2026-09-07, PRD v0.19 §16 Resolved Questions 50–51 / Design v0.17 §13
+"NBV — Formula Confirmed, Default Values Still Missing," further narrowed)
+
+**Change Log — v0.17 → v0.18 (2026-09-07, PRD §16 Resolved Questions 50/51 / Design §13,
+per explicit business confirmation via direct chat session):**
+
+1. **Root confirmation.** PRD v0.19 §16 Resolved Questions 50 and 51 and Design v0.17 §13
+   jointly confirm two further business decisions about `RAISE-FR-EXEC-001`'s NBV KPI,
+   narrowing (not closing) Open Finding F-03: **(a) NBV KPI tile placement confirmed**
+   (Resolved Question 50) — the NBV KPI is specified as a **tenth tile** on the KPI grid,
+   on **both** P-002 Main Dashboard and P-014 Executive Dashboard (they render the same
+   grid); the existing "Monthly Depreciation" tile is **kept unchanged** — not removed,
+   not replaced, not relabelled, not re-pointed at real data; business explicitly accepted
+   that a real computed NBV figure will sit directly beside a fabricated illustrative
+   depreciation figure on the same grid. **(b) NBV for an Asset Category with no
+   configured useful life confirmed** (Resolved Question 51) — `computeAssetNbv` returns
+   the asset's `purchaseCost` unchanged (not yet depreciated); this confirms
+   already-implemented, test-pinned behavior (R-36 in `OPEN-FINDINGS.md`), not a new
+   decision requiring a code change; reachable by data alone because `AssetCategory` is an
+   open `string` type, not an enum of the five categories.
+2. **[§8 P-002 Main Dashboard](#8-p-002-main-dashboard)** and **[§20 P-014 Executive
+   Dashboard](#20-p-014-executive-dashboard)** (the same built page, cross-referenced as
+   one another) are both rewritten: the KPI grid section heading, ASCII diagram, and
+   tile-enumeration paragraph change from a nine-tile "as built" description to a
+   **specified ten-tile** description (nine built and live, NBV specified but not built),
+   matching Design v0.17 §13's "Logical Dashboard — Current MVP (As Built) + Specified
+   Tenth Tile" framing. The "NBV/Risk/Utilization — Status" subsection's NBV bullet is
+   rewritten: every prior statement that "no NBV tile exists on this dashboard today, and
+   none can be built" (an absence statement) is corrected to a **presence** specification
+   — the tile is now specified (placement + formula confirmed) — while preserving the
+   fact that it is still **NOT built and NOT yet buildable**, now because the five default
+   useful-life values are missing (Open Question 3a), not because the tile itself was
+   previously undefined. No placeholder or illustrative NBV *value* is shown anywhere.
+3. **[§23A P-018 Settings](#23a-p-018-settings)** updated: a new "NBV for an Asset Category
+   with No Configured Useful Life" subsection is added under the existing NBV section,
+   recording the Resolved Question 51 behavior and its rejected alternatives (0, NaN,
+   exclusion). The section's own status (**shape confirmed only, NOT built**) is
+   unchanged — this addition does not claim any new code exists. The Traceability line is
+   updated to also cite Resolved Questions 50–51 / Design §13.
+4. **[§27 Prototype Traceability Matrix](#27-prototype-traceability-matrix)**'s P-014 and
+   P-018 rows are updated to record both confirmations. No row was added or removed.
+5. **Every existing traceability reference back to `RAISE-FR-EXEC-001` is kept intact.**
+   PRD §16 Open Question 3a (the five per-Asset-Category default useful-life values)
+   **remains fully OPEN** — no illustrative or placeholder number is invented, suggested,
+   or used as an example anywhere in this pass, including in any wireframe. Open Finding
+   **F-03 stays OPEN**, narrowed by this update, not closed. No other screen, requirement
+   ID, or row is touched by this pass.
+6. **`RAISE-PRD.md` and `RAISE-DESIGN.md` are not modified by this pass.** No
+   `## NEEDS_PRD_CONFIRMATION` signal is raised — both decisions are already
+   business-confirmed, dated 2026-09-07.
+7. Header metadata updated: Version bumped to 0.18; PRD Source updated to v0.19 (advanced
+   from v0.18); Design Source updated to v0.17 (advanced from v0.16), with the updated §13
+   framing added to the cited section list.
 
 **Change Log — v0.16 → v0.17 (2026-09-05, PRD §16 Resolved Question 49 / Design §14
 "Header Bell — Second Surface Over the Same Derivation," per explicit business

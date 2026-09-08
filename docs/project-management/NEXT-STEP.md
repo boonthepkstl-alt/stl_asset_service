@@ -108,11 +108,11 @@ input is now in hand.** F-03's Definition of Ready is **one item from complete**
 
 **Everything buildable is specified — verified in source this run:**
 
-| Piece | State on `4a442be` |
+| Piece | State on `23b9c72` |
 |---|---|
 | Formula | ✅ `frontend/src/lib/nbv.ts` implements RQ46 in full (R-36) |
 | Tests | ✅ `nbv.test.ts`, 15 tests, three mutations |
-| Configuration shape | ✅ `NBVSettings: Record<AssetCategory, usefulLifeYears>` |
+| Configuration shape | ✅ `NBVSettings: Record<AssetType, usefulLifeYears>` — re-keyed from `Record<AssetCategory, …>` by **RQ52** (F-53 → R-39) |
 | Settings precedent | ✅ `Settings/index.tsx:144-161` (Warranty threshold, per-category) |
 | Tile precedent | ✅ `Dashboard/index.tsx:29,66,74` (Utilization ← `computeUtilization`) |
 | **Specification, all layers** | ✅ **complete as of today** |
@@ -126,8 +126,11 @@ illustrative number as if confirmed."*
 
 ### Dependencies
 
-One, and it is not technical: the values for **IT Hardware, Mobile, Office Equipment,
-Infrastructure, Media Equipment**.
+One, and it is not technical: **one useful-life value per Asset Type** — as seeded,
+**Laptop, Monitor, Headphones, Smartphone, Tablet, Printer, Projector, Router, Server,
+Camera**. **Not** the five per-Category values this section asked for before **RQ52**
+re-keyed the configuration (see Primary Next Step above); and **not a fixed list of ten**,
+since `type` is a free-text `varchar(100)` that grows exactly as `category` does.
 
 ### Expected Output
 
@@ -226,7 +229,17 @@ deliberate pass, not an automated one.
 
 ## Document Status
 
-**Status:** Live — regenerated 2026-09-08 from `main` `4a442be`.
+**Status:** Live — regenerated 2026-09-08 from `main` `39bb2b0` (the commit named at the top of this file), then revised twice the same day; figures in "Current State" and the
+"Everything buildable is specified" table were re-verified against `23b9c72`. **The `4a442be` this line used to cite was the *first* regeneration's commit and was never updated through
+the later revisions — a third instance of the same sweep failure, found in the same pass.**
+
+**Correction, 2026-09-08 (third revision):** two places in this file were left stale by
+the previous revision, which updated the DoR table and the candidate list but did not sweep
+the whole document. The **Configuration shape** row still read `Record<AssetCategory, …>`
+while the row directly beneath it said "Chain keyed to Type — done", and **Dependencies**
+still asked for the five per-Category values that **RQ52** had replaced. Both contradicted
+this file's own Primary Next Step. **Same failure mode as F-53** — fixing one statement and
+leaving its siblings — caught by re-reading rather than by anything downstream.
 
 **Supersedes:** the 2026-09-07 run and its two same-day revisions, which are worth naming
 because both were corrections of this file's own account of F-03: the first understated the

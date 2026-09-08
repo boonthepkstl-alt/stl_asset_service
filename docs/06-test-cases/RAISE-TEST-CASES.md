@@ -2,9 +2,9 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Test Cases
-**Version:** 0.27 Draft
+**Version:** 0.28 Draft
 **Status:** Draft for Test Case Review
-**Source:** [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.17 §7 (Test Suites, including the 2026-09-07 TS-DASH/TS-EXEC-001 ten-tile NBV re-specification, PRD §16 Resolved Questions 50–51) + §8 (Blocked Items) + §8.1 (Fully-Blocked Suites — AI Document Intelligence Capabilities) + §3.3 (PRD §10 NFR Backlog — No Suite), expanding [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.17
+**Source:** [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.19 §7 (Test Suites, including the 2026-09-07 TS-DASH/TS-EXEC-001 ten-tile NBV re-specification, PRD §16 Resolved Questions 50–51, and the 2026-09-08 PRD §16 Resolved Question 52 re-key of the NBV useful-life configuration from Asset Category to Asset Type) + §8 (Blocked Items) + §8.1 (Fully-Blocked Suites — AI Document Intelligence Capabilities) + §3.3 (PRD §10 NFR Backlog — No Suite), expanding [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.18
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
 
@@ -183,11 +183,13 @@ not be mistaken for one. These four are the **first** formal executions against 
 grid — they supersede nothing; the 2026-08-31 eight-tile-grid PASS on `TC-DASH-01` remains
 preserved above as separate history for its own, now-superseded scope.
 
-**Status Note — 2026-09-07, prior PASS SUPERSEDED again by criterion change, not
-invalidated by regression (PRD v0.19 §16 Resolved Questions 50–51;
-`RAISE-ACCEPTANCE-CRITERIA.md` v0.17 §5; `RAISE-TEST-PLAN.md` v0.17 §7/§8; closes the
-specification gap raised as Open Finding F-52):** business confirmed two further NBV
-decisions. **(1) RQ50 — NBV tile placement:** the KPI grid on P-002 grows from **nine**
+**Status Note — Updated 2026-09-08 (this sync's actual date; PRD v0.19 §16 Resolved
+Questions 50–51 were confirmed by business on 2026-09-07, not the date this document was
+synced — a prior draft of this section mislabeled the sync itself as 2026-09-07,
+corrected here), prior PASS SUPERSEDED again by criterion change, not
+invalidated by regression (`RAISE-ACCEPTANCE-CRITERIA.md` v0.17 §5; `RAISE-TEST-PLAN.md`
+v0.17 §7/§8; closes the specification gap raised as Open Finding F-52):** business
+confirmed two further NBV decisions. **(1) RQ50 — NBV tile placement:** the KPI grid on P-002 grows from **nine**
 tiles to **ten** tiles, adding NBV as the tenth tile; the existing Monthly Depreciation
 tile is kept unchanged — not removed, not relabelled, not re-pointed at real data.
 **(2) RQ51 — NBV for an Asset Category with no configured useful life:**
@@ -224,14 +226,48 @@ configured at all. `TC-DASH-03c` (Risk) is unaffected — still **Out of Scope**
 RQ47. **No illustrative or placeholder useful-life number is invented anywhere in this
 update, including in any test-data column.**
 
+**Status Note — 2026-09-08 (PRD v0.20 §16 Resolved Question 52, amending Resolved
+Question 46; `RAISE-ACCEPTANCE-CRITERIA.md` v0.18 §5; `RAISE-TEST-PLAN.md` v0.19 §7/§8;
+`RAISE-PROTOTYPE.md` v0.19 §8/§23A) — a re-key, not new scope:** the NBV useful-life
+configuration referenced by `TC-DASH-03b` and `TC-DASH-04` below is **re-keyed from
+Asset Category to Asset Type**. Business was asked to supply the five per-Category
+default useful-life values and answered that IT Hardware has no fixed value ("it
+depends on the equipment purchased"), while confirming the other four categories can
+each carry one; of four options offered, business chose configuring the value **per
+Asset Type**, using the existing `Asset.type` field — no new field required
+(`go-template-main/sql/pg/V1__Assets_Table.sql:7`, `go-template-main/model/
+assetModel.go:23`, `frontend/src/types/asset.ts:30`), the same precedent as Open
+Finding F-27's resolution that `type` is the sub-category of `category`. A per-Type
+table is a superset of a per-Category table — for the four categories that do have a
+single fixed value, that value simply repeats across the category's types, exactly
+equivalent — so no special case for IT Hardware, and no two-level model, is needed.
+`TC-DASH-03b`'s Test Data/Expected Result/Blocked columns and `TC-DASH-04`'s Title/
+Steps/Test Data/Blocked columns below are rewritten to the Asset Type key; **RQ51's
+rule itself is unaffected in substance by this re-key — only the lookup key's name
+changes, from `category` to `type`.** PRD §16 Open Question 3a is correspondingly
+re-scoped to ask for one default useful-life value **per Asset Type** (not per Asset
+Category); it **remains fully OPEN**, and no such number — for any category or any
+type — is invented, suggested, or illustrated anywhere in this document, including in
+any test-data column. The two literal `NBVSettings: Record<AssetCategory,
+usefulLifeYears>` occurrences in this document (`TC-DASH-03b` below and
+`TC-WARRANTY-001-07`, §12) are both re-keyed to `Record<AssetType, usefulLifeYears>`.
+The seeded Asset Types this document now refers to, derived from
+`frontend/src/data/fixtures/mockData.ts` and not invented: Laptop, Monitor, Headphones
+(IT Hardware); Smartphone, Tablet (Mobile); Printer, Projector (Office Equipment);
+Router, Server (Infrastructure); Camera (Media Equipment) — currently ten, growing as
+assets of a new type are added, exactly as `category` already does (`TC-ASSET-002-*`,
+§7); this is not recorded as a fixed count of ten. Both cases remain **BLOCKED
+(partial)**, on the same two-reason basis as before the re-key; no PASS is or can be
+claimed by this update, and no useful-life number is invented anywhere.
+
 | TC ID | Title | Steps | Test Data | Expected Result | Blocked |
 |---|---|---|---|---|---|
-| TC-DASH-01 | KPI grid displays all ten tiles | 1. Log in. 2. Land on Dashboard (P-002). | Any asset/maintenance/warranty/license dataset (15-asset seeded register, `frontend/src/data/fixtures/mockData.ts`) | The KPI grid displays all **ten** tiles: Total Assets, Available, Assigned, Utilization, In Maintenance, Expired Warranty, Software Licenses, Monthly Depreciation, Monthly Cost, and **NBV** (tenth tile, PRD §16 Resolved Question 50) — updated 2026-09-07 from the prior nine-tile expected result | **BLOCKED (partial)** — updated 2026-09-07 (PRD §16 Resolved Question 50). Nine of the ten tiles remain fully testable against the as-built page today: Presence only — Monthly Depreciation and Monthly Cost are explicitly **illustrative** (Prototype §8 — no depreciation model has been built) and are **kept unchanged** by this decision; none of the other seven tiles has a PRD-defined field list, formula, or threshold beyond what the page computes from existing data. **The tenth (NBV) tile is NOT TESTABLE YET** — it does not exist in `frontend/src/` today, and even once built, no default useful-life value per Asset Category can be asserted, since PRD §16 Open Question 3a remains fully OPEN (see `TC-DASH-03b`/`TC-DASH-04`). **Historical PASS SUPERSEDED (2026-08-31, eight-tile grid), preserved as history, not re-affirmed** (see Status Note above). **Formally re-executed 2026-09-05 against the real running app (merged `main` @ `5f232a8`) — PASS, but also now SUPERSEDED, not carried forward:** all nine KPI tiles present at that time, read from the page's own rendered text, with displayed values Total Assets 15, Available 4, Assigned 8, Utilization 66.7%, In Maintenance 2, Expired Warranty 11, Software Licenses 10, Monthly Depreciation $42.8K, Monthly Cost $156.2K; tile order matched the then-current nine-tile expected list exactly. **This 2026-09-05 PASS is preserved below as history only and is superseded by the 2026-09-07 ten-tile criterion change (PRD §16 Resolved Question 50)** — re-running those same steps today against the current ten-tile expected result would no longer match, precisely because NBV is now specified as the tenth tile and is not yet built. **This case requires a subsequent, separate formal re-execution against the ten-tile criterion; no PASS is claimed for the current expected result by this sync.** |
+| TC-DASH-01 | KPI grid displays all ten tiles | 1. Log in. 2. Land on Dashboard (P-002). | Any asset/maintenance/warranty/license dataset (15-asset seeded register, `frontend/src/data/fixtures/mockData.ts`) | The KPI grid displays all **ten** tiles: Total Assets, Available, Assigned, Utilization, In Maintenance, Expired Warranty, Software Licenses, Monthly Depreciation, Monthly Cost, and **NBV** (tenth tile, PRD §16 Resolved Question 50) — updated 2026-09-07 from the prior nine-tile expected result | **BLOCKED (partial)** — updated 2026-09-07 (PRD §16 Resolved Question 50). Nine of the ten tiles remain fully testable against the as-built page today: Presence only — Monthly Depreciation and Monthly Cost are explicitly **illustrative** (Prototype §8 — no depreciation model has been built) and are **kept unchanged** by this decision; none of the other seven tiles has a PRD-defined field list, formula, or threshold beyond what the page computes from existing data. **The tenth (NBV) tile is NOT TESTABLE YET** — it does not exist in `frontend/src/` today, and even once built, no default useful-life value per Asset **Type** can be asserted, since PRD §16 Open Question 3a — re-scoped 2026-09-08 to ask for one value per Asset Type rather than per Asset Category (PRD §16 Resolved Question 52) — remains fully OPEN (see `TC-DASH-03b`/`TC-DASH-04`). **Historical PASS SUPERSEDED (2026-08-31, eight-tile grid), preserved as history, not re-affirmed** (see Status Note above). **Formally re-executed 2026-09-05 against the real running app (merged `main` @ `5f232a8`) — PASS, but also now SUPERSEDED, not carried forward:** all nine KPI tiles present at that time, read from the page's own rendered text, with displayed values Total Assets 15, Available 4, Assigned 8, Utilization 66.7%, In Maintenance 2, Expired Warranty 11, Software Licenses 10, Monthly Depreciation $42.8K, Monthly Cost $156.2K; tile order matched the then-current nine-tile expected list exactly. **This 2026-09-05 PASS is preserved below as history only and is superseded by the 2026-09-07 ten-tile criterion change (PRD §16 Resolved Question 50)** — re-running those same steps today against the current ten-tile expected result would no longer match, precisely because NBV is now specified as the tenth tile and is not yet built. **This case requires a subsequent, separate formal re-execution against the ten-tile criterion; no PASS is claimed for the current expected result by this sync.** |
 | TC-DASH-02 | Ten dashboard sections display | 1. Ensure asset/maintenance/warranty/license data exists. 2. Land on Dashboard (P-002). | Asset/maintenance/warranty/license dataset covering at least one record relevant to each section | All ten sections are displayed: AI Insights, AI Portfolio Health, Oracle FA Reconciliation, Asset Lifecycle, Department Distribution, Asset Status, Asset Type, Pending Approvals, Recent Activities, and Maintenance Calendar | No — fully testable against the as-built page. **PASS**, formally executed 2026-08-31 (`RAISE-TRACEABILITY-MATRIX.md` §3/§4). Unaffected by the 2026-09-05 Utilization change and the 2026-09-07 NBV-placement change — the section list did not change either time; this historical PASS is unmodified, not superseded. All ten sections were incidentally re-confirmed present during the 2026-09-05 `TC-DASH-01`/`TC-DASH-03a` execution sweep — recorded as **incidental confirmation only, not a re-execution** of this case; the 2026-08-31 PASS remains this case's formal execution record. |
 | TC-DASH-03a | Utilization tile displays a percentage and an assigned/assignable sub-label | 1. Log in. 2. Navigate to `/dashboard`. 3. Locate the Utilization tile within the KPI grid tested by `TC-DASH-01`. 4. Read its displayed percentage value and sub-label. | 15-asset seeded register (`frontend/src/data/fixtures/mockData.ts`), of which 12 assets are currently assignable (Disposed/Retired/Under-Maintenance excluded from the denominator per PRD §16 Resolved Questions 27/29) and 8 of those 12 are currently assigned | The Utilization tile displays a percentage value (e.g. "66.7%") and a sub-label naming how many assets are currently assigned out of how many are currently assignable (e.g. "8 of 12 assignable assets") — this tests actual displayed behavior, not mere presence, since Utilization's definition and mechanics are fully resolved | No — fully testable. **Formally executed 2026-09-05 against the real running app (merged `main` @ `5f232a8`) — PASS:** the Utilization tile renders the value "66.7%," the label "Utilization," and the sub-label "8 of 12 assignable assets" — the three strings were read directly from the tile's own DOM subtree, not inferred. **Best evidence, recorded explicitly because it verifies the RQ29(b) denominator rule on the page itself rather than by trusting the code:** the same page's "Asset Status" section independently reports Available 4, Assigned 8, In Maintenance 2, Retired 1 — fifteen assets in total, matching the "Total Assets 15" tile. The Utilization tile's denominator is 12, which is exactly Available (4) + Assigned (8), with In Maintenance (2) and Retired (1) excluded. The exclusion required by PRD Resolved Question 29(b) is therefore demonstrated by two independent readings on the same screen, not asserted. The automated coverage cited previously (`frontend/src/lib/utilization.test.ts`, Dashboard page test) remains supporting context only, not a substitute — this is the first formal manual execution of this case. Unaffected by the 2026-09-07 NBV-placement change. |
-| TC-DASH-03b | NBV tile present at the tenth position, computed via `computePortfolioNbv` — blocked on the build and on missing default useful-life values | 1. Log in. 2. Land on Dashboard (P-002) with the KPI grid from `TC-DASH-01` displayed. 3. Locate the tenth tile position in the KPI grid. 4. Inspect its label and displayed value. | Same dataset as `TC-DASH-01`; per-Asset-Category `usefulLifeYears` values configured via the P-018 Settings NBV section — no illustrative/placeholder default value is asserted anywhere in this row (PRD §16 Open Question 3a remains OPEN) | An **NBV tile is present** at the tenth tile position, displaying the organization's portfolio Net Book Value — computed by `computePortfolioNbv` (`frontend/src/lib/nbv.ts`) as the sum, across all assets, of each asset's straight-line depreciation from its existing `purchaseDate` and `purchaseCost`, salvage value **zero**, clamped at **0**, using the per-Asset-Category useful life configured via the P-018 Settings NBV section (`NBVSettings: Record<AssetCategory, usefulLifeYears>`) — sitting alongside, and distinct from, the unrelated static/illustrative Monthly Depreciation tile, which is kept unchanged by this decision (PRD §16 Resolved Question 50). **This supersedes the case's prior absence assertion**, which was accurate only while the tile could not be built. | **BLOCKED (partial)** — rewritten 2026-09-07 from an absence criterion to a presence criterion (PRD §16 Resolved Question 50), matching `AC-DASH-03b`'s rewrite. The NBV tile's placement and formula are now confirmed — this is a **specified but not yet buildable** state, not an "unspecified" one. Blocked for two independent reasons, matching `TC-WARRANTY-001-07`'s established basis for this same feature family: (1) the NBV tile / `NBVSettings` / P-018 Settings NBV section does not exist anywhere in `frontend/src/` today, so step 3 above cannot be performed against the real running app; (2) even once built, no default useful-life value per Asset Category can be asserted or used to verify a specific figure, since PRD §16 Open Question 3a remains fully **OPEN** — business was asked directly and answered "I will specify these myself." Tracked as [Open Finding F-03](../project-management/OPEN-FINDINGS.md#blocking-gates-an-mvp-requirement) (OPEN, narrowed, not closed). **No illustrative or placeholder useful-life or NBV value is asserted anywhere in this case, including in the test-data column above** — the state to test once built is the tile's presence and its (input-dependent) computed value, not any specific number. **Not formally executed; no PASS claimed.** The prior absence-check's 2026-09-05 incidental observation (no NBV tile appeared) remains valid history but is no longer the governing assertion for this case, since the assertion itself has flipped from absence to presence. |
+| TC-DASH-03b | NBV tile present at the tenth position, computed via `computePortfolioNbv` — blocked on the build and on missing default useful-life values | 1. Log in. 2. Land on Dashboard (P-002) with the KPI grid from `TC-DASH-01` displayed. 3. Locate the tenth tile position in the KPI grid. 4. Inspect its label and displayed value. | Same dataset as `TC-DASH-01`; per-Asset-**Type** `usefulLifeYears` values configured via the P-018 Settings NBV section (re-keyed 2026-09-08 from per-Asset-Category, PRD §16 Resolved Question 52) — no illustrative/placeholder default value is asserted anywhere in this row (PRD §16 Open Question 3a remains OPEN) | An **NBV tile is present** at the tenth tile position, displaying the organization's portfolio Net Book Value — computed by `computePortfolioNbv` (`frontend/src/lib/nbv.ts`) as the sum, across all assets, of each asset's straight-line depreciation from its existing `purchaseDate` and `purchaseCost`, salvage value **zero**, clamped at **0**, using the per-Asset-**Type** useful life configured via the P-018 Settings NBV section (`NBVSettings: Record<AssetType, usefulLifeYears>` — re-keyed 2026-09-08 from `Record<AssetCategory, usefulLifeYears>`, PRD §16 Resolved Question 52, amending Resolved Question 46) — sitting alongside, and distinct from, the unrelated static/illustrative Monthly Depreciation tile, which is kept unchanged by this decision (PRD §16 Resolved Question 50). **This supersedes the case's prior absence assertion**, which was accurate only while the tile could not be built. | **BLOCKED (partial)** — rewritten 2026-09-07 from an absence criterion to a presence criterion (PRD §16 Resolved Question 50), matching `AC-DASH-03b`'s rewrite; **re-keyed 2026-09-08 from Asset Category to Asset Type** (PRD §16 Resolved Question 52, amending Resolved Question 46) — a re-key, not new scope. The NBV tile's placement and formula are now confirmed — this is a **specified but not yet buildable** state, not an "unspecified" one. Blocked for two independent reasons, matching `TC-WARRANTY-001-07`'s established basis for this same feature family: (1) the NBV tile / `NBVSettings` / P-018 Settings NBV section does not exist anywhere in `frontend/src/` today, so step 3 above cannot be performed against the real running app; (2) even once built, no default useful-life value per Asset **Type** can be asserted or used to verify a specific figure, since PRD §16 Open Question 3a — re-scoped 2026-09-08 to ask for one value per Asset Type rather than per Asset Category — remains fully **OPEN** — business was asked directly and answered "I will specify these myself." Tracked as [Open Finding F-03](../project-management/OPEN-FINDINGS.md#blocking-gates-an-mvp-requirement) (OPEN, narrowed, not closed). **No illustrative or placeholder useful-life or NBV value is asserted anywhere in this case, including in the test-data column above** — the state to test once built is the tile's presence and its (input-dependent) computed value, not any specific number. **Not formally executed; no PASS claimed.** The prior absence-check's 2026-09-05 incidental observation (no NBV tile appeared) remains valid history but is no longer the governing assertion for this case, since the assertion itself has flipped from absence to presence. |
 | TC-DASH-03c | Risk tile — confirmed out of MVP scope | N/A — see Blocked column | N/A | N/A | **OUT OF SCOPE FOR MVP** — the Executive/Main Dashboard will not carry a Risk KPI tile for MVP, by confirmed business decision (PRD §16 Resolved Question 47). This is **not** a blocked test case and **not** a gap — retained as a row here only to preserve 1:1 traceability against `AC-DASH-03c`, so it is not later misread as missing coverage. During the 2026-09-05 execution sweep, no Risk KPI tile appeared in the grid, consistent with this confirmed decision; the "High Risk" text visible elsewhere on the page belongs to the AI Insights severity labels, not to a Risk KPI tile, and must not be mistaken for one. PRD §16 Q4 (the exact definition of risk) remains open, but it belongs entirely to `RAISE-AI-RISK-001` (Pilot/Roadmap), not to this screen. Re-activate only if Risk is later promoted to MVP scope for this screen through the standard PRD → Design → Prototype → AC → Test Plan chain. |
-| TC-DASH-04 | NBV for an Asset Category with no configured useful life contributes `purchaseCost` unchanged and remains included in the total | 1. Seed an asset whose `category` value has no corresponding entry in the P-018 Settings NBV section's `NBVSettings` map — reachable **by data alone**, since `AssetCategory` is declared as an open `string` type (`frontend/src/types/asset.ts:17`), not an enum of the five currently seeded categories. 2. Land on Dashboard (P-002) with the KPI grid from `TC-DASH-01` displayed. 3. Inspect the NBV tile (tenth position) for the portfolio total. 4. Confirm the unconfigured-category asset's contribution to that total. | One asset with a `category` value absent from the configured `NBVSettings` map and a `purchaseCost` set; remaining seeded assets as per `TC-DASH-01`. No illustrative/placeholder default useful-life value is asserted for any category, configured or unconfigured. | `computeAssetNbv`/`computePortfolioNbv` return that asset's `purchaseCost` **unchanged** (the asset is treated as **not yet depreciated**), and that asset **remains included** in the portfolio NBV total shown on the tile — it is not excluded, not zeroed out, and not rendered as `NaN`. This confirms the rejection of three alternatives put to business: returning **0** (asserts the asset is worthless), returning **NaN** (renders as the literal string "NaN" on the tile), and **excluding** the asset from the total (silently understates it). | **BLOCKED (partial)** — added new 2026-09-07 for new `AC-DASH-04` (PRD §16 Resolved Question 51). No PASS is or can be claimed. Blocked on **one** reason only, precisely as `AC-DASH-04` itself states: the NBV tile does not exist in `frontend/src/` today (Prototype §8, §23A), so steps 2–4 above cannot be performed against the real running app. **Unlike `TC-DASH-03b`, this case's rule does not itself depend on PRD §16 Open Question 3a's still-missing default useful-life values** — it governs only the case where a category has *no* configured value at all, and asserts no default useful-life number for any category, anywhere, in this case or its test data. Tracked as [Open Finding F-03](../project-management/OPEN-FINDINGS.md#blocking-gates-an-mvp-requirement) (OPEN, narrowed, not closed) for the build-status half only. |
+| TC-DASH-04 | NBV for an Asset Type with no configured useful life contributes `purchaseCost` unchanged and remains included in the total | 1. Seed an asset whose `type` value has no corresponding entry in the P-018 Settings NBV section's `NBVSettings` map — reachable **by data alone**, since `Asset.type` is declared as an open `string` type (`frontend/src/types/asset.ts:30`), not an enum of the ten currently seeded types. 2. Land on Dashboard (P-002) with the KPI grid from `TC-DASH-01` displayed. 3. Inspect the NBV tile (tenth position) for the portfolio total. 4. Confirm the unconfigured-type asset's contribution to that total. | One asset with a `type` value absent from the configured `NBVSettings` map and a `purchaseCost` set; remaining seeded assets as per `TC-DASH-01`. No illustrative/placeholder default useful-life value is asserted for any category or type, configured or unconfigured. | `computeAssetNbv`/`computePortfolioNbv` return that asset's `purchaseCost` **unchanged** (the asset is treated as **not yet depreciated**), and that asset **remains included** in the portfolio NBV total shown on the tile — it is not excluded, not zeroed out, and not rendered as `NaN`. This confirms the rejection of three alternatives put to business: returning **0** (asserts the asset is worthless), returning **NaN** (renders as the literal string "NaN" on the tile), and **excluding** the asset from the total (silently understates it). | **BLOCKED (partial)** — added new 2026-09-07 for new `AC-DASH-04` (PRD §16 Resolved Question 51); **key re-scoped from Asset Category to Asset Type 2026-09-08** (PRD §16 Resolved Question 52, amending Resolved Question 46 — RQ51's rule is unaffected in substance by this re-key, only the lookup key's name changes). No PASS is or can be claimed. Blocked on **one** reason only, precisely as `AC-DASH-04` itself states: the NBV tile does not exist in `frontend/src/` today (Prototype §8, §23A), so steps 2–4 above cannot be performed against the real running app. **Unlike `TC-DASH-03b`, this case's rule does not itself depend on PRD §16 Open Question 3a's still-missing default useful-life values** — it governs only the case where a type has *no* configured value at all, and asserts no default useful-life number for any category or type, anywhere, in this case or its test data. Tracked as [Open Finding F-03](../project-management/OPEN-FINDINGS.md#blocking-gates-an-mvp-requirement) (OPEN, narrowed, not closed) for the build-status half only. |
 
 ---
 
@@ -640,6 +676,35 @@ added below to match it 1:1, marked **BLOCKED (partial)**. This does **not** tou
 unaffected, unmodified, and not superseded, since the Warranty section of P-018 (as opposed
 to the new NBV section) did not change.
 
+**Status Note — 2026-09-08 (PRD v0.20 §16 Resolved Question 52, amending Resolved
+Question 46; `RAISE-ACCEPTANCE-CRITERIA.md` v0.18 §13; `RAISE-TEST-PLAN.md` v0.19 §7/§8;
+`RAISE-DESIGN.md` v0.18 §13; `RAISE-PROTOTYPE.md` v0.19 §23A) — a re-key, not new scope:**
+`TC-WARRANTY-001-07`'s NBV useful-life configuration is **re-keyed from Asset Category to
+Asset Type**, identical in substance to §4/§16's `TC-DASH-03b`/`TC-DASH-04`/
+`TC-EXEC-001-03b`/`TC-EXEC-001-04` re-key. Business was asked to supply the five
+per-Category default useful-life values and answered that IT Hardware has no fixed value
+("it depends on the equipment purchased"), while confirming the other four categories can
+each carry one; of four options offered, business chose configuring the value **per Asset
+Type**, using the existing `Asset.type` field — no new field required. A per-Type table is
+a superset of a per-Category table — for the four categories that do have a single fixed
+value, that value simply repeats across the category's types — so no special case for IT
+Hardware is needed. `TC-WARRANTY-001-07`'s title, steps, test data, and expected result are
+rewritten below from "each of the 5 current Asset Categories" to "each Asset Type currently
+present in the data" (currently ten: Laptop, Monitor, Headphones under IT Hardware;
+Smartphone, Tablet under Mobile; Printer, Projector under Office Equipment; Router, Server
+under Infrastructure; Camera under Media Equipment — `frontend/src/data/fixtures/
+mockData.ts`) — one row per Asset Type present in the data, not a fixed count of ten;
+`type` is a free-text field (like `category`) and this set grows as assets of a new type
+are added, exactly as P-005's Category → Type grouping already does (`TC-ASSET-002-*`,
+§7). This is the second of the two literal `NBVSettings: Record<AssetCategory,
+usefulLifeYears>` occurrences in this document re-keyed to `Record<AssetType,
+usefulLifeYears>` (the first is `TC-DASH-03b`, §4). The case remains **BLOCKED (partial)**
+on the same two-reason basis as before the re-key; PRD §16 Open Question 3a is
+correspondingly re-scoped to ask for one default useful-life value per Asset Type (not per
+Asset Category) and **remains fully OPEN** — no such number, for any category or any type,
+is invented, suggested, or illustrated anywhere in this document, including in this row's
+test-data column.
+
 **`TC-WARRANTY-001-06` formally executed 2026-09-01, with a root cause found and fixed
 first.** Formal execution surfaced a real defect, not a documentation gap: the Settings
 route (`ROUTES.SETTINGS`) was **not** actually gated by role in `frontend/src/App.tsx`
@@ -675,7 +740,7 @@ Administration. Evidence:
 | TC-WARRANTY-001-04 | P-018 Settings Warranty section shows all 5 categories with editable threshold inputs defaulting to 90 | 1. Log in as an admin. 2. Open Settings (P-018) and its Warranty section. | Fresh/default `WarrantySettings` (no prior edits) | Each of the 5 current Asset Categories (IT Hardware, Mobile, Office Equipment, Infrastructure, Media Equipment) shows an editable "Days before expiry to flag as Expiring" number input, defaulting to **90** | No — **PASS**, formally executed 2026-09-01: automated test in `frontend/src/services/settings-service.test.ts` confirms the 90-day seed for every category at the service layer; live-browser pass confirmed all 5 categories render with a "90" default input each (see Status Note above for the one caveat: the default was not re-observed live after the IT Hardware edit in the same session, only via the automated seed test) |
 | TC-WARRANTY-001-05 | Editing/saving one category's threshold does not affect other categories | 1. As an admin on P-018 Settings > Warranty, change one Asset Category's threshold value. 2. Select Save Changes. 3. Open assets in the changed category and assets in other, unchanged categories. | IT Hardware threshold changed from 90 to 5000; Mobile and other categories left at 90 | Assets in the changed category (IT Hardware) recompute their Warranty badge/state per the new threshold; assets in other, unchanged categories (e.g., Mobile) retain their existing threshold and are unaffected — no cross-category leakage | No — **PASS**, formally executed 2026-09-01: automated test in `frontend/src/services/settings-service.test.ts` confirms `updateSettings` merges a per-category change without clobbering others; live-browser pass confirmed MacBook Pro/Dell UltraSharp Monitor (IT Hardware) flipped to "Expiring" while iPhone 15 Pro (Mobile, already expired) still showed "Expired" (see Status Note above) |
 | TC-WARRANTY-001-06 | Non-admin access/write to P-018 Settings is denied | 1. Log in as a non-admin user. 2. Attempt to navigate to Settings (P-018) and/or edit a Warranty threshold. | 1 non-admin user session | Access and/or write is denied at the confirmed MVP UI-only/client-side RBAC enforcement level (`RAISE-NFR-SEC-RBAC-001`, PRD §16 Resolved Question 38) — this case tests only that a denial exists at the UI layer, not any specific role name or backend enforcement (role list/permission matrix remain TBD, PRD §16 Q22) | No — **PASS**, formally executed 2026-09-01. A real defect was found and fixed first: the Settings route was not actually role-gated in `frontend/src/App.tsx` (it sat in the general authenticated-user route block, not the ADMIN-only `ProtectedRoute allowedRoles={['ADMIN']}` block already used for Administration/User Management/Role Management). Fixed by moving the Settings route into that same ADMIN-only block — no new RBAC mechanism invented. Automated: 2 new tests in `frontend/src/App.rbac.test.tsx` (non-ADMIN redirected to Forbidden; ADMIN allowed through), full suite 153/153 passing. Live-browser: EMPLOYEE-role session hitting `/settings` rendered the Forbidden page ("403 — Access denied"); ADMIN-role session hitting `/settings` rendered the real Settings page. See §12 Status Note for full evidence |
-| TC-WARRANTY-001-07 | P-018 Settings NBV section shows all 5 categories with editable useful-life inputs | 1. Log in as an admin. 2. Open Settings (P-018) and its NBV section. 3. Inspect each of the 5 current Asset Categories' "Useful Life (years)" input. | 5 current Asset Categories (IT Hardware, Mobile, Office Equipment, Infrastructure, Media Equipment); no illustrative/placeholder default value is asserted | Each of the 5 current Asset Categories shows an editable "Useful Life (years)" number input, following the same shape as the Warranty section's per-category threshold input (`NBVSettings: Record<AssetCategory, usefulLifeYears>`, per Prototype §23A) | **BLOCKED (partial)** — added new 2026-09-05 for the new `AC-WARRANTY-001-07` (PRD v0.17 §16 Resolved Question 46; Prototype v0.16 §23A). No PASS is or can be claimed. Blocked for two independent, precisely stated reasons, neither of which is "unspecified": (1) **the section is not built** — no `NBVSettings` type, service, repository, or UI section exists anywhere in `frontend/src/` today (Prototype §23A Status Banner), so step 2 above cannot be performed against the real running app; (2) **even once built, no default useful-life value per Asset Category can be asserted** — the formula this section feeds is confirmed (PRD §16 Resolved Question 46 — straight-line depreciation, salvage value zero, clamped at 0), but the actual default-useful-life-per-Asset-Category numbers (PRD §16 Open Question 3a) remain unanswered; business was asked directly and answered "I will specify these myself." Tracked as [Open Finding F-03](../project-management/OPEN-FINDINGS.md#blocking-gates-an-mvp-requirement) (OPEN, narrowed, not closed). This is "specified but not yet buildable," the same category of block as `TC-DASH-03b`/`TC-EXEC-001-03b`, not "unspecified." The section's existence, shape, and admin-only access gate are otherwise confirmed by Prototype §23A — only the default values and the build itself are outstanding, and the input state to test once built is "unset," not a specific illustrative number. |
+| TC-WARRANTY-001-07 | P-018 Settings NBV section shows one row per Asset Type currently present in the data, with editable useful-life inputs | 1. Log in as an admin. 2. Open Settings (P-018) and its NBV section. 3. Inspect each Asset Type currently present in the data (currently ten: Laptop, Monitor, Headphones under IT Hardware; Smartphone, Tablet under Mobile; Printer, Projector under Office Equipment; Router, Server under Infrastructure; Camera under Media Equipment) for a "Useful Life (years)" input. | Ten Asset Types currently seeded (`frontend/src/data/fixtures/mockData.ts`) — one row per type present in the data, not a fixed count, since `type` is a free-text field (like `category`) and this set grows as assets of a new type are added; no illustrative/placeholder default value is asserted | Each Asset Type currently present in the data shows an editable "Useful Life (years)" number input — one row per type, following the same shape as the Warranty section's per-category threshold input (`NBVSettings: Record<AssetType, usefulLifeYears>` — re-keyed 2026-09-08 from `Record<AssetCategory, usefulLifeYears>`, PRD §16 Resolved Question 52, amending Resolved Question 46 — per Prototype §23A) | **BLOCKED (partial)** — added new 2026-09-05 for the new `AC-WARRANTY-001-07` (PRD v0.17 §16 Resolved Question 46; Prototype v0.16 §23A); **re-keyed 2026-09-08 from Asset Category to Asset Type** (PRD §16 Resolved Question 52, amending Resolved Question 46) — a re-key, not new scope; see §12 Status Note above. No PASS is or can be claimed. Blocked for two independent, precisely stated reasons, neither of which is "unspecified": (1) **the section is not built** — no `NBVSettings` type, service, repository, or UI section exists anywhere in `frontend/src/` today (Prototype §23A Status Banner), so step 2 above cannot be performed against the real running app; (2) **even once built, no default useful-life value per Asset Type can be asserted** — the formula this section feeds is confirmed (PRD §16 Resolved Question 46 — straight-line depreciation, salvage value zero, clamped at 0), but the actual default-useful-life-per-Asset-Type numbers (PRD §16 Open Question 3a, re-scoped 2026-09-08 from per-Category to per-Type) remain unanswered; business was asked directly and answered "I will specify these myself." Tracked as [Open Finding F-03](../project-management/OPEN-FINDINGS.md#blocking-gates-an-mvp-requirement) (OPEN, narrowed, not closed). This is "specified but not yet buildable," the same category of block as `TC-DASH-03b`/`TC-EXEC-001-03b`, not "unspecified." The section's existence, shape, and admin-only access gate are otherwise confirmed by Prototype §23A — only the default values and the build itself are outstanding, and the input state to test once built is "unset," not a specific illustrative number. |
 
 ---
 
@@ -1120,11 +1185,14 @@ already performed as `ADMIN` under exactly that gate. Only the step wording chan
 recorded **PASS** results and execution history for both cases (2026-09-05, merged `main`
 @ `5f232a8`) are preserved unmodified below.
 
-**Status Note — 2026-09-07, prior PASS SUPERSEDED again by criterion change, not
-invalidated by regression (PRD v0.19 §16 Resolved Questions 50–51;
-`RAISE-ACCEPTANCE-CRITERIA.md` v0.17 §17; `RAISE-TEST-PLAN.md` v0.17 §7/§8; closes the
-specification gap raised as Open Finding F-52 — mirrors §4's `TC-DASH-*` update above
-exactly, since P-014 and P-002 document the same built page):** business confirmed two
+**Status Note — Updated 2026-09-08 (this sync's actual date; PRD v0.19 §16 Resolved
+Questions 50–51 were confirmed by business on 2026-09-07, not the date this document was
+synced — a prior draft of this section mislabeled the sync itself as 2026-09-07,
+corrected here), prior PASS SUPERSEDED again by criterion change, not
+invalidated by regression (`RAISE-ACCEPTANCE-CRITERIA.md` v0.17 §17; `RAISE-TEST-PLAN.md`
+v0.17 §7/§8; closes the specification gap raised as Open Finding F-52 — mirrors §4's
+`TC-DASH-*` update above exactly, since P-014 and P-002 document the same built
+page):** business confirmed two
 further NBV decisions. **(1) RQ50 — NBV tile placement:** the KPI grid on P-014 grows
 from **nine** tiles to **ten** tiles, adding NBV as the tenth tile; the existing Monthly
 Depreciation tile is kept unchanged. **(2) RQ51 — NBV for an Asset Category with no
@@ -1151,14 +1219,36 @@ also **BLOCKED (partial)**, on reason (1) only. `TC-EXEC-001-03c` (Risk) is unaf
 still **Out of Scope**, per RQ47. **No illustrative or placeholder useful-life number is
 invented anywhere in this update, including in any test-data column.**
 
+**Status Note — 2026-09-08 (PRD v0.20 §16 Resolved Question 52, amending Resolved
+Question 46; `RAISE-ACCEPTANCE-CRITERIA.md` v0.18 §17; `RAISE-TEST-PLAN.md` v0.19 §7/§8;
+`RAISE-PROTOTYPE.md` v0.19 §20/§23A) — a re-key, not new scope, mirroring §4's `TC-DASH-*`
+re-key exactly, since P-014 and P-002 document the same shipped page:** the NBV
+useful-life configuration referenced by `TC-EXEC-001-03b` and `TC-EXEC-001-04` below is
+**re-keyed from Asset Category to Asset Type**. Business was asked to supply the five
+per-Category default useful-life values and answered that IT Hardware has no fixed value
+("it depends on the equipment purchased"), while confirming the other four categories can
+each carry one; of four options offered, business chose configuring the value **per Asset
+Type**, using the existing `Asset.type` field — no new field required, the same precedent
+as Open Finding F-27's resolution. A per-Type table is a superset of a per-Category
+table — no special case for IT Hardware, and no two-level model, is needed.
+`TC-EXEC-001-03b`'s Test Data/Expected Result/Blocked columns and `TC-EXEC-001-04`'s
+Title/Steps/Test Data/Blocked columns below are rewritten to the Asset Type key; **RQ51's
+rule itself is unaffected in substance by this re-key — only the lookup key's name
+changes, from `category` to `type`.** PRD §16 Open Question 3a is correspondingly
+re-scoped to ask for one default useful-life value **per Asset Type** (not per Asset
+Category); it **remains fully OPEN**, and no such number — for any category or any
+type — is invented, suggested, or illustrated anywhere in this document, including in
+any test-data column. Both cases remain **BLOCKED (partial)**, on the same reason(s) as
+before the re-key; no PASS is or can be claimed by this update.
+
 | TC ID | Title | Steps | Test Data | Expected Result | Blocked |
 |---|---|---|---|---|---|
 | TC-EXEC-001-01 | KPI grid displays all ten tiles (Executive Dashboard) | 1. Log in as any authenticated user (the dashboard route carries no role restriction — PRD §16 Resolved Question 45). 2. Open Executive Dashboard (P-014). | Org-level asset dataset (same 15-asset seeded register as P-002) | The KPI grid displays all **ten** tiles: Total Assets, Available, Assigned, Utilization, In Maintenance, Expired Warranty, Software Licenses, Monthly Depreciation, Monthly Cost, and **NBV** (tenth tile, PRD §16 Resolved Question 50) — updated 2026-09-07 from the prior nine-tile expected result | **BLOCKED (partial)** — updated 2026-09-07 (PRD §16 Resolved Question 50); identical basis to `TC-DASH-01` since P-014 and P-002 document the same built page. Nine of the ten tiles remain fully testable today; same Monthly Depreciation/Monthly Cost illustrative-figures caveat and presence-only scope apply. **The tenth (NBV) tile is NOT TESTABLE YET** — not yet built, and PRD §16 Open Question 3a's default useful-life values remain fully OPEN (see `TC-EXEC-001-03b`/`TC-EXEC-001-04`). **Historical PASS SUPERSEDED (eight-tile grid), preserved as history, not re-affirmed** (see Status Note above). **Formally re-executed 2026-09-05 against the real running app (merged `main` @ `5f232a8`) — PASS, but also now SUPERSEDED, not carried forward:** same evidence as `TC-DASH-01` — P-014 and P-002 are the same built page, confirmed by the H1 reading "Executive Dashboard" on route `/dashboard`; all nine tiles present at that time with the same displayed values recorded under `TC-DASH-01`. **This 2026-09-05 PASS is preserved below as history only and is superseded by the 2026-09-07 ten-tile criterion change (PRD §16 Resolved Question 50)** — re-running those same steps today against the current ten-tile expected result would no longer match. **This case requires a subsequent, separate formal re-execution against the ten-tile criterion; no PASS is claimed for the current expected result by this sync.** **Execution deviation recorded (see earlier Status Note above):** step 1 says "Log in as Executive," but no Executive role exists in the app (`UserRole` has only `ADMIN`/`IT_MANAGER`/`IT_STAFF`/`EMPLOYEE`) — "Executive" is a PRD persona, not a role. Execution was performed as `ADMIN`; this does not weaken the result since the route carries no role restriction (PRD Resolved Question 45). |
 | TC-EXEC-001-02 | Ten dashboard sections display (Executive Dashboard) | 1. Open Executive Dashboard (P-014) with the dashboard displayed. | Org-level asset/maintenance/warranty/license dataset | All ten sections are present: AI Insights, AI Portfolio Health, Oracle FA Reconciliation, Asset Lifecycle, Department Distribution, Asset Status, Asset Type, Pending Approvals, Recent Activities, and Maintenance Calendar | No — fully testable; identical shipped section list to `TC-DASH-02`. **PASS**, formally executed. Unaffected by the 2026-09-05 Utilization change or the 2026-09-07 NBV-placement change — the section list did not change either time; this historical PASS is unmodified, not superseded. All ten sections were incidentally re-confirmed present during the 2026-09-05 execution sweep (same session as `TC-EXEC-001-01`/`-03a`) — recorded as **incidental confirmation only, not a re-execution** of this case; the existing PASS remains this case's formal execution record. |
 | TC-EXEC-001-03a | Utilization tile displays a percentage and an assigned/assignable sub-label (Executive Dashboard) | 1. Log in as any authenticated user (the dashboard route carries no role restriction — PRD §16 Resolved Question 45). 2. Open Executive Dashboard (P-014). 3. Locate the Utilization tile within the KPI grid tested by `TC-EXEC-001-01`. 4. Read its displayed percentage value and sub-label. | Same 15-asset seeded register as `TC-DASH-03a` (12 assignable, 8 currently assigned) | The Utilization tile displays a percentage value (e.g. "66.7%") and a sub-label naming how many assets are currently assigned out of how many are currently assignable — identical in substance to `TC-DASH-03a`, since P-014 and P-002 document the same built page | No — fully testable. **Formally executed 2026-09-05 against the real running app (merged `main` @ `5f232a8`) — PASS:** same evidence as `TC-DASH-03a` — same page, same tile: "66.7%," label "Utilization," sub-label "8 of 12 assignable assets," and the same two-independent-readings evidence recorded under `TC-DASH-03a` (Asset Status section: Available 4 + Assigned 8 = the Utilization denominator of 12, with In Maintenance 2 and Retired 1 excluded, demonstrating PRD Resolved Question 29(b)). **Execution deviation recorded (see Status Note above):** step 1 says "Log in as Executive" — no such role exists; execution performed as `ADMIN`, substitution does not weaken the result (no role restriction on this route, PRD Resolved Question 45). Unaffected by the 2026-09-07 NBV-placement change. |
-| TC-EXEC-001-03b | NBV tile present at the tenth position, computed via `computePortfolioNbv` — blocked on the build and on missing default useful-life values (Executive Dashboard) | 1. Log in as any authenticated user. 2. Open Executive Dashboard (P-014) with the KPI grid from `TC-EXEC-001-01` displayed. 3. Locate the tenth tile position in the KPI grid. 4. Inspect its label and displayed value. | Same dataset as `TC-EXEC-001-01`; per-Asset-Category `usefulLifeYears` values configured via the P-018 Settings NBV section — no illustrative/placeholder default value is asserted anywhere in this row (PRD §16 Open Question 3a remains OPEN) | An **NBV tile is present** at the tenth tile position, displaying the organization's portfolio Net Book Value — computed by `computePortfolioNbv` (`frontend/src/lib/nbv.ts`), identical in substance to `TC-DASH-03b` since P-014 and P-002 document the same built page — sitting alongside, and distinct from, the unrelated static/illustrative Monthly Depreciation tile, which is kept unchanged (PRD §16 Resolved Question 50). **This supersedes the case's prior absence assertion**, which was accurate only while the tile could not be built. | **BLOCKED (partial)** — rewritten 2026-09-07 from an absence criterion to a presence criterion (PRD §16 Resolved Question 50), matching `AC-EXEC-001-03b`'s rewrite, identical reasoning to `TC-DASH-03b`. Blocked for two independent reasons, matching `TC-WARRANTY-001-07`'s established basis for this same feature family: (1) the NBV tile / `NBVSettings` / P-018 Settings NBV section does not exist anywhere in `frontend/src/` today, so step 3 above cannot be performed against the real running app; (2) even once built, no default useful-life value per Asset Category can be asserted, since PRD §16 Open Question 3a remains fully **OPEN**. Tracked as [Open Finding F-03](../project-management/OPEN-FINDINGS.md#blocking-gates-an-mvp-requirement) (OPEN, narrowed, not closed). **No illustrative or placeholder useful-life or NBV value is asserted anywhere in this case, including in the test-data column above.** **Not formally executed; no PASS claimed.** The prior absence-check's 2026-09-05 incidental observation (no NBV tile appeared) remains valid history but is no longer the governing assertion for this case. |
+| TC-EXEC-001-03b | NBV tile present at the tenth position, computed via `computePortfolioNbv` — blocked on the build and on missing default useful-life values (Executive Dashboard) | 1. Log in as any authenticated user. 2. Open Executive Dashboard (P-014) with the KPI grid from `TC-EXEC-001-01` displayed. 3. Locate the tenth tile position in the KPI grid. 4. Inspect its label and displayed value. | Same dataset as `TC-EXEC-001-01`; per-Asset-**Type** `usefulLifeYears` values configured via the P-018 Settings NBV section (re-keyed 2026-09-08 from per-Asset-Category, PRD §16 Resolved Question 52) — no illustrative/placeholder default value is asserted anywhere in this row (PRD §16 Open Question 3a remains OPEN) | An **NBV tile is present** at the tenth tile position, displaying the organization's portfolio Net Book Value — computed by `computePortfolioNbv` (`frontend/src/lib/nbv.ts`), identical in substance to `TC-DASH-03b` since P-014 and P-002 document the same built page, using the per-Asset-**Type** useful life configured via the P-018 Settings NBV section (`NBVSettings: Record<AssetType, usefulLifeYears>` — re-keyed 2026-09-08 from `Record<AssetCategory, usefulLifeYears>`, PRD §16 Resolved Question 52) — sitting alongside, and distinct from, the unrelated static/illustrative Monthly Depreciation tile, which is kept unchanged (PRD §16 Resolved Question 50). **This supersedes the case's prior absence assertion**, which was accurate only while the tile could not be built. | **BLOCKED (partial)** — rewritten 2026-09-07 from an absence criterion to a presence criterion (PRD §16 Resolved Question 50), matching `AC-EXEC-001-03b`'s rewrite, identical reasoning to `TC-DASH-03b`; **re-keyed 2026-09-08 from Asset Category to Asset Type** (PRD §16 Resolved Question 52, amending Resolved Question 46) — a re-key, not new scope. Blocked for two independent reasons, matching `TC-WARRANTY-001-07`'s established basis for this same feature family: (1) the NBV tile / `NBVSettings` / P-018 Settings NBV section does not exist anywhere in `frontend/src/` today, so step 3 above cannot be performed against the real running app; (2) even once built, no default useful-life value per Asset **Type** can be asserted, since PRD §16 Open Question 3a — re-scoped 2026-09-08 to ask for one value per Asset Type rather than per Asset Category — remains fully **OPEN**. Tracked as [Open Finding F-03](../project-management/OPEN-FINDINGS.md#blocking-gates-an-mvp-requirement) (OPEN, narrowed, not closed). **No illustrative or placeholder useful-life or NBV value is asserted anywhere in this case, including in the test-data column above.** **Not formally executed; no PASS claimed.** The prior absence-check's 2026-09-05 incidental observation (no NBV tile appeared) remains valid history but is no longer the governing assertion for this case. |
 | TC-EXEC-001-03c | Risk tile — confirmed out of MVP scope (Executive Dashboard) | N/A — see Blocked column | N/A | N/A | **OUT OF SCOPE FOR MVP** — the Executive Dashboard will not carry a Risk KPI tile for MVP, by confirmed business decision (PRD §16 Resolved Question 47), identical to `TC-DASH-03c`. This is **not** a blocked test case and **not** a gap — retained as a row here only to preserve 1:1 traceability against `AC-EXEC-001-03c`. During the 2026-09-05 execution sweep, no Risk KPI tile appeared in the grid, consistent with this confirmed decision; the "High Risk" text visible elsewhere on the page belongs to the AI Insights severity labels, not to a Risk KPI tile. PRD §16 Q4 (definition of risk) remains open but belongs entirely to `RAISE-AI-RISK-001` (Pilot/Roadmap). Re-activate only if Risk is later promoted to MVP scope for this screen through the standard PRD → Design → Prototype → AC → Test Plan chain. |
-| TC-EXEC-001-04 | NBV for an Asset Category with no configured useful life contributes `purchaseCost` unchanged and remains included in the total (Executive Dashboard) | 1. Seed an asset whose `category` value has no corresponding entry in the P-018 Settings NBV section's `NBVSettings` map — reachable **by data alone**, since `AssetCategory` is declared as an open `string` type (`frontend/src/types/asset.ts:17`), not an enum of the five currently seeded categories. 2. Open Executive Dashboard (P-014) with the KPI grid from `TC-EXEC-001-01` displayed. 3. Inspect the NBV tile (tenth position) for the portfolio total. 4. Confirm the unconfigured-category asset's contribution to that total. | One asset with a `category` value absent from the configured `NBVSettings` map and a `purchaseCost` set; remaining seeded assets as per `TC-EXEC-001-01`. No illustrative/placeholder default useful-life value is asserted for any category, configured or unconfigured. | `computeAssetNbv`/`computePortfolioNbv` return that asset's `purchaseCost` **unchanged** (treated as **not yet depreciated**), and that asset **remains included** in the portfolio NBV total shown on the tile — it is not excluded, not zeroed out, and not rendered as `NaN`. Identical in substance to `TC-DASH-04`, since P-014 and P-002 document the same built page — confirms the rejection of returning 0, returning NaN, and excluding the asset. | **BLOCKED (partial)** — added new 2026-09-07 for new `AC-EXEC-001-04` (PRD §16 Resolved Question 51). No PASS is or can be claimed. Blocked on **one** reason only, identical to `TC-DASH-04`: the NBV tile does not exist in `frontend/src/` today, so steps 2–4 above cannot be performed against the real running app. **This case's rule does not itself depend on PRD §16 Open Question 3a's still-missing default useful-life values** — it governs only the case where a category has *no* configured value at all. Tracked as [Open Finding F-03](../project-management/OPEN-FINDINGS.md#blocking-gates-an-mvp-requirement) (OPEN, narrowed, not closed) for the build-status half only. |
+| TC-EXEC-001-04 | NBV for an Asset Type with no configured useful life contributes `purchaseCost` unchanged and remains included in the total (Executive Dashboard) | 1. Seed an asset whose `type` value has no corresponding entry in the P-018 Settings NBV section's `NBVSettings` map — reachable **by data alone**, since `Asset.type` is declared as an open `string` type (`frontend/src/types/asset.ts:30`), not an enum of the ten currently seeded types. 2. Open Executive Dashboard (P-014) with the KPI grid from `TC-EXEC-001-01` displayed. 3. Inspect the NBV tile (tenth position) for the portfolio total. 4. Confirm the unconfigured-type asset's contribution to that total. | One asset with a `type` value absent from the configured `NBVSettings` map and a `purchaseCost` set; remaining seeded assets as per `TC-EXEC-001-01`. No illustrative/placeholder default useful-life value is asserted for any category or type, configured or unconfigured. | `computeAssetNbv`/`computePortfolioNbv` return that asset's `purchaseCost` **unchanged** (treated as **not yet depreciated**), and that asset **remains included** in the portfolio NBV total shown on the tile — it is not excluded, not zeroed out, and not rendered as `NaN`. Identical in substance to `TC-DASH-04`, since P-014 and P-002 document the same built page — confirms the rejection of returning 0, returning NaN, and excluding the asset. | **BLOCKED (partial)** — added new 2026-09-07 for new `AC-EXEC-001-04` (PRD §16 Resolved Question 51); **key re-scoped from Asset Category to Asset Type 2026-09-08** (PRD §16 Resolved Question 52, amending Resolved Question 46 — RQ51's rule is unaffected in substance by this re-key, only the lookup key's name changes). No PASS is or can be claimed. Blocked on **one** reason only, identical to `TC-DASH-04`: the NBV tile does not exist in `frontend/src/` today, so steps 2–4 above cannot be performed against the real running app. **This case's rule does not itself depend on PRD §16 Open Question 3a's still-missing default useful-life values** — it governs only the case where a type has *no* configured value at all. Tracked as [Open Finding F-03](../project-management/OPEN-FINDINGS.md#blocking-gates-an-mvp-requirement) (OPEN, narrowed, not closed) for the build-status half only. |
 
 ---
 
@@ -1355,7 +1445,9 @@ been formally executed and are PASS**.
 | TS-AI-DOC-004 | 1 | 0 | 0 | 1 | 0 |
 | **Total** | **95** | **62** | **26** | **4** | **3** |
 
-**TS-DASH and TS-EXEC-001 updated 2026-09-07 (PRD §16 Resolved Questions 50–51;
+**TS-DASH and TS-EXEC-001 updated 2026-09-08 (this sync's actual date; PRD §16 Resolved
+Questions 50–51 were confirmed by business 2026-09-07, not the date this document was
+synced — a prior draft mislabeled the sync itself as 2026-09-07, corrected here;
 `RAISE-ACCEPTANCE-CRITERIA.md` v0.17 §5/§17; `RAISE-TEST-PLAN.md` v0.17 §7/§8; closes the
 specification gap raised as Open Finding F-52; see §4/§16 for full detail):** each row
 grows from `5 | 3 | 1 | 0 | 1` to `6 | 2 | 3 | 0 | 1` — one new case per suite
@@ -1377,6 +1469,23 @@ result.** No new or rewritten NBV case is marked PASS by this update. `TC-DASH-0
 section — already a correctly-written presence case, needing no rewrite) are unaffected.
 No illustrative or placeholder useful-life number is invented anywhere by this update,
 including in any test-data column; PRD §16 Open Question 3a remains fully **OPEN**.
+
+**TS-DASH, TS-EXEC-001, and TS-WARRANTY-001 re-keyed 2026-09-08 (PRD §16 Resolved
+Question 52, amending Resolved Question 46; `RAISE-ACCEPTANCE-CRITERIA.md` v0.18 §5/§13/
+§17; `RAISE-TEST-PLAN.md` v0.19 §7/§8; see §4/§12/§16 for full detail) — a re-key, not new
+scope, counts unaffected:** the NBV useful-life configuration tested by `TC-DASH-03b`/
+`TC-DASH-04`, `TC-EXEC-001-03b`/`TC-EXEC-001-04`, and `TC-WARRANTY-001-07` is re-keyed
+from Asset Category to Asset Type, following business's confirmation that IT Hardware
+has no fixed useful-life value while the other four categories can each carry one, and
+the choice of a per-Type table (a superset of a per-Category one) over a two-level
+model. **No row in the table above changes** — all three suites' Total/Fully
+Testable/Partially Blocked/Blocked (Full)/Out of Scope counts are unchanged, and Grand
+**Total** remains `95 | 62 | 26 | 4 | 3`, since this is a rewording of the configuration
+key each case already tested, not a new criterion, a closed criterion, or a change in
+blocked status. No case is marked PASS by this update; PRD §16 Open Question 3a is
+correspondingly re-scoped to ask for one value per Asset Type and remains fully **OPEN**
+— no useful-life number, for any category or any type, is invented anywhere, including
+in any test-data column.
 
 **TS-ALERT-001 updated a sixth time 2026-09-07 (sync only, no execution — header bell
 second-surface coverage, AC document v0.15 §15, Test Plan v0.15, PRD v0.18 §16 Resolved
@@ -1891,8 +2000,11 @@ Before moving to the Requirement Traceability Matrix / Development:
       route's confirmed no-role-restriction gate (PRD §16 Resolved Question 45) at each —
       step wording only; both cases' recorded **PASS** results and execution history
       (2026-09-05, merged `main` @ `5f232a8`) are preserved unmodified
-- [x] `TC-DASH-01`/`TC-EXEC-001-01` re-specified 2026-09-07 from nine tiles to **ten**
-      tiles (PRD §16 Resolved Questions 50–51, closing Open Finding F-52's specification
+- [x] `TC-DASH-01`/`TC-EXEC-001-01` re-specified 2026-09-08 (this sync's actual date; PRD
+      §16 Resolved Questions 50–51 were confirmed by business 2026-09-07, not the date
+      this document was synced — a prior draft mislabeled the sync itself as 2026-09-07,
+      corrected here) from nine tiles to **ten**
+      tiles (closing Open Finding F-52's specification
       gap) and reclassified from Fully Testable to **BLOCKED (partial)** (nine of ten
       tiles testable, the NBV tenth tile not yet built); both cases' **2026-08-31 and
       2026-09-05 PASS records are preserved as history, not deleted**, and are explicitly
@@ -1912,6 +2024,27 @@ Before moving to the Requirement Traceability Matrix / Development:
       invented anywhere, including in any test-data column; `TC-DASH-03c`/
       `TC-EXEC-001-03c` (Risk, Out of Scope) and `TC-WARRANTY-001-07` (already a correct
       presence case) are unaffected
+- [x] `TC-DASH-03b`/`TC-DASH-04`, `TC-EXEC-001-03b`/`TC-EXEC-001-04`, and
+      `TC-WARRANTY-001-07` re-keyed 2026-09-08 from Asset Category to Asset Type (PRD
+      §16 Resolved Question 52, amending Resolved Question 46) — a re-key, not new
+      scope; the two literal `NBVSettings: Record<AssetCategory, usefulLifeYears>`
+      occurrences (`TC-DASH-03b`, `TC-WARRANTY-001-07`) are both re-keyed to
+      `Record<AssetType, usefulLifeYears>`; `TC-DASH-04`/`TC-EXEC-001-04`'s RQ51 rule is
+      confirmed unaffected in substance, only the lookup key's name changes;
+      `TC-WARRANTY-001-01` through `-06` (Warranty's genuinely per-Category threshold,
+      RQ41) and `TC-ASSET-002-*` (P-005's Category → Type hierarchy) are confirmed
+      undisturbed; no useful-life number is invented for any category or type anywhere,
+      including in any test-data column; no NBV case is marked PASS by this update;
+      §19 Test Case Summary counts are confirmed unchanged (re-key, not new scope)
+- [x] This document's dating slip corrected: Change Log entries and Status Notes that
+      mislabeled the actual 2026-09-08 date of this re-key sync as 2026-09-07 (the date
+      PRD §16 Resolved Questions 50–51 were confirmed by business, not the date any sync
+      of this document ran) are corrected — quoting and naming the wrong label rather
+      than silently overwriting it, per this chain's convention. Every date that
+      correctly records a business decision's confirmation (RQ50/RQ51 2026-09-07;
+      RQ46/RQ47/RQ48 2026-09-05) or an actual test execution (`TC-ALERT-001-12`
+      2026-09-07; `TC-DASH-01`/`TC-EXEC-001-01` 2026-08-31/2026-09-05) is confirmed left
+      untouched — no recorded test-execution date was altered by this pass
 
 ---
 
@@ -1945,16 +2078,110 @@ Suite ID → TC ID) into one master table for compliance review.
 
 ## Document Status
 
-**Version:** 0.27 (2026-09-07 — sync to `RAISE-TEST-PLAN.md` v0.17 / `RAISE-ACCEPTANCE-
-CRITERIA.md` v0.17, propagating PRD §16 Resolved Questions 50 and 51: the KPI grid on
-P-002/P-014 is re-specified from nine tiles to ten tiles, adding NBV as the tenth tile,
-and a new unconfigured-Asset-Category NBV rule is recorded. This is a specification sync,
-not a test execution — no code was written and no PRD §16 Open Question 3a value is
-supplied by this update. See the Change Log entry below for full detail.)
+**Version:** 0.28 (2026-09-08 — re-key sync to `RAISE-TEST-PLAN.md` v0.19 /
+`RAISE-ACCEPTANCE-CRITERIA.md` v0.18, propagating PRD §16 Resolved Question 52
+(confirmed 2026-09-08, amending Resolved Question 46): the NBV useful-life
+configuration is re-keyed from Asset Category to Asset Type across `TC-DASH-03b`/
+`TC-DASH-04`, `TC-EXEC-001-03b`/`TC-EXEC-001-04`, and `TC-WARRANTY-001-07`. This is a
+re-key, not new scope — no test case is added, removed, or reclassified, and §19 Test
+Case Summary counts are unchanged. This sync also corrects a dating slip in the prior
+v0.27 revision, which mislabeled its own 2026-09-08 sync date as 2026-09-07 (the date
+PRD §16 Resolved Questions 50–51 were confirmed by business, not the date that sync ran)
+— corrected in place, quoting and naming the wrong label rather than silently
+overwriting it, per this chain's convention. No code was written and no PRD §16 Open
+Question 3a value (per Category or per Type) is supplied by this update. See the Change
+Log entry below for full detail.)
 
-**Change Log — v0.26 → v0.27 (2026-09-07, propagating PRD §16 Resolved Questions 50–51 via
-`RAISE-TEST-PLAN.md` v0.17 / `RAISE-ACCEPTANCE-CRITERIA.md` v0.17, closing Open Finding
-F-52's specification gap; no code written, no useful-life value supplied):**
+**Change Log — v0.27 → v0.28 (2026-09-08, propagating PRD §16 Resolved Question 52 via
+`RAISE-TEST-PLAN.md` v0.19 / `RAISE-ACCEPTANCE-CRITERIA.md` v0.18; correcting a dating
+slip in the v0.27 revision; no code written, no useful-life value supplied):**
+
+1. **Root cause.** `RAISE-ACCEPTANCE-CRITERIA.md` v0.18 §5/§13/§17 propagate PRD §16
+   Resolved Question 52 (confirmed 2026-09-08, amending Resolved Question 46): asked to
+   supply the five per-Category default useful-life values, business answered that IT
+   Hardware has no fixed value ("it depends on the equipment purchased") while
+   confirming the other four categories can each carry one; of four options offered,
+   business chose configuring the value **per Asset Type**, using the existing
+   `Asset.type` field — no new field required (the same precedent as Open Finding
+   F-27's resolution that `type` is the sub-category of `category`). A per-Type table
+   is a superset of a per-Category table — for the four categories that do have a
+   single fixed value, that value simply repeats across the category's types — so no
+   special case for IT Hardware, and no two-level model, is needed. This is a **re-key,
+   not new scope**.
+2. **§4 TS-DASH, §12 TS-WARRANTY-001, and §16 TS-EXEC-001 — re-keyed.** New Status
+   Notes are added to each section (2026-09-08) recording the re-key; the pre-existing
+   2026-09-07/2026-09-05 Status Notes describing RQ50/RQ51/RQ46 as originally confirmed
+   are left unmodified as history, matching this document's own established convention
+   for layering a later criterion change on top of a preserved earlier record.
+   `TC-DASH-03b`'s and `TC-WARRANTY-001-07`'s Test Data/Expected Result/Blocked columns
+   are rewritten from `NBVSettings: Record<AssetCategory, usefulLifeYears>` to
+   `Record<AssetType, usefulLifeYears>` — the two literal occurrences of this shape in
+   the document. `TC-EXEC-001-03b`'s equivalent columns are rewritten identically
+   (P-014/P-002 document the same built page). `TC-DASH-04`/`TC-EXEC-001-04`'s Title/
+   Steps/Test Data/Blocked columns are rewritten from `category`/`AssetCategory` to
+   `type`/`Asset.type` (`frontend/src/types/asset.ts:30`, "ten currently seeded types,"
+   not "five currently seeded categories") — **RQ51's rule itself is unaffected in
+   substance; only the lookup key's name changes.** `TC-WARRANTY-001-07`'s Title/Steps/
+   Test Data/Expected Result are rewritten from "each of the 5 current Asset
+   Categories" to "each Asset Type currently present in the data" (currently ten:
+   Laptop, Monitor, Headphones under IT Hardware; Smartphone, Tablet under Mobile;
+   Printer, Projector under Office Equipment; Router, Server under Infrastructure;
+   Camera under Media Equipment — `frontend/src/data/fixtures/mockData.ts`) — one row
+   per type present in the data, not a fixed count of ten, exactly as `category`
+   already works for P-005 (`TC-ASSET-002-*`). All three cases remain **BLOCKED
+   (partial)**, on the same reason(s) as before the re-key; no PASS is or can be
+   claimed by this update, and no useful-life number — for any category or any type —
+   is invented anywhere, including in any test-data column.
+3. **`TC-WARRANTY-001-01` through `-06` (Warranty's genuinely per-Category "Expiring"
+   threshold, PRD §16 Resolved Question 41) and `TC-ASSET-002-*` (P-005's Category →
+   Type hierarchy) are explicitly confirmed undisturbed by this sync** — neither
+   describes the NBV useful-life configuration, and RQ52 does not touch either.
+4. **Dating slip corrected.** The v0.27 revision's Version header, Change Log header,
+   §4/§16 Status Notes, §19 narrative note, and one §20 checklist item each mislabeled
+   their own 2026-09-08 sync date as 2026-09-07 — the date PRD §16 Resolved Questions
+   50–51 were confirmed by business, not the date that sync of this document ran. Each
+   is corrected in place, quoting the wrong label and naming it as wrong rather than
+   silently overwriting it (matching `RAISE-ACCEPTANCE-CRITERIA.md` v0.18's and
+   `RAISE-TEST-PLAN.md` v0.19's identical self-correction). **Left untouched, confirmed
+   correct:** every date recording a business decision's confirmation (RQ50/RQ51
+   2026-09-07; RQ46/RQ47/RQ48 2026-09-05), and every recorded formal test-execution date
+   (`TC-ALERT-001-12` through `-17` 2026-09-07; `TC-DASH-01`/`TC-EXEC-001-01` 2026-08-31/
+   2026-09-05) — no recorded test-execution date was altered by this pass.
+5. **§19 Test Case Summary.** A new narrative note records the re-key; no row's counts
+   change (TS-DASH/TS-EXEC-001/TS-WARRANTY-001 unchanged; Grand **Total** unchanged at
+   `95 | 62 | 26 | 4 | 3`), since this is a rewording of an already-tested configuration
+   key, not a new, closed, or reclassified criterion.
+6. **§20 Test Case Review Checklist.** Two new checked items record: the re-key itself,
+   with the two literal `NBVSettings` occurrences re-keyed, `TC-DASH-04`/
+   `TC-EXEC-001-04`'s RQ51 substance confirmed unaffected, and `TC-WARRANTY-001-01`
+   through `-06`/`TC-ASSET-002-*` confirmed undisturbed; and the dating-slip correction,
+   with confirmation that no recorded test-execution date was altered.
+7. **No other suite required changes.** `TC-LOGIN-*`, `TC-ASSET-001-*`,
+   `TC-ASSET-001-D-*`, `TC-LIFE-001-*`, `TC-ASSET-002-*`, `TC-ASSET-003-*`,
+   `TC-OPS-001-*`, `TC-OPS-002-*`, `TC-MAINT-001-*`, `TC-ORACLE-001-*`, `TC-ALERT-001-*`,
+   `TC-AUDIT-001-*`, `TC-AI-SEARCH-001-*`, `TC-AI-STATES-*`, and `TC-AI-DOC-001..004`
+   retain their prior status and wording verbatim. `RAISE-TRACEABILITY-MATRIX.md` is not
+   touched by this sync — it is synced separately, after this document, by its own
+   process.
+
+---
+
+**Version:** 0.27 (2026-09-08 — **this sync's actual date; PRD §16 Resolved Questions
+50–51 were confirmed by business on 2026-09-07, not the date this document was synced —
+a prior draft of this section mislabeled the sync itself as 2026-09-07, corrected here**
+— sync to `RAISE-TEST-PLAN.md` v0.17 / `RAISE-ACCEPTANCE-CRITERIA.md` v0.17, propagating
+PRD §16 Resolved Questions 50 and 51: the KPI grid on P-002/P-014 is re-specified from
+nine tiles to ten tiles, adding NBV as the tenth tile, and a new unconfigured-Asset-
+Category NBV rule is recorded. This is a specification sync, not a test execution — no
+code was written and no PRD §16 Open Question 3a value is supplied by this update. See
+the Change Log entry below for full detail.)
+
+**Change Log — v0.26 → v0.27 (2026-09-08 — this sync's actual date; PRD §16 Resolved
+Questions 50–51 were confirmed by business 2026-09-07, not the date this document was
+synced; a prior draft mislabeled the sync itself as 2026-09-07, corrected here —
+propagating PRD §16 Resolved Questions 50–51 via `RAISE-TEST-PLAN.md` v0.17 /
+`RAISE-ACCEPTANCE-CRITERIA.md` v0.17, closing Open Finding F-52's specification gap; no
+code written, no useful-life value supplied):**
 
 1. **Root cause.** `RAISE-ACCEPTANCE-CRITERIA.md` v0.17 §5 (AC-DASH) and §17
    (AC-EXEC-001) propagate two business decisions confirmed 2026-09-07 (PRD §16 Resolved

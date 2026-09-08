@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Send } from 'lucide-react';
 import { AppShell } from '@/components/AppShell';
 import { Button, Input, Select, Textarea, SectionCard, useToast } from '@/components/ui';
@@ -7,11 +7,14 @@ import { useAssets } from '@/hooks/useAssets';
 import { ticketService } from '@/services/ticket-service';
 import type { TicketCategory, TicketPriority } from '@/types/ticket';
 
-// Full-page "Create IT Requisition", replacing the Modal that pages/Maintenance/index.tsx used
-// to open in place. Layout deliberately mirrors pages/CreateAsset/index.tsx — AppShell +
-// SectionCards + a sticky action bar, single scrollable page, one validation pass on submit —
-// because that is the create-form pattern this app already ships and the request was for the
-// same treatment.
+// Full-page "Create IT Requisition". It replaces THREE separate Modals that each opened their
+// own copy of this form — in pages/Maintenance, pages/AssetDetail and pages/EmployeeDetail.
+// Only the Maintenance one was converted first; the other two were missed, found later, and
+// folded in here, which is why this page takes its context from query params rather than props.
+//
+// Layout deliberately mirrors pages/CreateAsset/index.tsx — AppShell + SectionCards + a sticky
+// action bar, single scrollable page, one validation pass on submit — because that is the
+// create-form pattern this app already ships and the request was for the same treatment.
 //
 // Nothing about the requisition's DOMAIN behaviour changes: it still submits through
 // ticketService.createTicket() with the same field set, and Stage 1 still lands the ticket in
@@ -44,17 +47,31 @@ export function CreateRequisitionPage() {
   const navigate = useNavigate();
   const { push } = useToast();
   const { assets } = useAssets({});
+  const [params] = useSearchParams();
+
+  // Context from whichever entry point sent the user here. Three call sites exist, and each
+  // used to open its own Modal with its own prefill — this page now serves all three, so their
+  // context arrives as query params rather than as props:
+  //   • Maintenance list      — no params; the asset preselect below applies
+  //   • Asset Detail          — assetId, title, location (its button prefilled all three)
+  //   • Employee Detail       — assetId, requesterId, priority (it files on the employee's behalf)
+  // `returnTo` sends Cancel and post-submit back where the user came from instead of always
+  // dumping them on the Maintenance list.
+  const requesterId = params.get('requesterId') || 'e1';
+  const returnTo = params.get('returnTo') || '/maintenance';
+
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({
-    assetId: '',
-    category: 'Hardware Fault & Repair' as TicketCategory,
-    priority: 'Medium' as TicketPriority,
-    title: '',
+    assetId: params.get('assetId') || '',
+    category: (params.get('category') as TicketCategory) || 'Hardware Fault & Repair',
+    priority: (params.get('priority') as TicketPriority) || 'Medium',
+    title: params.get('title') || '',
     description: '',
     // Carried over verbatim from the Modal this page replaces, so the prefilled value a
     // requester used to see is unchanged. It is a seeded placeholder, not a real lookup —
-    // there is no current-user location source yet.
-    location: 'HQ - Floor 4, Desk E-412',
+    // there is no current-user location source yet. Asset Detail overrides it with the
+    // asset's own location, exactly as its Modal did.
+    location: params.get('location') || 'HQ - Floor 4, Desk E-412',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -96,7 +113,7 @@ export function CreateRequisitionPage() {
     setSubmitError(null);
     try {
       const created = await ticketService.createTicket({
-        requesterId: 'e1',
+        requesterId,
         assetId: form.assetId,
         category: form.category,
         priority: form.priority,
@@ -109,7 +126,7 @@ export function CreateRequisitionPage() {
         title: 'IT Requisition Submitted',
         message: `${created.ticketCode} routed to Department Approver for sign-off.`,
       });
-      navigate('/maintenance');
+      navigate(returnTo);
     } catch {
       setSubmitError('Unable to submit the IT requisition. Please try again.');
     } finally {
@@ -196,7 +213,7 @@ export function CreateRequisitionPage() {
         {/* Sticky action bar: `main` in AppShell is the scroll container, so bottom-0 pins this
             to the bottom of the viewport while the form scrolls behind it — same as CreateAsset. */}
         <div className="sticky bottom-0 z-10 -mx-1 px-1 py-3 bg-surface-50/95 backdrop-blur border-t border-surface-200 flex items-center justify-between">
-          <Button variant="outline" onClick={() => navigate('/maintenance')} disabled={submitting}>
+          <Button variant="outline" onClick={() => navigate(returnTo)} disabled={submitting}>
             Cancel
           </Button>
           <Button onClick={submit} loading={submitting} leftIcon={<Send className="h-4 w-4" />}>

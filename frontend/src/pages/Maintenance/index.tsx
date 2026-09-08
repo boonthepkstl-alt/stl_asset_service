@@ -18,10 +18,10 @@ import {
   Printer as PrintIcon,
 } from 'lucide-react';
 import { AppShell } from '@/components/AppShell';
+import { ROUTES } from '@/config/constants';
 import { Card, Button, Badge, useToast, Modal, Input, Select, Textarea, Avatar, Alert } from '@/components/ui';
 import { DataTable, type Column } from '@/components/DataTable';
 import { getAssetIcon } from '@/data/asset-icons';
-import { useAssets } from '@/hooks/useAssets';
 import { useTickets } from '@/hooks/useTickets';
 import { ticketService } from '@/services/ticket-service';
 import type { Ticket, TicketCategory, TicketPriority, TicketStatus, ITTechnician, DelegatedApproverSetting } from '@/types/ticket';
@@ -72,18 +72,11 @@ export function MaintenancePage() {
   const [aiInterpretation, setAiInterpretation] = useState<{ filters: { label: string; value: string }[]; count: number } | null>(null);
 
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
-  const [isNewTicketModalOpen, setIsNewTicketModalOpen] = useState(false);
   const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
   const [isDispatchModalOpen, setIsDispatchModalOpen] = useState(false);
   const [isStatusUpdateModalOpen, setIsStatusUpdateModalOpen] = useState(false);
   const [isDelegationModalOpen, setIsDelegationModalOpen] = useState(false);
 
-  const [formCategory, setFormCategory] = useState<TicketCategory>('Hardware Fault & Repair');
-  const [formPriority, setFormPriority] = useState<TicketPriority>('Medium');
-  const [formAssetId, setFormAssetId] = useState('');
-  const [formTitle, setFormTitle] = useState('');
-  const [formDescription, setFormDescription] = useState('');
-  const [formLocation, setFormLocation] = useState('HQ - Floor 4, Desk E-412');
 
   const [approvalAction, setApprovalAction] = useState<'Approve' | 'Reject'>('Approve');
   const [approvalComments, setApprovalComments] = useState('');
@@ -106,8 +99,6 @@ export function MaintenancePage() {
     ticketService.listDelegationSettings().then(setDelegationSettings);
   }, []);
 
-  const { assets } = useAssets({});
-  const myAssignedAssets = useMemo(() => assets.filter((a) => a.assignedTo === 'Sarah Chen'), [assets]);
 
   const {
     tickets: filteredTickets,
@@ -191,27 +182,6 @@ export function MaintenancePage() {
     setAiQuery('');
     setAiInterpretation(null);
     resetAllFilters();
-  };
-
-  const handleCreateRequisition = async () => {
-    if (!formTitle.trim() || !formAssetId) {
-      push({ variant: 'warning', title: 'Missing Information', message: 'Please provide a title and select an asset.' });
-      return;
-    }
-    const created = await ticketService.createTicket({
-      requesterId: 'e1',
-      assetId: formAssetId,
-      category: formCategory,
-      priority: formPriority,
-      title: formTitle,
-      description: formDescription,
-      location: formLocation,
-    });
-    refetch();
-    setIsNewTicketModalOpen(false);
-    setFormTitle('');
-    setFormDescription('');
-    push({ variant: 'success', title: 'IT Requisition Submitted', message: `${created.ticketCode} routed to Department Approver for sign-off.` });
   };
 
   const handleApproveReject = async () => {
@@ -337,7 +307,7 @@ export function MaintenancePage() {
               <button onClick={() => setViewMode('board')} className={cn('px-2.5 py-1 rounded-md text-caption font-medium transition-all flex items-center gap-1.5', viewMode === 'board' ? 'bg-white text-surface-900 shadow-xs' : 'text-surface-500')}><Kanban className="h-4 w-4" /><span>Kanban</span></button>
             </div>
             <Button variant="outline" size="sm" leftIcon={<ShieldCheck className="h-4 w-4 text-amber-600" />} onClick={() => setIsDelegationModalOpen(true)}>Delegated Approvers</Button>
-            <Button size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={() => { setFormAssetId(myAssignedAssets[0]?.id || ''); setIsNewTicketModalOpen(true); }}>New IT Requisition</Button>
+            <Button size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={() => navigate(ROUTES.REQUISITION_CREATE)}>New IT Requisition</Button>
           </div>
         </div>
 
@@ -411,7 +381,7 @@ export function MaintenancePage() {
             toolbar={<Button variant="outline" size="sm" leftIcon={<Filter className="h-4 w-4" />} onClick={() => setShowFilters((s) => !s)}>Filters</Button>}
             emptyTitle="No IT requisition tickets found"
             emptyDescription="Try adjusting your search query, perspective, or filters."
-            emptyAction={<Button size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={() => { setFormAssetId(myAssignedAssets[0]?.id || ''); setIsNewTicketModalOpen(true); }}>New IT Requisition</Button>}
+            emptyAction={<Button size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={() => navigate(ROUTES.REQUISITION_CREATE)}>New IT Requisition</Button>}
           />
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-start">
@@ -450,22 +420,12 @@ export function MaintenancePage() {
           </div>
         )}
 
-        <Modal open={isNewTicketModalOpen} onClose={() => setIsNewTicketModalOpen(false)} title="Create IT Requisition" description="Submit a service ticket or equipment request." size="lg">
-          <div className="flex flex-col gap-4 py-2">
-            <Select label="Affected Asset *" value={formAssetId} onChange={(e) => setFormAssetId(e.target.value)} options={[{ value: '', label: '— Select asset —' }, ...assets.map((a) => ({ value: a.id, label: `${a.code} • ${a.name}` }))]} />
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <Select label="Category *" value={formCategory} onChange={(e) => setFormCategory(e.target.value as TicketCategory)} options={categoryOptions.map((c) => ({ value: c.value, label: `${c.icon} ${c.label}` }))} />
-              <Select label="Priority *" value={formPriority} onChange={(e) => setFormPriority(e.target.value as TicketPriority)} options={[{ value: 'Critical', label: 'Critical (2h SLA)' }, { value: 'High', label: 'High (8h SLA)' }, { value: 'Medium', label: 'Medium (24h SLA)' }, { value: 'Low', label: 'Low (48h SLA)' }]} />
-            </div>
-            <Input label="Subject / Problem Summary" value={formTitle} onChange={(e) => setFormTitle(e.target.value)} />
-            <Textarea label="Detailed Description" value={formDescription} onChange={(e) => setFormDescription(e.target.value)} rows={3} />
-            <Input label="Physical Location" value={formLocation} onChange={(e) => setFormLocation(e.target.value)} />
-            <div className="flex justify-end gap-2.5 pt-3 border-t border-surface-200">
-              <Button variant="outline" onClick={() => setIsNewTicketModalOpen(false)}>Cancel</Button>
-              <Button variant="primary" leftIcon={<Send className="h-4 w-4" />} onClick={handleCreateRequisition}>Submit IT Requisition</Button>
-            </div>
-          </div>
-        </Modal>
+        {/* The "Create IT Requisition" Modal that used to live here was replaced by the full
+            page at ROUTES.REQUISITION_CREATE (pages/CreateRequisition), so the create form
+            matches Asset Management's create flow. The two "New IT Requisition" buttons above
+            navigate there instead of opening a dialog. Submission still goes through
+            ticketService.createTicket() with the same field set — Stage 1 behaviour
+            (PENDING_DEPT_APPROVAL, AC-MAINT-001-03) is unchanged. */}
 
         <Modal open={isApproveModalOpen && !!selectedTicket} onClose={() => setIsApproveModalOpen(false)} title="Department Approval" description={selectedTicket ? `Reviewing ${selectedTicket.ticketCode} for ${selectedTicket.requester.name}` : ''} size="md">
           {selectedTicket && (

@@ -9,7 +9,38 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-09-08, at `7ac6737`. Suite **53 test files / 278 tests**;
+**As of:** 2026-09-08, at `39bb2b0`. Suite **53 test files / 278 tests**; CI green.
+PRD **v0.20**, Design **v0.18**, Prototype **v0.19**, AC **v0.18**, Test Plan **v0.19**,
+Test Cases **v0.28**, Matrix **v2.8**.
+
+**The chain and the PRD agree on the NBV key again (F-53 → R-39).** RQ52 keyed the
+useful life **per Asset Type**; a second full chain sync propagated it, and
+`TC-WARRANTY-001-07` — which read *"all 5 categories with editable useful-life
+inputs"* — now reads *"one row per Asset Type currently present in the data"*.
+
+**Why the earlier deferral was reversed, recorded because the reasoning matters more than
+the fix.** This sync had been deliberately deferred to bundle it with the numeric values so
+the six subagents would run **once** — on the premise the values were imminent. They
+had been asked for **three times across two days**, and the last answer changed the *model*
+rather than supplying numbers. **A deliberate deferral is still a stale statement while it
+lasts**, and leaving it would have made F-53 the **fifth** finding this session about a
+document asserting something that had stopped being true (after F-47, F-50, F-51, F-52) —
+**and the first created on purpose.** The test that settled it is cheap and reusable: *how
+many times has this input been requested, and what came back last time?*
+
+**Also corrected: a dating slip in five documents** — their prior syncs were dated
+2026-09-07, the date RQ50/RQ51 were *confirmed*, though those syncs ran 2026-09-08. Each
+subagent judged its own dates individually rather than blanket-replacing, which would have
+corrupted recorded execution evidence. **Design had no slip at all**; the Matrix was already
+correct. **One out-of-scope defect was fixed rather than filed:** the Test Plan's trailing
+footer still cited AC v0.14 and a nine-tile grid against its own header.
+
+**DoR-5 is back to PASS.** DoR-1/DoR-2 remain **FAIL** — still no numeric value for any
+type — and `RAISE-FR-EXEC-001` stays **`PASS (partial)`**. **Gap 21 stays open:**
+`TC-DASH-01`/`TC-EXEC-001-01` need re-execution against a real ten-tile grid, which cannot
+exist until the values do.
+
+Earlier the same day, at `7ac6737`. Suite **53 test files / 278 tests**;
 CI green. PRD **v0.20**.
 
 **The business answer that invalidated a confirmed requirement.** Asked for F-03's five

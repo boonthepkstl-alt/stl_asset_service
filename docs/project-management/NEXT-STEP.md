@@ -3,9 +3,9 @@
 **Live output of [`NEXT-STEP-PROTOCOL.md`](NEXT-STEP-PROTOCOL.md).**
 Overwritten in place each time the protocol is re-run.
 
-**Run date:** 2026-09-08, after `CHECKPOINT-2026-09-08-002`.
+**Run date:** 2026-09-08, after `CHECKPOINT-2026-09-08-003`.
 
-**Derived from** a direct read of `main` at `7ac6737`: PRD **v0.20**, Design **v0.17**,
+**Derived from** a direct read of `main` at `39bb2b0`: PRD **v0.20**, Design **v0.18**,
 Prototype **v0.18**, AC **v0.17**, Test Plan **v0.17**, Test Cases **v0.27**, Traceability
 Matrix **v2.7**, Compliance Review **v1.2**, `OPEN-FINDINGS.md`, and the source tree.
 
@@ -37,7 +37,7 @@ observation is what turned "nothing can proceed" into a full day of legitimate w
 | **Dashboard tile — specification** | **DoR-3** (the presentation decision) | ✅ **done today** |
 | **Settings NBV section — build** | the useful-life values | 🔴 still blocked |
 | **Dashboard tile — build** | the useful-life values | 🔴 still blocked |
-| **Second chain sync — re-key to Type** | nothing; bundled with the values by choice | 🔴 **owed (F-53)** |
+| **Second chain sync — re-key to Type** | nothing | ✅ **done** (F-53 → R-39) |
 
 The proof that a presence criterion can be written **without any default value** was already
 in the repository: `TC-WARRANTY-001-07` states in its own test-data column *"no
@@ -99,7 +99,7 @@ input is now in hand.** F-03's Definition of Ready is **one item from complete**
 | **DoR-2** | recorded in PRD §16 with authority | 🟡 RQ50/RQ51 recorded; awaits one more for the values |
 | **DoR-3** | tile presentation decision | ✅ **RQ50** |
 | **DoR-4** | unconfigured-category behaviour | ✅ **RQ51** |
-| **DoR-5** | chain consistent with the confirmed model | 🔴 **FAIL — regressed today.** The chain keys `NBVSettings` by **Category**; RQ52 says **Type** (**F-53**) |
+| **DoR-5** | chain consistent with the confirmed model | ✅ **PASS again** — re-keyed to Type across all six documents (**F-53** → **R-39**) |
 
 **Everything buildable is specified — verified in source this run:**
 
@@ -112,7 +112,7 @@ input is now in hand.** F-03's Definition of Ready is **one item from complete**
 | Tile precedent | ✅ `Dashboard/index.tsx:29,66,74` (Utilization ← `computeUtilization`) |
 | **Specification, all layers** | ✅ **complete as of today** |
 | The per-Type values | 🔴 **absent** |
-| Chain keyed to Type | 🔴 **owed** — second sync, bundled with the values (**F-53**) |
+| Chain keyed to Type | ✅ **done** — Design v0.18 through Matrix v2.8 |
 
 **Verified absent, not assumed.** A repository-wide search — `docs/`, `frontend/src`,
 `go-template-main`, English and Thai — returns only statements that the values are undefined.
@@ -164,11 +164,13 @@ relabelled, not re-pointed at real data.
 Question and **close Q3a**. **After execution:** Test Cases statuses, Matrix (closing Gap 21),
 Compliance Review.
 
-**A second specification pass IS owed** — re-keying the configuration from Category
-to Type across Design, Prototype, AC, Test Plan, Test Cases and Matrix (**F-53**). It is
-**deliberately bundled with the values** so the six subagents run once, not twice. The
-sharpest instance to fix: `TC-WARRANTY-001-07`'s *"all 5 categories with editable
-useful-life inputs"*.
+**No specification pass remains.** The second one — re-keying the configuration from
+Category to Type across Design, Prototype, AC, Test Plan, Test Cases and Matrix — was
+performed on 2026-09-08 (**F-53** → **R-39**), including its sharpest instance:
+`TC-WARRANTY-001-07` no longer reads *"all 5 categories with editable useful-life inputs"*.
+It had been deferred to bundle with the values; **that deferral was reversed on evidence**,
+since the values had been requested three times across two days and the last answer changed
+the model instead of supplying numbers.
 
 **Tracking:** `OPEN-FINDINGS.md`, `PROJECT-CHECKPOINTS.md`, `DEVELOPMENT-LOG.md`,
 `CURRENT-STATUS.md`.
@@ -185,7 +187,7 @@ useful-life inputs"*.
 |---|---|---|
 | **F-03** (values → Settings + tile + execution) | 🟡 **business input** | Everything else is built or specified |
 | **F-52** build/execution half | 🔴 dependency | Same values; specification half closed today |
-| **F-53** chain re-key to Type | 🔴 **owed by choice** | Created knowingly by RQ52 and deferred so the second sync runs once, with the values |
+| **F-53** chain re-key to Type | ✅ **RESOLVED** (R-39) | Closed the same day it was created, after the deferral was reversed on evidence |
 | **Gap 21** re-execution | 🔴 dependency | Cannot re-execute a ten-tile grid that does not exist |
 | **F-43(a)** decoder text | 🟡 business decision | 21 sites (17 RAISE-domain, 4 in the company template's `sampleController.go`) |
 | **PRD Q22a** | 🔴 dependency | No `User`↔`Employee` link exists |

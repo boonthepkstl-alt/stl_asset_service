@@ -4433,6 +4433,44 @@ Targeting the tab took two corrections, both recorded in the test so the next pe
 
 ---
 
+## CHECKPOINT-2026-09-08-003
+
+**Phase:** Phase 8 — Executive Dashboard & Reporting (specification only; no code)
+**Feature:** NBV KPI (`RAISE-FR-EXEC-001`)
+**Task:** Re-key the chain from Asset Category to Asset Type (**F-53 → R-39**), and correct a dating slip across five documents
+
+**Requirement traced:** `RAISE-FR-EXEC-001` (P0/MVP). **Unchanged at `PASS (partial)`.** A re-key, not new scope — no requirement added, no verdict moved, **no code written**.
+
+**Why I reversed my own decision, which is the part of this worth keeping.** At `CHECKPOINT-2026-09-08-002` I deferred this sync deliberately, to bundle it with the numeric values so the six subagents would run **once**. **The premise was that the values were imminent, and the evidence said otherwise:** they had been asked for **three times across two days**, and the last answer changed the **model** rather than supplying numbers. Meanwhile PRD v0.20 and the chain contradicted each other on the key. **That is the exact defect class this session has already raised four findings about** — F-47, F-50, F-51, F-52, every one a document still asserting something that had stopped being true — and deferring would have made F-53 the **fifth**, and the first created on purpose.
+
+**What was re-keyed.** Design v0.17→**v0.18**, Prototype v0.18→**v0.19**, AC v0.17→**v0.18**, Test Plan v0.17→**v0.19**, Test Cases v0.27→**v0.28**, Matrix v2.7→**v2.8** — sequential, through the `.claude/skills` subagents, never edited in the main thread. **The sharpest instance is fixed:** `TC-WARRANTY-001-07` read *"P-018 Settings NBV section shows **all 5 categories** with editable useful-life inputs"* and now reads *"one row per Asset Type currently present in the data"*.
+
+**Two things deliberately NOT recorded as rules at any layer.** (1) **A fixed count of ten types** — `type` is a free-text `varchar(100)` that grows as assets are added, exactly as `category` does, so the requirement is *one value per type present*. (2) **Any number** — none was supplied, so none was written. **RQ51 needed no edit at all**, and the reason is worth recording: a newly-added type with no configured value already hits its `computeAssetNbv` → `purchaseCost` fallback, so **the rule generalised from Category to Type without being touched.**
+
+**The dating slip, corrected on honest terms.** Five documents dated their prior sync **2026-09-07** — the date RQ50/RQ51 were *confirmed* — though those syncs actually ran **2026-09-08**. Each subagent **judged its own dates individually** rather than running a blanket replace, which would have corrupted recorded execution evidence — the worst outcome available here, given Test Cases alone carries ~48 mentions of that date. **Design turned out to have no slip at all** (all eight of its mentions are genuine decision dates) and the **Matrix was already correctly dated**. Where a label was wrong it is **quoted and named wrong**, not silently overwritten.
+
+**One out-of-scope defect fixed rather than filed.** The Test Plan carried a trailing footer still citing **AC v0.14** and a **nine-tile** grid, contradicting its own header's AC v0.18. Its subagent flagged it as pre-existing and out of scope — **honestly, and it was right to flag it** — and it was sent back to fix, because that is the same stale-statement class as F-53 itself. Hence Test Plan 0.17 → **0.19** rather than 0.18.
+
+**Verified after each stage rather than taken on the subagents' reports.** Each of the six diffs was filtered for **all ten type names and all five category names** near a year figure — **all six empty**. The old key survives **only** inside "re-keyed from…" notes and historical changelog entries, audited occurrence by occurrence (**nine** of them in the Test Plan alone, all nine classified). **Recorded execution evidence untouched:** `TC-DASH-01`'s row has identical counts before and after — 2026-08-31 ×1, 2026-09-05 ×2, **PASS ×4**. Warranty's genuinely per-Category threshold (RQ41) and `RAISE-FR-ASSET-002`'s Category→Type hierarchy left alone at every layer. **Gap 21 still open** with its superseded PASS records intact. No NBV case marked PASS.
+
+**Matrix v2.8 reached the F-53 verdict independently**, opening and closing **Gap 22** in the same revision to record it, and **stated the limit of that closure explicitly**: it does **not** cover the missing values or the unbuilt tile, which stay under **Gap 21** and **F-03**. That judgement is adopted in `OPEN-FINDINGS.md` rather than overridden.
+
+**Files changed:** six chain documents in the sync commit (`39bb2b0`, 1,699 insertions), then this close-out: `OPEN-FINDINGS.md` (**F-53 → R-39**), `PROJECT-CHECKPOINTS.md`, `DEVELOPMENT-LOG.md`, `CURRENT-STATUS.md`, `NEXT-STEP.md`. **Zero product code touched.**
+
+**Validation, run rather than assumed on `39bb2b0`:** frontend `tsc` **0**, ESLint clean, **53 test files / 278 tests pass**; backend `go build`/`vet`/`test` clean; **CI green**. Register integrity: **38 `F-` rows, all five cells**.
+
+**Status:** ✅ Complete for its confirmed scope — the chain and the PRD agree on the key again, and a self-inflicted stale specification was closed the same day it was created. **Explicitly NOT progress toward a build.**
+
+**Known Issues.** (1) **DoR-1 and DoR-2 remain FAIL** — still no numeric value, for any type. (2) **Gap 21 stays open**: `TC-DASH-01`/`TC-EXEC-001-01` need re-execution against a real ten-tile grid, which cannot exist until the values do. (3) `RAISE-FR-EXEC-001` stays **`PASS (partial)`**.
+
+**Remaining Work:** none that engineering can do unilaterally. **DoR-5 is back to PASS** — the chain is consistent with the confirmed model again.
+
+**Next Step:** **obtain one useful-life value per Asset Type** — as seeded: Laptop, Monitor, Headphones, Smartphone, Tablet, Printer, Projector, Router, Server, Camera. It is the **only** outstanding input.
+
+**What this checkpoint adds to the pattern.** The previous four findings were stale statements discovered in old documents. **F-53 was one this AI created knowingly and then argued itself out of keeping** — the deferral looked like efficiency and was really a bet on an input arriving, placed against evidence that it would not. **A deliberate deferral is still a stale statement while it lasts.** The test that settled it was cheap and worth reusing: *how many times has this input been requested, and what came back last time?*
+
+---
+
 ## Level 2 — Feature Checkpoints
 
 ### FEATURE-CHECKPOINT-project-tracking-governance

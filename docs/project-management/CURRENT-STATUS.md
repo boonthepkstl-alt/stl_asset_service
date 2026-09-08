@@ -9,7 +9,30 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-09-08, at `39bb2b0`. Suite **53 test files / 278 tests**; CI green.
+**As of:** 2026-09-08, after **PR #120** merged (`24bbd31`). Suite **54 test files /
+283 tests**; CI green.
+
+**The first user-visible change of the day, and the only one all day that was product
+work rather than documentation correcting documentation.** "Create IT Requisition" was a
+`Modal` inside the Maintenance page; it is now a **full page at `/maintenance/create`**
+([`pages/CreateRequisition`](../../frontend/src/pages/CreateRequisition/index.tsx)), laid
+out like `pages/CreateAsset`. Having its own address means it can be linked, bookmarked,
+opened in a tab and reached with Back — none of which a dialog allowed.
+
+**No specification change was needed, and that was established before writing code, not
+after.** `AC-MAINT-001-03` constrains the resulting *state*; `TC-MAINT-001-03`'s step 1
+says *"open the maintenance-request form for an asset"*, which is form-agnostic and still
+true; Prototype §15 P-009 lists the fields without specifying modal versus page. **No
+chain document was touched and `RAISE-FR-MAINT-001` keeps its full `PASS`.** Had any layer
+specified a dialog, this would have been an **F-52-shaped trap** — a built page
+contradicting the criteria meant to accept it.
+
+**Domain behaviour is deliberately identical**, down to the prefilled location the Modal
+used. The tests assert on the **created record rather than the toast**, and both guards
+were **mutation-tested**. Verified in the running app too: submitting created
+**ITR-2026-007** at Stage 1 "Dept Approval".
+
+Earlier the same day, at `39bb2b0`. Suite **53 test files / 278 tests**; CI green.
 PRD **v0.20**, Design **v0.18**, Prototype **v0.19**, AC **v0.18**, Test Plan **v0.19**,
 Test Cases **v0.28**, Matrix **v2.8**.
 

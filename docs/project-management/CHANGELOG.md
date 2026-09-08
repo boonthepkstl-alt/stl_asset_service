@@ -14,6 +14,29 @@ changes user-visible or API-visible behavior. Pure documentation-sync PRs
 
 ---
 
+## 2026-09-08
+
+### Changed
+- **Creating an IT requisition is now a full page instead of a pop-up dialog.**
+  "New IT Requisition" used to open a dialog on top of the ticket list; it now
+  opens its own page, laid out the same way "Create Asset" already is — the
+  form in sections, the whole thing scrollable, and Cancel/Submit pinned to the
+  bottom of the screen so they stay reachable however long the form gets. The
+  page has its own address (`/maintenance/create`), so it can be linked to,
+  bookmarked, opened in a new tab, and returned to with the browser Back button
+  — none of which a dialog allowed.
+- **Both required fields are now flagged where they are, instead of in one
+  message.** Submitting without an asset or a subject used to raise a single
+  "Missing Information" notification; the page now marks each missing field
+  individually, so you can see both at once. **Which fields are required has not
+  changed** — anything that could be submitted before can still be submitted.
+
+Everything else about the requisition is deliberately identical: the same fields
+in the same order, the asset still pre-selected to your first assigned asset, the
+same pre-filled location, and a submitted request still goes to Department
+Approval as Stage 1. Nothing about the approval workflow changed.
+
+---
 ## 2026-09-07
 
 ### Added

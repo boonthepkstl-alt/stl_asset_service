@@ -4471,6 +4471,44 @@ Targeting the tab took two corrections, both recorded in the test so the next pe
 
 ---
 
+## CHECKPOINT-2026-09-08-004
+
+**Phase:** Phase 5B — Maintenance / Ticket domain (frontend)
+**Feature:** IT Requisition creation (`RAISE-FR-MAINT-001`)
+**Task:** Convert "Create IT Requisition" from a `Modal` to a full page matching Asset Management's create flow (**PR #120**)
+
+**Requirement traced:** `RAISE-FR-MAINT-001` (P0/MVP), which holds a full **`PASS`**. **No verdict moved and no chain document was touched** — see the next paragraph for why none needed to be.
+
+**The check that decided the whole shape of this task, done before writing code rather than after.** The request was a presentation change, so the question was whether the chain constrained the presentation. It does not: **`AC-MAINT-001-03` constrains the resulting *state*** (*"the request enters state `PENDING_DEPT_APPROVAL`"*), **`TC-MAINT-001-03`'s step 1 reads *"open the maintenance-request form for an asset"*** — form-agnostic, and still true afterwards — and **Prototype v0.19 §15 P-009**'s Stage 1 concept lists the fields and a Submit control **without specifying modal versus page**. A search of Prototype, AC and Test Cases found **no mention of a modal** for this form. Had any layer specified a dialog, this would have been an F-52-shaped trap: a built page contradicting the criteria meant to accept it.
+
+**Where the route lives, and why.** `/maintenance/create`, under Maintenance rather than a top-level path, because `ESAPS-UI-FOUNDATION-BASELINE.md` records that **"IT Requisition is not its own slice"** — it is a sub-detail of the Maintenance slice. **The collision was handled up front:** `TICKET_DETAIL` is `/maintenance/:ticketCode`, so `REQUISITION_CREATE` is declared before it and matched ahead of it, since React Router ranks a static segment above a dynamic one. **This is the same pairing `ASSET_CREATE`/`ASSET_DETAIL` already relies on in this app**, so it rests on a working precedent here, not on an assumption about the router.
+
+**Domain behaviour deliberately unchanged:** the same `ticketService.createTicket()` call, the same field set, the same hardcoded `requesterId: 'e1'` (there is still no `User`→`Employee` link — PRD §16 Q22a), the same preselection to the requester's first assigned asset, and **the same prefilled Physical Location `"HQ - Floor 4, Desk E-412"`** the Modal used — carried over verbatim rather than tidied up, so no requester meets a silently different form.
+
+**One deliberate improvement, scoped so it cannot reject anything that used to pass:** the Modal reported both required fields through a single toast; the page surfaces them as per-field errors, matching CreateAsset. **The required set is identical.**
+
+**Tests — and they were mutation-tested, which is why they are worth trusting.** Five new cases in `pages/CreateRequisition/index.test.tsx`, asserting on the **created record rather than on the toast**, because the toast is presentation while the Stage 1 transition is the acceptance criterion. One asserts `queryByRole('dialog')` is **absent**, so putting the form back behind a Modal fails the suite. **Two mutations, two different failures:** removing the title validation fails one test; clearing the Location default fails another. Neither test is vacuous.
+
+**Two test-authoring errors found and recorded rather than quietly fixed.** (1) `repository.list()` returns **`{ data, total }`**, not `{ tickets }`. (2) **The mock repositories add artificial latency on every hop** — `getEmployee`, `getAsset`, `create`, `list` — so a 300 ms wait read stale totals and **looked exactly like a missing write**. **Isolated by calling the service directly, which created fine**, locating the fault in the test's timing rather than in the page. Worth remembering: against these repositories, a same-tick read can pass for the wrong reason as easily as it can fail.
+
+**Files changed:** `pages/CreateRequisition/index.tsx` (new), `pages/CreateRequisition/index.test.tsx` (new), `pages/Maintenance/index.tsx` (Modal, its state, its handler and a now-unused `useAssets()` removed, with a comment left where the Modal stood), `App.tsx`, `config/constants.ts`. Suite **53 files / 278 tests → 54 / 283**.
+
+**Validation on merged `main` `24bbd31`, run rather than assumed:** frontend `tsc` **0**, ESLint clean, **54 files / 283 tests pass**, `vite build` clean; backend `go build`/`vet`/`test` clean; **CI green on the merge commit**. **Verified in the running app, not only in tests:** the list's "New IT Requisition" button navigates to `/maintenance/create`; the page renders full-page with **no dialog**; the asset preselects to **AST-0001**; Location shows the carried-over default; submitting created **ITR-2026-007** at Workflow Stage **"1. Dept Approval"**, moved that KPI **1 → 2** and the ticket count **6 → 7**, and returned to `/maintenance` with the "IT Requisition Submitted" toast. **No console errors.**
+
+**Process note:** this went through the normal **branch → CI → PR → merge** path (**PR #120**), unlike the documentation commits earlier in the day. The standing "no PR until the Definition of Ready is complete" instruction is scoped to **F-03**; this is unrelated product work, and the project's own convention for code is one branch per change merged through a PR.
+
+**Status:** ✅ Complete for its confirmed scope. **`CHANGELOG.md` was updated for this one**, unlike every other entry today — its rule is to record user- or API-visible behaviour, and this is the first change today that a user would actually notice.
+
+**Known Issues:** none introduced. Pre-existing and untouched: Prototype §15 P-009 still marks **Priority as "conceptual — TBD"** while the form ships a real Priority select with SLA hours — that predates this task (the Modal had it too) and is **not** a defect this change created, so it was left alone rather than folded in.
+
+**Remaining Work:** none for this task.
+
+**Next Step:** unchanged — **F-03's per-Asset-Type useful-life values**, still the only input outstanding and still the only item that would move a Compliance Review verdict.
+
+**What this checkpoint adds to the pattern.** Every other task today was documentation correcting documentation. This one was ordinary product work, and the discipline that carried over was the useful part: **check what the chain actually constrains before building, not after.** Here the answer was "nothing relevant", which is why no spec pass was needed — but that is a *finding*, not an assumption, and the five-minute search that produced it is the same search that would have caught an F-52 before it existed.
+
+---
+
 ## Level 2 — Feature Checkpoints
 
 ### FEATURE-CHECKPOINT-project-tracking-governance

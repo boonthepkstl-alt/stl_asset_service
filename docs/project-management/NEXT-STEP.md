@@ -13,8 +13,13 @@ Matrix **v2.7**, Compliance Review **v1.2**, `OPEN-FINDINGS.md`, and the source 
 
 ## Current State
 
-- **Validation, run rather than assumed:** frontend `tsc` **0**, ESLint clean, **53 test
-  files / 278 tests pass**; backend `go build`/`vet`/`test` clean; CI green.
+- **Validation, run rather than assumed:** frontend `tsc` **0**, ESLint clean, **54 test
+  files / 283 tests pass**; backend `go build`/`vet`/`test` clean; CI green.
+- **PR #120 merged after this run** (`24bbd31`) — "Create IT Requisition" became a full
+  page at `/maintenance/create`, which is where the +1 file / +5 tests came from. It
+  needed **no chain change** (`AC-MAINT-001-03` constrains state, not presentation) and
+  moved **no verdict**, so it changes nothing in this run's recommendation — noted here
+  only so the figures above reconcile with `main`.
 - **The chain moved a full step today.** PRD §16 **Resolved Questions 50 and 51** were
   recorded and propagated through all six downstream layers, sequentially, through the
   `.claude/skills` subagents.

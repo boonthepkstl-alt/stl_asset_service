@@ -2,9 +2,9 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Test Cases
-**Version:** 0.28 Draft
+**Version:** 0.29 Draft
 **Status:** Draft for Test Case Review
-**Source:** [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.19 §7 (Test Suites, including the 2026-09-07 TS-DASH/TS-EXEC-001 ten-tile NBV re-specification, PRD §16 Resolved Questions 50–51, and the 2026-09-08 PRD §16 Resolved Question 52 re-key of the NBV useful-life configuration from Asset Category to Asset Type) + §8 (Blocked Items) + §8.1 (Fully-Blocked Suites — AI Document Intelligence Capabilities) + §3.3 (PRD §10 NFR Backlog — No Suite), expanding [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.18
+**Source:** [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.20 §7 (Test Suites, including the 2026-09-07 TS-DASH/TS-EXEC-001 ten-tile NBV re-specification, PRD §16 Resolved Questions 50–51, the 2026-09-08 PRD §16 Resolved Question 52 re-key of the NBV useful-life configuration from Asset Category to Asset Type, and the 2026-09-08 PRD §16 Resolved Question 53 confirmation of TS-MAINT-001's per-priority SLA target hours) + §8 (Blocked Items) + §8.1 (Fully-Blocked Suites — AI Document Intelligence Capabilities) + §3.3 (PRD §10 NFR Backlog — No Suite), expanding [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.19
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
 
@@ -563,6 +563,28 @@ action is performed. `AC-MAINT-001-03` (any user submitting a request) and
 `AC-MAINT-001-09` (stage-progress indicator, not gated by any specific role in the AC/
 Design text) carry no RBAC dependency and are fully testable.
 
+**Updated 2026-09-08 (Test Plan v0.20 §7/§8; AC v0.19 §12, PRD §16 Resolved Question 53,
+resolving Open Finding F-54):** business confirmed the already-shipped **per-priority SLA
+target hours** — Critical 2h, High 8h, Medium 24h, Low 48h
+(`frontend/src/services/ticket-service.ts:14`, `go-template-main/service/ticketService.go:19-26`)
+— **as they stand**; no code change follows. This resolves a **single overall SLA target
+per ticket, keyed by its priority**, and is now testable — new case `TC-MAINT-001-10`
+below is added 1:1 against new `AC-MAINT-001-10`. Unlike every other case in this suite,
+`TC-MAINT-001-10` is **not** BLOCKED: it carries no RBAC dependency (any user selecting a
+priority on the Stage 1 form) and no open PRD Question stands in its way. **It has not been
+executed, however** — this sync records it as executable-but-not-yet-executed, not as
+PASS. `RAISE-FR-MAINT-001`'s existing full **PASS** verdict in
+`RAISE-TRACEABILITY-MATRIX.md` **predates this case's existence**: that verdict was granted
+while SLA was excluded from scope as NOT TESTABLE YET, so no executed test has ever
+asserted an SLA value before now; adding this case does not itself change the verdict and
+does not add coverage until it is actually run. **"SLA per stage"** (how long each of the
+four workflow stages — User Requisition, Dept Approval (Delegated), IT Dispatch,
+Technician Execution — may take) is a separate, still fully **TBD** question with no
+per-stage budget supplied or implemented, and remains **NOT TESTABLE YET**, unaffected by
+this confirmation; no test case is written for it. The vendor model, the cost model, and
+the delegated-approver configuration rules (already blocking `TC-MAINT-001-04` above)
+remain exactly as blocked as before.
+
 | TC ID | Title | Steps | Test Data | Expected Result | Blocked |
 |---|---|---|---|---|---|
 | TC-MAINT-001-01 | Maintenance record displays | 1. Open Maintenance screen for an asset with a record. | 1 asset, 1 maintenance record (date/event/status/cost) | Record fields are displayed | **BLOCKED (partial)** — display testable; full field model TBD (PRD §16 Q14) |
@@ -574,6 +596,7 @@ Design text) carry no RBAC dependency and are fully testable.
 | TC-MAINT-001-07 | Stage 4 — Technician updates execution status | 1. Open a request in state `PLANNING`, `IN_PROGRESS`, or `ON_HOLD`. 2. As the assigned technician, change the status control to a different one of the three values. | 1 request in any of `PLANNING`/`IN_PROGRESS`/`ON_HOLD` | Request's displayed status reflects the newly selected value | **BLOCKED (partial)** — the status-update behavior itself is testable; depends on `RAISE-NFR-SEC-RBAC-001` — MVP enforcement level confirmed UI-only/client-side, but role list/permission matrix (Q22) remain TBD, so this case cannot verify that the acting user is a correctly-gated Technician, only that the status control updates the displayed value. |
 | TC-MAINT-001-08 | Stage 4 — Mark Complete transitions to Done | 1. Open a request in state `PLANNING`, `IN_PROGRESS`, or `ON_HOLD`. 2. As the assigned technician, select Mark Complete. | 1 request in any of `PLANNING`/`IN_PROGRESS`/`ON_HOLD` | Request transitions to state `DONE` | **BLOCKED (partial)** — the Mark Complete→`DONE` state transition itself is testable; depends on `RAISE-NFR-SEC-RBAC-001` — MVP enforcement level confirmed UI-only/client-side, but role list/permission matrix (Q22) remain TBD, so this case cannot verify that the acting user is a correctly-gated Technician. No behavior is defined for Mark Complete attempted from any other state, or for skipped/reversed stages — no test case exists for those, since none is shown in the Prototype. |
 | TC-MAINT-001-09 | Stage-progress indicator reflects current state | 1. Open the detail view for a maintenance request at each of: `PENDING_DEPT_APPROVAL`, `PENDING_IT_DISPATCH`, `PLANNING`/`IN_PROGRESS`/`ON_HOLD`, and `DONE`. | 4 requests, one per listed state (or state group) | The 4-stage progress indicator (User Requisition → Dept Approval → IT Dispatch → Technician Execution) shows Done/Current/Pending consistent with each request's current state | No |
+| TC-MAINT-001-10 | Per-priority SLA target hours — Priority selector options and `slaTargetHours` stamping | 1. As any user, open the maintenance-request form (Stage 1 — User Requisition) at `/maintenance/create` (reachable from the Maintenance list, Asset Detail, or Employee Detail). 2. Open the Priority selector and inspect its options. 3. Separately, for each of the four Priority values in turn, select that value and submit the request. 4. Inspect the created request's `slaTargetHours` value. | One maintenance request per Priority value (Critical, High, Medium, Low) — no other numeric value is used or asserted | The Priority selector offers exactly four options, labeled "Critical (2h SLA)," "High (8h SLA)," "Medium (24h SLA)," and "Low (48h SLA)"; the request created with each priority is stamped with the matching `slaTargetHours` — Critical=2, High=8, Medium=24, Low=48 — per `frontend/src/services/ticket-service.ts:14` and `go-template-main/service/ticketService.go:19-26`. This asserts a **single overall SLA target per ticket, keyed by its priority** only — it does not assert, and must not be read as asserting, a time budget for any individual one of the four workflow stages. | No — genuinely executable today (both the priority selector's labels and the `slaTargetHours` stamping are already shipped in both `frontend/` and `go-template-main`), but **not yet executed**; no PASS is claimed by this document. `RAISE-FR-MAINT-001`'s existing full **PASS** verdict in `RAISE-TRACEABILITY-MATRIX.md` predates this case's existence — that verdict was granted while SLA was excluded as NOT TESTABLE YET, so no executed test has ever asserted an SLA value; this case does not itself change that verdict. "SLA per stage" (the four workflow stages' own individual time budgets) remains a separate, still fully **NOT TESTABLE YET** question, with no test case written for it here. |
 
 ---
 
@@ -1431,7 +1454,7 @@ been formally executed and are PASS**.
 | TS-ASSET-003 | 3 | 1 | 2 | 0 | 0 |
 | TS-OPS-001 | 3 | 3 | 0 | 0 | 0 |
 | TS-OPS-002 | 9 | 9 | 0 | 0 | 0 |
-| TS-MAINT-001 | 9 | 3 | 6 | 0 | 0 |
+| TS-MAINT-001 | 10 | 4 | 6 | 0 | 0 |
 | TS-WARRANTY-001 | 7 | 6 | 1 | 0 | 0 |
 | TS-ORACLE-001 | 4 | 3 | 1 | 0 | 0 |
 | TS-ALERT-001 | 17 | 17 | 0 | 0 | 0 |
@@ -1443,7 +1466,31 @@ been formally executed and are PASS**.
 | TS-AI-DOC-002 | 1 | 0 | 0 | 1 | 0 |
 | TS-AI-DOC-003 | 1 | 0 | 0 | 1 | 0 |
 | TS-AI-DOC-004 | 1 | 0 | 0 | 1 | 0 |
-| **Total** | **95** | **62** | **26** | **4** | **3** |
+| **Total** | **96** | **63** | **26** | **4** | **3** |
+
+**TS-MAINT-001 updated 2026-09-08 (PRD §16 Resolved Question 53, resolving Open Finding
+F-54; `RAISE-ACCEPTANCE-CRITERIA.md` v0.19 §12; `RAISE-TEST-PLAN.md` v0.20 §7/§8):** row
+grows from `9 | 3 | 6 | 0 | 0` to `10 | 4 | 6 | 0 | 0` — one new case, `TC-MAINT-001-10`,
+added 1:1 against new `AC-MAINT-001-10` (per-priority SLA target hours: Critical 2h, High
+8h, Medium 24h, Low 48h). Unlike almost every other recent addition to this document, the
+new case enters directly as **Fully Testable, not BLOCKED** — the behavior is already
+shipped in both `frontend/` and `go-template-main`, and no open PRD Question stands in its
+way. **It has not been executed, however**; no PASS is claimed. `RAISE-FR-MAINT-001`'s
+existing full **PASS** verdict predates this case's existence — that verdict was granted
+while SLA was excluded as NOT TESTABLE YET, so no executed test has ever asserted an SLA
+value; adding this case does not itself change the verdict or add coverage until it is
+run. **"SLA per stage"** (the four workflow stages' own individual time budgets) remains a
+separate, still fully **NOT TESTABLE YET** question, unaffected by this confirmation — no
+test case is written for it. The vendor model, the cost model, and the
+delegated-approver configuration rules (already blocking `TC-MAINT-001-04`) remain exactly
+as blocked as before. No number beyond the four confirmed values (2, 8, 24, 48) is written
+anywhere, including in the test-data column. Grand **Total** grows from `95 | 62 | 26 | 4 |
+3` to `96 | 63 | 26 | 4 | 3` (one case added, entering as Fully Testable). No other suite's
+row is affected. `TC-DASH-01`/`TC-EXEC-001-01`'s preserved prior PASS text, superseded
+labels, **BLOCKED (partial)** reclassification, and re-execution requirement are
+unaffected and remain exactly as recorded; `TC-DASH-03b`/`TC-EXEC-001-03b`/`TC-DASH-04`/
+`TC-EXEC-001-04`/`TC-WARRANTY-001-07` remain **BLOCKED (partial)** on Q3a, unaffected;
+`TC-DASH-03c`/`TC-EXEC-001-03c` (Risk) remain Out of Scope, unaffected.
 
 **TS-DASH and TS-EXEC-001 updated 2026-09-08 (this sync's actual date; PRD §16 Resolved
 Questions 50–51 were confirmed by business 2026-09-07, not the date this document was
@@ -2045,6 +2092,24 @@ Before moving to the Requirement Traceability Matrix / Development:
       RQ46/RQ47/RQ48 2026-09-05) or an actual test execution (`TC-ALERT-001-12`
       2026-09-07; `TC-DASH-01`/`TC-EXEC-001-01` 2026-08-31/2026-09-05) is confirmed left
       untouched — no recorded test-execution date was altered by this pass
+- [x] New case `TC-MAINT-001-10` (§11) added 1:1 against new `AC-MAINT-001-10` (PRD §16
+      Resolved Question 53, resolving Open Finding F-54: per-priority SLA target hours
+      Critical=2h/High=8h/Medium=24h/Low=48h). Correctly recorded as **executable today,
+      not BLOCKED** (unlike almost every other recent addition to this document) — the
+      behavior is already shipped in both `frontend/src/services/ticket-service.ts:14` and
+      `go-template-main/service/ticketService.go:19-26` — but **left unexecuted; no PASS is
+      claimed**. `RAISE-FR-MAINT-001`'s existing full PASS verdict is confirmed to predate
+      this case's existence (granted while SLA was excluded as NOT TESTABLE YET) and is not
+      changed by adding this case. **"SLA per stage"** (the four workflow stages' own
+      individual time budgets) is confirmed to remain a separate, still fully NOT TESTABLE
+      YET question, with no test case written for it; the vendor model, cost model, and
+      delegated-approver configuration rules remain exactly as blocked as before. No number
+      beyond the four confirmed values (2, 8, 24, 48) is written anywhere, including in the
+      test-data column. `TC-DASH-01`/`TC-EXEC-001-01`'s preserved prior PASS text, superseded
+      labels, BLOCKED (partial) reclassification, and re-execution requirement are
+      confirmed intact and unaffected; `TC-DASH-03b`/`TC-EXEC-001-03b`/`TC-DASH-04`/
+      `TC-EXEC-001-04`/`TC-WARRANTY-001-07` remain BLOCKED (partial) on Q3a; `TC-DASH-03c`/
+      `TC-EXEC-001-03c` (Risk) correctly still assert absence per RQ47
 
 ---
 
@@ -2077,6 +2142,74 @@ Suite ID → TC ID) into one master table for compliance review.
 ---
 
 ## Document Status
+
+**Version:** 0.29 (2026-09-08 — sync to `RAISE-TEST-PLAN.md` v0.20 /
+`RAISE-ACCEPTANCE-CRITERIA.md` v0.19, propagating PRD §16 Resolved Question 53 (confirmed
+2026-09-08, resolving Open Finding F-54): the already-shipped **per-priority SLA target
+hours** for `RAISE-FR-MAINT-001` (Critical 2h, High 8h, Medium 24h, Low 48h —
+`frontend/src/services/ticket-service.ts:14`,
+`go-template-main/service/ticketService.go:19-26`) are confirmed as-is; no code change
+follows. One new case, `TC-MAINT-001-10`, is added 1:1 against new `AC-MAINT-001-10` —
+genuinely **executable today**, unlike most recent additions to this document, but **left
+unexecuted; no PASS is claimed**. `RAISE-FR-MAINT-001`'s existing full PASS verdict
+predates this case's existence and is unchanged by this sync. **"SLA per stage" remains a
+separate, still fully NOT TESTABLE YET question**, unaffected by this confirmation; the
+vendor model, the cost model, and the delegated-approver configuration rules remain
+exactly as blocked as before. No number beyond the four confirmed above is written
+anywhere, including in the test-data column. See the Change Log entry below for full
+detail.)
+
+**Change Log — v0.28 → v0.29 (2026-09-08, propagating PRD §16 Resolved Question 53 via
+`RAISE-TEST-PLAN.md` v0.20 / `RAISE-ACCEPTANCE-CRITERIA.md` v0.19, resolving Open Finding
+F-54; no code written, no number beyond the four confirmed SLA target hours):**
+
+1. **Root cause.** `RAISE-ACCEPTANCE-CRITERIA.md` v0.19 §12 propagates PRD §16 Resolved
+   Question 53 (confirmed by business 2026-09-08): the per-priority SLA target hours
+   already shipped in both `frontend/src/services/ticket-service.ts:14` and
+   `go-template-main/service/ticketService.go:19-26` (Critical 2h, High 8h, Medium 24h,
+   Low 48h) are confirmed as-is — an existing value confirmed, not a new one supplied.
+   This closes Open Finding F-54 (the values were inherited from the ESAPS reference app
+   and had never been business-confirmed).
+2. **New case `TC-MAINT-001-10` added to §11 TS-MAINT-001 coverage.** Tests the Priority
+   selector's four SLA-labeled options ("Critical (2h SLA)" … "Low (48h SLA)") and the
+   `slaTargetHours` stamping on request creation, following the test-data discipline
+   already established for `TC-WARRANTY-001-07`: the four confirmed numbers are stated
+   plainly, since business confirmed them, and no other numeric value is invented. **Unlike
+   almost every other recent addition to this document, this case is genuinely testable
+   today** — it is **not** BLOCKED and **not** NOT TESTABLE YET. **It has not been
+   executed, however**: this document records it as testable-but-not-yet-executed, not as
+   passing, and does not alter `RAISE-FR-MAINT-001`'s existing full **PASS** verdict in
+   `RAISE-TRACEABILITY-MATRIX.md` — that verdict predates this case's existence, having
+   been granted while SLA was excluded from scope as NOT TESTABLE YET; re-verifying the
+   verdict against this new case is the Traceability Matrix subagent's task, not this
+   document's.
+3. **§11 TS-MAINT-001 section note updated** with a new dated paragraph explaining the
+   confirmation and explicitly restating that "SLA per stage," the vendor model, the cost
+   model, and delegated-approver configuration rules are unaffected and remain NOT
+   TESTABLE YET; `TC-MAINT-001-04` through `-08`'s existing BLOCKED (partial) markings are
+   untouched.
+4. **§19 Test Case Summary** — TS-MAINT-001 row grows from `9 | 3 | 6 | 0 | 0` to
+   `10 | 4 | 6 | 0 | 0`; Grand **Total** grows from `95 | 62 | 26 | 4 | 3` to
+   `96 | 63 | 26 | 4 | 3` (one case added, entering as Fully Testable). A new narrative
+   note records the detail. No other suite's row is affected — the NBV work
+   (`TC-DASH-03b`, `TC-EXEC-001-03b`, `TC-DASH-04`, `TC-EXEC-001-04`, and
+   `TC-WARRANTY-001-07`, all still BLOCKED (partial) on Q3a) and `TC-DASH-01`/
+   `TC-EXEC-001-01`'s preserved prior PASS text, superseded labels, BLOCKED (partial)
+   reclassification, and re-execution requirement are all confirmed undisturbed;
+   `TC-DASH-03c`/`TC-EXEC-001-03c` (Risk) correctly still assert absence per RQ47.
+5. **§20 Test Case Review Checklist** gained a new checked item recording this addition in
+   full, including the explicit "executable but not executed, no PASS claimed" distinction
+   and the "SLA per stage remains separate and still blocked" confirmation.
+6. **No other suite required changes.** `TC-LOGIN-*`, `TC-ASSET-001-*`,
+   `TC-ASSET-001-D-*`, `TC-LIFE-001-*`, `TC-ASSET-002-*`, `TC-ASSET-003-*`,
+   `TC-OPS-001-*`, `TC-OPS-002-*`, `TC-DASH-*`, `TC-EXEC-001-*`, `TC-WARRANTY-001-*`,
+   `TC-ORACLE-001-*`, `TC-ALERT-001-*`, `TC-AUDIT-001-*`, `TC-AI-SEARCH-001-*`,
+   `TC-AI-STATES-*`, and `TC-AI-DOC-001..004` retain their prior status and wording
+   verbatim. `RAISE-TRACEABILITY-MATRIX.md` is not touched by this sync — it is synced
+   separately, after this document, by its own process. `OPEN-FINDINGS.md` is maintained
+   separately and is not touched by this sync.
+
+---
 
 **Version:** 0.28 (2026-09-08 — re-key sync to `RAISE-TEST-PLAN.md` v0.19 /
 `RAISE-ACCEPTANCE-CRITERIA.md` v0.18, propagating PRD §16 Resolved Question 52

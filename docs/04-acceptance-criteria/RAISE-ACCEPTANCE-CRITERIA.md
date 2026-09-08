@@ -2,9 +2,9 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Acceptance Criteria
-**Version:** 0.18 Draft
+**Version:** 0.19 Draft
 **Status:** Draft for Acceptance Review
-**Source:** [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.19 §27 (Prototype Traceability Matrix) + §5, §7–§23, §23A, §25A (per-screen specs / P-018 Settings / AI Scope Boundary / NFR Backlog Prototype Note) + §8/§20's corrected P-002/P-014 KPI grid (**now ten tiles**, Utilization built and live, NBV specified as a tenth tile — placement/formula confirmed, not yet built) and NBV/Risk/Utilization status narrative + §23A's NBV section (shape confirmed, not built; keyed by Asset **Type**, not Category, as of 2026-09-08; "NBV for an Asset Type with No Configured Useful Life" subsection) + §14's "IT Hardware Assignment Approval Workflow — Category-Scoped Exception" subsection + §18's P-012 Alerts (five confirmed MVP trigger conditions and fixed-per-condition severity; access gate confirmed 2026-09-04) + §6's "Header Bell (`AppShell`) — Second Surface of P-012 Alerts, AS BUILT" subsection and §18's "Ordering Rationale" subsection (both resolved 2026-09-05, PRD §16 Resolved Question 49, closing Gap 17), cross-checked against [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.20 (§16 Resolved Questions 50–52) and [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.18. **v0.17 propagated PRD §16 Resolved Questions 50 (NBV KPI tile confirmed as a tenth tile on both P-002/P-014, existing Monthly Depreciation tile kept unchanged) and 51 (NBV for an Asset Category with no configured useful life returns `purchaseCost` unchanged, asset still included in the portfolio total) via Prototype v0.18 — see Document Status Change Log below; that sync was actually performed on **2026-09-08**, not 2026-09-07 as v0.17's own Change Log heading previously stated (2026-09-07 is correctly the date business confirmed Resolved Questions 50–51, not the date this document was synced — see the v0.17 → v0.18 Change Log entry for the correction). **New in v0.18 (2026-09-08):** propagates PRD §16 Resolved Question 52, which **amends** Resolved Question 46 — the NBV useful-life configuration is **re-keyed from Asset Category to Asset Type** (a re-key, not new scope; `AC-WARRANTY-001-07`, `AC-DASH-03b`/`AC-DASH-04`, `AC-EXEC-001-03b`/`AC-EXEC-001-04` updated accordingly). PRD §16 Open Question 3a (re-scoped by Resolved Question 52 to ask for one default useful-life value **per Asset Type**) remains fully OPEN and is not answered by this revision.
+**Source:** [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.20 §27 (Prototype Traceability Matrix) + §5, §7–§23, §23A, §25A (per-screen specs / P-018 Settings / AI Scope Boundary / NFR Backlog Prototype Note) + §8/§20's corrected P-002/P-014 KPI grid (**now ten tiles**, Utilization built and live, NBV specified as a tenth tile — placement/formula confirmed, not yet built) and NBV/Risk/Utilization status narrative + §23A's NBV section (shape confirmed, not built; keyed by Asset **Type**, not Category, as of 2026-09-08; "NBV for an Asset Type with No Configured Useful Life" subsection) + §14's "IT Hardware Assignment Approval Workflow — Category-Scoped Exception" subsection + §18's P-012 Alerts (five confirmed MVP trigger conditions and fixed-per-condition severity; access gate confirmed 2026-09-04) + §6's "Header Bell (`AppShell`) — Second Surface of P-012 Alerts, AS BUILT" subsection and §18's "Ordering Rationale" subsection (both resolved 2026-09-05, PRD §16 Resolved Question 49, closing Gap 17), cross-checked against [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.21 (§16 Resolved Questions 50–53) and [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.19. **v0.17 propagated PRD §16 Resolved Questions 50 (NBV KPI tile confirmed as a tenth tile on both P-002/P-014, existing Monthly Depreciation tile kept unchanged) and 51 (NBV for an Asset Category with no configured useful life returns `purchaseCost` unchanged, asset still included in the portfolio total) via Prototype v0.18 — see Document Status Change Log below; that sync was actually performed on **2026-09-08**, not 2026-09-07 as v0.17's own Change Log heading previously stated (2026-09-07 is correctly the date business confirmed Resolved Questions 50–51, not the date this document was synced — see the v0.17 → v0.18 Change Log entry for the correction). **New in v0.18 (2026-09-08):** propagates PRD §16 Resolved Question 52, which **amends** Resolved Question 46 — the NBV useful-life configuration is **re-keyed from Asset Category to Asset Type** (a re-key, not new scope; `AC-WARRANTY-001-07`, `AC-DASH-03b`/`AC-DASH-04`, `AC-EXEC-001-03b`/`AC-EXEC-001-04` updated accordingly). PRD §16 Open Question 3a (re-scoped by Resolved Question 52 to ask for one default useful-life value **per Asset Type**) remains fully OPEN and is not answered by this revision. **New in v0.19 (2026-09-08):** propagates PRD §16 Resolved Question 53 (via `RAISE-PROTOTYPE.md` v0.20 §15/§20), which confirms the already-shipped **per-priority SLA target hours** for `RAISE-FR-MAINT-001` (Critical 2h, High 8h, Medium 24h, Low 48h — an existing value confirmed as-is, resolving Open Finding F-54, no code change follows). This adds one new, genuinely-executable-today criterion, **AC-MAINT-001-10** (§12) — recorded as testable but **not** executed/passing here — while leaving "SLA per stage" (how long each of the four workflow stages may take), the vendor model, the cost model, and delegated-approver configuration rules exactly as open/NOT TESTABLE YET as before; none of the four confirmed SLA numbers is a per-stage budget.
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
 
@@ -57,7 +57,7 @@ detail is "TBD" or "conceptual," the corresponding criterion is marked
 | [AC-ASSET-003](#9-ac-asset-003--p-006-custody-history) | P-006 | RAISE-FR-ASSET-003 | Partially testable |
 | [AC-OPS-001](#10-ac-ops-001--p-007-qr--barcode-scan) | P-007 | RAISE-FR-OPS-001 | Testable |
 | [AC-OPS-002](#11-ac-ops-002--p-008-check-in--check-out) | P-008 | RAISE-FR-OPS-002 | Testable (resolved 2026-09-01, PRD §16 Resolved Question 42 — general workflow shape and permission gate confirmed for non-IT-Hardware Check-out and all Check-in; **expanded 2026-09-02, PRD §16 Resolved Question 43** — IT Hardware-category Check-out's 4-stage approval workflow now also testable at the confirmed stage-transition level. Two Stage 2 sub-points — recipient-decline path and e-signature/acknowledgment-text capture — remain **NOT TESTABLE YET**, genuinely undecided per Prototype/Design's own open-question framing. General RBAC role/permission content for other domains remains NOT TESTABLE YET, PRD §16 Q22) |
-| [AC-MAINT-001](#12-ac-maint-001--p-009-maintenance) | P-009 | RAISE-FR-MAINT-001 | Partially testable (workflow shape testable; SLA/vendor/cost NOT TESTABLE YET) |
+| [AC-MAINT-001](#12-ac-maint-001--p-009-maintenance) | P-009 | RAISE-FR-MAINT-001 | Partially testable (workflow shape testable; **updated 2026-09-08, PRD §16 Resolved Question 53, resolving Open Finding F-54:** per-priority SLA target hours (Critical 2h/High 8h/Medium 24h/Low 48h) now testable — AC-MAINT-001-10, not yet executed; "SLA per stage" (per-workflow-stage time budget), vendor model, cost model, and delegated-approver rules remain NOT TESTABLE YET) |
 | [AC-WARRANTY-001](#13-ac-warranty-001--p-010-warranty--p-018-settings) | P-010, P-018 | RAISE-FR-WARRANTY-001 (Warranty section); `RAISE-FR-EXEC-001` (P-018's new NBV section, NOT TESTABLE YET) | Warranty section: Testable (field list resolved 2026-08-29; per-category configurable threshold resolved 2026-09-01). NBV section (added 2026-09-05, PRD §16 Resolved Question 46; **re-keyed 2026-09-08 from Asset Category to Asset Type, PRD §16 Resolved Question 52**): shape-only criterion, NOT TESTABLE YET pending PRD Open Question 3a (re-scoped to one value per Asset Type) |
 | [AC-ORACLE-001](#14-ac-oracle-001--p-011-oracle-fa--financial-view) | P-011 | RAISE-FR-ORACLE-001 | Partially testable |
 | [AC-ALERT-001](#15-ac-alert-001--p-012-alerts) | P-012 (+ header bell, `AppShell`, global chrome) | RAISE-FR-ALERT-001 | Testable for the five confirmed trigger conditions and fixed-per-condition severity (resolved 2026-09-04, PRD §16 Resolved Question 44; closes Open Finding F-05's trigger-rules cause), and now also testable for the access gate itself (resolved 2026-09-04, PRD §16 Resolved Question 45 — any authenticated user, all four roles; partially resolves Open Finding F-08 for this screen only) — only Warranty EXPIRED is actually implemented as of this date, the other four are not yet built (verification deferred to Test Case execution, not decided here); per-user filtering of alert rows is a separate, newly-raised, still-open question (PRD §16 Q22a) with no criterion written for it. **Updated 2026-09-05 (PRD §16 Resolved Question 49, closing Gap 17):** the `AppShell` header bell — a second display surface over this same requirement — is now **built and shipped**, and AC-ALERT-001-12..17 test it directly as passing/testable criteria, not NOT TESTABLE YET; the group's former "bell-icon scope contradiction" left-open note is resolved and removed. **Corrected 2026-09-07:** AC-ALERT-001-12 previously over-specified a numeral on the closed bell button; rewritten to state the actual built behavior (dot indicator when closed; numeral in `aria-label` and the opened panel's header badge, identical to this screen's own derived total) — an AI-introduced specification error in the criterion, not a product defect; AC-ALERT-001-01..11 and -13..17 unaffected |
@@ -707,6 +707,21 @@ vendor model, the cost model, and delegated-approver configuration rules remain
 **TBD** and are marked NOT TESTABLE YET separately below — deriving strictly from
 Prototype §15's own "Confirmed" vs. "Still TBD" split (its Open Question note).
 
+**Updated 2026-09-08 (Prototype v0.20 §15/§20; PRD §16 Resolved Question 53, resolving
+Open Finding F-54):** business confirmed the already-shipped **per-priority SLA target
+hours** for this requirement **as they stand** — Critical 2h, High 8h, Medium 24h, Low
+48h (`frontend/src/services/ticket-service.ts:14`,
+`go-template-main/service/ticketService.go:19-26`) — an existing value confirmed, not a
+new one supplied; no code change follows. This is a **single overall SLA target per
+ticket, keyed by its priority**, not a per-stage budget — see new AC-MAINT-001-10 below,
+which is genuinely executable against the running app today (already shipped in both
+tiers), unlike most NOT TESTABLE YET items in this group. **This does not resolve "SLA
+per stage"** (how long each of the four workflow stages above may take) — a genuinely
+different, still fully **TBD** question, with no per-stage budget supplied or
+implemented, and it must not be read as answered by the four per-priority numbers just
+confirmed. The vendor model, the cost model, and delegated-approver configuration rules
+are unaffected and remain **TBD** exactly as before.
+
 ### Maintenance Record List
 
 - **AC-MAINT-001-01** — Given maintenance records exist for an asset,
@@ -749,12 +764,42 @@ Prototype §15's own "Confirmed" vs. "Still TBD" split (its Open Question note).
   Execution) shows which stages are Done, Current, or Pending, consistent with the
   request's current state.
 
+### Per-Priority SLA Target Hours (confirmed 2026-09-08, PRD §16 Resolved Question 53, resolving Open Finding F-54)
+
+- **AC-MAINT-001-10 (Per-priority SLA target — newly testable; not yet executed)** —
+  Given a user is at Stage 1 (User Requisition) submitting a new maintenance request,
+  when they open the Priority selector, then it offers exactly four options labeled
+  with their confirmed per-priority SLA target hours — "Critical (2h SLA)," "High (8h
+  SLA)," "Medium (24h SLA)," "Low (48h SLA)" — and, when the request is submitted with a
+  selected priority, then the created request is stamped with the corresponding
+  `slaTargetHours` value (Critical=2, High=8, Medium=24, Low=48), matching
+  `frontend/src/services/ticket-service.ts:14` and
+  `go-template-main/service/ticketService.go:19-26`. This asserts a **single overall
+  SLA target per ticket, keyed by its priority** — it does **not** assert, and must not
+  be read as asserting, a time budget for any individual one of the four workflow
+  stages (User Requisition, Dept Approval (Delegated), IT Dispatch, Technician
+  Execution); "SLA per stage" is a separate, still fully **TBD** question (see below).
+  **This criterion is genuinely executable today** — both the priority selector's
+  labels and the `slaTargetHours` stamping are already shipped in both
+  `frontend/` and `go-template-main` — but no test-case execution is recorded against
+  it in this document; it must not be treated as passing until `RAISE-TEST-CASES.md`
+  actually runs it. **Traceability note:** `RAISE-TRACEABILITY-MATRIX.md`'s existing
+  `PASS` verdict for `RAISE-FR-MAINT-001` was granted while SLA was excluded from
+  scope as NOT TESTABLE YET; this document does not change that verdict, but records
+  here that a testable criterion now exists (AC-MAINT-001-10) that is not yet reflected
+  by an execution record — re-verifying the verdict against this new criterion is the
+  Traceability Matrix subagent's task, not this document's.
+
 **NOT TESTABLE YET:**
-- The maintenance field model beyond date/event/status/cost, SLA per stage, the vendor
+- The maintenance field model beyond date/event/status/cost, **"SLA per stage"** (how
+  long each of the four workflow stages may take — a genuinely different question from
+  the now-confirmed per-priority SLA target, see AC-MAINT-001-10 above), the vendor
   model (internal technician vs. external vendor dispatch), and the cost model/tracking
-  are not finalized in the PRD (PRD §16 Q14, partially resolved; Prototype §15 Open
-  Question) — the "Priority," "Vendor model," and "Cost incurred" fields shown in the
-  Prototype are placeholders only, and no criterion above asserts an SLA duration,
+  are not finalized in the PRD (PRD §16 Q14, partially resolved by Resolved Question 33
+  and further narrowed by Resolved Question 53; Prototype §15/§20 Open Question) — the
+  "Vendor model" and "Cost incurred" fields shown in the Prototype remain placeholders
+  only; the **Priority field is no longer a placeholder** as of Resolved Question 53
+  (see AC-MAINT-001-10), but no criterion above asserts a per-stage SLA duration,
   vendor type, or cost value.
 - **Delegated-approver configuration rules** — *who* may delegate, *to whom*, and how
   delegation is audited — are **TBD** (Prototype §15, Design §5.1); AC-MAINT-001-04 tests
@@ -1703,7 +1748,7 @@ them as final:
 | Q22a Per-user filtering of Alerts rows (newly raised, not decided by Resolved Question 45 — no `User`↔`Employee` link exists) | AC-ALERT-001's NOT TESTABLE YET note (§15) |
 | Q13 Holder data model | AC-ASSET-003-01..03 |
 | Custody-writing-events ambiguity (RAISE-FR-ASSET-003 vs. RAISE-FR-OPS-002 — PRD Pre-Finalization Quality Pass, "Duplicated / Overlapping Requirements," needs business confirmation) | AC-ASSET-003-03 (scope note only) |
-| Q14 Maintenance fields / SLA / vendor model / cost model (workflow shape and state model now confirmed — Resolved Question 33; only SLA, vendor model, cost model, and delegated-approver configuration remain open) | AC-MAINT-001-01, -02 (fields); AC-MAINT-001-05 (Reject/Request Info resulting state); delegated-approver rule note under AC-MAINT-001 |
+| Q14 Maintenance fields / SLA / vendor model / cost model (workflow shape and state model confirmed — Resolved Question 33; per-priority SLA target now confirmed — Resolved Question 53, resolving Open Finding F-54, AC-MAINT-001-10 newly testable/not yet executed; **"SLA per stage"** (per-workflow-stage time budget), vendor model, cost model, and delegated-approver configuration remain open) | AC-MAINT-001-01, -02 (fields); AC-MAINT-001-05 (Reject/Request Info resulting state); "SLA per stage" note under AC-MAINT-001; delegated-approver rule note under AC-MAINT-001 |
 | Q18–Q20 AI citation / confidence / conflict handling | AC-AI-SEARCH-001-02..03 |
 | Q21 Authentication mechanism | AC-LOGIN-01..02 |
 | Q24–Q25 Audit taxonomy / retention | AC-AUDIT-001-01..02 |
@@ -1900,6 +1945,22 @@ AC-MAINT-001-03 through -09 (§12 above) are now testable for stage-transition b
 SLA per stage, the vendor model, the cost model, and delegated-approver configuration
 rules remain **NOT TESTABLE YET** — this is a partial, not full, resolution of Q14.
 
+**Resolved since last revision (2026-09-08, PRD §16 Resolved Question 53, resolving
+Open Finding F-54 — further narrows Q14, does not close it):** the already-shipped
+per-priority SLA target hours (Critical 2h, High 8h, Medium 24h, Low 48h) are confirmed
+by business **as they stand** — an existing value confirmed, not a new one supplied, no
+code change follows. New criterion AC-MAINT-001-10 (§12) tests this directly: a single
+overall SLA target per ticket, keyed by priority. **This does NOT resolve "SLA per
+stage"** — how long each of the four workflow stages may take — a genuinely different
+question with no per-stage budget supplied or implemented, which remains NOT TESTABLE
+YET exactly as before. The vendor model, cost model, and delegated-approver
+configuration rules are untouched by this decision and remain NOT TESTABLE YET.
+**This newly testable criterion has not been executed** — no test-case run is recorded
+against it in this document; `RAISE-TRACEABILITY-MATRIX.md`'s existing `PASS` verdict
+for `RAISE-FR-MAINT-001` was granted while SLA was excluded as NOT TESTABLE YET, so a
+criterion now exists that is not yet covered by that PASS record — that gap is noted
+here, not resolved here (re-verification is the Traceability Matrix subagent's task).
+
 **Note — RBAC MVP enforcement level confirmed, but role model still blocks several
 criteria (PRD §16 Resolved Question 38; Design §16 Security Architecture):** business
 confirmed that a UI-only/client-side permission check is acceptable for MVP, backend
@@ -1997,7 +2058,10 @@ Before moving to Test Plan:
       acceptance criteria written here
 - [x] `RAISE-FR-MAINT-001`'s confirmed 4-stage workflow (User Requisition → Dept
       Approval (Delegated) → IT Dispatch → Technician Execution) has stage-transition
-      criteria (§12 AC-MAINT-001-03..09); SLA/vendor/cost model remain NOT TESTABLE YET
+      criteria (§12 AC-MAINT-001-03..09); its confirmed per-priority SLA target hours
+      (Critical 2h/High 8h/Medium 24h/Low 48h, PRD §16 Resolved Question 53, resolving
+      Open Finding F-54) are newly testable (AC-MAINT-001-10, not yet executed);
+      **"SLA per stage,"** vendor model, and cost model remain NOT TESTABLE YET
 - [x] `RAISE-NFR-SEC-RBAC-001`'s confirmed MVP enforcement level (UI-only/client-side,
       backend deferred to Roadmap) is reflected in AC-LOGIN and AC-MAINT-001's
       RBAC-dependency notes without inventing a role list, permission matrix, or
@@ -2115,16 +2179,66 @@ as blocked pending business confirmation.
 
 ## Document Status
 
-**Version:** 0.18 (2026-09-08, PRD v0.20 §16 Resolved Question 52, via
-`RAISE-PROTOTYPE.md` v0.19 — NBV useful-life configuration re-keyed from Asset Category
-to Asset Type across AC-WARRANTY-001-07, AC-DASH-03b/-04, AC-EXEC-001-03b/-04, amending
-Resolved Question 46; a re-key, not new scope. Also corrects a dating slip carried in
-v0.17: the v0.16 → v0.17 sync was actually performed on 2026-09-08, not 2026-09-07 as
-that Change Log entry's heading states below — 2026-09-07 is correctly the date
-business confirmed PRD §16 Resolved Questions 50–51, not the date this document was
-synced; the entry below is left as originally written, per this document's convention
-of preserving historical Change Log entries, with this correction recorded here
-instead)
+**Version:** 0.19 (2026-09-08, PRD v0.21 §16 Resolved Question 53, via
+`RAISE-PROTOTYPE.md` v0.20 — confirms the already-shipped per-priority SLA target hours
+for `RAISE-FR-MAINT-001` as they stand, resolving Open Finding F-54; adds one newly
+testable, not-yet-executed criterion, AC-MAINT-001-10; "SLA per stage," vendor model,
+cost model, and delegated-approver configuration rules are untouched and remain NOT
+TESTABLE YET)
+
+**Change Log — v0.18 → v0.19 (2026-09-08, PRD v0.21 §16 Resolved Question 53 / Design
+v0.19 §5.1 "Per-Priority SLA Target Hours — Confirmed As-Built" / `RAISE-PROTOTYPE.md`
+v0.20 §15/§20, resolving Open Finding F-54, per confirmed business decision):**
+
+1. **Root confirmation.** Business chose, from three options put to it (confirm the
+   values as-is; supply different values; decide MVP makes no SLA promise), to
+   **confirm the already-shipped per-priority SLA target hours as they stand**:
+   Critical 2h, High 8h, Medium 24h, Low 48h
+   (`frontend/src/services/ticket-service.ts:14`,
+   `go-template-main/service/ticketService.go:19-26`). This confirms already-shipped
+   behavior rather than requesting a change — **no code change follows**. It resolves
+   only **one PRD Open Question**: a single overall SLA target per ticket, keyed by
+   priority. It does **not** resolve **"SLA per stage"** (how long each of the four
+   workflow stages may take) — a genuinely different, still fully open question, which
+   this revision is careful not to conflate with the confirmed per-priority answer,
+   repeating the same distinction this project already had to correct once for Q3/Q4
+   and Q3a (a per-priority/per-category answer silently closing a different, unanswered
+   per-stage/per-type question).
+2. **New criterion `AC-MAINT-001-10` (§12).** Tests the priority selector's four
+   SLA-labeled options and the `slaTargetHours` stamping on request creation. Marked
+   **genuinely testable today** (both tiers already ship this behavior) but **not
+   executed** — no PASS is recorded anywhere in this revision; that is
+   `RAISE-TEST-CASES.md`'s task after a real run.
+3. **§12 AC-MAINT-001 Background note** updated with a new dated paragraph explaining
+   the confirmation and explicitly restating that "SLA per stage," the vendor model,
+   the cost model, and delegated-approver configuration rules are unaffected and remain
+   NOT TESTABLE YET.
+4. **§12 NOT TESTABLE YET bullet** updated: "SLA per stage" is now named explicitly
+   (previously just "SLA per stage" folded into a general "SLA" mention); the Priority
+   field is recorded as no longer a placeholder (the Vendor model and Cost incurred
+   fields remain placeholders, unchanged).
+5. **AC Index (§3)** — the AC-MAINT-001 row is updated to record the new testable
+   criterion and to restate that "SLA per stage" remains open.
+6. **Not-Yet-Testable Summary (§20)** — the Q14 row is updated to add the confirmed
+   per-priority SLA target and to name "SLA per stage" as the still-open sub-question;
+   a new "Resolved since last revision (2026-09-08, PRD §16 Resolved Question 53...)"
+   note is added, explicitly stating the newly testable criterion has not been executed
+   and that `RAISE-FR-MAINT-001`'s existing Traceability Matrix `PASS` verdict was
+   granted while SLA was excluded as NOT TESTABLE YET — this revision does not change
+   that verdict, only notes the gap for the Traceability Matrix subagent to re-verify.
+7. **Acceptance Criteria Review Checklist (§21)** — the AC-MAINT-001 checklist item is
+   updated to record the newly testable per-priority SLA criterion alongside the
+   unchanged "SLA per stage"/vendor/cost NOT TESTABLE YET items.
+8. **Not disturbed by this revision:** the NBV work (`AC-DASH-01`/`AC-EXEC-001-01`
+   ten-tile criteria; `AC-DASH-03b`/`AC-EXEC-001-03b`/`AC-DASH-04`/`AC-EXEC-001-04` and
+   `AC-WARRANTY-001-07`, all still NOT TESTABLE YET on Q3a; the `TC-DASH-01`/
+   `TC-EXEC-001-01` re-execution note) — none of these is touched by this change.
+9. **This revision does not touch `RAISE-PRD.md`, `RAISE-DESIGN.md`, or
+   `OPEN-FINDINGS.md`** — only this document, propagating `RAISE-PROTOTYPE.md` v0.20's
+   already-confirmed answer. It does not touch `RAISE-TEST-PLAN.md`,
+   `RAISE-TEST-CASES.md`, or `RAISE-TRACEABILITY-MATRIX.md`, which are synced
+   separately by their own subagents. No `## NEEDS_PRD_CONFIRMATION` is raised — PRD
+   §16 Resolved Question 53 is already business-confirmed.
 
 **Change Log — v0.17 → v0.18 (2026-09-08, PRD v0.20 §16 Resolved Question 52 / Design
 v0.18 §13 / `RAISE-PROTOTYPE.md` v0.19 §23A, amending Resolved Question 46, per

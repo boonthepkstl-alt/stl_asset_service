@@ -4357,6 +4357,40 @@ Targeting the tab took two corrections, both recorded in the test so the next pe
 
 ---
 
+## CHECKPOINT-2026-09-08-001
+
+**Phase:** Phase 8 — Executive Dashboard & Reporting (specification only; no product code touched)
+**Feature:** NBV KPI (`RAISE-FR-EXEC-001`)
+**Task:** Propagate PRD §16 **Resolved Questions 50 and 51** through the full deliverable chain (**F-52 specification half → closed**; **Gap 21** opened)
+
+**Requirement traced:** `RAISE-FR-EXEC-001` (P0/MVP). **The requirement was NOT upgraded and no code was written.** It stays **`PASS (partial)`**. What changed is that the work is now correctly *specified* where before half of it was specified as **absent**.
+
+**Why this was possible without F-03's five numbers — the finding that unlocked the day.** The two halves of the remaining work need **different** inputs: the **Settings NBV section** needs the values; the **Dashboard tile specification** needed only **DoR-3**, the presentation decision. The proof that a presence criterion can be written without any default value was already in the repository — `TC-WARRANTY-001-07` states in its own test-data column *"no illustrative/placeholder default value is asserted"*. An earlier assessment had reported that no engineering work was available at all; that was wrong, and this is the correction.
+
+**RQ50 — the KPI grid becomes ten tiles.** NBV is specified as a **tenth tile** on both **P-002 Main Dashboard** and **P-014 Executive Dashboard**. The existing **"Monthly Depreciation"** tile is **kept unchanged** — not removed, not replaced, not relabelled, not re-pointed at real data — and business explicitly accepted that a real computed NBV figure will sit beside a fabricated illustrative one. `AC-DASH-03b`/`AC-EXEC-001-03b` and `TC-DASH-03b`/`TC-EXEC-001-03b` were rewritten from **absence** to **presence**.
+
+**RQ51 — unconfigured Asset Category.** An Asset whose `category` has no configured useful life contributes **`purchaseCost` unchanged** and stays **included** in the portfolio total. New `AC-DASH-04`, `AC-EXEC-001-04`, `TC-DASH-04`, `TC-EXEC-001-04`. This **confirms already-shipped, test-pinned behaviour (R-36) rather than requesting a change**, so **no code follows from it**. Reachable by data alone, because `AssetCategory` is an open `string` type (`types/asset.ts:17`), not an enum of five.
+
+**The part handled rather than hidden.** `TC-DASH-01` and `TC-EXEC-001-01` were recorded **PASS** against the now-superseded **nine**-tile assertion. Their PASS text is **preserved verbatim as history**, explicitly labelled superseded, and both cases are reclassified **BLOCKED (partial)** pending **re-execution** against a real ten-tile grid. Neither PASS is carried forward into any verdict; neither is deleted. **Matrix v2.7 opened Gap 21** for exactly that, so the matrix no longer carries zero open gaps — correctly, since **a specification being complete is not coverage**.
+
+**F-52 judged in two halves, not closed wholesale.** The matrix assessed it independently and found the **forward-specification half CLOSED** and the **build/execution half still OPEN**. That judgement is adopted in `OPEN-FINDINGS.md` rather than overridden. The day's plan had said this sync would "close F-52" — **it closed half of it**, and the record says so.
+
+**Files changed:** `RAISE-DESIGN.md` (v0.16→0.17), `RAISE-PROTOTYPE.md` (0.17→0.18), `RAISE-ACCEPTANCE-CRITERIA.md` (0.16→0.17), `RAISE-TEST-PLAN.md` (0.16→0.17), `RAISE-TEST-CASES.md` (0.26→0.27), `RAISE-TRACEABILITY-MATRIX.md` (2.6→2.7) — 1,562 insertions. Earlier the same sequence, `RAISE-PRD.md` (0.18→0.19) recorded RQ50/RQ51. **Zero product code touched.** All six syncs ran through the `.claude/skills` subagents, **sequentially**, never edited directly in the main thread.
+
+**Validation, run rather than assumed:** frontend `tsc` **0**, ESLint clean, **53 test files / 278 tests pass**; backend `go build`/`vet`/`test` clean. **Verified after each stage rather than taken on the subagents' reports:** each of the six diffs was filtered for a category name near a year figure to catch an invented useful-life value — **all six empty**; no NBV test case is marked PASS; the **Risk** criteria and cases still assert absence, correctly, per RQ47; `AC-WARRANTY-001-07`/`TC-WARRANTY-001-07` were left untouched; and no **active** `NEEDS_PRD_CONFIRMATION` was raised at any stage (the one section heading found in the Prototype is pre-existing and reads *"None outstanding"*, with 0 added by this sync).
+
+**Status:** ✅ Complete for its confirmed scope — the specification is correct end to end for the first time, and the superseded PASS records are handled honestly. **Explicitly NOT a step that builds anything.**
+
+**Known Issues.** (1) **A dating slip, recorded rather than papered over:** five of the six documents date this sync **2026-09-07**, the date of the *decisions*, but it was performed **2026-09-08** — only the Matrix used the correct date. Not blanket-corrected because that date string appears roughly **80 times** across those five files and **most instances legitimately refer to when the decisions were confirmed**; a mechanical replace would corrupt the correct ones. Worth a deliberate pass, not an automated one. (2) **Gap 21 is open** and cannot close until the tile is built and the two cases re-executed. (3) **F-03 remains business-input pending** on its five useful-life values; `RAISE-FR-EXEC-001` stays **`PASS (partial)`**.
+
+**Remaining Work:** the Settings NBV section and the Dashboard tile — both need F-03's five values. **Nothing further can be specified**; the specification is now complete.
+
+**Next Step:** **obtain the five per-Asset-Category useful-life values.** Every other input is now in hand: DoR-3 answered (RQ50), DoR-4 answered (RQ51), and the entire chain specified. **F-03's Definition of Ready is one item from complete.**
+
+**What this checkpoint adds to the pattern.** The previous four checkpoints each recorded a *document* that misdescribed state. This one records the opposite outcome from the same discipline: checking a claim — *"no engineering work is available"* — produced a full day of legitimate work, because the claim had bundled two halves needing different inputs into one blocked unit. **Splitting a blocked item by which input it actually needs is worth doing before concluding nothing can proceed.**
+
+---
+
 ## Level 2 — Feature Checkpoints
 
 ### FEATURE-CHECKPOINT-project-tracking-governance

@@ -9,7 +9,33 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-09-07, at `3356e2f` — PR #119 merged (`1594fab`), then four
+**As of:** 2026-09-08, at `4a442be`. Suite **53 test files / 278 tests**;
+Compliance Review **v1.2**; CI green. **The deliverable chain moved a full step:** PRD
+**v0.19**, Design **v0.17**, Prototype **v0.18**, AC **v0.17**, Test Plan **v0.17**, Test
+Cases **v0.27**, Matrix **v2.7**.
+
+**The KPI grid is now specified as TEN tiles, and F-52's specification half is closed.**
+PRD §16 **Resolved Question 50** placed NBV as a **tenth tile** on P-002 and P-014 and kept
+the static illustrative **"Monthly Depreciation"** tile unchanged; **Resolved Question 51**
+confirmed that an Asset whose category has no configured useful life contributes
+`purchaseCost` unchanged and stays in the portfolio total (this confirms shipped,
+test-pinned behaviour — **no code follows from it**). Every layer that previously
+specified the NBV tile's **absence** now specifies its **presence**.
+
+**Matrix v2.7 no longer carries zero open gaps — correctly.** `TC-DASH-01` and
+`TC-EXEC-001-01` were **PASS** against the superseded nine-tile assertion; their PASS text is
+kept verbatim as history, labelled superseded, and both are reclassified **BLOCKED**
+(partial) pending re-execution against a real ten-tile grid. **Gap 21** tracks it. A complete
+specification is **not** coverage, and the matrix says so rather than reading as finished.
+
+**What unlocked a full day of work that a previous assessment had said did not exist.** The
+remaining F-03 work splits into two halves needing **different** inputs: the **Settings NBV
+section** needs the five useful-life values; the **Dashboard tile specification** needed only
+**DoR-3**, the presentation decision. `TC-WARRANTY-001-07` had already proved a presence
+criterion can be written with no default value. **Splitting a blocked item by which input it
+actually needs is worth doing before concluding nothing can proceed.**
+
+Earlier, on 2026-09-07 at `3356e2f` — PR #119 merged (`1594fab`), then four
 documentation commits made **directly to `main`, with no branch and no PR**, because the
 session instruction for that round forbade creating either. Suite **53 test files / 278
 tests**; matrix **v2.6** with zero open gaps; Compliance Review **v1.2**. CI gates `gofmt`

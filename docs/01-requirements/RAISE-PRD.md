@@ -2,7 +2,37 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document Type:** Product Requirements Document
-**Version:** 0.20 Draft — Business decision confirmed 2026-09-08, business confirmation
+**Version:** 0.21 Draft — Business decision confirmed 2026-09-08, business confirmation
+via direct chat session, about `RAISE-FR-MAINT-001`'s already-shipped per-priority SLA
+target hours (new [§16 Resolved Question 53](#16-open-questions)): business confirmed
+the four values as they stand — **Critical 2h, High 8h, Medium 24h, Low 48h** — from
+three options put to them (confirm as-is; supply different values; decide MVP makes no
+SLA promise at all). Business chose **confirm as-is**. **This confirms already-shipped
+behaviour rather than requesting a change — no code change follows.** Implemented at
+`frontend/src/services/ticket-service.ts:14` (`SLA_HOURS` map) and
+`go-template-main/service/ticketService.go:19-26` (the same map, whose own comment says
+it mirrors the frontend map exactly); every created ticket is stamped with
+`slaTargetHours` from that map, and the priority selector labels each choice with its
+SLA (e.g. "Critical (2h SLA)"). **Origin recorded honestly:** these values were
+**inherited from the ESAPS reference app** (`src/data/requisitionData.ts:231,328` seed
+`slaTargetHours: 8` and `24`), which `CLAUDE.md` classes as REFERENCE ONLY — inheritance
+from it was never authority, which is why this had never been confirmed by business
+until now. **Raised as Open Finding F-54** (2026-09-08) in `OPEN-FINDINGS.md`
+(maintained separately, not edited by this change) because the product was shipping and
+displaying SLA commitments while the PRD listed SLA as TBD. **This decision resolves
+only the single overall per-priority SLA target per ticket — it does NOT resolve "SLA
+per stage".** [§8 `RAISE-FR-MAINT-001`'s Open Question row](#8-functional-requirements)
+and [§16 Q14](#16-open-questions) both still list SLA **per stage** (how long each of
+the four workflow stages — User Requisition → Dept Approval (Delegated) → IT Dispatch →
+Technician Execution — may take) as **TBD**; no per-stage budget is supplied or
+implemented by this decision. The vendor model, cost model, and delegated-approver
+configuration rules also remain exactly as open as before — business said nothing about
+them. `RAISE-FR-MAINT-001`'s Priority (P0), Scope (MVP), and Status are **unchanged**;
+its Compliance Review verdict (`PASS`, resting on the confirmed 4-stage transitions from
+[§16 Resolved Question 33](#16-open-questions), with SLA deliberately excluded as NOT
+TESTABLE YET so no executed test asserts an SLA value) is **untouched**. **No numeric
+value beyond the four confirmed above is written anywhere by this decision.** Prior
+(v0.20): Business decision confirmed 2026-09-08, business confirmation
 via direct chat session, about `RAISE-FR-EXEC-001`'s NBV useful-life configuration key
 (new [§16 Resolved Question 52](#16-open-questions)): the NBV useful life is configured
 **per Asset Type (the sub-category)**, not per Asset Category — this **amends, without
@@ -348,11 +378,11 @@ determinable from the source are marked **TBD** rather than invented.
 | User/Actor | IT Asset |
 | Priority | P0 |
 | Scope | MVP |
-| Acceptance Criteria | Maintenance information can be associated with an asset; maintenance history can be used as an input to asset analysis. **Workflow (resolved 2026-08-21** — business confirmation via `/update-prd` session, see [§16 Resolved Question 33](#16-open-questions)): a maintenance request follows a **4-stage workflow**: (1) **User Requisition** — a user raises a maintenance request against an asset; (2) **Dept Approval (Delegated)** — the request is approved by a department approver, who may be a delegated approver per a configurable delegated-approver setting; (3) **IT Dispatch** — an approved request is dispatched by IT to a technician/queue; (4) **Technician Execution** — the technician performs the maintenance work through to completion. State model (for design reference): `PENDING_DEPT_APPROVAL → PENDING_IT_DISPATCH → PLANNING/IN_PROGRESS/ON_HOLD → DONE`. |
+| Acceptance Criteria | Maintenance information can be associated with an asset; maintenance history can be used as an input to asset analysis. **Workflow (resolved 2026-08-21** — business confirmation via `/update-prd` session, see [§16 Resolved Question 33](#16-open-questions)): a maintenance request follows a **4-stage workflow**: (1) **User Requisition** — a user raises a maintenance request against an asset; (2) **Dept Approval (Delegated)** — the request is approved by a department approver, who may be a delegated approver per a configurable delegated-approver setting; (3) **IT Dispatch** — an approved request is dispatched by IT to a technician/queue; (4) **Technician Execution** — the technician performs the maintenance work through to completion. State model (for design reference): `PENDING_DEPT_APPROVAL → PENDING_IT_DISPATCH → PLANNING/IN_PROGRESS/ON_HOLD → DONE`. **Per-priority SLA target hours confirmed as shipped, 2026-09-08, see [§16 Resolved Question 53](#16-open-questions):** Critical 2h, High 8h, Medium 24h, Low 48h — a single overall target per ticket, keyed by its priority (`slaTargetHours`, `frontend/src/services/ticket-service.ts:14`, `go-template-main/service/ticketService.go:19-26`). **This is not an SLA per workflow stage — SLA per stage remains TBD, see Open Question below.** |
 | Dependencies | RAISE-FR-ASSET-001; RAISE-NFR-SEC-RBAC-001 (approval/dispatch/technician roles and the delegated-approver setting require the RBAC model) |
-| Source Reference | v0.1 draft §6.6; workflow shape confirmed via `/update-prd` session, 2026-08-21, per [§16 Resolved Question 33](#16-open-questions) — originally identified as an ESAPS-reference pattern in `docs/template-analysis/FRONTEND-FOUNDATION-BASELINE.md` §4 (`## NEEDS_PRD_CONFIRMATION` Item 1) |
+| Source Reference | v0.1 draft §6.6; workflow shape confirmed via `/update-prd` session, 2026-08-21, per [§16 Resolved Question 33](#16-open-questions) — originally identified as an ESAPS-reference pattern in `docs/template-analysis/FRONTEND-FOUNDATION-BASELINE.md` §4 (`## NEEDS_PRD_CONFIRMATION` Item 1); per-priority SLA target hours confirmed 2026-09-08, business confirmation via direct chat session, per [§16 Resolved Question 53](#16-open-questions) |
 | Traceability ID | RAISE-FR-MAINT-001 |
-| Open Question | **Workflow shape is now confirmed** (see Acceptance Criteria above). **Still TBD:** SLA per stage, vendor model (internal technician vs. external vendor dispatch), and cost model/tracking — see [§16 Q14 (partially resolved)](#16-open-questions). Delegated-approver configuration rules (who may delegate, to whom, audit of delegation) are also not yet defined. |
+| Open Question | **Workflow shape is now confirmed** (see Acceptance Criteria above). **Per-priority SLA target hours are now confirmed** (Critical 2h/High 8h/Medium 24h/Low 48h, see [§16 Resolved Question 53](#16-open-questions)) — **but SLA per stage is a different question and remains TBD**: how long each of the four workflow stages (User Requisition → Dept Approval (Delegated) → IT Dispatch → Technician Execution) may take is not supplied and not implemented. **Still TBD:** SLA per stage, vendor model (internal technician vs. external vendor dispatch), and cost model/tracking — see [§16 Q14 (partially resolved)](#16-open-questions). Delegated-approver configuration rules (who may delegate, to whom, audit of delegation) are also not yet defined. |
 
 ### RAISE-FR-WARRANTY-001 — Warranty
 
@@ -1008,8 +1038,14 @@ this PRD.
 14. What maintenance information is required? — **Partially resolved 2026-08-21, see
     [Resolved Question 33](#16-open-questions)**: the 4-stage workflow *shape* (User
     Requisition → Dept Approval (Delegated) → IT Dispatch → Technician Execution) is now
-    confirmed. SLA per stage, vendor model, cost model, and delegated-approver
-    configuration rules remain open.
+    confirmed. **Further partially resolved 2026-09-08, see [Resolved Question 53]
+    (#16-open-questions):** the already-shipped **per-priority SLA target hours**
+    (Critical 2h, High 8h, Medium 24h, Low 48h) — a single overall target per ticket,
+    keyed by priority — are confirmed as they stand. **This does NOT resolve SLA per
+    stage**, which is a different question and **remains open**: no budget has been
+    supplied or implemented for how long any of the four individual workflow stages may
+    take. **SLA per stage, vendor model, cost model, and delegated-approver
+    configuration rules remain open.**
 15. What warranty fields are required? — **Resolved 2026-08-29, see
     [Resolved Question 40](#16-open-questions)**: for MVP, `warrantyExpiry` is the only
     Warranty field. No additional fields (start date, provider/vendor, type, coverage
@@ -1914,6 +1950,77 @@ recorded here explicitly so it is not mistaken for a resolved item alongside 29�
     verdict.** This PRD update was scoped to `RAISE-PRD.md` only — no other document
     in the chain was edited by this change.
 
+53. **Are the already-shipped per-priority SLA target hours for `RAISE-FR-MAINT-001`
+    confirmed as they stand?** — Raised as **Open Finding F-54** (2026-09-08) in
+    `OPEN-FINDINGS.md` (maintained separately, not edited by this change): the product
+    was shipping SLA commitments in both tiers and displaying them to users, while the
+    PRD listed SLA as TBD, no §16 Resolved Question covered it, Prototype §15 P-009
+    listed "Priority (conceptual — TBD)", and Acceptance Criteria §12 marked SLA NOT
+    TESTABLE YET. Business confirmed, **2026-09-08, business confirmation, direct chat
+    session:**
+
+    **The four per-priority SLA target hours already shipped are confirmed as they
+    stand:**
+
+    | Priority | SLA target |
+    |---|---|
+    | Critical | **2 hours** |
+    | High | **8 hours** |
+    | Medium | **24 hours** |
+    | Low | **48 hours** |
+
+    Business chose this from three options put to them: (a) confirm the values as
+    they stand; (b) supply different values; (c) decide MVP makes no SLA promise at
+    all. Business chose **(a)**.
+
+    **This confirms already-shipped behaviour rather than requesting a change — no
+    code change follows.** Implemented at
+    `frontend/src/services/ticket-service.ts:14` (`const SLA_HOURS:
+    Record<CreateTicketInput['priority'], number> = { Critical: 2, High: 8, Medium:
+    24, Low: 48 };`) and `go-template-main/service/ticketService.go:19-26` (the same
+    map, whose own comment states it "mirrors frontend/src/services/ticket-service.ts's
+    SLA_HOURS map exactly"). Every created ticket is stamped with `slaTargetHours` from
+    that map, and the priority selector labels each choice with its SLA commitment at
+    the moment of filing ("Critical (2h SLA)", "High (8h SLA)", "Medium (24h SLA)",
+    "Low (48h SLA)").
+
+    **Origin recorded honestly:** these values were **inherited from the ESAPS
+    reference app** (`src/data/requisitionData.ts:231,328`, seeding `slaTargetHours: 8`
+    and `24`), not invented by RAISE. `CLAUDE.md` classes that app as REFERENCE ONLY,
+    so inheritance from it was never authority on its own — which is exactly why this
+    Resolved Question was needed before the values could be treated as a confirmed
+    business decision.
+
+    **What this does NOT resolve, stated explicitly because it is the distinction the
+    whole entry turns on: "SLA per stage" remains fully OPEN.** [§8
+    `RAISE-FR-MAINT-001`](#8-functional-requirements)'s Open Question row and
+    [§16 Q14](#16-open-questions)'s remainder both still list "SLA per stage" as TBD,
+    and that is a **different question** from what was just answered here:
+
+    - **What was confirmed (this Resolved Question):** a **single overall SLA target
+      per ticket, keyed by its priority** — one number per priority level, which is
+      what `slaTargetHours` holds.
+    - **What remains TBD:** how long **each of the four workflow stages** (User
+      Requisition → Dept Approval (Delegated) → IT Dispatch → Technician Execution)
+      may take. **No per-stage budget has been supplied, and none is implemented.**
+
+    The **vendor model**, the **cost model**, and the **delegated-approver
+    configuration rules** are also left exactly as open as before — business said
+    nothing about them; they are not touched by this decision.
+
+    **No number beyond the four confirmed above is written anywhere by this
+    decision.** `RAISE-FR-MAINT-001`'s Priority (P0), Scope (MVP), and Status are
+    **unchanged**; its Compliance Review verdict (`PASS`, resting on the confirmed
+    4-stage transitions from [Resolved Question 33](#16-open-questions)) is
+    **untouched** — the Acceptance Criteria deliberately excluded SLA as NOT TESTABLE
+    YET, so no executed test asserts an SLA value, and none is introduced by this
+    change.
+
+    Updated in §8 (`RAISE-FR-MAINT-001` — Acceptance Criteria, Source Reference, and
+    Open Question rows), §16 (this entry; Q14 remainder note updated). **This PRD
+    update was scoped to `RAISE-PRD.md` only** — no other document in the chain was
+    edited by this change.
+
 ---
 
 ## 17. Requirement Traceability Matrix
@@ -2241,9 +2348,40 @@ implements the requirement; Test Case passes; Requirement Compliance Review pass
 
 ## Document Status
 
-**Version:** 0.20 (Draft for Requirement Review)
+**Version:** 0.21 (Draft for Requirement Review)
 **Status:** Draft for Requirement Review
 **Primary Source:** RAISE — Enterprise Asset Intelligence Platform — Final(1).pdf, ADT-RAISE Hackathon Pitch Day, 26 July 2026
+
+**Change Log — v0.20 → v0.21 (2026-09-08, business confirmation via direct chat
+session, explicit Q&A):**
+
+1. **Already-shipped per-priority SLA target hours for `RAISE-FR-MAINT-001` confirmed
+   as they stand** (new [§16 Resolved Question 53](#16-open-questions)): Critical 2h,
+   High 8h, Medium 24h, Low 48h — chosen by business from three options put to them
+   (confirm as-is; supply different values; decide MVP makes no SLA promise at all).
+   **Confirms already-shipped behaviour rather than requesting a change — no code
+   change follows.** Implemented at `frontend/src/services/ticket-service.ts:14`
+   (`SLA_HOURS` map) and `go-template-main/service/ticketService.go:19-26` (the same
+   map). Origin recorded honestly: inherited from the ESAPS reference app
+   (`src/data/requisitionData.ts:231,328`, seed `slaTargetHours: 8`/`24`), which
+   `CLAUDE.md` classes as REFERENCE ONLY — inheritance was never authority, which is
+   why this had not been confirmed by business until now. Raised as Open Finding
+   **F-54** (2026-09-08) in `OPEN-FINDINGS.md` (maintained separately, not edited by
+   this change).
+2. **Does NOT resolve "SLA per stage"**, which remains a separate, still fully **OPEN**
+   question: [§8 `RAISE-FR-MAINT-001`'s Open Question row](#8-functional-requirements)
+   and [§16 Q14](#16-open-questions)'s remainder both continue to list SLA per stage,
+   vendor model, cost model, and delegated-approver configuration rules as TBD. **No
+   per-stage budget, and no number beyond the four confirmed above, is supplied,
+   invented, or implemented by this change.** `RAISE-FR-MAINT-001`'s Priority (P0),
+   Scope (MVP), and Status are **unchanged**; its Compliance Review verdict (`PASS`,
+   resting on the confirmed 4-stage transitions from [§16 Resolved Question 33]
+   (#16-open-questions)) is **untouched** — the Acceptance Criteria deliberately
+   excluded SLA as NOT TESTABLE YET, so no executed test asserts an SLA value.
+   Updated in §8 (`RAISE-FR-MAINT-001` — Acceptance Criteria, Source Reference, and
+   Open Question rows), §16 (new Resolved Question 53; Q14 remainder note updated).
+   **This PRD update was scoped to `RAISE-PRD.md` only** — no other document in the
+   chain was edited by this change.
 
 **Change Log — v0.19 → v0.20 (2026-09-08, business confirmation via direct chat
 session, explicit Q&A):**

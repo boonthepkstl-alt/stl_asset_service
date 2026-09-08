@@ -4617,6 +4617,44 @@ Targeting the tab took two corrections, both recorded in the test so the next pe
 
 ---
 
+## CHECKPOINT-2026-09-08-008
+
+**Phase:** Phase 5B — Maintenance / Ticket domain
+**Feature:** Per-priority SLA target hours (`RAISE-FR-MAINT-001`)
+**Task:** Record **PRD §16 Resolved Question 53** and propagate it through the full chain (**F-54 → R-40**)
+
+**Requirement traced:** `RAISE-FR-MAINT-001`, at full **`PASS`** and **unmoved**. **No code changed** — business confirmed values that were already shipped, so the outcome is that behaviour already in production now has authority behind it.
+
+**The decision.** Business chose **option (a)** of the three exits F-54 laid out — **confirm the values as they stand**: Critical **2h**, High **8h**, Medium **24h**, Low **48h**. The alternatives were to supply different values, or to decide MVP makes no SLA promise (which would have been the only option changing what users see).
+
+**The distinction the entire task turned on, checked before a word was written.** The PRD's *"SLA per stage"* TBD is a **different question** from what business answered. **Confirmed:** one overall target per ticket, keyed by its priority — which is what `slaTargetHours` holds. **Still open:** how long each of the four workflow stages may take (User Requisition → Dept Approval → IT Dispatch → Technician Execution) — no budget supplied, none implemented. **Had those been conflated, a per-priority answer would have silently closed a per-stage question nobody answered** — precisely the shape of the **Q3/Q4** and **Q3a** errors this project has already had to correct twice. *"SLA per stage"* survives as TBD in **all six** documents, as do the vendor model, cost model and delegated-approver rules that business said nothing about.
+
+**Prototype's trigger line is fixed.** §15 P-009's `Priority (conceptual — TBD)` was the direct cause of F-54 — it sat beside a shipped Priority select carrying real SLA labels and was waved through during **PR #122**. It now shows the four SLA-labelled options cross-linked to RQ53, with the old wording **quoted in the correction note rather than silently overwritten.**
+
+**A classification this project has not used before, and it is deliberate.** **`AC-MAINT-001-10`** and **`TC-MAINT-001-10`** are **testable today** — **not** BLOCKED, **not** NOT TESTABLE YET — because the behaviour is already shipped in both tiers. Every other addition to this chain in recent days was blocked on missing business input; this one is not. **Neither is marked PASS**, because neither has been executed.
+
+**Matrix v2.9 handled the consequence honestly rather than papering over it.** `RAISE-FR-MAINT-001`'s full `PASS` **predates both new items** — it was granted while SLA was excluded as NOT TESTABLE YET, so **no executed test has ever asserted an SLA value.** The matrix **kept** the PASS, on the stated grounds that it rests soundly on `TC-MAINT-001-01..09`'s executed 4-stage transitions, and **opened Gap 23** for the unexecuted case rather than folding it into the verdict as coverage — *a specification being correct is not coverage*, the same principle it already applies to Gap 21. It also opened and closed **Gap 24** in the same revision to record its independent verdict that **F-54 is resolved**, while naming what that closure does **not** cover.
+
+**Versions:** PRD 0.20→**0.21**, Design 0.18→**0.19**, Prototype 0.19→**0.20**, AC 0.18→**0.19**, Test Plan 0.19→**0.20**, Test Cases 0.28→**0.29**, Matrix 2.8→**2.9**. All seven through the `.claude/skills` subagents, sequentially, never edited in the main thread.
+
+**The sync was run immediately rather than deferred, and that was a decision.** Deferring is what created **F-53** this morning, and unlike **F-03** there was no pending input to bundle this with — the decision was complete when it arrived.
+
+**Verified after each stage rather than taken on the subagents' reports:** each of the six diffs filtered for hour figures contains **only 2h, 8h, 24h and 48h**, so no number beyond the four was written anywhere; *"SLA per stage"* survives as TBD in every document; **`TC-DASH-01`'s row is byte-unchanged** (same 2026-08-31 ×1, 2026-09-05 ×2, PASS ×4 counts); **Gap 21 intact**; `RAISE-FR-EXEC-001` still **`PASS (partial)`**.
+
+**Validation on `main` `758c268`:** frontend `tsc` **0**, **54 files / 286 tests pass** — unchanged, as expected for a documentation sync confirming already-shipped behaviour. Register integrity **39 `F-` rows, all five cells**.
+
+**Status:** ✅ Complete for its confirmed scope — F-54 raised and closed the same day, with the chain consistent behind it.
+
+**Known Issues:** **Gap 23 is open** — `TC-MAINT-001-10` is executable today and simply has not been run. **This is the first gap in a long while that needs neither a business decision nor a build** — only an execution sweep. *"SLA per stage"*, the vendor model, the cost model and the delegated-approver rules all remain TBD.
+
+**Remaining Work:** an execution pass for `TC-MAINT-001-10`, which closes Gap 23.
+
+**Next Step:** **execute `TC-MAINT-001-10`** — the only item on the board that needs no business input and no build. **F-03's per-Asset-Type useful-life values** remain the only thing that would move a Compliance Review verdict.
+
+**What this checkpoint adds to the pattern.** F-54 began as a note this AI wrote and then reasoned away — `CHECKPOINT-2026-09-08-004` records seeing Prototype's "conceptual — TBD" against a shipped Priority select and choosing not to fold it in. **Filing it took minutes; the decision it unblocked took the user one sentence; and the result is that four numbers users have been reading as a promise are now numbers the business owns.** The rule earned here: **a note that the spec and the code disagree is already a finding — file it, even when fixing it is not yours and even when it looks small.**
+
+---
+
 ## Level 2 — Feature Checkpoints
 
 ### FEATURE-CHECKPOINT-project-tracking-governance

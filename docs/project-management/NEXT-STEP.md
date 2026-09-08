@@ -198,7 +198,7 @@ the model instead of supplying numbers.
 | **F-52** build/execution half | 🔴 dependency | Same values; specification half closed today |
 | **F-53** chain re-key to Type | ✅ **RESOLVED** (R-39) | Closed the same day it was created, after the deferral was reversed on evidence |
 | **Gap 21** re-execution | 🔴 dependency | Cannot re-execute a ten-tile grid that does not exist |
-| **F-54** SLA values | 🟡 **business decision, and the only one the product is already asserting** | Raised 2026-09-08. `ticket-service.ts:14` and `ticketService.go:19-26` ship `{2, 8, 24, 48}` and the UI labels them as SLA, while PRD/Prototype/AC all say SLA is **TBD** and no test asserts a value. Moves no verdict; three exits, all business decisions |
+| **F-54** SLA values | ✅ **RESOLVED** (R-40) | Raised 2026-09-08. `ticket-service.ts:14` and `ticketService.go:19-26` ship `{2, 8, 24, 48}` and the UI labels them as SLA, while PRD/Prototype/AC all say SLA is **TBD** and no test asserts a value. Moves no verdict; three exits, all business decisions |
 | **F-43(a)** decoder text | 🟡 business decision | 21 sites (17 RAISE-domain, 4 in the company template's `sampleController.go`) |
 | **PRD Q22a** | 🔴 dependency | No `User`↔`Employee` link exists |
 | **F-09 · F-35 · F-36 · F-37 · F-39** | 🟡 business decision | Independent product questions, none gating a P0 verdict |
@@ -210,11 +210,21 @@ the model instead of supplying numbers.
 
 ## Recommendation
 
-**Two business inputs are outstanding, and they are different in kind.** **F-03** is the only
-one that would move a Compliance Review verdict. **F-54** moves no verdict but is the only one
-where the product is **already making a claim it has no authority for** — four SLA numbers
-shipped in both tiers while the chain calls SLA TBD. If only one can be answered, F-03 unblocks
-work; F-54 stops an unauthorised promise.
+**One item now needs no business input at all.** **Gap 23** — execute `TC-MAINT-001-10`,
+which asserts the per-priority SLA target hours confirmed by **RQ53** (F-54 → R-40). The
+behaviour is already shipped in both tiers, the case is written and classified **testable,
+not BLOCKED**, and it has simply never been run. It needs no decision and no build — only an
+execution sweep — and closing it removes the last place where confirmed behaviour has no
+executed test behind it.
+
+**One business input remains outstanding: F-03.** It is the only item that would move a
+Compliance Review verdict.
+
+**F-54 was the other one, and it is closed (R-40)** — business confirmed the four shipped SLA
+values as they stand, so the numbers users were already reading now have authority behind
+them. It took one sentence from business and no code change. **What remains from it is not a
+decision but an execution:** `TC-MAINT-001-10` is written, classified testable, and unrun —
+**Gap 23**.
 
 **Supply one useful-life value per Asset Type.** The model question is now settled and the
 decisions are

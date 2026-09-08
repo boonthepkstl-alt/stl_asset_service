@@ -9,7 +9,33 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-09-08, at `64dcdcd`. Suite **54 test files / 286 tests**; CI green.
+**As of:** 2026-09-08, at `758c268`. Suite **54 test files / 286 tests**; CI green.
+PRD **v0.21**, Design **v0.19**, Prototype **v0.20**, AC **v0.19**, Test Plan **v0.20**,
+Test Cases **v0.29**, Matrix **v2.9**.
+
+**F-54 → R-40: the shipped SLA hours now have authority behind them.** Business
+confirmed Critical **2h**, High **8h**, Medium **24h**, Low **48h** as they stand — one
+of the three exits F-54 offered — recorded as **PRD §16 Resolved Question 53** and
+propagated through all six downstream layers. **No code changed:** the behaviour was
+already in production; what it lacked was authority.
+
+**"SLA per stage" is still open, and keeping those apart was the whole job.** Confirmed is
+one overall target per ticket keyed by priority; still TBD is how long each of the four
+workflow stages may take. **Conflating them would have silently closed a question nobody
+answered** — the shape of the Q3/Q4 and Q3a errors this project already corrected
+twice. The vendor model, cost model and delegated-approver rules stay open too.
+
+**A classification new to this project:** `AC-MAINT-001-10` and `TC-MAINT-001-10` are
+**testable today** — not BLOCKED — because the behaviour is already shipped,
+unlike every other recent addition to the chain. **Neither is marked PASS**, because
+neither has been executed. Matrix v2.9 **kept** `RAISE-FR-MAINT-001`'s full `PASS` (it
+rests on the executed 4-stage transitions and **predates** both new items) and **opened
+Gap 23** for the unexecuted case rather than folding it in as coverage.
+
+**Gap 23 is now the only item on the board needing neither a business decision nor a
+build** — just an execution sweep.
+
+Earlier the same day, at `64dcdcd`. Suite **54 test files / 286 tests**; CI green.
 
 **F-54 raised: the product ships SLA commitments no business decision authorises.**
 `ticket-service.ts:14` and `ticketService.go:19-26` both define

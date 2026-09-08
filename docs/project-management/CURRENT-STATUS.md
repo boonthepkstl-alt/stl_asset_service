@@ -9,7 +9,32 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-09-08, after **PR #120** merged (`24bbd31`). Suite **54 test files /
+**As of:** 2026-09-08, after **PR #121** merged (`79f71eb`). Suite **54 test files /
+283 tests**; CI green.
+
+**The create and edit forms now use the full screen width.** All four — Create Asset,
+Create Employee, Edit Employee and Create IT Requisition — carried `max-w-3xl mx-auto`
+and sat in a narrow column with most of a desktop screen empty either side. **No field,
+validation, submit-path or route changed, and no verdict moved.**
+
+**This corrected a claim made one PR earlier, and the correction is the useful part.**
+PR #120 said the new requisition page *"mirrors `pages/CreateAsset`"*. That was
+**accurate — and exactly why it still did not look full-screen**, because both used
+`max-w-3xl`. **Matching an existing page is not the same as meeting the request when the
+page being matched carries the same shortcoming**, and the user had to point it out.
+
+**Scope was confirmed before editing:** the request named two pages, grepping found
+**four** sharing the container. Widening only the named two would have shipped two wide
+create forms and two narrow ones — **the same half-applied shape that produced F-53
+hours earlier the same day.** A comment on each container now records why there is no
+max-width, so nobody re-narrows one.
+
+**Two half-applied changes in one day, both caught by someone else looking rather than by
+the change's own verification.** The habit that would have caught both: **after fixing one
+instance, grep for its siblings before calling it done.** That grep is what set this
+task's scope, and it found two pages nobody had mentioned.
+
+Earlier the same day, after **PR #120** merged (`24bbd31`). Suite **54 test files /
 283 tests**; CI green.
 
 **The first user-visible change of the day, and the only one all day that was product

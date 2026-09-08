@@ -4509,6 +4509,38 @@ Targeting the tab took two corrections, both recorded in the test so the next pe
 
 ---
 
+## CHECKPOINT-2026-09-08-005
+
+**Phase:** Phase 4 / 5A / 5B — shared create-form layout across three domains
+**Feature:** Create/Edit page layout (`RAISE-FR-ASSET-001`, Employee pages, `RAISE-FR-MAINT-001`)
+**Task:** Remove the `max-w-3xl` constraint so all four create/edit pages use the full screen width (**PR #121**)
+
+**Requirement traced:** the three requirements above are all at full **`PASS`**, and **none moved.** This is a layout change with **no field, validation, submit-path or route change** — stated first so it is not read as functional progress.
+
+**The correction this records is of my own claim one PR earlier.** `CHECKPOINT-2026-09-08-004`/PR #120 said the new requisition page *"mirrors `pages/CreateAsset`"*. **That was accurate — and it is exactly why the page still did not look full-screen.** Both used `max-w-3xl mx-auto`. **Matching an existing page is not the same as meeting the request when the page being matched carries the same shortcoming**, and the user had to point that out. Worth keeping because "match the existing pattern" is normally the right instinct in this codebase; here it inherited the defect instead of the intent.
+
+**Scope confirmed before editing rather than after.** The request named **two** pages; grepping first found **four** sharing the container — `CreateAsset:88`, `CreateEmployee:162`, `CreateRequisition:129`, `EditEmployee:183`. Widening only the two named would have shipped **two wide create forms and two narrow ones** — an inconsistency created by the fix itself, and the same half-applied shape that produced **F-53** earlier today. Scope was put back to the user, who chose all four.
+
+**Prevention, not just repair:** a comment on each of the four containers records why there is no max-width, so the next person does not re-narrow one and reopen the inconsistency.
+
+**Files changed:** `pages/CreateAsset/index.tsx`, `pages/CreateEmployee/index.tsx`, `pages/CreateRequisition/index.tsx`, `pages/EditEmployee/index.tsx`. **Suite unchanged at 54 files / 283 tests** — **no test was added, and that is deliberate**: no existing test asserted on width, and a width assertion would pin a styling choice rather than a behaviour. The verification that mattered was visual, and it was done in the running app.
+
+**Validation on merged `main` `79f71eb`, run rather than assumed:** frontend `tsc` **0**, ESLint clean, **54 files / 283 tests pass**, `vite build` clean; backend `go build`/`vet`/`test` clean; CI green. **Verified in the running app at 1440×900:** all four pages span the content area with the sticky action bar full width. **At 375×812** the requisition form stacks to a single column with **no horizontal overflow** — the grids stay `grid-cols-1 sm:grid-cols-2`, so only desktop is affected.
+
+**A console-error scare, run down rather than waved off.** The tab showed `[vite] Failed to reload /src/pages/CreateRequisition/index.tsx` with 404s. **Proved transient, not assumed:** they came from the moment the edit script had the file mid-write (an assertion tripped partway through a four-file loop). Loading the page in a **fresh tab with an empty console buffer** showed only `[vite] connected` and the React DevTools notice — **zero errors** — with every field rendering. **The lesson is about the tool, not the code:** `read_console_messages` returns an accumulated buffer, so an error from a minute ago reads exactly like a live one.
+
+**Status:** ✅ Complete for its confirmed scope. **`CHANGELOG.md` updated** — its rule covers user-visible behaviour and this is visible on every create and edit screen.
+
+**Known Issues:** none introduced. The four pages are now consistent with each other; **no other page used that container**, verified by grep across `pages/*/index.tsx`.
+
+**Remaining Work:** none for this task.
+
+**Next Step:** unchanged — **F-03's per-Asset-Type useful-life values**, still the only outstanding input and the only item that would move a Compliance Review verdict.
+
+**What this checkpoint adds to the pattern.** Today produced two half-applied changes hours apart: **F-53** (re-keying one document and leaving five) and this one (widening a page by copying another page that had the same problem). **Both were caught by someone else looking, not by the change's own verification** — F-53 by re-reading the file, this by the user saying it still was not full-screen. The cheap habit that would have caught both: **after fixing one instance, grep for its siblings before declaring it done.** That grep is what set this task's scope, and it found two pages nobody had mentioned.
+
+---
+
 ## Level 2 — Feature Checkpoints
 
 ### FEATURE-CHECKPOINT-project-tracking-governance

@@ -17,6 +17,13 @@ changes user-visible or API-visible behavior. Pure documentation-sync PRs
 ## 2026-09-08
 
 ### Changed
+- **The create and edit forms now use the whole width of the screen.** All four
+  of them — Create Asset, Create Employee, Edit Employee and Create IT
+  Requisition — used to sit in a narrow column down the middle, leaving most
+  of a desktop screen empty on either side. They now fill the available width, so
+  the paired fields sit side by side with room to read them. **Nothing about the
+  forms themselves changed** — same fields, same order, same required fields,
+  same buttons. On a phone the fields still stack one per row exactly as before.
 - **Creating an IT requisition is now a full page instead of a pop-up dialog.**
   "New IT Requisition" used to open a dialog on top of the ticket list; it now
   opens its own page, laid out the same way "Create Asset" already is — the

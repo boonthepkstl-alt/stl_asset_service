@@ -180,7 +180,12 @@ export function EditEmployeePage() {
       onNavigate={(id) => navigate(`/${id}`)}
       breadcrumb={[{ label: 'Employee Management', href: '/employees' }, { label: employee.name, href: `/employees/${employee.id}` }, { label: 'Edit' }]}
     >
-      <div className="max-w-3xl mx-auto flex flex-col gap-4">
+      {/* Full width on purpose: these four create/edit pages all carried
+          `max-w-3xl mx-auto`, which left most of the screen empty on a desktop. Removed
+          from all four together so the create/edit forms stay consistent with each other
+          — widening only some of them was the alternative, and that is the kind of
+          half-applied change this codebase keeps having to go back and finish. */}
+      <div className="flex flex-col gap-4">
         <SectionCard title="Basic Information" description={`Identity and contact details for ${employee.name}`}>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Input name="jobTitle" label="Job Title / Position" value={form.jobTitle} onChange={(e) => set('jobTitle', e.target.value)} />

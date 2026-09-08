@@ -50,6 +50,9 @@ const EditEmployeePage = lazy(() =>
 const MaintenancePage = lazy(() =>
   import('@/pages/Maintenance').then((m) => ({ default: m.MaintenancePage }))
 );
+const CreateRequisitionPage = lazy(() =>
+  import('@/pages/CreateRequisition').then((m) => ({ default: m.CreateRequisitionPage }))
+);
 const TicketDetailPage = lazy(() =>
   import('@/pages/TicketDetail').then((m) => ({ default: m.TicketDetailPage }))
 );
@@ -141,6 +144,9 @@ const App: React.FC = () => {
                   <Route path={ROUTES.EMPLOYEE_EDIT} element={<EditEmployeePage />} />
                   <Route path={ROUTES.EMPLOYEE_DETAIL} element={<EmployeeDetailPage />} />
                   <Route path={ROUTES.MAINTENANCE} element={<MaintenancePage />} />
+                  {/* Static before dynamic, matching the ASSET_CREATE/ASSET_DETAIL pairing
+                      above, so "/maintenance/create" is not read as a ticketCode. */}
+                  <Route path={ROUTES.REQUISITION_CREATE} element={<CreateRequisitionPage />} />
                   <Route path={ROUTES.TICKET_DETAIL} element={<TicketDetailPage />} />
                   {/* IT Hardware Assignment Approval Workflow (RAISE-FR-OPS-002 exception,
                     PRs #72/#74). Consolidated into a single "Handovers" page (mirroring

@@ -15,6 +15,11 @@ export const ROUTES = {
   EMPLOYEE_DETAIL: '/employees/:employeeId',
   EMPLOYEE_EDIT: '/employees/:employeeId/edit',
   MAINTENANCE: '/maintenance',
+  // Declared before TICKET_DETAIL below, and matched ahead of it, because React Router ranks a
+  // static segment above a dynamic one — the same pairing ASSET_CREATE/ASSET_DETAIL already
+  // relies on. Kept under /maintenance rather than given its own top-level path because
+  // ESAPS-UI-FOUNDATION-BASELINE.md records that "IT Requisition is not its own slice."
+  REQUISITION_CREATE: '/maintenance/create',
   TICKET_DETAIL: '/maintenance/:ticketCode',
   HANDOVERS: '/handovers',
   HANDOVER_DETAIL: '/handovers/:handoverCode',

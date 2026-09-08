@@ -2,9 +2,40 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document Type:** Product Requirements Document
-**Version:** 0.19 Draft — Two business decisions confirmed 2026-09-07, business
-confirmation via direct chat session, about `RAISE-FR-EXEC-001`'s NBV KPI (new
-[§16 Resolved Questions 50–51](#16-open-questions)): (1) the NBV KPI tile is added as a
+**Version:** 0.20 Draft — Business decision confirmed 2026-09-08, business confirmation
+via direct chat session, about `RAISE-FR-EXEC-001`'s NBV useful-life configuration key
+(new [§16 Resolved Question 52](#16-open-questions)): the NBV useful life is configured
+**per Asset Type (the sub-category)**, not per Asset Category — this **amends, without
+deleting,** [§16 Resolved Question 46](#16-open-questions)'s 2026-09-05 statement that
+useful life is "configurable per Asset Category." Business, asked for the five
+per-Category values, stated IT Hardware has no fixed figure ("ไม่มีกำหนดตายตัว แล้วแต่อุปกรณ์
+ที่ซื้อ" — depends on the equipment purchased) while the other four categories can each
+carry one; of four options put to business (per Type; per Asset with a new field; a
+Category default plus per-asset override; or naming one representative per-Category
+value), business chose **per Type**, because a per-Type table is a strict superset of a
+per-Category one — the four fixed categories simply repeat the same value across their
+types. `Asset.type` already exists end-to-end
+(`go-template-main/sql/pg/V1__Assets_Table.sql:7`, `go-template-main/model/assetModel.go:23`,
+and the frontend `Asset` type/fixtures) — same precedent as the F-27 resolution that
+`type` **is** the sub-category of `category`. No new field or data model is needed.
+**No numeric useful-life value for any category or type is supplied, invented, or
+illustrated by this decision** — [§16 Open Question 3a](#16-open-questions) remains
+fully **OPEN**, now re-scoped to ask for one value **per Asset Type** rather than per
+Asset Category. [§16 Resolved Question 51](#16-open-questions) (NBV for an
+unconfigured lookup key returns `purchaseCost` unchanged) is **unaffected and
+unchanged** — `type` is free-text exactly as `category` is, so a newly-added type with
+no configured value already falls under that existing rule; no code change follows
+from either question. `RAISE-FR-EXEC-001`'s Priority/Scope/Status and Compliance
+Review verdict are unchanged. **Known downstream consequence, not acted on here:** the
+same-day (2026-09-08) chain sync for [§16 Resolved Questions 50–51](#16-open-questions)
+(Design v0.17, Prototype v0.18, Acceptance Criteria v0.17, Test Plan v0.17, Test Cases
+v0.27, Traceability Matrix v2.7) specified the configuration shape as
+`NBVSettings: Record<AssetCategory, usefulLifeYears>`, keyed by Category — this
+Resolved Question 52 supersedes that key, so those six documents need a **second sync
+pass**; none of them is edited by this change. Prior (v0.19): Two business decisions
+confirmed 2026-09-07, business confirmation via direct chat session, about
+`RAISE-FR-EXEC-001`'s NBV KPI (new [§16 Resolved Questions 50–51](#16-open-questions)):
+(1) the NBV KPI tile is added as a
 **tenth tile** on the KPI grid on both **P-002 Main Dashboard** and **P-014 Executive
 Dashboard**, and the existing "Monthly Depreciation" tile (a static, explicitly
 illustrative figure, `frontend/src/pages/Dashboard/index.tsx:78`,
@@ -540,14 +571,14 @@ below. `RAISE-AI-DOC-004` (Duplicate Detection) was asked about in the same sess
 | Source Reference | v0.1 draft §8.1 |
 | Traceability ID | RAISE-FR-EXEC-001 |
 | Proposal-defined KPIs | NBV; Risk; Utilization. **Status as of 2026-09-05: see the three rows below** — NBV formula/method confirmed (default useful-life values still TBD); Risk confirmed NOT MVP for this dashboard; Utilization built and live. |
-| NBV KPI Definition | **Resolved 2026-09-05** (business confirmation, direct chat session — see [§16 Resolved Question 46](#16-open-questions)): **straight-line depreciation** — NBV = purchaseCost − (purchaseCost ÷ usefulLifeYears × assetAgeInYears), computed from the existing `purchaseDate` and `purchaseCost` fields already present end-to-end on every Asset record (`frontend/src/types/asset.ts`, `go-template-main/model/assetModel.go`, `sql/pg/V1__Assets_Table.sql`) — no new Asset field or data model is needed. Useful life is **configurable per Asset Category**, set by an admin in Settings, following the same precedent as [§16 Resolved Question 41](#16-open-questions)'s per-category Warranty "Expiring" threshold (`WarrantySettings.expiringThresholdDaysByCategory`) — not a single global constant. Salvage/residual value is **zero**; NBV is **clamped at 0** so it never goes negative. **The default useful-life value per Asset Category (IT Hardware, Mobile, Office Equipment, Infrastructure, Media Equipment) is still undefined** — business was asked directly and answered "I will specify these myself" — see new [§16 Open Question 3a](#16-open-questions). Do not invent or use an illustrative number as if confirmed. **Supporting fact recorded to prevent a wrong assumption:** the Asset record's existing `currentValue` field **cannot** serve as NBV — `go-template-main/service/assetService.go:101` sets `currentValue` equal to `purchaseCost` on create and never recomputes it, and seed fixtures hold hand-written values at inconsistent rates (asset `a1` is 85% of cost after 1.6 years; `a5` is 60% after 3.8 years). |
+| NBV KPI Definition | **Resolved 2026-09-05** (business confirmation, direct chat session — see [§16 Resolved Question 46](#16-open-questions)): **straight-line depreciation** — NBV = purchaseCost − (purchaseCost ÷ usefulLifeYears × assetAgeInYears), computed from the existing `purchaseDate` and `purchaseCost` fields already present end-to-end on every Asset record (`frontend/src/types/asset.ts`, `go-template-main/model/assetModel.go`, `sql/pg/V1__Assets_Table.sql`) — no new Asset field or data model is needed. **Useful life configuration key AMENDED 2026-09-05→2026-09-08:** originally recorded as configurable per Asset Category (Resolved Question 46); **business confirmed 2026-09-08 (see [§16 Resolved Question 52](#16-open-questions)) that the key is per Asset Type (the sub-category, `Asset.type`) instead** — a per-Type table is a superset of a per-Category one, so this does not reopen the method (straight-line, zero salvage, clamped at 0 are unchanged), only the configuration key, still set by an admin in Settings, same precedent as [§16 Resolved Question 41](#16-open-questions)'s per-category Warranty "Expiring" threshold. Salvage/residual value is **zero**; NBV is **clamped at 0** so it never goes negative. **The default useful-life value per Asset Type is still undefined** — business was asked directly and answered "I will specify these myself" — see [§16 Open Question 3a](#16-open-questions), re-scoped 2026-09-08 from per-Category to per-Type. Do not invent or use an illustrative number as if confirmed, for any category or any type. **Supporting fact recorded to prevent a wrong assumption:** the Asset record's existing `currentValue` field **cannot** serve as NBV — `go-template-main/service/assetService.go:101` sets `currentValue` equal to `purchaseCost` on create and never recomputes it, and seed fixtures hold hand-written values at inconsistent rates (asset `a1` is 85% of cost after 1.6 years; `a5` is 60% after 3.8 years). |
 | NBV KPI Tile Placement | **Resolved 2026-09-07** (business confirmation, direct chat session — see [§16 Resolved Question 50](#16-open-questions)): the NBV KPI is added as a **tenth tile** on the KPI grid on **both** dashboards that render it — **P-002 Main Dashboard** and **P-014 Executive Dashboard**. The existing "Monthly Depreciation" tile (`frontend/src/pages/Dashboard/index.tsx:78`, fed by the static `monthlyDepreciation: 42800` fixture at `frontend/src/data/fixtures/mockData.ts:755`, already documented as illustrative in `RAISE-DESIGN.md`/`RAISE-PROTOTYPE.md`/`RAISE-ACCEPTANCE-CRITERIA.md`) is **kept unchanged** — not removed, not replaced, not relabelled, not re-pointed at real data. Business explicitly accepted the consequence that a real, computed NBV figure will sit directly beside a fabricated illustrative depreciation figure on the same grid. **Downstream consequence:** the chain currently specifies a **nine-tile** grid in a fixed order, already recorded PASS by `TC-DASH-01`/`TC-EXEC-001-01`; this decision changes the specified grid to **ten** tiles, so `AC-DASH-01`/`AC-EXEC-001-01` and their test cases must be re-specified and re-executed. |
-| NBV for Unconfigured Asset Category | **Resolved 2026-09-07** (business confirmation, direct chat session — see [§16 Resolved Question 51](#16-open-questions)): for an Asset whose `category` value has no configured useful-life entry — reachable by data alone, since `AssetCategory` (`frontend/src/types/asset.ts:17`) is an open `string`, not an enum of the five categories — NBV **keeps the existing implemented behavior**: `frontend/src/lib/nbv.ts`'s `computeAssetNbv` returns `purchaseCost` unchanged, i.e. the asset is treated as not yet depreciated. This **confirms existing implemented behavior** (already pinned by tests, recorded as **R-36** in `OPEN-FINDINGS.md`) as a business rule; **no code change follows from this decision.** |
+| NBV for Unconfigured Asset Category | **Resolved 2026-09-07** (business confirmation, direct chat session — see [§16 Resolved Question 51](#16-open-questions)): for an Asset whose `category` value has no configured useful-life entry — reachable by data alone, since `AssetCategory` (`frontend/src/types/asset.ts:17`) is an open `string`, not an enum of the five categories — NBV **keeps the existing implemented behavior**: `frontend/src/lib/nbv.ts`'s `computeAssetNbv` returns `purchaseCost` unchanged, i.e. the asset is treated as not yet depreciated. This **confirms existing implemented behavior** (already pinned by tests, recorded as **R-36** in `OPEN-FINDINGS.md`) as a business rule; **no code change follows from this decision.** **Unaffected by the 2026-09-08 per-Type re-key ([§16 Resolved Question 52](#16-open-questions)):** `type` is free-text exactly as `category` is, so an Asset whose `type` has no configured useful-life entry falls under this same rule — this row's content is unchanged. |
 | Risk KPI (MVP Status) | **Confirmed 2026-09-05** (business confirmation, direct chat session — see [§16 Resolved Question 47](#16-open-questions)): the Executive Dashboard will **NOT** carry a Risk KPI tile for MVP. This **confirms, not changes,** what this PRD already recorded — `RAISE-AI-RISK-001` remains Priority "Pilot (not confirmed MVP)" / Scope "Roadmap / Pilot — not MVP unless confirmed." [§16 Q4](#16-open-questions) (exact definition of risk) remains open in the abstract but **no longer blocks this requirement's MVP completeness** — it belongs to `RAISE-AI-RISK-001`, not to this P0 requirement. **As-built observation, not a requirement:** the shipped app already contains a "Portfolio Risk Matrix" tab in the AI Decision Center with a per-asset `riskScore`, a Portfolio Risk Index, and risk bands — left exactly as-is by this decision. It is fixture-backed (`frontend/src/data/fixtures/decisionData.ts` covers only 7 of 15 assets with hand-written scores) and that one file uses three mutually inconsistent band thresholds (`>70` at line 256, `>75`/`>40` at line 529, and `80`/`60`/`30` at lines 469–472). This observation is tied to `RAISE-AI-RISK-001` (Roadmap/Pilot), not to this MVP requirement — see that requirement's entry in [§7 AI Requirements](#7-ai-requirements). |
 | Utilization KPI Definition | **Resolved 2026-08-21** (business confirmation via `/update-prd` session): **Assignment-time-based** — Utilization = % of time an asset is assigned to a user/department, relative to total available time. This resolves [§16 Resolved Question 27](#16-open-questions). **Status update, 2026-09-05:** implemented and live — see the Utilization Calculation Mechanics row below and [§16 Resolved Question 48](#16-open-questions). NBV and Risk are addressed separately in the NBV KPI Definition and Risk KPI (MVP Status) rows above. |
 | Utilization Calculation Mechanics | **Resolved 2026-08-21** (business confirmation via `/update-prd` session — see [§16 Resolved Question 29](#16-open-questions)): (a) **Aggregation window = real-time snapshot** — Utilization is computed as a point-in-time value as of "now"; this is **not** a time-series/period aggregation (e.g., not "average utilization over the last 30/90 days"). (b) **Denominator exclusions** — assets with status Disposed, Retired, or Under Maintenance are **excluded** from the "total available time" denominator; only assets in an active/available-for-assignment state count toward the denominator. Numerator/assignment-time definition itself is unchanged from Resolved Question 27. **Built and live, 2026-09-05** (see [§16 Resolved Question 48](#16-open-questions)): implemented in `frontend/src/lib/utilization.ts` plus the Executive Dashboard KPI tile, PR #102 (merged 2026-09-05, commit `321265f`), live-verified reading 66.7% / "8 of 12 assignable assets" against a 15-asset register. **Implementation fact this decision could not have anticipated:** `AssetStatus` has only four values (`'Available' | 'Assigned' | 'In Maintenance' | 'Retired'`) — there is **no Disposed status**, because Disposal is confirmed Enterprise Roadmap ([§16 Resolved Question 26](#16-open-questions)). So of this row's three named denominator exclusions, only two (Retired, In Maintenance) currently have a status to exclude; if a Disposed status is ever added, it must be excluded too. |
 | AI-Generated Executive Summary | Described in proposal as a capability; scope/format not further defined. |
-| Open Question | **Narrowed 2026-09-05, further narrowed 2026-09-07** (Open Finding F-03 remains open, not closed): NBV formula/method is confirmed (see NBV KPI Definition row) and, as of 2026-09-07, NBV KPI tile placement (see NBV KPI Tile Placement row, [§16 Resolved Question 50](#16-open-questions)) and NBV behavior for an Asset Category with no configured useful life (see NBV for Unconfigured Asset Category row, [§16 Resolved Question 51](#16-open-questions)) are also confirmed — but the **default useful-life value per Asset Category is still undefined**; this is now the **only** remaining piece of [§16 Open Question 3a](#16-open-questions). Risk KPI is confirmed NOT MVP (see Risk KPI (MVP Status) row) — [§16 Q4](#16-open-questions) remains open but no longer blocks this requirement. Utilization is fully resolved and built (see [§16 Resolved Questions 27, 29, 48](#16-open-questions)). Dashboard layout itself remains undefined — see [§16 Q3](#16-open-questions). |
+| Open Question | **Narrowed 2026-09-05, further narrowed 2026-09-07, re-keyed 2026-09-08** (Open Finding F-03 remains open, not closed): NBV formula/method is confirmed (see NBV KPI Definition row) and, as of 2026-09-07, NBV KPI tile placement (see NBV KPI Tile Placement row, [§16 Resolved Question 50](#16-open-questions)) and NBV behavior for an unconfigured lookup key (see NBV for Unconfigured Asset Category row, [§16 Resolved Question 51](#16-open-questions)) are also confirmed. As of 2026-09-08, the configuration key is confirmed as **per Asset Type**, not per Asset Category ([§16 Resolved Question 52](#16-open-questions)) — but the **default useful-life value per Asset Type is still undefined**; this is now the **only** remaining piece of [§16 Open Question 3a](#16-open-questions), re-scoped from per-Category to per-Type. No numeric value has been supplied, invented, or illustrated for any category or type. Risk KPI is confirmed NOT MVP (see Risk KPI (MVP Status) row) — [§16 Q4](#16-open-questions) remains open but no longer blocks this requirement. Utilization is fully resolved and built (see [§16 Resolved Questions 27, 29, 48](#16-open-questions)). Dashboard layout itself remains undefined — see [§16 Q3](#16-open-questions). |
 
 ---
 
@@ -911,23 +942,34 @@ this PRD.
    MVP for the Executive Dashboard 2026-09-05, see [Resolved Question 47]
    (#16-open-questions)** — the remaining risk-definition question moves to Q4 below,
    which no longer blocks this requirement.
-3a. What are the default useful-life values per Asset Category (IT Hardware, Mobile,
-    Office Equipment, Infrastructure, Media Equipment) for NBV straight-line
-    depreciation (`RAISE-FR-EXEC-001`)? — Raised alongside [Resolved Question 46]
-    (#16-open-questions), 2026-09-05. Business was asked directly and answered **"I
-    will specify these myself"** — the numeric values have not been supplied. This is
-    the same shape as [Resolved Question 41](#16-open-questions)/[Open Question 15b]
-    (#16-open-questions): the mechanism (per-category configurability) is confirmed,
-    the exact numbers are not. **Do not invent or use an illustrative number as if
-    confirmed.** Tracked as the narrowed remainder of Open Finding **F-03** in
-    `OPEN-FINDINGS.md` (maintained separately, not edited by this change). **Further
-    narrowed 2026-09-07:** the two remaining adjacent NBV questions that were also
-    outstanding — where the NBV tile is placed on the dashboard KPI grid, and what NBV
-    returns for an Asset Category with no configured useful life — are now both
-    settled, see [Resolved Question 50](#16-open-questions) and [Resolved Question 51]
-    (#16-open-questions). **This question (3a) itself remains OPEN** — the five
-    numeric default useful-life values are the **only** thing left outstanding under
-    Open Finding F-03. Do not invent or use an illustrative number as if confirmed.
+3a. **[Re-scoped 2026-09-08, see Resolved Question 52]** What are the default
+    useful-life values **per Asset Type** (the sub-category, e.g. Laptop, Monitor,
+    Smartphone — one value per `type` value present in the data, a free-text field
+    that grows as assets are added, not a fixed enumeration) for NBV straight-line
+    depreciation (`RAISE-FR-EXEC-001`)? — Originally raised alongside
+    [Resolved Question 46](#16-open-questions), 2026-09-05, as five values **per
+    Asset Category** (IT Hardware, Mobile, Office Equipment, Infrastructure, Media
+    Equipment). Business was asked directly and answered **"I will specify these
+    myself"** — the numeric values have not been supplied. This is the same shape as
+    [Resolved Question 41](#16-open-questions)/[Open Question 15b](#16-open-questions):
+    the mechanism (per-Type configurability, confirmed 2026-09-08) is confirmed, the
+    exact numbers are not. **Do not invent or use an illustrative number as if
+    confirmed, for any category or any type.** Tracked as the narrowed remainder of
+    Open Finding **F-03** in `OPEN-FINDINGS.md` (maintained separately, not edited by
+    this change). **Further narrowed 2026-09-07:** the two remaining adjacent NBV
+    questions that were also outstanding — where the NBV tile is placed on the
+    dashboard KPI grid, and what NBV returns for an Asset whose lookup key has no
+    configured useful life — are now both settled, see
+    [Resolved Question 50](#16-open-questions) and [Resolved Question 51]
+    (#16-open-questions) (RQ51 is keyed the same way regardless of Category vs. Type
+    and is unaffected by the RQ52 re-key). **Re-scoped 2026-09-08, see
+    [Resolved Question 52](#16-open-questions):** the configuration key is now
+    confirmed as **per Asset Type**, not per Asset Category — this question therefore
+    now asks for **one numeric value per Asset Type present in the data**, not five
+    values per Asset Category. **This question (3a) itself remains OPEN** — no
+    numeric default useful-life value, for any category or any type, has been
+    supplied, invented, or illustrated anywhere. This is the **only** thing left
+    outstanding under Open Finding F-03.
 4. What is the exact definition of risk (RAISE-AI-RISK-001)? — **Still open**, but
    **confirmed 2026-09-05, see [Resolved Question 47](#16-open-questions), to no
    longer block `RAISE-FR-EXEC-001`'s MVP completeness** — the Executive Dashboard
@@ -1575,6 +1617,17 @@ recorded here explicitly so it is not mistaken for a resolved item alongside 29�
     still outstanding; `OPEN-FINDINGS.md` should be updated to reflect this narrowing
     in a separate pass, not by this change.
 
+    **AMENDED 2026-09-08, see [Resolved Question 52](#16-open-questions) — the
+    configuration key stated above (per Asset Category) is superseded, not
+    deleted.** This entry's content above is preserved as the historical record of
+    what was confirmed 2026-09-05. Business subsequently confirmed the useful-life
+    configuration is keyed by **Asset Type (the sub-category)**, not Asset Category —
+    a per-Type table is a superset of a per-Category one, so this amendment narrows
+    the *mechanism*, not the *method* (straight-line depreciation, zero salvage,
+    clamped-at-0 all still stand unchanged). See Resolved Question 52 for the full
+    reasoning and evidence. [Open Question 3a](#16-open-questions) is re-scoped
+    accordingly and remains OPEN.
+
 47. **Is the Risk KPI in MVP scope for the Executive Dashboard
     (`RAISE-FR-EXEC-001`)?** — Raised as part of [Open Question 3](#16-open-questions)
     and the "Requirements Needing Business Confirmation" item on whether Risk Scoring
@@ -1778,6 +1831,89 @@ recorded here explicitly so it is not mistaken for a resolved item alongside 29�
     supplied, and none is invented, suggested, or illustrated anywhere by this
     resolution.
 
+52. **Is the NBV useful life configured per Asset Category or per Asset Type
+    (`RAISE-FR-EXEC-001`)?** — Raised because, asked to supply the five per-Category
+    default values confirmed as the mechanism in [Resolved Question 46]
+    (#16-open-questions), business could not give a single fixed figure for one of
+    the five: IT Hardware. Business confirmed, **2026-09-08, business confirmation,
+    direct chat session:**
+
+    **The NBV useful life is configured per Asset Type (the sub-category), not per
+    Asset Category.** This **amends [Resolved Question 46](#16-open-questions)**,
+    whose recorded mechanism was "configurable per Asset Category" — that entry's
+    content is **preserved, not deleted or rewritten**, and is cross-linked to this
+    entry as superseded on this one point (see the amendment note appended to
+    Resolved Question 46). The straight-line method, zero salvage, and clamp-at-0
+    from Resolved Question 46 are **unchanged**.
+
+    **Why business gave this answer:** asked for the five per-Category values,
+    business stated IT Hardware has **no fixed figure** — *"ไม่มีกำหนดตายตัว แล้วแต่อุปกรณ์ที่
+    ซื้อ"* (no fixed value, it depends on the equipment purchased). Presented with four
+    options — (i) per Type using the existing `type` field; (ii) per Asset with a new
+    field; (iii) a Category default plus a per-asset override; (iv) keeping
+    per-Category and naming one representative value for IT Hardware — business chose
+    **(i), per Type**. Asked separately whether only IT Hardware varies or all five
+    categories do, business answered **only IT Hardware** — the other four categories
+    can each carry one fixed value.
+
+    **How the two answers combine, recorded explicitly because it is the reason for
+    the chosen key:** a per-Type table is a **superset** of a per-Category table. For
+    the four categories that do have a fixed value, the same value simply repeats
+    across that category's types — exactly equivalent to a single category-level
+    value. **One uniform per-Type key therefore satisfies both answers** without a
+    two-level lookup model and without a special case carved out for IT Hardware.
+
+    **No new field or data model is needed** — `Asset.type` already exists
+    end-to-end: `go-template-main/sql/pg/V1__Assets_Table.sql:7` (`type varchar(100)
+    NOT NULL`), `go-template-main/model/assetModel.go:23` (`Type string`), and the
+    frontend `Asset` type and its fixtures already populate it. This is the **same
+    precedent as the F-27 resolution**, which already established that the existing
+    `type` field **is** the sub-category of `category`.
+
+    **The types currently present in seeded data** (derived from
+    `frontend/src/data/fixtures/mockData.ts`, not invented): IT Hardware → Laptop,
+    Monitor, Headphones; Mobile → Smartphone, Tablet; Office Equipment → Printer,
+    Projector; Infrastructure → Router, Server; Media Equipment → Camera — ten types
+    as seeded today. **This is not recorded as a fixed business rule.** `type` is a
+    free-text `varchar`, and the set of values **grows as assets are added**, exactly
+    as `category` does. The requirement is **one configured value per type present in
+    the data**, not a fixed enumeration of ten.
+
+    **[Resolved Question 51](#16-open-questions) is unaffected and is not changed by
+    this decision.** Its rule already covers this case: an Asset whose lookup key has
+    **no configured useful life** contributes `purchaseCost` unchanged (treated as
+    not yet depreciated) and **stays included** in the portfolio total. Because
+    `type` is free-text just as `category` is, a newly-added type with no configured
+    value falls under exactly that existing rule. **No code change follows from
+    Resolved Question 51 either way.**
+
+    **Still fully OPEN, not touched by this decision:** [Open Question 3a]
+    (#16-open-questions), re-scoped by this entry to ask for **one value per Asset
+    Type** rather than five values per Asset Category, remains **OPEN**. **No
+    numeric useful-life value has been supplied, invented, or illustrated for any
+    category or any type, anywhere, by this resolution.** `RAISE-FR-EXEC-001`'s
+    Priority (P0), Scope (MVP), and Status are **unchanged**; no Compliance Review
+    verdict is touched; no code has been written.
+
+    **Known downstream consequence, flagged not acted on:** the chain was synced
+    earlier the same day (2026-09-08) for [Resolved Questions 50–51]
+    (#16-open-questions) — Design v0.17, Prototype v0.18, Acceptance Criteria v0.17,
+    Test Plan v0.17, Test Cases v0.27, Traceability Matrix v2.7 — and that sync
+    specified the configuration shape as
+    `NBVSettings: Record<AssetCategory, usefulLifeYears>`, keyed by **Category**.
+    **This Resolved Question supersedes that key**, so those six documents now need
+    a **second sync pass**; none of them is edited by this change.
+
+    Updated in §8 (`RAISE-FR-EXEC-001` — "NBV KPI Definition" row cross-linked to
+    this amendment, "Open Question" row re-scoped), §16 (this entry; Resolved
+    Question 46 amendment note; Open Question 3a re-scoped), the
+    [§17 Requirement Traceability Matrix](#17-requirement-traceability-matrix) row
+    for `RAISE-FR-EXEC-001`, and the [Pre-Finalization Quality Pass]
+    (#pre-finalization-quality-pass) (Ambiguous Requirements). **Does not change
+    `RAISE-FR-EXEC-001`'s Priority, Scope, Status, or any Compliance Review
+    verdict.** This PRD update was scoped to `RAISE-PRD.md` only — no other document
+    in the chain was edited by this change.
+
 ---
 
 ## 17. Requirement Traceability Matrix
@@ -1795,7 +1931,7 @@ recorded here explicitly so it is not mistaken for a resolved item alongside 29�
 | RAISE-FR-ORACLE-001 | Oracle FA Integration | MVP | P0 | TBD (integration design) | v0.1 §6.8 |
 | RAISE-FR-ALERT-001 | Alerts | MVP | P0 | APPROVED — five MVP trigger conditions (Warranty EXPIRED/EXPIRING, Ticket OVERDUE/ON_HOLD, IT Hardware Handover PENDING) and fixed-per-condition High/Medium/Low severity confirmed 2026-09-04; MVP channel scope re-affirmed as single-channel/in-app (no new decision); "authorized user" access gate confirmed 2026-09-04 = any authenticated user, per-route code enforcement (§16 Resolved Question 45, partially resolving F-08); header-bell (`AppShell`) in/out-of-scope contradiction resolved 2026-09-05 — bell IS in scope, shows first 5 alerts in existing severity order plus a link to `ROUTES.NOTIFICATIONS` (§16 Resolved Question 49, resolving `RAISE-TRACEABILITY-MATRIX.md` Gap 17) — per-user alert filtering still open (§16 Q22a) | v0.1 §6.9; trigger conditions/severity/channel-scope clarification confirmed 2026-09-04 (§16 Resolved Question 44); access-gate clarification confirmed 2026-09-04 (§16 Resolved Question 45); header-bell scope contradiction resolved 2026-09-05 (§16 Resolved Question 49) |
 | RAISE-FR-AUDIT-001 | Immutable Audit Log | MVP | P0 | TBD (retention/taxonomy) | v0.1 §6.10 |
-| RAISE-FR-EXEC-001 | Executive Dashboard | MVP | P0 | TBD (NBV per-category useful-life default values — Open Finding F-03 narrowed, not closed) — Utilization KPI **built and live** (PR #102, merged 2026-09-05, commit 321265f); NBV formula/method confirmed 2026-09-05 (straight-line, zero salvage, clamped at 0, per-Asset-Category configurable useful life via Settings); NBV KPI tile placement confirmed 2026-09-07 (added as a tenth tile on both P-002/P-014, existing Monthly Depreciation tile unchanged — nine-tile grid must be re-specified/re-executed as ten tiles); NBV for an unconfigured Asset Category confirmed 2026-09-07 (keeps existing behavior — returns `purchaseCost` unchanged); Risk KPI confirmed **NOT MVP** for this dashboard (see RAISE-AI-RISK-001, unchanged Pilot/Roadmap status) | v0.1 §8.1; Utilization built 2026-09-05; NBV method and Risk MVP-exclusion confirmed 2026-09-05 (§16 Resolved Questions 46–48); NBV tile placement and unconfigured-category behavior confirmed 2026-09-07 (§16 Resolved Questions 50–51) |
+| RAISE-FR-EXEC-001 | Executive Dashboard | MVP | P0 | TBD (NBV per-Asset-Type useful-life default values — Open Finding F-03 narrowed, not closed) — Utilization KPI **built and live** (PR #102, merged 2026-09-05, commit 321265f); NBV formula/method confirmed 2026-09-05 (straight-line, zero salvage, clamped at 0); useful-life configuration key **AMENDED 2026-09-08 from per-Asset-Category to per-Asset-Type** (`Asset.type`, same field established as the sub-category by the F-27 resolution) via Settings; NBV KPI tile placement confirmed 2026-09-07 (added as a tenth tile on both P-002/P-014, existing Monthly Depreciation tile unchanged — nine-tile grid must be re-specified/re-executed as ten tiles); NBV for an unconfigured lookup key confirmed 2026-09-07, unaffected by the 2026-09-08 re-key (keeps existing behavior — returns `purchaseCost` unchanged); Risk KPI confirmed **NOT MVP** for this dashboard (see RAISE-AI-RISK-001, unchanged Pilot/Roadmap status) | v0.1 §8.1; Utilization built 2026-09-05; NBV method and Risk MVP-exclusion confirmed 2026-09-05 (§16 Resolved Questions 46–48); NBV tile placement and unconfigured-category behavior confirmed 2026-09-07 (§16 Resolved Questions 50–51); NBV useful-life configuration key amended to per-Asset-Type 2026-09-08 (§16 Resolved Question 52) |
 | RAISE-AI-SEARCH-001 | Natural Language Search | MVP | P0 | APPROVED | v0.1 §7.3 |
 | RAISE-AI-DOC-001 | OCR / Extraction | MVP | P0 | Acceptance detail defined — ready for downstream sync (numeric confidence threshold still TBD) | v0.1 §7 capability table; confirmed 2026-08-21; acceptance detail confirmed 2026-08-21 |
 | RAISE-AI-DOC-002 | Metadata | MVP | P0 | Acceptance detail defined — ready for downstream sync | v0.1 §7 capability table; confirmed 2026-08-21; acceptance detail confirmed 2026-08-21 |
@@ -1897,11 +2033,16 @@ Per instructions, ambiguity and gaps are surfaced here, not silently resolved.
   [§8](#8-executive-intelligence). **Further narrowed 2026-09-07** — NBV KPI tile
   placement is now confirmed (tenth tile, both P-002 and P-014, Monthly Depreciation
   tile unchanged, see [§16 Resolved Question 50](#16-open-questions)) and NBV behavior
-  for an Asset Category with no configured useful life is now confirmed (keeps
+  for an Asset with no configured useful life is now confirmed (keeps
   existing behavior — returns `purchaseCost` unchanged, see [§16 Resolved Question 51]
-  (#16-open-questions)). **The default useful-life value per Asset Category is now the
-  only remaining piece of [§16 Open Question 3a](#16-open-questions)**, which stays
-  OPEN — no numeric value has been supplied or invented.
+  (#16-open-questions)). **Re-keyed 2026-09-08** — the useful-life configuration key
+  itself is **amended from per Asset Category to per Asset Type** (`Asset.type`, the
+  sub-category), see [§16 Resolved Question 52](#16-open-questions), which amends
+  (without deleting) [§16 Resolved Question 46](#16-open-questions). **The default
+  useful-life value per Asset Type is now the only remaining piece of
+  [§16 Open Question 3a](#16-open-questions)**, re-scoped from per-Category to
+  per-Type, which stays OPEN — no numeric value has been supplied or invented for any
+  category or any type.
 - **RAISE-AI-SEARCH-001 (Natural Language Search):** classified as "Current" capability in
   the AI capability table, yet the source gives no acceptance detail beyond a general
   example. It's unclear whether "Current" means already prototyped/demoed at the pitch,
@@ -2100,9 +2241,53 @@ implements the requirement; Test Case passes; Requirement Compliance Review pass
 
 ## Document Status
 
-**Version:** 0.19 (Draft for Requirement Review)
+**Version:** 0.20 (Draft for Requirement Review)
 **Status:** Draft for Requirement Review
 **Primary Source:** RAISE — Enterprise Asset Intelligence Platform — Final(1).pdf, ADT-RAISE Hackathon Pitch Day, 26 July 2026
+
+**Change Log — v0.19 → v0.20 (2026-09-08, business confirmation via direct chat
+session, explicit Q&A):**
+
+1. **NBV useful-life configuration key amended from per Asset Category to per Asset
+   Type** (new [§16 Resolved Question 52](#16-open-questions), amending — not
+   deleting — [§16 Resolved Question 46](#16-open-questions)): asked for the five
+   per-Category default values, business stated IT Hardware has no fixed figure
+   ("ไม่มีกำหนดตายตัว แล้วแต่อุปกรณ์ที่ซื้อ" — depends on the equipment purchased) while the
+   other four categories can each carry a fixed value; of four options put to
+   business (per Type using the existing field; per Asset with a new field; a
+   Category default plus a per-asset override; or naming one representative
+   per-Category value), business chose **per Type**, because a per-Type table is a
+   superset of a per-Category one — the four fixed categories simply repeat the same
+   value across their types. `Asset.type` already exists end-to-end
+   (`go-template-main/sql/pg/V1__Assets_Table.sql:7`,
+   `go-template-main/model/assetModel.go:23`, and the frontend `Asset` type/fixtures)
+   — same precedent as the F-27 resolution that `type` **is** the sub-category of
+   `category`. **No new field or data model is needed.** The straight-line method,
+   zero salvage, and clamp-at-0 confirmed by Resolved Question 46 are **unchanged**.
+2. **Not touched by this decision:** [§16 Open Question 3a](#16-open-questions) —
+   re-scoped from five values per Asset Category to one value per Asset Type — is
+   **still fully OPEN**; no numeric useful-life value for any category or any type
+   is supplied, invented, or illustrated anywhere by this change.
+   [§16 Resolved Question 51](#16-open-questions) (NBV for an unconfigured lookup
+   key returns `purchaseCost` unchanged) is **unaffected and unchanged** — `type` is
+   free-text exactly as `category` is, so this rule already covers a newly-added,
+   unconfigured type; no code change follows from Resolved Question 51 either way.
+   `RAISE-FR-EXEC-001`'s Priority (P0), Scope (MVP), and Status are **unchanged**;
+   its Compliance Review verdict (`PASS (partial)`) is untouched. No code has been
+   written.
+3. **Known downstream consequence, flagged not acted on:** the same-day chain sync
+   for [§16 Resolved Questions 50–51](#16-open-questions) (Design v0.17, Prototype
+   v0.18, Acceptance Criteria v0.17, Test Plan v0.17, Test Cases v0.27, Traceability
+   Matrix v2.7) specified the configuration shape as
+   `NBVSettings: Record<AssetCategory, usefulLifeYears>`, keyed by Category — this
+   Resolved Question supersedes that key, so those six documents need a **second
+   sync pass**. Updated in §8 (`RAISE-FR-EXEC-001` — "NBV KPI Definition," "NBV for
+   Unconfigured Asset Category," and "Open Question" rows), §16 (new Resolved
+   Question 52; Resolved Question 46 amendment note; Open Question 3a re-scoped),
+   §17 (Traceability Matrix row for `RAISE-FR-EXEC-001`), and the
+   [Pre-Finalization Quality Pass](#pre-finalization-quality-pass) (Ambiguous
+   Requirements). **This PRD update was scoped to `RAISE-PRD.md` only** — no other
+   file was edited.
 
 **Change Log — v0.18 → v0.19 (2026-09-07, business confirmation via direct chat
 session, explicit Q&A):**

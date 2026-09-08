@@ -25,24 +25,22 @@ import {
   AlertTriangle,
   CheckCircle2,
   ChevronRight,
-  Send,
   Plus,
   ExternalLink,
-  ShieldCheck,
 } from 'lucide-react';
-import { Card, CardHeader, Button, Badge, StatusBadge, Avatar, Tabs, EmptyState, useToast, SectionCard, Drawer, Modal, Input, Select, Textarea } from '@/components/ui';
+import { Card, CardHeader, Button, Badge, StatusBadge, Avatar, Tabs, EmptyState, useToast, SectionCard, Drawer, Modal, Select } from '@/components/ui';
 import { AppShell } from '@/components/AppShell';
+import { ROUTES } from '@/config/constants';
 import { AssetQrCode } from '@/components/AssetQrCode';
 import { getAssetIcon } from '@/data/asset-icons';
 import { getAssetHealth } from '@/data/fixtures/aiData';
-import type { RequisitionStatus, TicketCategory, PriorityLevel } from '@/data/fixtures/requisitionData';
+import type { RequisitionStatus, PriorityLevel } from '@/data/fixtures/requisitionData';
 import { useAsset } from '@/hooks/useAsset';
 import { useTickets } from '@/hooks/useTickets';
 import { useLicenses } from '@/hooks/useLicenses';
 import { useEmployees } from '@/hooks/useEmployees';
 import { useAuditLogs } from '@/hooks/useAuditLogs';
 import { useHandovers } from '@/hooks/useHandovers';
-import { ticketService } from '@/services/ticket-service';
 import { assetService } from '@/services/asset-service';
 import { handoverService } from '@/services/handover-service';
 import { useAuth } from '@/contexts/AuthContext';
@@ -78,16 +76,6 @@ const priorityConfig: Record<PriorityLevel, { variant: 'error' | 'warning' | 'ac
   Low: { variant: 'default', sla: '48 Hours SLA' },
 };
 
-const categoryOptions: { label: string; value: TicketCategory }[] = [
-  { label: 'Hardware Fault & Repair', value: 'Hardware Fault & Repair' },
-  { label: 'Equipment Replacement / Upgrade', value: 'Equipment Replacement' },
-  { label: 'Software & OS Issue', value: 'Software & OS Issue' },
-  { label: 'Network & Wi-Fi', value: 'Network & Wi-Fi' },
-  { label: 'Peripherals & Accessories', value: 'Peripherals & Accessories' },
-  { label: 'Account & Access', value: 'Account & Access' },
-  { label: 'Preventive Maintenance', value: 'Preventive Maintenance' },
-];
-
 export function AssetDetailPage() {
   const { assetId } = useParams<{ assetId: string }>();
   const navigate = useNavigate();
@@ -113,7 +101,7 @@ export function AssetDetailPage() {
     [handovers, asset]
   );
 
-  const { tickets, refetch: refetchTickets } = useTickets({});
+  const { tickets } = useTickets({});
   const assetTickets = useMemo(
     () => (asset ? tickets.filter((t) => t.asset.id === asset.id || t.asset.code === asset.code) : []),
     [tickets, asset]
@@ -131,7 +119,6 @@ export function AssetDetailPage() {
 
   const [selectedTicket] = useState<Ticket | null>(null);
   const [isDetailDrawerOpen, setIsDetailDrawerOpen] = useState(false);
-  const [isNewTicketModalOpen, setIsNewTicketModalOpen] = useState(false);
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
   const [isQrModalOpen, setIsQrModalOpen] = useState(false);
   const [assignEmployeeId, setAssignEmployeeId] = useState('');
@@ -139,11 +126,6 @@ export function AssetDetailPage() {
   const [isCheckingIn, setIsCheckingIn] = useState(false);
   const { employees } = useEmployees({});
 
-  const [formTitle, setFormTitle] = useState('');
-  const [formCategory, setFormCategory] = useState<TicketCategory>('Hardware Fault & Repair');
-  const [formPriority, setFormPriority] = useState<PriorityLevel>('Medium');
-  const [formDescription, setFormDescription] = useState('');
-  const [formLocation, setFormLocation] = useState('');
 
   if (loading) {
     return (
@@ -255,38 +237,22 @@ export function AssetDetailPage() {
     {
       label: 'Request IT Service',
       icon: Wrench,
+      // Fourth trigger of the same form, and the one that made this a 2-Modal/4-button
+      // conversion rather than a 2-button one. Same prefill it always used, now passed as
+      // context to the full page.
       onClick: () => {
-        setFormTitle(`Service request for ${asset.name}`);
-        setFormLocation(asset.location || 'HQ - Floor 4');
-        setIsNewTicketModalOpen(true);
+        const q = new URLSearchParams({
+          assetId: asset.id,
+          title: `Service request for ${asset.name}`,
+          location: asset.location || 'HQ - Floor 4',
+          returnTo: `/assets/${asset.id}`,
+        });
+        navigate(`${ROUTES.REQUISITION_CREATE}?${q}`);
       },
     },
     { label: 'Dispose', icon: Trash2, onClick: () => push({ variant: 'warning', title: 'Disposal requested', message: asset.name }), danger: true },
     { label: 'Print QR', icon: QrCode, onClick: () => setIsQrModalOpen(true) },
   ];
-
-  const handleCreateTicket = async () => {
-    if (!formTitle.trim()) {
-      push({ variant: 'warning', title: 'Subject Required', message: 'Please provide a title or issue summary.' });
-      return;
-    }
-    // No real auth session yet — 'e1' (Sarah Chen) stands in as the current user, same
-    // placeholder the legacy page hardcoded directly into the ticket object.
-    const created = await ticketService.createTicket({
-      requesterId: 'e1',
-      assetId: asset.id,
-      category: formCategory,
-      priority: formPriority,
-      title: formTitle,
-      description: formDescription || 'Issue submitted directly from Asset Details ledger.',
-      location: formLocation,
-    });
-    refetchTickets();
-    setIsNewTicketModalOpen(false);
-    setFormTitle('');
-    setFormDescription('');
-    push({ variant: 'success', title: 'IT Requisition Created', message: `${created.ticketCode} has been routed to Department Approver for sign-off.` });
-  };
 
   const getStatusBadge = (status: RequisitionStatus) => {
     switch (status) {
@@ -663,9 +629,15 @@ export function AssetDetailPage() {
                       size="sm"
                       leftIcon={<Plus className="h-4 w-4" />}
                       onClick={() => {
-                        setFormTitle(`Report issue with ${asset.name}`);
-                        setFormLocation(asset.location || 'HQ - Floor 4');
-                        setIsNewTicketModalOpen(true);
+                        // Same prefill this button's Modal used to apply, handed to the
+                        // full page as context. See pages/CreateRequisition.
+                        const q = new URLSearchParams({
+                          assetId: asset.id,
+                          title: `Report issue with ${asset.name}`,
+                          location: asset.location || 'HQ - Floor 4',
+                          returnTo: `/assets/${asset.id}`,
+                        });
+                        navigate(`${ROUTES.REQUISITION_CREATE}?${q}`);
                       }}
                     >
                       New Requisition
@@ -785,60 +757,11 @@ export function AssetDetailPage() {
           )}
         </Drawer>
 
-        <Modal
-          open={isNewTicketModalOpen}
-          onClose={() => setIsNewTicketModalOpen(false)}
-          title="Submit IT Requisition / Report Issue"
-          description={`Creating a service request for ${asset.name} (${asset.code})`}
-          footer={
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setIsNewTicketModalOpen(false)}>Cancel</Button>
-              <Button leftIcon={<Send className="h-4 w-4" />} onClick={handleCreateTicket}>Submit Requisition</Button>
-            </div>
-          }
-        >
-          <div className="flex flex-col gap-4 py-2">
-            <div className="p-3 bg-surface-50 rounded-xl border border-surface-200 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-lg bg-brand-50 text-brand-600 flex items-center justify-center shrink-0">
-                  <Icon className="h-5 w-5" />
-                </div>
-                <div>
-                  <p className="font-semibold text-surface-900">{asset.name}</p>
-                  <p className="text-caption text-surface-500 font-mono">{asset.code} · {asset.serialNumber}</p>
-                </div>
-              </div>
-              <Badge variant="neutral">{asset.type}</Badge>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <Select label="Issue Category" value={formCategory} onChange={(e) => setFormCategory(e.target.value as TicketCategory)} options={categoryOptions} />
-              <Select
-                label="Priority & SLA"
-                value={formPriority}
-                onChange={(e) => setFormPriority(e.target.value as PriorityLevel)}
-                options={[
-                  { value: 'Critical', label: '🔴 Critical (2 Hours SLA)' },
-                  { value: 'High', label: '🟠 High (8 Hours SLA)' },
-                  { value: 'Medium', label: '🔵 Medium (24 Hours SLA)' },
-                  { value: 'Low', label: '⚪ Low (48 Hours SLA)' },
-                ]}
-              />
-            </div>
-
-            <Input label="Subject / Issue Summary" value={formTitle} onChange={(e) => setFormTitle(e.target.value)} />
-            <Textarea label="Detailed Description & Symptoms" value={formDescription} onChange={(e) => setFormDescription(e.target.value)} rows={3} />
-            <Input label="Device Location / Desk Pickup" value={formLocation} onChange={(e) => setFormLocation(e.target.value)} />
-
-            <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 text-caption text-amber-800 flex items-start gap-2">
-              <ShieldCheck className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
-              <div>
-                <p className="font-semibold">Automated Routing & Governance:</p>
-                <p>This request will be routed to your Department Approver before dispatching to IT Technicians.</p>
-              </div>
-            </div>
-          </div>
-        </Modal>
+        {/* The "Submit IT Requisition / Report Issue" Modal that used to live here was
+            replaced by the full page at ROUTES.REQUISITION_CREATE. The "New Requisition"
+            button above navigates there with this asset, a prefilled subject and the
+            asset's location, and returns here on submit or cancel. Stage 1 behaviour
+            (PENDING_DEPT_APPROVAL, AC-MAINT-001-03) is unchanged. */}
 
         <Modal
           open={isAssignModalOpen}

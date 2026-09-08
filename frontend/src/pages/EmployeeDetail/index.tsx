@@ -22,8 +22,9 @@ import {
   KeyRound,
   AlertTriangle,
 } from 'lucide-react';
-import { Card, CardHeader, Button, Badge, StatusBadge, Avatar, Tabs, EmptyState, useToast, SectionCard, Modal, Input, Select, Textarea } from '@/components/ui';
+import { Card, CardHeader, Button, Badge, StatusBadge, Avatar, Tabs, EmptyState, useToast, SectionCard, Modal, Select, Textarea } from '@/components/ui';
 import { AppShell } from '@/components/AppShell';
+import { ROUTES } from '@/config/constants';
 import { DataTable, type Column } from '@/components/DataTable';
 import { getAssetIcon } from '@/data/asset-icons';
 import { employeeHistoryEvents as fixtureHistory, employeeAuditLogs as fixtureAudit, type EmployeeHistoryEvent } from '@/data/fixtures/mockData';
@@ -33,7 +34,6 @@ import { useEmployeeAssignments } from '@/hooks/useEmployeeAssignments';
 import { useTickets } from '@/hooks/useTickets';
 import { useLicenses } from '@/hooks/useLicenses';
 import { assetService } from '@/services/asset-service';
-import { ticketService } from '@/services/ticket-service';
 import type { Asset } from '@/types/asset';
 import { cn } from '@/lib/cn';
 
@@ -64,7 +64,7 @@ export function EmployeeDetailPage() {
 
   const [tab, setTab] = useState('overview');
 
-  const { tickets, refetch: refetchTickets } = useTickets({});
+  const { tickets } = useTickets({});
   const [historyEvents, setHistoryEvents] = useState<EmployeeHistoryEvent[]>(fixtureHistory);
   // Open Finding F-38. This used to be `useState(fixtureAudit)`, which was a lie about
   // its own semantics: useState implies a snapshot, but the value was the *same mutable
@@ -95,14 +95,10 @@ export function EmployeeDetailPage() {
   // degrades to "stale until the next render" instead of "stale forever".
 
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
-  const [isNewTicketModalOpen, setIsNewTicketModalOpen] = useState(false);
 
   const [selectedAssetToAssign, setSelectedAssetToAssign] = useState('');
   const [assignNotes, setAssignNotes] = useState('');
 
-  const [ticketTitle, setTicketTitle] = useState('');
-  const [ticketDescription, setTicketDescription] = useState('');
-  const [ticketPriority, setTicketPriority] = useState<PriorityLevel>('High');
 
   const employeeTickets = useMemo(() => {
     if (!employee) return [];
@@ -199,31 +195,29 @@ export function EmployeeDetailPage() {
     push({ variant: 'success', title: 'Asset Assigned', message: `${assigned.name} is now assigned to ${employee.name}.` });
   };
 
-  const handleCreateTicket = async () => {
-    if (!ticketTitle.trim()) {
-      push({ variant: 'warning', title: 'Title Required', message: 'Please provide an issue summary.' });
-      return;
-    }
+  // Both "New IT Ticket" / "Create IT Request" buttons used to open a Modal here. They now
+  // send the user to the full page at ROUTES.REQUISITION_CREATE with this employee's context.
+  //
+  // The no-assigned-asset guard stays HERE on purpose: the page needs an asset, and only this
+  // page knows which assets are assigned to this employee. Checking after navigation would
+  // land the user on a form that cannot be submitted, with a less specific message.
+  const goToRequisition = () => {
     const targetAsset = assignedAssets[0];
     if (!targetAsset) {
       push({ variant: 'warning', title: 'No Assigned Asset', message: `${employee.name} has no assigned asset to file a ticket against.` });
       return;
     }
-    const created = await ticketService.createTicket({
-      requesterId: employee.id,
+    const q = new URLSearchParams({
       assetId: targetAsset.id,
+      requesterId: employee.id,
+      // The Modal defaulted to High and filed everything as a hardware fault; both are
+      // preserved rather than quietly reset to the page's own defaults.
+      priority: 'High',
       category: 'Hardware Fault & Repair',
-      priority: ticketPriority,
-      title: ticketTitle,
-      description: ticketDescription || 'Reported by employee via IT management portal.',
-      location: employee.location,
+      title: `Hardware repair for ${employee.name}`,
+      returnTo: `/employees/${employee.id}`,
     });
-    refetchTickets();
-    setHistoryEvents([{ id: `eh-${Date.now()}`, employeeId: employee.id, date: new Date().toISOString().split('T')[0], type: 'Ticket Creation', title: `IT Requisition ${created.ticketCode} Created`, description: ticketTitle, actor: employee.name, badge: 'IT Service' }, ...historyEvents]);
-    setIsNewTicketModalOpen(false);
-    setTicketTitle('');
-    setTicketDescription('');
-    push({ variant: 'success', title: 'Ticket Created', message: `Requisition ticket ${created.ticketCode} created for ${employee.name}.` });
+    navigate(`${ROUTES.REQUISITION_CREATE}?${q}`);
   };
 
   const assetColumns: Column<Asset>[] = [
@@ -288,7 +282,7 @@ export function EmployeeDetailPage() {
             <div className="flex flex-wrap items-center gap-2.5">
               <Button variant="outline" size="sm" leftIcon={<Edit className="h-3.5 w-3.5" />} onClick={goToEditPage}>Edit Identity</Button>
               <Button variant="outline" size="sm" leftIcon={<Plus className="h-3.5 w-3.5" />} onClick={() => setIsAssignModalOpen(true)}>Assign Asset</Button>
-              <Button variant="primary" size="sm" leftIcon={<Wrench className="h-3.5 w-3.5" />} onClick={() => { setTicketTitle(`Hardware repair for ${employee.name}`); setIsNewTicketModalOpen(true); }}>New IT Ticket</Button>
+              <Button variant="primary" size="sm" leftIcon={<Wrench className="h-3.5 w-3.5" />} onClick={goToRequisition}>New IT Ticket</Button>
             </div>
           </div>
           <div className="mt-6 pt-2 border-t border-surface-100">
@@ -394,7 +388,7 @@ export function EmployeeDetailPage() {
               <Card className="p-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
                   <div><h2 className="text-lg font-bold text-surface-900">IT Requisitions & Tickets</h2><p className="text-body-sm text-surface-500">Support tickets and hardware requests associated with this employee</p></div>
-                  <Button variant="primary" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={() => { setTicketTitle(`Hardware repair for ${employee.name}`); setIsNewTicketModalOpen(true); }}>Create IT Request</Button>
+                  <Button variant="primary" size="sm" leftIcon={<Plus className="h-4 w-4" />} onClick={goToRequisition}>Create IT Request</Button>
                 </div>
                 {employeeTickets.length === 0 ? (
                   <EmptyState icon={<Wrench className="h-10 w-10 text-surface-400" />} title="No IT Tickets Found" description="There are currently no support or maintenance tickets recorded for this employee." />
@@ -513,27 +507,16 @@ export function EmployeeDetailPage() {
         />
       </Modal>
 
-      <Modal open={isNewTicketModalOpen} onClose={() => setIsNewTicketModalOpen(false)} title={`Create IT Requisition for ${employee.name}`} size="lg">
-        <div className="space-y-4">
-          <Input label="Issue Subject / Summary *" value={ticketTitle} onChange={(e) => setTicketTitle(e.target.value)} />
-          <Select
-            label="Priority & SLA"
-            value={ticketPriority}
-            onChange={(e) => setTicketPriority(e.target.value as PriorityLevel)}
-            options={[
-              { label: 'Critical (2 Hours SLA)', value: 'Critical' },
-              { label: 'High (8 Hours SLA)', value: 'High' },
-              { label: 'Medium (24 Hours SLA)', value: 'Medium' },
-              { label: 'Low (48 Hours SLA)', value: 'Low' },
-            ]}
-          />
-          <Textarea label="Detailed Diagnostic / Problem Description" value={ticketDescription} onChange={(e) => setTicketDescription(e.target.value)} rows={3} />
-          <div className="flex justify-end gap-3 pt-3 border-t border-surface-100">
-            <Button variant="outline" onClick={() => setIsNewTicketModalOpen(false)}>Cancel</Button>
-            <Button variant="primary" onClick={handleCreateTicket}>Submit IT Request</Button>
-          </div>
-        </div>
-      </Modal>
+      {/* The "Create IT Requisition for <name>" Modal that used to live here was replaced
+          by the full page at ROUTES.REQUISITION_CREATE. Both buttons above go through
+          goToRequisition(), which keeps the no-assigned-asset guard and carries the
+          employee as requester. Stage 1 behaviour (PENDING_DEPT_APPROVAL, AC-MAINT-001-03)
+          is unchanged.
+
+          One thing IS lost, and it is recorded rather than papered over: the old handler
+          also pushed a "Ticket Creation" row into this page's local historyEvents state.
+          That state is seeded from a fixture and never persisted, so the row already
+          vanished the moment the page remounted — the same ephemerality F-38 documented. */}
 
     </AppShell>
   );

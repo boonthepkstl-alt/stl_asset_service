@@ -85,7 +85,12 @@ export function CreateAssetPage() {
 
   return (
     <AppShell current="assets" onNavigate={(id) => navigate(`/${id}`)} breadcrumb={[{ label: 'Asset Management', href: '/assets' }, { label: 'Create Asset' }]}>
-      <div className="max-w-3xl mx-auto flex flex-col gap-4">
+      {/* Full width on purpose: these four create/edit pages all carried
+          `max-w-3xl mx-auto`, which left most of the screen empty on a desktop. Removed
+          from all four together so the create/edit forms stay consistent with each other
+          — widening only some of them was the alternative, and that is the kind of
+          half-applied change this codebase keeps having to go back and finish. */}
+      <div className="flex flex-col gap-4">
         <SectionCard title="Basic Information" description="Enter the core details for this asset">
           <div className="flex flex-col gap-5">
             <div className="flex items-center gap-4">

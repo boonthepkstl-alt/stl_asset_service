@@ -9,7 +9,35 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-09-08, at `4a442be`. Suite **53 test files / 278 tests**;
+**As of:** 2026-09-08, at `7ac6737`. Suite **53 test files / 278 tests**;
+CI green. PRD **v0.20**.
+
+**The business answer that invalidated a confirmed requirement.** Asked for F-03's five
+per-Asset-Category useful-life values, business answered that **IT Hardware has no fixed
+value** — *"it depends on the equipment purchased"* — while confirming the other
+four categories can each carry one. **That is not a missing number; it is a statement that
+RQ46's per-Category model does not fit.** PRD §16 **Resolved Question 52** (2026-09-08)
+therefore keys the useful life **per Asset Type**, amending RQ46 without deleting it.
+
+**Why one uniform Type key and not a two-level model:** a per-Type table is a **superset** of
+a per-Category one — for the four fixed categories the same value repeats across their
+types, which is exactly equivalent — so no special case for IT Hardware is needed. **No
+new field is required:** `Asset.type` exists end to end (`V1__Assets_Table.sql:7`,
+`assetModel.go:23`, frontend + fixtures), the same precedent as the F-27 resolution.
+
+**F-53 raised, and it is a deliberate deferral.** The chain synced hours earlier the same day
+keys `NBVSettings` by **Category**; RQ52 supersedes that key. The second sync is **bundled
+with the numeric values** so the six subagents run once rather than twice. **Nothing reads the
+wrong key today** — `NBVSettings` does not exist, `lib/nbv.ts` has zero consumers, and
+every affected test case is BLOCKED — but **PRD v0.20 is the authority on the key, not
+the chain.**
+
+**F-03 moved further from ready, not closer.** **DoR-5 has regressed to FAIL** (the chain no
+longer matches the confirmed model) and DoR-1/DoR-2 were already FAIL. `RAISE-FR-EXEC-001`
+stays **`PASS (partial)`**. **The lesson worth keeping: asking for a requirement's concrete
+inputs is what tests its model — and this model failed that test.**
+
+Earlier the same day, at `4a442be`. Suite **53 test files / 278 tests**;
 Compliance Review **v1.2**; CI green. **The deliverable chain moved a full step:** PRD
 **v0.19**, Design **v0.17**, Prototype **v0.18**, AC **v0.17**, Test Plan **v0.17**, Test
 Cases **v0.27**, Matrix **v2.7**.

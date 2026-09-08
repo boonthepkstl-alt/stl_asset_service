@@ -4391,6 +4391,48 @@ Targeting the tab took two corrections, both recorded in the test so the next pe
 
 ---
 
+## CHECKPOINT-2026-09-08-002
+
+**Phase:** Phase 8 — Executive Dashboard & Reporting (requirements only; no code, no chain edit)
+**Feature:** NBV KPI (`RAISE-FR-EXEC-001`)
+**Task:** Record **PRD §16 Resolved Question 52** — useful life is configured **per Asset Type**, amending RQ46 (**F-53** raised; **F-03** restated)
+
+**Requirement traced:** `RAISE-FR-EXEC-001` (P0/MVP). **Unchanged at `PASS (partial)`.** No code was written and no test was executed. Only `RAISE-PRD.md` was edited, v0.19 → **v0.20**, through the `prd-writer` subagent.
+
+**What happened, and it is not what the previous checkpoint expected.** `CHECKPOINT-2026-09-08-001` named its Next Step as **the five per-Asset-Category useful-life values**. Asked for them, business answered that **IT Hardware has no fixed value** — *"ไม่มีกำหนดตายตัว แล้วแต่อุปกรณ์ที่ซื้อ"* (no fixed figure, it depends on the equipment purchased). **That is not a missing number; it is a statement that the model itself does not fit.** RQ46 had confirmed the useful life as *"configurable per Asset Category"*, which assumes one value per category.
+
+**RQ52 — the decision.** Presented with four options (per **Type** using the existing field; per **Asset** with a new field; a Category default plus per-asset **override**; or keeping per-Category and naming one representative value), business chose **per Type**, and separately confirmed that **only IT Hardware varies** — the other four categories can each carry a fixed value.
+
+**Why the configuration is keyed by Type rather than being a two-level model** — the reasoning is recorded in RQ52 because the two answers look contradictory until it is stated: **a per-Type table is a superset of a per-Category table.** For the four categories that do have a fixed value, the same value simply repeats across that category's types, which is exactly equivalent to one category-level value. **One uniform key satisfies both answers, with no special case for IT Hardware.**
+
+**No new field or data model is needed — verified in the repository, not assumed.** `Asset.type` already exists end to end: `sql/pg/V1__Assets_Table.sql:7` declares `type varchar(100) NOT NULL`, `model/assetModel.go:23` has `Type string`, and the frontend type and fixtures populate it. **Same precedent as the F-27 resolution**, which already established that `type` *is* the sub-category of `category`.
+
+**Two things deliberately NOT recorded as business rules.** (1) **A fixed count of ten types.** `type` is a free-text `varchar(100)` and the set grows as assets are added, exactly as `category` does, so the requirement is *one value per type present in the data*. (2) **Any numeric value.** None was supplied, so none was written — the diff was filtered for **all fifteen** category and type names near a year figure and came back **empty**.
+
+**RQ51 needed no change, for a reason worth recording:** its fallback already covers this. A newly-added type with no configured value hits the same `computeAssetNbv` → `purchaseCost` path, because `type` is free-text just as `category` is. **The rule generalised without being touched.**
+
+**RQ46 superseded, not rewritten.** Its §16 entry still reads *"configurable per Asset Category"* verbatim, with an **AMENDED 2026-09-08 → Resolved Question 52** note appended and cross-linked both ways. Verified after the subagent returned: the one deletion of that phrase in the diff was from the **§8 requirement row**, which legitimately now describes the per-Type key — not from RQ46's own entry.
+
+**F-53 raised — and it is a deliberate deferral, labelled as such.** This morning's chain sync specified **`NBVSettings: Record<AssetCategory, usefulLifeYears>`** across all six documents; RQ52 supersedes that key hours later. The sharpest instance is `TC-WARRANTY-001-07`'s *"all 5 categories with editable useful-life inputs"*. **The second sync is owed but deliberately deferred**, so it can be done **once**, with the numeric values, rather than twice — the same six subagents would otherwise touch the same rows again. It is raised as a finding so the deferral carries a tracking ID and cannot quietly become the very kind of stale specification **F-52** was. **Nothing reads the wrong key today:** `NBVSettings` does not exist, `lib/nbv.ts` has zero consumers, and every affected case is BLOCKED, so no verdict rests on it.
+
+**F-03 restated, after its wording went stale twice in one day.** The 2026-09-07 text said the Dashboard tile needed a specification pass *first* — that pass has since been performed — and it asked for *five values per Category*, which RQ52 replaced. Both corrected, and the row now names F-53.
+
+**Files changed:** `RAISE-PRD.md` (0.19→0.20) — **the only file in the sync commit**, confirmed by `git diff --stat 2b81cc1..HEAD`. Then this close-out: `OPEN-FINDINGS.md`, `PROJECT-CHECKPOINTS.md`, `DEVELOPMENT-LOG.md`, `CURRENT-STATUS.md`, `NEXT-STEP.md`. **Zero product code touched; zero chain documents below the PRD touched.**
+
+**Validation, run rather than assumed on `7ac6737`:** frontend `tsc` **0**, ESLint clean, **53 test files / 278 tests pass**; backend `go build`/`vet`/`test` clean; **CI green**. Register integrity: **38 `F-` rows, all five cells**.
+
+**Status:** ✅ Complete for its confirmed scope — the decision is recorded with authority, RQ46 is superseded without loss, and the inconsistency it creates is tracked rather than hidden. **Explicitly NOT progress toward a build:** F-03 moved *further* from ready, not closer.
+
+**Known Issues.** (1) **F-53 is open by design** — the chain keys the configuration by Category while PRD v0.20 says Type. (2) **DoR-5 has regressed to FAIL**: the chain is no longer consistent with the confirmed model, which it was at `CHECKPOINT-2026-09-08-001`. (3) **DoR-1 and DoR-2 remain FAIL** — still no numeric value. (4) The 2026-09-07/08 **dating slip** in five chain documents, recorded at `CHECKPOINT-2026-09-08-001`, is unaddressed.
+
+**Remaining Work:** nothing engineering can do unilaterally. The second chain sync is owed but is deliberately bundled with the values.
+
+**Next Step:** **obtain one useful-life value per Asset Type** — as seeded: Laptop, Monitor, Headphones, Smartphone, Tablet, Printer, Projector, Router, Server, Camera. On receipt: record with authority and close Q3a, run the second chain sync re-keyed to Type (closing **F-53**), then build, then execute.
+
+**What this checkpoint adds to the pattern.** Every prior checkpoint in this run recorded a *document* that had drifted from reality. This one records the opposite direction: **a business answer that invalidated a confirmed requirement.** RQ46 was not wrong when written — it was confirmed by the same business — but the request for its values is what exposed that its granularity did not match how the company actually buys equipment. **Asking for the values is what tested the model; the model failed the test.** Worth remembering the next time a requirement is confirmed in the abstract and its concrete inputs are deferred: **the inputs are the test.**
+
+---
+
 ## Level 2 — Feature Checkpoints
 
 ### FEATURE-CHECKPOINT-project-tracking-governance

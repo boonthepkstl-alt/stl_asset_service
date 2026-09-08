@@ -3,9 +3,9 @@
 **Live output of [`NEXT-STEP-PROTOCOL.md`](NEXT-STEP-PROTOCOL.md).**
 Overwritten in place each time the protocol is re-run.
 
-**Run date:** 2026-09-08, after `CHECKPOINT-2026-09-08-001`.
+**Run date:** 2026-09-08, after `CHECKPOINT-2026-09-08-002`.
 
-**Derived from** a direct read of `main` at `4a442be`: PRD **v0.19**, Design **v0.17**,
+**Derived from** a direct read of `main` at `7ac6737`: PRD **v0.20**, Design **v0.17**,
 Prototype **v0.18**, AC **v0.17**, Test Plan **v0.17**, Test Cases **v0.27**, Traceability
 Matrix **v2.7**, Compliance Review **v1.2**, `OPEN-FINDINGS.md`, and the source tree.
 
@@ -27,7 +27,7 @@ Matrix **v2.7**, Compliance Review **v1.2**, `OPEN-FINDINGS.md`, and the source 
 
 ---
 
-## What changed today, and why it was possible without the five numbers
+## What changed today — in both directions
 
 **The remaining F-03 work splits into two halves that need *different* inputs.** That
 observation is what turned "nothing can proceed" into a full day of legitimate work:
@@ -35,8 +35,9 @@ observation is what turned "nothing can proceed" into a full day of legitimate w
 | Half | Needs | Status |
 |---|---|---|
 | **Dashboard tile — specification** | **DoR-3** (the presentation decision) | ✅ **done today** |
-| **Settings NBV section — build** | the five useful-life values | 🔴 still blocked |
-| **Dashboard tile — build** | the five useful-life values | 🔴 still blocked |
+| **Settings NBV section — build** | the useful-life values | 🔴 still blocked |
+| **Dashboard tile — build** | the useful-life values | 🔴 still blocked |
+| **Second chain sync — re-key to Type** | nothing; bundled with the values by choice | 🔴 **owed (F-53)** |
 
 The proof that a presence criterion can be written **without any default value** was already
 in the repository: `TC-WARRANTY-001-07` states in its own test-data column *"no
@@ -69,7 +70,21 @@ closed half**, and the record says so.
 
 ## Primary Next Step
 
-**F-03 — obtain the five per-Asset-Category useful-life values.**
+**F-03 — obtain one useful-life value per Asset Type.**
+
+**The ask changed today, and the change is the more important news.** Asked for the five
+per-Category values, business answered that **IT Hardware has no fixed value** —
+*"it depends on the equipment purchased"* — while confirming the other four
+categories can each carry one. **That is not a missing number; it is a statement that
+RQ46's per-Category model does not fit.** PRD §16 **Resolved Question 52** now keys the
+useful life **per Asset Type**, amending RQ46 without deleting it, and `Asset.type`
+already exists end to end so **no new field is needed**.
+
+**What is needed, as seeded** — one value each for Laptop, Monitor, Headphones,
+Smartphone, Tablet, Printer, Projector, Router, Server, Camera. **Not a fixed list of ten:**
+`type` is a free-text `varchar(100)` that grows exactly as `category` does, so the rule is
+one value per type present in the data. For the four categories with a fixed value, the
+same number may simply repeat across that category's types.
 
 **Status: `BLOCKED` — business-input pending, and now the *only* input outstanding.**
 
@@ -80,11 +95,11 @@ input is now in hand.** F-03's Definition of Ready is **one item from complete**
 
 | # | Criterion | Status |
 |---|---|---|
-| **DoR-1** | the five values, in years | 🔴 **the only thing missing** |
+| **DoR-1** | one value per Asset Type, in years | 🔴 **FAIL** — none supplied |
 | **DoR-2** | recorded in PRD §16 with authority | 🟡 RQ50/RQ51 recorded; awaits one more for the values |
 | **DoR-3** | tile presentation decision | ✅ **RQ50** |
 | **DoR-4** | unconfigured-category behaviour | ✅ **RQ51** |
-| **DoR-5** | re-assessment before code | ⚪ when the values arrive |
+| **DoR-5** | chain consistent with the confirmed model | 🔴 **FAIL — regressed today.** The chain keys `NBVSettings` by **Category**; RQ52 says **Type** (**F-53**) |
 
 **Everything buildable is specified — verified in source this run:**
 
@@ -96,7 +111,8 @@ input is now in hand.** F-03's Definition of Ready is **one item from complete**
 | Settings precedent | ✅ `Settings/index.tsx:144-161` (Warranty threshold, per-category) |
 | Tile precedent | ✅ `Dashboard/index.tsx:29,66,74` (Utilization ← `computeUtilization`) |
 | **Specification, all layers** | ✅ **complete as of today** |
-| The five numbers | 🔴 **absent** |
+| The per-Type values | 🔴 **absent** |
+| Chain keyed to Type | 🔴 **owed** — second sync, bundled with the values (**F-53**) |
 
 **Verified absent, not assumed.** A repository-wide search — `docs/`, `frontend/src`,
 `go-template-main`, English and Thai — returns only statements that the values are undefined.
@@ -144,16 +160,22 @@ relabelled, not re-pointed at real data.
 **Code:** `frontend/src/types/settings.ts`, `frontend/src/pages/Settings/`,
 `frontend/src/pages/Dashboard/`, `frontend/src/services/dashboard-service.ts`.
 
-**Chain — before any code:** `RAISE-PRD.md` §16, to record the five values as a Resolved
+**Chain — before any code:** `RAISE-PRD.md` §16, to record the per-Type values as a Resolved
 Question and **close Q3a**. **After execution:** Test Cases statuses, Matrix (closing Gap 21),
-Compliance Review. **No specification pass remains.**
+Compliance Review.
+
+**A second specification pass IS owed** — re-keying the configuration from Category
+to Type across Design, Prototype, AC, Test Plan, Test Cases and Matrix (**F-53**). It is
+**deliberately bundled with the values** so the six subagents run once, not twice. The
+sharpest instance to fix: `TC-WARRANTY-001-07`'s *"all 5 categories with editable
+useful-life inputs"*.
 
 **Tracking:** `OPEN-FINDINGS.md`, `PROJECT-CHECKPOINTS.md`, `DEVELOPMENT-LOG.md`,
 `CURRENT-STATUS.md`.
 
 ### Next Checkpoint
 
-`CHECKPOINT-2026-09-08-002`, on receipt of the five values.
+`CHECKPOINT-2026-09-08-003`, on receipt of the per-Type values.
 
 ---
 
@@ -162,7 +184,8 @@ Compliance Review. **No specification pass remains.**
 | Candidate | Class | Basis |
 |---|---|---|
 | **F-03** (values → Settings + tile + execution) | 🟡 **business input** | Everything else is built or specified |
-| **F-52** build/execution half | 🔴 dependency | Same five values; specification half closed today |
+| **F-52** build/execution half | 🔴 dependency | Same values; specification half closed today |
+| **F-53** chain re-key to Type | 🔴 **owed by choice** | Created knowingly by RQ52 and deferred so the second sync runs once, with the values |
 | **Gap 21** re-execution | 🔴 dependency | Cannot re-execute a ten-tile grid that does not exist |
 | **F-43(a)** decoder text | 🟡 business decision | 21 sites (17 RAISE-domain, 4 in the company template's `sampleController.go`) |
 | **PRD Q22a** | 🔴 dependency | No `User`↔`Employee` link exists |
@@ -175,7 +198,8 @@ Compliance Review. **No specification pass remains.**
 
 ## Recommendation
 
-**Supply the five useful-life values.** Nothing else is outstanding: the decisions are
+**Supply one useful-life value per Asset Type.** The model question is now settled and the
+decisions are
 recorded with authority, the specification is complete end to end, and the code precedents
 exist. On receipt, `RAISE-FR-EXEC-001` can reach a full `PASS` — the last P0 verdict short of
 one — and **Gap 21** closes with it.

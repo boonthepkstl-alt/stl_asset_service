@@ -17,6 +17,17 @@ changes user-visible or API-visible behavior. Pure documentation-sync PRs
 ## 2026-09-08
 
 ### Changed
+- **Every way of starting an IT requisition now opens the same full page.** The form
+  used to appear as a pop-up dialog in three different places — the requisition
+  list, an asset's page, and an employee's page — and only the first was changed
+  earlier today. All six buttons now open the one page, and each still arrives with
+  what it always filled in for you: from an asset, that asset and its location and a
+  subject naming it; from an employee, that employee as the requester, their assigned
+  asset, and the same High priority the dialog used. **Cancelling or submitting now
+  returns you to the page you came from** instead of always dropping you on the
+  requisition list.
+- **Filing a requisition for an employee with no assigned asset still tells you so
+  before going anywhere**, rather than opening a form you could not submit.
 - **The create and edit forms now use the whole width of the screen.** All four
   of them — Create Asset, Create Employee, Edit Employee and Create IT
   Requisition — used to sit in a narrow column down the middle, leaving most

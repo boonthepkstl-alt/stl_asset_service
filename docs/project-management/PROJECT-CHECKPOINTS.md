@@ -4541,6 +4541,46 @@ Targeting the tab took two corrections, both recorded in the test so the next pe
 
 ---
 
+## CHECKPOINT-2026-09-08-006
+
+**Phase:** Phase 4 / 5A / 5B — Asset, Employee and Ticket domains
+**Feature:** IT Requisition creation (`RAISE-FR-MAINT-001`)
+**Task:** Route the remaining requisition entry points to the full page (**PR #122**)
+
+**Requirement traced:** `RAISE-FR-MAINT-001`, at full **`PASS`** and **unmoved**. No field, no validation rule, no state transition changed — Stage 1 still lands in `PENDING_DEPT_APPROVAL` (`AC-MAINT-001-03`). No chain document was touched, for the same reason recorded in `CHECKPOINT-2026-09-08-004`: the chain constrains the resulting state, not the presentation.
+
+**The count was wrong three times, and the sequence is the point of this record.** I reported **two** Modals. `tsc` then surfaced a **fourth button** — AssetDetail's "Request IT Service" action-menu item. A grep of the *triggers*, **the one that should have come first**, surfaced **two more** in EmployeeDetail. The real shape was **three Modals behind six buttons**: Maintenance 2 (converted in PR #120), AssetDetail 2 ("New Requisition" in the Maintenance tab, "Request IT Service" in the action menu), EmployeeDetail 2 ("New IT Ticket", "Create IT Request").
+
+**This is the third half-applied change in one day, and the first two had already produced the rule that would have prevented it.** `CHECKPOINT-2026-09-08-005` recorded, hours earlier: *after fixing one instance, grep for its siblings before calling it done.* **I applied it to `max-w-3xl` and never applied it to the form itself.** Writing a lesson down is evidently not the same as running it — the check has to be attached to the *artifact being changed*, not to the memory of the last mistake.
+
+**Every prefill preserved, via query params** — `assetId`, `requesterId`, `category`, `priority`, `title`, `location`, `returnTo`. Asset Detail passes the asset, **its own title text per button** (*"Report issue with X"* vs *"Service request for X"*) and the asset's location. Employee Detail passes **the employee as requester** — not the page default `'e1'` — plus its **High** priority and hardcoded **Hardware Fault & Repair** category. Without those three, Employee Detail requisitions would have been filed against the wrong person at the wrong priority, **and nothing in the UI would have shown it.**
+
+**`returnTo` fixes something the first conversion got wrong.** PR #120's page sent everyone to the Maintenance list on cancel and submit — correct from the list, wrong from an asset or an employee. Cancel and submit now return to the origin.
+
+**The no-assigned-asset guard deliberately stays in EmployeeDetail**, not on the page: only that page knows which assets belong to the employee, and checking after navigation would land the user on an unsubmittable form with a vaguer message. **Verified live** — Olivia Brown (`e7`, no assets) gets the warning and **does not navigate**.
+
+**What is lost, recorded rather than papered over.** (1) EmployeeDetail's old handler pushed a *"Ticket Creation"* row into its **local** `historyEvents`, which is seeded from a fixture and never persisted — **the row already vanished on remount**, the same ephemerality **F-38** documented, so nothing durable was lost. (2) The origin-specific placeholder descriptions (*"…from Asset Details ledger"*, *"…via IT management portal"*) collapse to `ticketService`'s own default when the field is left blank.
+
+**Tests: 3 new, each mutation-tested.** Ignoring `?requesterId=`, ignoring `?returnTo=`, and letting the asset preselect override an explicit `?assetId=` each fail **exactly one** test — so none is vacuous. **Suite 54 files / 283 tests → 54 / 286.**
+
+**Validation on merged `main` `71ba972`, run rather than assumed:** frontend `tsc` **0**, ESLint clean, **54 files / 286 tests pass**, `vite build` clean; backend `go build`/`vet`/`test` clean; CI green.
+
+**Verified in the running app, all six triggers.** Each lands on `/maintenance/create` with the right params and `isDialog: false`. Asset Detail's two prefill the asset's **real** location (*"Data Center East"*, not the fallback) and their distinct titles. Employee Detail passes `requesterId=e1` at `priority=High` — **proved by submitting**, which took Sarah Chen's own "IT Tickets" tab from **3 → 4** with the new ticket listed there, since that tab filters by this employee. Cancel from Asset Detail returned to `/assets/a5`. **A sweep for `isNewTicketModalOpen` and every requisition-Modal title across `frontend/src` now returns only the comments recording where each Modal used to be.**
+
+**A console-error scare, run down for the second time today.** The tab again showed `[vite] Failed to reload /src/pages/CreateRequisition/index.tsx` with 404s. **Proved stale** by a cold load in a fresh tab: only `[vite] connected` and the React DevTools notice, **zero errors**, with `?assetId=a3` correctly preselecting AST-0003. `read_console_messages` returns an accumulated buffer, so a minute-old error reads exactly like a live one — worth remembering, since this cost time twice.
+
+**Status:** ✅ Complete for its confirmed scope — the feature is now consistent across all three domains, which it was not after PR #120 or PR #121. **`CHANGELOG.md` updated**: user-visible on three different screens.
+
+**Known Issues:** none introduced. **The counting failure itself is the finding**, and it is recorded here rather than in `OPEN-FINDINGS.md` because it is a process lapse with no artifact left open — the sweep above confirms nothing remains.
+
+**Remaining Work:** none for this task.
+
+**Next Step:** unchanged — **F-03's per-Asset-Type useful-life values**, still the only outstanding input and the only item that would move a Compliance Review verdict.
+
+**What this checkpoint adds to the pattern.** Three half-applied changes in one day: **F-53** (re-keyed one document, left five), **PR #121** (widened one page by copying another with the same defect), and this one (converted one Modal of three). **All three were caught by the user or by re-reading, never by the change's own verification.** The rule was already written down after the second. What was missing is a *trigger*: the grep has to be part of touching the artifact, not a resolution carried in memory. Concretely — **when a UI element is converted, grep for every other place that opens the same thing, before writing the first line.**
+
+---
+
 ## Level 2 — Feature Checkpoints
 
 ### FEATURE-CHECKPOINT-project-tracking-governance

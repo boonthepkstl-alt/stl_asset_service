@@ -9,7 +9,30 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-09-08, after **PR #121** merged (`79f71eb`). Suite **54 test files /
+**As of:** 2026-09-08, after **PR #122** merged (`71ba972`). Suite **54 test files /
+286 tests**; CI green.
+
+**Every way of starting an IT requisition now opens the same full page.** The form was
+**three Modals behind six buttons** — Maintenance 2 (converted in PR #120),
+AssetDetail 2, EmployeeDetail 2 — and each Modal's prefill is preserved through
+query params, including **the employee as requester** on the Employee Detail path.
+Without that, those requisitions would have been filed against the wrong person at the
+wrong priority **with nothing in the UI showing it.** `RAISE-FR-MAINT-001` stays at full
+`PASS`; no field, validation or state transition changed and **no chain document was
+touched.**
+
+**Three half-applied changes landed today, and the third is the one worth reading.**
+**F-53** re-keyed one document and left five. **PR #121** widened one page by copying
+another that had the same defect. **PR #122** converted one Modal of three. **All three
+were caught by the user or by re-reading — never by the change's own
+verification.** The rule was written down after the second (*after fixing one instance,
+grep for its siblings*) and **still missed the third**, because it was applied to
+`max-w-3xl` and not to the form itself. **Writing a lesson down is not the same as
+running it:** the check has to attach to the artifact being changed, not to the memory of
+the last mistake. Concretely — **when a UI element is converted, grep for every
+other place that opens the same thing, before writing the first line.**
+
+Earlier the same day, after **PR #121** merged (`79f71eb`). Suite **54 test files /
 283 tests**; CI green.
 
 **The create and edit forms now use the full screen width.** All four — Create Asset,

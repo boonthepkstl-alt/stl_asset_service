@@ -4655,6 +4655,49 @@ Targeting the tab took two corrections, both recorded in the test so the next pe
 
 ---
 
+## CHECKPOINT-2026-09-09-001
+
+**Phase:** Phase 5B — Maintenance / Ticket domain
+**Feature:** Per-priority SLA target hours (`RAISE-FR-MAINT-001`)
+**Task:** Formally execute **`TC-MAINT-001-10`** — **Gap 23 closed**, **Gap 25 opened**
+
+**Requirement traced:** `RAISE-FR-MAINT-001`, full **`PASS`** — unchanged in level, but **what it rests on has genuinely changed** (see below). **No code was touched**: this is execution reporting.
+
+**The execution.** Run **2026-09-09** against the real running app (`npm run dev`, `raise-frontend`, port 5173) on merged `main` **`88f1017`**, **driving the actual UI rather than calling services directly.** The Priority selector was read from the live DOM and offers **exactly four** options, labelled verbatim `Critical (2h SLA)`, `High (8h SLA)`, `Medium (24h SLA)`, `Low (48h SLA)`. One request was then created per priority through the form itself, and each ticket's `slaTargetHours` read from **its own Ticket Detail page** (`Target: {n} hours`, `TicketDetail/index.tsx:302`):
+
+| Priority | Ticket | Observed | Expected |
+|---|---|---|---|
+| Critical | `ITR-2026-007` | **2 hours** | 2 ✅ |
+| High | `ITR-2026-008` | **8 hours** | 8 ✅ |
+| Medium | `ITR-2026-009` | **24 hours** | 24 ✅ |
+| Low | `ITR-2026-010` | **48 hours** | 48 ✅ |
+
+**Each ticket's own subject was confirmed present on its own detail page**, so each SLA figure belongs to the ticket just created and not a neighbouring row — the cheap check that separates a real execution from one that passes because four rows happened to be nearby. **Zero console errors** across the sweep. **Result: PASS.**
+
+**The limitation, recorded rather than glossed — and it is why a second gap now exists.** `TICKET_API_ENABLED` (`featureFlags.ts:30`) is **off by default**, so the run went through the **mock ticket repository** and the value observed came from `ticket-service.ts:14` **only**. `go-template-main/service/ticketService.go:19-26`'s identical map was **not exercised**, and **no backend test covers `slaHours`** — grepping `go-template-main/service/*_test.go` returns nothing. That tier is assured **only by inspection**, and by the Go file's own comment claiming it mirrors the frontend *"exactly"* — a claim nothing currently verifies.
+
+**Matrix v2.10 split that honestly rather than taking either easy verdict.** **Gap 23 is CLOSED**, because its own stated closing condition was *"a formal execution of `TC-MAINT-001-10` against the real running app"* and that condition was **literally met**. The backend shortfall is carved out as **new Gap 25** rather than stretched into Gap 23's closure, or used to refuse a closure that was genuinely earned. **The reasoning it used is this document's own:** *a specification being correct is not coverage* — so by analogy, **exercising one of the two tiers a case cites is not coverage of both.**
+
+**What the requirement now rests on — the part that actually moved.** Before today, `RAISE-FR-MAINT-001`'s full `PASS` rested solely on `TC-MAINT-001-01..09`'s executed 4-stage transitions and **predated** `TC-MAINT-001-10`, so **no executed test had ever asserted an SLA value**. That is no longer true. The matrix row now says so, with the caveat that the `PASS` must still **not** be read as end-to-end, both-tier SLA assurance.
+
+**Dating, deliberately.** This revision is **2026-09-09** throughout; the RQ53 confirmation and the chain sync were **2026-09-08**. The project already had to correct one dating slip where a sync carried the *decision's* date instead of its own — **that correction is what made this one deliberate rather than lucky.** Verified: the execution row carries 2026-09-09 and no 2026-09-08.
+
+**Files changed:** `RAISE-TEST-CASES.md` (0.29→**0.30**), `RAISE-TRACEABILITY-MATRIX.md` (2.9→**2.10**), both through the `.claude/skills` subagents. **Zero product code, zero other chain documents.**
+
+**Validation on `main` `d0770e4`:** frontend `tsc` **0**, ESLint clean, **54 files / 286 tests pass** — unchanged, as expected for execution reporting that touches no code. **Verified after the subagents returned rather than taken on their reports:** the frontend-only limitation and the absent backend test are both in the case's own status; **Gap 21 intact**; `TC-DASH-01`/`TC-EXEC-001-01`'s superseded PASS records untouched; `RAISE-FR-EXEC-001` still **`PASS (partial)`**; *"SLA per stage"* still open.
+
+**Status:** ✅ Complete for its confirmed scope — the first real execution since the SLA values were confirmed, and the first item in days that needed neither a business decision nor a build.
+
+**Known Issues:** **Gap 25 is open** — the Go `slaHours` map is unexercised and untested. **It needs neither a business decision nor a build**, only a backend test or a run with `TICKET_API_ENABLED=true`. *"SLA per stage"*, the vendor model, the cost model and the delegated-approver rules all remain TBD.
+
+**Remaining Work:** close Gap 25 — a backend test over `slaHours`, or an execution with the ticket API flag on.
+
+**Next Step:** **close Gap 25.** It is now the only item on the board needing no business input and no feature build. **F-03's per-Asset-Type useful-life values** remain the only outstanding business input and the only thing that would move a Compliance Review verdict.
+
+**What this checkpoint adds to the pattern.** Yesterday's lesson was *file the note* — F-54 existed because an observation had been reasoned away. Today's is its sequel: **executing a case is not the same as covering the behaviour it cites.** The run passed on every assertion and still left a real hole, because the Expected Result names two tiers and the default configuration exercises one. **The habit worth keeping: before recording a PASS, ask which of the things the case cites were actually touched by the run** — the answer here was "one of two", and saying so cost nothing while claiming otherwise would have buried an untested map behind a green result.
+
+---
+
 ## Level 2 — Feature Checkpoints
 
 ### FEATURE-CHECKPOINT-project-tracking-governance

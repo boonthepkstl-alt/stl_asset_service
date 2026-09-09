@@ -210,21 +210,24 @@ the model instead of supplying numbers.
 
 ## Recommendation
 
-**One item now needs no business input at all.** **Gap 23** — execute `TC-MAINT-001-10`,
-which asserts the per-priority SLA target hours confirmed by **RQ53** (F-54 → R-40). The
-behaviour is already shipped in both tiers, the case is written and classified **testable,
-not BLOCKED**, and it has simply never been run. It needs no decision and no build — only an
-execution sweep — and closing it removes the last place where confirmed behaviour has no
-executed test behind it.
+**One item still needs no business input at all — but it is no longer Gap 23.**
+**Gap 23 is closed:** `TC-MAINT-001-10` was executed 2026-09-09 and **passed**, with the four
+priorities stamping 2 / 8 / 24 / 48 hours in the running app.
+
+**What the execution exposed is now Gap 25.** `TICKET_API_ENABLED` is off by default, so the
+run exercised the **frontend tier only**; `go-template-main/service/ticketService.go:19-26`'s
+identical map was **not exercised**, and **no backend test covers `slaHours`**. Closing Gap 25
+needs a backend test, or a run with the ticket API flag on — **no decision, no feature build.**
 
 **One business input remains outstanding: F-03.** It is the only item that would move a
 Compliance Review verdict.
 
 **F-54 was the other one, and it is closed (R-40)** — business confirmed the four shipped SLA
 values as they stand, so the numbers users were already reading now have authority behind
-them. It took one sentence from business and no code change. **What remains from it is not a
-decision but an execution:** `TC-MAINT-001-10` is written, classified testable, and unrun —
-**Gap 23**.
+them. It took one sentence from business and no code change. **Its execution followed on
+2026-09-09 and passed** (Gap 23 closed). **What remains from it is not a decision either:**
+the run exercised the frontend tier only, so `slaHours` on the Go side is still unexercised
+and untested — **Gap 25**.
 
 **Supply one useful-life value per Asset Type.** The model question is now settled and the
 decisions are

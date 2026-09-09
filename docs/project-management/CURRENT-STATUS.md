@@ -9,7 +9,36 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-09-08, at `758c268`. Suite **54 test files / 286 tests**; CI green.
+**As of:** 2026-09-09, at `d0770e4`. Suite **54 test files / 286 tests**; CI green.
+Test Cases **v0.30**, Matrix **v2.10**; PRD **v0.21**, Design **v0.19**, Prototype
+**v0.20**, AC **v0.19**, Test Plan **v0.20**.
+
+**`TC-MAINT-001-10` executed — PASS.** The first formal execution since the SLA values
+were confirmed, and the first item in days needing neither a business decision nor a
+build. Run against the real app, **driving the UI rather than calling services**: the
+Priority selector offers exactly four options with the expected labels, and one request
+per priority was stamped **2 / 8 / 24 / 48** hours (`ITR-2026-007`…`010`), each verified on
+its own Ticket Detail page. Zero console errors.
+
+**Gap 23 closed; Gap 25 opened — and the split is the point.** `TICKET_API_ENABLED`
+is off by default, so the run exercised the **frontend tier only**;
+`ticketService.go:19-26`'s identical map was **not exercised** and **no backend test covers
+`slaHours`**. Matrix v2.10 closed Gap 23 because its stated condition (*a formal execution*
+*against the real running app*) was literally met, and carved the backend shortfall out as
+**Gap 25** rather than stretching the closure or refusing one that was earned. Its
+reasoning was this project's own principle — *a specification being correct is not*
+*coverage* — applied by analogy: **exercising one of two cited tiers is not coverage
+of both.**
+
+**What `RAISE-FR-MAINT-001` rests on has changed, though its verdict has not.** Until
+today its full `PASS` rested solely on the 4-stage transitions and **predated**
+`TC-MAINT-001-10` — **no executed test had ever asserted an SLA value.** That is no
+longer true. It is still not end-to-end both-tier assurance.
+
+**Gap 25 is now the only item on the board needing no business input and no feature
+build** — a backend test over `slaHours`, or a run with the ticket API flag on.
+
+Earlier, on 2026-09-08 at `758c268`. Suite **54 test files / 286 tests**; CI green.
 PRD **v0.21**, Design **v0.19**, Prototype **v0.20**, AC **v0.19**, Test Plan **v0.20**,
 Test Cases **v0.29**, Matrix **v2.9**.
 

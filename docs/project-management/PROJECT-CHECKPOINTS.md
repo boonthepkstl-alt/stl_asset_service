@@ -4738,6 +4738,53 @@ Restored → **0 failures**. A guard that has not been made to fail is not yet a
 
 ---
 
+## CHECKPOINT-2026-09-09-003
+
+**Phase:** Phase 5B — Maintenance / Ticket domain
+**Feature:** Per-priority SLA target hours (`RAISE-FR-MAINT-001`)
+**Task:** Gap 26 — **(b) HTTP-path execution: PASS and CLOSED on substance. (a) cross-tier contract test: PASS as evidence, but the gap STAYS OPEN because the test is on an unmerged PR.** New **Gap 27** opened.
+
+**Requirement traced:** `RAISE-FR-MAINT-001`, full **`PASS`** — unchanged in level for the fourth consecutive checkpoint (full `PASS` is the ceiling), but what it rests on grew again.
+
+**The headline is a disagreement, and it is recorded before the results.** The instruction for this session was to record **both** sub-parts as PASS and to end with the matrix no longer showing Gap 26 as OPEN. **The matrix, asked for an independent verdict, refused half of that** — and the reasoning is sound enough to adopt rather than override: **a gap opened against the state of `main` cannot be closed by code that does not exist on `main`.** `PR #124` is open, CI-green, and unmerged. So the evidence for (a) is a genuine PASS and is recorded as one; the **gap** stays OPEN, explicitly *contingent on that PR merging*. **Forcing the closure would have been exactly the "edit the document so the result looks better" this project forbids** — and it would have been undone by the first reader who checked out `main` and looked for the test.
+
+**Gap 26(b) — HTTP-path execution, PASS.** A real `docker compose` stack was driven directly over HTTP: `stl_asset_pj-backend-1` (Go/Fiber, port 8080) and `stl_asset_pj-db-1` (**postgres:16-alpine**, healthy). **Provenance was checked before the run was used as evidence** — the image was built **2026-09-04** while `service/ticketService.go` last changed **2026-08-23** (`460bafb`), so the `slaHours` code in the running image is the same code as on `main` today (PR #123 added only `_test.go` files). Flow, through the **real JWT auth middleware on the protected route group**: `POST /api/auth/login` → `GET /api/employees` + `GET /api/assets` (real ids) → `POST /api/tickets` ×4 → `GET /api/tickets/{ticketCode}` ×4 **as separate requests** → a direct Postgres query.
+
+| Priority | HTTP | Ticket | POST | independent GET | Postgres `doc->>` | expected |
+|---|---|---|---|---|---|---|
+| Critical | 201 | `ITR-2026-001` | **2** | **2** | **2** | 2 ✅ |
+| High | 201 | `ITR-2026-002` | **8** | **8** | **8** | 8 ✅ |
+| Medium | 201 | `ITR-2026-003` | **24** | **24** | **24** | 24 ✅ |
+| Low | 201 | `ITR-2026-004` | **48** | **48** | **48** | 48 ✅ |
+
+**Three independent evidence layers, and the middle one is the load-bearing addition:** the create handler's response body, **an independent read-back over a separate HTTP request** — proving the value was persisted and re-serialised rather than echoed by the handler that computed it — and the row in Postgres. Schema detail found on the way: **there is no `sla_target_hours` column**; the value lives inside the `tickets.doc` **jsonb** column. Returned `priority` matched the submitted one on every ticket. **No failure occurred, so nothing was fixed and no production code was touched.** **Side effect, recorded rather than left for someone to find:** four real tickets (`ITR-2026-001`…`004`) now exist in the dev database.
+
+**Gap 26(b)'s closure is on substance, not on its own literal wording — and the matrix carved out the difference instead of papering over it.** Its stated condition named "a formal execution of `TC-MAINT-001-10` with `TICKET_API_ENABLED=true`", which describes a **frontend**-driven run. What happened was `curl` against the Go API directly: same Go tier, same real HTTP path, but the frontend was never started and `TICKET_API_ENABLED` was never set. **The remainder is now Gap 27** — `frontend/src/services/ticket-service.ts`'s real-API branch has still **never been exercised by anything**, by either run: the 2026-09-09 UI execution went through the mock repository, and this one bypassed the frontend entirely. **Third time this document has carried a remainder forward rather than stretching a closure over it** (Gap 23 → 25 → 26 → 27), and the pattern is deliberate.
+
+**Gap 26(a) — the contract test, PASS as evidence.** `PR #124` (`test/sla-map-contract`, `8f27358`) adds `go-template-main/service/slaContract_test.go`: `TestSLAHoursMatchesFrontendContract` parses `SLA_HOURS` out of the TypeScript source and compares it with the Go map **in both directions**, and **pins both maps at exactly four entries** — without that pin, deleting the same key from both files would leave them "in agreement" and the test green while the shipped behaviour stopped matching **RQ53**. Values remain the confirmed **2 / 8 / 24 / 48**; **no new value was introduced**. This is the first thing that verifies `ticketService.go`'s own comment claiming it *"mirrors the frontend map exactly"*.
+
+**Approach chosen by the stakeholder from three options** (shared fixture / contract test / backend as source of truth): **the contract test** — Gap 26(a) is a coverage gap, not a correctness bug, so changing production code would pay an architectural price for a hole that has never produced a wrong value. **No production behaviour changed, no shared fixture, no new API endpoint.** During the analysis a fact emerged that reinforced it: `HttpTicketRepository.create()` already sends **no** `slaTargetHours` and returns the backend's response, so in API mode the backend is *already* the source of truth and the frontend map matters only in mock mode.
+
+**Seven mutations, all seven FAIL as required:** frontend value drift (`Critical 2→3`), backend value drift (`Low 48→24`), frontend key removed (`Medium`), `SLA_HOURS` renamed so the literal is not found, frontend value made non-integer, source file missing, and **the same key dropped from both tiers at once**. Unmutated baseline PASS; every production file verified **byte-identical to HEAD** afterwards. **The design rule: every failure mode fails loudly and it never falls through to a pass because it could not find its input** — the direct lesson of the `SlaTargetHours` grep error corrected in PR #123.
+
+**The mutation run found a real hole in the new test itself, which is why it was worth running.** The first pass reported **PASS for every frontend-side mutation** — not because the assertions were weak, but because **`go test` served a cached result**: the `.ts` file is outside the Go module and the test cache does not track it. Verified directly, with the frontend map set to a wrong value: plain `go test` reported `ok (cached)`, `go test -count=1` reported **FAIL**. CI's backend Test step now runs **`go test -count=1 ./...`** for exactly this reason (also on the unmerged PR). **Without it a frontend-only drift could be served a stale green — the precise silent pass the test exists to prevent.** **Accepted cost, stated rather than left to be rediscovered:** the test reads a path and a source literal that a frontend refactor could move; the fragility is contained by the fail-loudly rule.
+
+**Files changed:** `RAISE-TEST-CASES.md` (0.31→**0.32**) and `RAISE-TRACEABILITY-MATRIX.md` (2.11→**2.12**), both through the `.claude/skills` subagents, plus the project-management documents. **Zero product code, zero test code** — the test and the CI flag live on `PR #124` and were not touched by this close-out.
+
+**Verified after the subagents returned rather than taken on their reports:** Test Cases v0.32 states the unmerged status (5 occurrences), references `PR #124` (17), and records the `-count=1` limitation (10); Matrix v2.12's gap headings all lead with a status matching their body — **Gap 26 "STAYS OPEN OVERALL"**, **Gap 27 "left OPEN"**, Gap 21 still OPEN, Gap 23/24/25 closures intact; `RAISE-FR-EXEC-001` still `PASS (partial)`; F-03 still open (84 mentions); `TC-WARRANTY-001-07` still **BLOCKED (partial)**; hour figures across both documents are only **2 / 8 / 24 / 48**.
+
+**Status:** 🟡 Complete for what evidence supports — **not** ✅, because Gap 26 is still open by its own assessment. (b) is closed; (a) waits on a merge decision.
+
+**Known Issues:** **Gap 26(a) OPEN**, contingent on `PR #124` merging — the only open item on the board whose resolution is a **merge decision**, not work. **Gap 27 OPEN** — the frontend's real-API branch has never been exercised; needs no business decision and no build. **Gap 21 OPEN**, blocked on **F-03**. *"SLA per stage"*, the vendor model, the cost model and the delegated-approver rules remain TBD.
+
+**Remaining Work:** merge `PR #124` (closes Gap 26(a), and with it Gap 26); then Gap 27; then Gap 21 once F-03 unblocks.
+
+**Next Step:** **`PR #124` is awaiting an explicit merge instruction.** **F-03's per-Asset-Type useful-life values remain the only outstanding business input and the only thing that would move a Compliance Review verdict** — untouched by this session, and not guessed at.
+
+**What this checkpoint adds to the pattern.** The lesson is about **where a verdict lives**. Three real pieces of evidence were produced, all genuine passes, and the correct record still is not "closed": one of them exists on a branch, and a gap that tracks `main` cannot be discharged by a branch. **The temptation was to let the strength of the evidence stand in for its location** — the test does pass, the mutations do fail, CI is green, so why not close it? Because the next reader checks out `main`, greps for `slaContract_test.go`, finds nothing, and now distrusts every other closure in the document. **The habit worth keeping: a closure names the state of the thing it is about, not the strength of the evidence pointing at it.**
+
+---
+
 ## Level 2 — Feature Checkpoints
 
 ### FEATURE-CHECKPOINT-project-tracking-governance

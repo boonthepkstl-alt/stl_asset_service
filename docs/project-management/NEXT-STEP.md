@@ -17,6 +17,14 @@ Overwritten in place each time the protocol is re-run.
 > per-Asset-Type useful-life values remain the only outstanding business input and the
 > only thing that would move a Compliance Review verdict.** For the current picture see
 > [`CURRENT-STATUS.md`](CURRENT-STATUS.md) and `CHECKPOINT-2026-09-09-002`.
+>
+> **[FURTHER, later on 2026-09-09.]** **Gap 26(b) is CLOSED** (HTTP-path execution
+> against the real backend + Postgres, PASS). **Gap 26(a)'s evidence is a PASS but the
+> gap STAYS OPEN**, contingent on **`PR #124`** merging — a gap tracking `main` cannot
+> be closed by code that is not on `main`. **New Gap 27** is open: the frontend's own
+> real-API branch has never been exercised. Test Cases **v0.32**, Matrix **v2.12**, and
+> `CHECKPOINT-2026-09-09-003` carry the full record. **F-03 is unchanged and still the
+> only outstanding business input.**
 
 **Derived from** a direct read of `main` at `39bb2b0`: PRD **v0.20**, Design **v0.18**,
 Prototype **v0.18**, AC **v0.17**, Test Plan **v0.17**, Test Cases **v0.27**, Traceability

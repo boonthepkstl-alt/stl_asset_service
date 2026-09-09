@@ -2,7 +2,7 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Test Cases
-**Version:** 0.31 Draft
+**Version:** 0.32 Draft
 **Status:** Draft for Test Case Review
 **Source:** [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.20 §7 (Test Suites, including the 2026-09-07 TS-DASH/TS-EXEC-001 ten-tile NBV re-specification, PRD §16 Resolved Questions 50–51, the 2026-09-08 PRD §16 Resolved Question 52 re-key of the NBV useful-life configuration from Asset Category to Asset Type, and the 2026-09-08 PRD §16 Resolved Question 53 confirmation of TS-MAINT-001's per-priority SLA target hours) + §8 (Blocked Items) + §8.1 (Fully-Blocked Suites — AI Document Intelligence Capabilities) + §3.3 (PRD §10 NFR Backlog — No Suite), expanding [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.19
 **Source of Truth:** RAISE PRD
@@ -633,6 +633,90 @@ happen to match. This correction does **not** change `TC-MAINT-001-10`'s recorde
 the vendor model, the cost model, and the delegated-approver configuration rules remain
 exactly as open/blocked as recorded above, untouched by this correction.
 
+**Updated 2026-09-09 (later the same day) — the two remaining gaps named just above are now
+addressed by two further real executions. `TC-MAINT-001-10`'s recorded PASS is unchanged and
+not re-litigated by either.**
+
+**(a) HTTP-path execution — closes what the paragraph above called "no run has exercised the
+Go tier through the HTTP path" — PASS.** A real running stack (`docker compose` services
+`stl_asset_pj-backend-1`, Go/Fiber, port 8080, and `stl_asset_pj-db-1`, `postgres:16-alpine`,
+healthy) was driven end to end **through the real JWT auth middleware on the protected route
+group**: `POST /api/auth/login` → `GET /api/employees` + `GET /api/assets` (to obtain real
+ids) → `POST /api/tickets` once per priority → `GET /api/tickets/{ticketCode}` as a
+**separate** HTTP request per ticket → a direct Postgres query. **Provenance was checked
+before use as evidence:** the backend image was built 2026-09-04, after
+`service/ticketService.go`'s last modification (2026-08-23, commit `460bafb`), so the
+`slaHours` code in the running image is the same code as on `main` today (PR #123 added only
+`_test.go` files, no production change). All four `POST /api/tickets` calls returned **HTTP
+201**, and the returned `priority` matched the submitted priority on every ticket. Results,
+**three independent evidence layers per ticket** (the create response body, an
+independently-issued read-back request, and the Postgres row):
+
+| Priority | Ticket | Create response `slaTargetHours` | Independent GET | Postgres `doc->>'slaTargetHours'` |
+|---|---|---|---|---|
+| Critical | `ITR-2026-001` | 2 | 2 | 2 |
+| High | `ITR-2026-002` | 8 | 8 | 8 |
+| Medium | `ITR-2026-003` | 24 | 24 | 24 |
+| Low | `ITR-2026-004` | 48 | 48 | 48 |
+
+Schema detail recorded plainly: there is **no `sla_target_hours` column** — the value lives
+inside the `tickets.doc` jsonb column (confirmed with `\d tickets`). The reproducible script
+used is kept outside this repository. **Side effect recorded plainly, not hidden:** this run
+created four real tickets (`ITR-2026-001` through `-004`) in the dev database — distinct from
+`ITR-2026-007` through `-010` created by the earlier 2026-09-09 frontend-tier execution above.
+No failure occurred; nothing was fixed and no production code was touched by this run.
+
+**(b) Cross-tier contract test, PR #124, branch `test/sla-map-contract`, commit `8f27358` —
+PASS, but NOT MERGED to `main` as of this revision.** New file
+`go-template-main/service/slaContract_test.go` adds `TestSLAHoursMatchesFrontendContract`,
+which parses `SLA_HOURS` out of the TypeScript source
+(`frontend/src/services/ticket-service.ts:14`) and compares it against the Go `slaHours` map
+(`go-template-main/service/ticketService.go:19-26`) in **both directions** (nothing the
+backend stamps may be missing or different upstream; nothing may exist only on the frontend),
+and additionally **pins both maps at exactly four entries** — without that pin, deleting the
+same key from both files would leave them "in agreement" while shipping behaviour that no
+longer matches PRD §16 Resolved Question 53. Expected values remain the confirmed Critical 2 /
+High 8 / Medium 24 / Low 48; no new value is introduced. **Seven mutations were run and all
+seven failed, as required:** frontend value drift (Critical 2→3), backend value drift (Low
+48→24), frontend key removed (Medium), `SLA_HOURS` renamed so the literal is not found,
+frontend value made non-integer, source file missing, and the same key dropped from both
+tiers simultaneously. The unmutated baseline passes, and every production file was verified
+byte-identical to HEAD afterwards. Design rule recorded: every failure mode fails loudly and
+never falls through to a pass because it could not find its input — the direct lesson of the
+`SlaTargetHours`/`SLATargetHours` grep error corrected in PR #123 (above). **A real limitation
+found by the mutation run itself, recorded honestly:** the first mutation pass reported PASS
+for every frontend-side mutation — not because the assertions were weak, but because
+`go test` served a **cached** result (the `.ts` file is outside the Go module, so the test
+cache does not track it). Verified directly: plain `go test` reports `ok (cached)` against a
+wrong frontend value, while `go test -count=1` reports FAIL. CI's backend Test step on PR #124
+now runs `go test -count=1 ./...` for this reason — **also not on `main` yet**. Without that
+flag, a frontend-only drift can be served a stale green — the exact silent pass this test
+exists to prevent. Known cost accepted deliberately, recorded rather than hidden: the test
+reads a path and a source literal that a frontend refactor could move; this fragility is
+contained by the fail-loudly rule above, not eliminated. **Validation on PR #124:**
+`go build`/`go vet`/`go test -count=1 ./...` clean; `gofmt` clean over LF-stripped content;
+frontend `tsc` 0 errors, ESLint 0 warnings, 54 files / 286 tests passing; CI green on both
+jobs. **Because this PR is unmerged, this coverage does not yet exist on `main`** — recorded
+on that basis, not implied merged.
+
+**What remains uncovered after (a) and (b):** nothing regarding the SLA-value-per-priority
+contract itself across both tiers — the frontend UI (earlier same day, 2026-09-09), the
+backend HTTP path (a, above), and a byte-level cross-tier map comparison (b, above, pending
+merge) now all independently confirm Critical=2/High=8/Medium=24/Low=48. What remains
+genuinely open is unaffected by (a)/(b): **"SLA per stage"** (the four workflow stages' own
+individual time budgets) stays a separate, fully **NOT TESTABLE YET** question with no test
+case written for it; the vendor model, the cost model, and the delegated-approver
+configuration rules remain exactly as blocked as before; `TC-WARRANTY-001-07` (§12) stays
+**BLOCKED (partial)** on Open Finding F-03 (per-Asset-Type useful-life values still not
+supplied), untouched by anything in this update. This addition does not itself change
+`RAISE-FR-MAINT-001`'s verdict or close any Gap — `RAISE-TRACEABILITY-MATRIX.md` owns Gap
+25/Gap 26 and assesses them separately, and Gap 26(a)'s closure specifically depends on PR
+#124 actually merging, which has not happened as of this revision. No new `TC-` ID is
+introduced by this addition: both (a) and (b) are recorded as further evidence against the
+same `AC-MAINT-001-10` criterion (single overall SLA target per ticket, keyed by priority)
+that `TC-MAINT-001-10` already covers — consistent with this document's 1:1 AC↔TC
+convention, which does not admit a new TC without a new AC.
+
 | TC ID | Title | Steps | Test Data | Expected Result | Blocked |
 |---|---|---|---|---|---|
 | TC-MAINT-001-01 | Maintenance record displays | 1. Open Maintenance screen for an asset with a record. | 1 asset, 1 maintenance record (date/event/status/cost) | Record fields are displayed | **BLOCKED (partial)** — display testable; full field model TBD (PRD §16 Q14) |
@@ -644,7 +728,7 @@ exactly as open/blocked as recorded above, untouched by this correction.
 | TC-MAINT-001-07 | Stage 4 — Technician updates execution status | 1. Open a request in state `PLANNING`, `IN_PROGRESS`, or `ON_HOLD`. 2. As the assigned technician, change the status control to a different one of the three values. | 1 request in any of `PLANNING`/`IN_PROGRESS`/`ON_HOLD` | Request's displayed status reflects the newly selected value | **BLOCKED (partial)** — the status-update behavior itself is testable; depends on `RAISE-NFR-SEC-RBAC-001` — MVP enforcement level confirmed UI-only/client-side, but role list/permission matrix (Q22) remain TBD, so this case cannot verify that the acting user is a correctly-gated Technician, only that the status control updates the displayed value. |
 | TC-MAINT-001-08 | Stage 4 — Mark Complete transitions to Done | 1. Open a request in state `PLANNING`, `IN_PROGRESS`, or `ON_HOLD`. 2. As the assigned technician, select Mark Complete. | 1 request in any of `PLANNING`/`IN_PROGRESS`/`ON_HOLD` | Request transitions to state `DONE` | **BLOCKED (partial)** — the Mark Complete→`DONE` state transition itself is testable; depends on `RAISE-NFR-SEC-RBAC-001` — MVP enforcement level confirmed UI-only/client-side, but role list/permission matrix (Q22) remain TBD, so this case cannot verify that the acting user is a correctly-gated Technician. No behavior is defined for Mark Complete attempted from any other state, or for skipped/reversed stages — no test case exists for those, since none is shown in the Prototype. |
 | TC-MAINT-001-09 | Stage-progress indicator reflects current state | 1. Open the detail view for a maintenance request at each of: `PENDING_DEPT_APPROVAL`, `PENDING_IT_DISPATCH`, `PLANNING`/`IN_PROGRESS`/`ON_HOLD`, and `DONE`. | 4 requests, one per listed state (or state group) | The 4-stage progress indicator (User Requisition → Dept Approval → IT Dispatch → Technician Execution) shows Done/Current/Pending consistent with each request's current state | No |
-| TC-MAINT-001-10 | Per-priority SLA target hours — Priority selector options and `slaTargetHours` stamping | 1. As any user, open the maintenance-request form (Stage 1 — User Requisition) at `/maintenance/create` (reachable from the Maintenance list, Asset Detail, or Employee Detail). 2. Open the Priority selector and inspect its options. 3. Separately, for each of the four Priority values in turn, select that value and submit the request. 4. Inspect the created request's `slaTargetHours` value. | One maintenance request per Priority value (Critical, High, Medium, Low) — no other numeric value is used or asserted | The Priority selector offers exactly four options, labeled "Critical (2h SLA)," "High (8h SLA)," "Medium (24h SLA)," and "Low (48h SLA)"; the request created with each priority is stamped with the matching `slaTargetHours` — Critical=2, High=8, Medium=24, Low=48 — per `frontend/src/services/ticket-service.ts:14` and `go-template-main/service/ticketService.go:19-26`. This asserts a **single overall SLA target per ticket, keyed by its priority** only — it does not assert, and must not be read as asserting, a time budget for any individual one of the four workflow stages. | No — **PASS**, formally executed 2026-09-09 against the real running app (`npm run dev`, `raise-frontend`, port 5173) on merged `main` @ `88f1017`, driving the actual UI (not calling services directly). **Step 2:** read the Priority selector's live DOM at `/maintenance/create` — confirmed exactly four options, labeled verbatim "Critical (2h SLA)," "High (8h SLA)," "Medium (24h SLA)," "Low (48h SLA)" (values `Critical`/`High`/`Medium`/`Low`). **Steps 3–4:** for each priority in turn, subject and priority were set on the real form, the request was submitted through the page's own Submit button, and the created ticket's SLA target was read from its Ticket Detail page (`Target: {ticket.slaTargetHours} hours`, `frontend/src/pages/TicketDetail/index.tsx:302`): Critical → `ITR-2026-007` → **Target: 2 hours**; High → `ITR-2026-008` → **Target: 8 hours**; Medium → `ITR-2026-009` → **Target: 24 hours**; Low → `ITR-2026-010` → **Target: 48 hours** — all four matched the expected value. Each ticket's own subject was confirmed present on its own detail page, confirming the SLA figure read belongs to the ticket just created and not a neighbouring row. Zero console errors across the whole sweep. **Frontend tier only, recorded plainly rather than glossed over:** `TICKET_API_ENABLED` (`import.meta.env.VITE_TICKET_API_ENABLED === 'true'`, `frontend/src/config/featureFlags.ts:30`) is off by default, so this run went through the **mock ticket repository**, and the value observed came from `frontend/src/services/ticket-service.ts:14` only. `go-template-main/service/ticketService.go:19-26`'s identical map was **not** exercised by this run. **Corrected same day (2026-09-09):** this cell originally added, "and no backend test covers `slaHours` — confirmed by grepping `go-template-main/service/*_test.go`, which returns nothing" — that claim, and the grep behind it, were both wrong: the grep used the case-sensitive pattern `SlaTargetHours` against the actual field `SLATargetHours` (capital `SLA`), missing the one place it already appeared (`go-template-main/service/ticketService_test.go:99`, asserting `SLATargetHours` = 8 for High, inside `TestCreateTicket_BuildsSnapshotAndInitialTimeline`) — so High was already covered, incidentally, while Critical/Medium/Low and the map as a whole were not. Two new tests added the same day, `TestCreateTicket_StampsSLATargetHoursForEveryPriority` (all four priorities, hardcoded expected values 2/8/24/48, not read from the map) and `TestCreateTicket_UnknownPriorityGetsZeroSLATarget` (observed, not endorsed, zero-fallback for an out-of-scope priority), close the remainder — both mutation-tested and passing against a clean `go build`/`go vet`/`go test ./...`/`gofmt`. All four priorities plus the unknown-priority case are now covered by backend unit tests; the backend tier is no longer untested. **Still not covered:** no test exercises the frontend map and the backend map against each other, and no run has exercised the Go tier through the HTTP path (`TICKET_API_ENABLED=true` with the backend running) — see §11's Status Note for full detail. This correction does not change this case's recorded **PASS**. This execution does **not** change `RAISE-FR-MAINT-001`'s existing verdict and does **not** itself close Gap 23 — the Traceability Matrix owns Gap 23 and assesses it separately. **"SLA per stage"** (the four workflow stages' own individual time budgets) remains a separate, still fully **NOT TESTABLE YET** question, unaffected by this execution; the vendor model, the cost model, and the delegated-approver configuration rules remain exactly as blocked/open as before. |
+| TC-MAINT-001-10 | Per-priority SLA target hours — Priority selector options and `slaTargetHours` stamping | 1. As any user, open the maintenance-request form (Stage 1 — User Requisition) at `/maintenance/create` (reachable from the Maintenance list, Asset Detail, or Employee Detail). 2. Open the Priority selector and inspect its options. 3. Separately, for each of the four Priority values in turn, select that value and submit the request. 4. Inspect the created request's `slaTargetHours` value. | One maintenance request per Priority value (Critical, High, Medium, Low) — no other numeric value is used or asserted | The Priority selector offers exactly four options, labeled "Critical (2h SLA)," "High (8h SLA)," "Medium (24h SLA)," and "Low (48h SLA)"; the request created with each priority is stamped with the matching `slaTargetHours` — Critical=2, High=8, Medium=24, Low=48 — per `frontend/src/services/ticket-service.ts:14` and `go-template-main/service/ticketService.go:19-26`. This asserts a **single overall SLA target per ticket, keyed by its priority** only — it does not assert, and must not be read as asserting, a time budget for any individual one of the four workflow stages. | No — **PASS**, formally executed 2026-09-09 against the real running app (`npm run dev`, `raise-frontend`, port 5173) on merged `main` @ `88f1017`, driving the actual UI (not calling services directly). **Step 2:** read the Priority selector's live DOM at `/maintenance/create` — confirmed exactly four options, labeled verbatim "Critical (2h SLA)," "High (8h SLA)," "Medium (24h SLA)," "Low (48h SLA)" (values `Critical`/`High`/`Medium`/`Low`). **Steps 3–4:** for each priority in turn, subject and priority were set on the real form, the request was submitted through the page's own Submit button, and the created ticket's SLA target was read from its Ticket Detail page (`Target: {ticket.slaTargetHours} hours`, `frontend/src/pages/TicketDetail/index.tsx:302`): Critical → `ITR-2026-007` → **Target: 2 hours**; High → `ITR-2026-008` → **Target: 8 hours**; Medium → `ITR-2026-009` → **Target: 24 hours**; Low → `ITR-2026-010` → **Target: 48 hours** — all four matched the expected value. Each ticket's own subject was confirmed present on its own detail page, confirming the SLA figure read belongs to the ticket just created and not a neighbouring row. Zero console errors across the whole sweep. **Frontend tier only, recorded plainly rather than glossed over:** `TICKET_API_ENABLED` (`import.meta.env.VITE_TICKET_API_ENABLED === 'true'`, `frontend/src/config/featureFlags.ts:30`) is off by default, so this run went through the **mock ticket repository**, and the value observed came from `frontend/src/services/ticket-service.ts:14` only. `go-template-main/service/ticketService.go:19-26`'s identical map was **not** exercised by this run. **Corrected same day (2026-09-09):** this cell originally added, "and no backend test covers `slaHours` — confirmed by grepping `go-template-main/service/*_test.go`, which returns nothing" — that claim, and the grep behind it, were both wrong: the grep used the case-sensitive pattern `SlaTargetHours` against the actual field `SLATargetHours` (capital `SLA`), missing the one place it already appeared (`go-template-main/service/ticketService_test.go:99`, asserting `SLATargetHours` = 8 for High, inside `TestCreateTicket_BuildsSnapshotAndInitialTimeline`) — so High was already covered, incidentally, while Critical/Medium/Low and the map as a whole were not. Two new tests added the same day, `TestCreateTicket_StampsSLATargetHoursForEveryPriority` (all four priorities, hardcoded expected values 2/8/24/48, not read from the map) and `TestCreateTicket_UnknownPriorityGetsZeroSLATarget` (observed, not endorsed, zero-fallback for an out-of-scope priority), close the remainder — both mutation-tested and passing against a clean `go build`/`go vet`/`go test ./...`/`gofmt`. All four priorities plus the unknown-priority case are now covered by backend unit tests; the backend tier is no longer untested. **Still not covered:** no test exercises the frontend map and the backend map against each other, and no run has exercised the Go tier through the HTTP path (`TICKET_API_ENABLED=true` with the backend running) — see §11's Status Note for full detail. This correction does not change this case's recorded **PASS**. This execution does **not** change `RAISE-FR-MAINT-001`'s existing verdict and does **not** itself close Gap 23 — the Traceability Matrix owns Gap 23 and assesses it separately. **"SLA per stage"** (the four workflow stages' own individual time budgets) remains a separate, still fully **NOT TESTABLE YET** question, unaffected by this execution; the vendor model, the cost model, and the delegated-approver configuration rules remain exactly as blocked/open as before. **Updated 2026-09-09 (later the same day):** the two gaps named above are now further evidenced — (a) an HTTP-path execution against the real Docker stack (**PASS**, three evidence layers: create response, independent read-back, Postgres row) confirms Critical=2/High=8/Medium=24/Low=48 through `TICKET_API_ENABLED=true`'s own code path; (b) a cross-tier contract test, PR #124 (**PASS, but unmerged as of this revision**), confirms the frontend and backend `slaHours` maps agree byte-for-byte in both directions and are each pinned at exactly four entries, mutation-tested against seven failure modes, all seven failing as required. This case's own recorded **PASS** is unchanged by either — see §11's Status Note (paragraph dated "Updated 2026-09-09 (later the same day)") for full detail, including what remains uncovered. |
 
 ---
 
@@ -1567,6 +1651,29 @@ performed separately. NBV cases (`TC-DASH-03b`, `TC-EXEC-001-03b`, `TC-DASH-04`,
 (partial)** reclassification, and re-execution requirement remain exactly as recorded,
 untouched by this execution.
 
+**`TC-MAINT-001-10` — two further executions recorded 2026-09-09 (later the same day),
+row-count unchanged:** (a) an HTTP-path execution against the real Docker stack
+(`stl_asset_pj-backend-1` + `stl_asset_pj-db-1`) drove `POST /api/tickets` once per priority
+through the real JWT auth middleware and read each ticket back via a separate request plus a
+direct Postgres query — **PASS**, Critical=2/High=8/Medium=24/Low=48 confirmed across all
+three evidence layers, closing what the prior correction called "no run has exercised the Go
+tier through the HTTP path"; (b) a cross-tier contract test, PR #124 (branch
+`test/sla-map-contract`, commit `8f27358`), compares the frontend and backend `slaHours` maps
+byte-for-byte in both directions and pins both at exactly four entries — **PASS against seven
+mutations, all seven failing as required, but this PR is NOT MERGED to `main` as of this
+revision**. Neither (a) nor (b) introduces a new `TC-` ID (both are recorded as further
+evidence against the existing `AC-MAINT-001-10`/`TC-MAINT-001-10` pair, per this document's
+1:1 AC↔TC convention); `TC-MAINT-001-10`'s existing 2026-09-09 frontend-tier **PASS** is
+unchanged and not re-litigated. TS-MAINT-001's row and the Grand Total are unchanged by this
+addition (`10 | 4 | 6 | 0 | 0`; Grand Total `96 | 63 | 26 | 4 | 3`). What remains uncovered:
+nothing regarding the SLA-value-per-priority contract itself (now confirmed at both tiers by
+three independent methods); "SLA per stage," the vendor model, the cost model, and the
+delegated-approver rules remain exactly as open/blocked as before; `TC-WARRANTY-001-07`
+remains **BLOCKED (partial)** on Open Finding F-03, untouched. This addition does not change
+`RAISE-FR-MAINT-001`'s verdict and does not itself close Gap 25 or Gap 26 — the Traceability
+Matrix owns both and assesses them separately, with Gap 26(a)'s closure specifically
+contingent on PR #124 merging.
+
 **TS-DASH and TS-EXEC-001 updated 2026-09-08 (this sync's actual date; PRD §16 Resolved
 Questions 50–51 were confirmed by business 2026-09-07, not the date this document was
 synced — a prior draft mislabeled the sync itself as 2026-09-07, corrected here;
@@ -2230,6 +2337,55 @@ Before moving to the Requirement Traceability Matrix / Development:
       untouched, remaining BLOCKED (partial) on Q3a; `TC-DASH-01`/`TC-EXEC-001-01`'s
       preserved prior PASS text, superseded labels, BLOCKED (partial) reclassification,
       and re-execution requirement confirmed intact and unaffected
+- [x] **HTTP-path execution recorded 2026-09-09 (later the same day), closing what the item
+      above called "no run has exercised the Go tier through the HTTP path"** —
+      `TC-MAINT-001-10`'s Blocked column and §11's Status Note record a real run against the
+      running Docker stack (`stl_asset_pj-backend-1` Go/Fiber port 8080,
+      `stl_asset_pj-db-1` postgres:16-alpine, both healthy), with image provenance checked
+      first (backend image built 2026-09-04, after `service/ticketService.go`'s last
+      production change on 2026-08-23, commit `460bafb`; PR #123 added only `_test.go`
+      files). `POST /api/tickets` once per priority through the real JWT auth middleware,
+      each ticket independently read back via a separate `GET`, and a direct Postgres query
+      — **PASS**, Critical=2/High=8/Medium=24/Low=48 confirmed identically across all three
+      evidence layers, all four creates returning HTTP 201, `priority` matching on every
+      ticket. Recorded plainly: there is no `sla_target_hours` column (value lives in
+      `tickets.doc` jsonb); this run's own side effect (four real tickets,
+      `ITR-2026-001..004`, in the dev database) is stated, not hidden. `TC-MAINT-001-10`'s
+      existing frontend-tier PASS is unchanged and not re-litigated by this addition
+- [x] **Cross-tier contract test recorded 2026-09-09, PR #124 (branch
+      `test/sla-map-contract`, commit `8f27358`), closing what the item above called "no test
+      exercises the frontend `slaHours` map and the backend `slaHours` map against each
+      other" — PASS, but explicitly recorded as NOT MERGED to `main` as of this revision.**
+      `go-template-main/service/slaContract_test.go`'s `TestSLAHoursMatchesFrontendContract`
+      compares the frontend and backend `slaHours` maps in both directions and pins both at
+      exactly four entries (Critical 2 / High 8 / Medium 24 / Low 48, no new value
+      introduced); seven mutations (frontend/backend value drift, key removal, literal
+      rename, non-integer value, missing source file, same-key dropped from both tiers) all
+      failed as required, baseline passes, production files verified byte-identical to HEAD
+      afterward. A genuine limitation found by the mutation run itself is recorded rather
+      than hidden: the first mutation pass reported a false PASS via a cached `go test`
+      result (the `.ts` source is outside the Go module and untracked by the test cache) —
+      `go test -count=1` correctly reports FAIL; CI's backend Test step on PR #124 now uses
+      `-count=1` for this reason, also unmerged as of this revision. `go build`/`go vet`/
+      `go test -count=1 ./...` clean, `gofmt` clean, frontend `tsc` 0 / ESLint 0 / 54 files /
+      286 tests passing, CI green on both jobs — all on the unmerged branch, not on `main`
+- [x] **After both additions above, what remains uncovered is stated plainly:** nothing
+      regarding the SLA-value-per-priority contract itself across tiers — frontend UI
+      (2026-09-09), backend HTTP path (this update), and byte-level cross-tier map
+      comparison (this update, pending PR #124 merge) now all independently confirm
+      Critical=2/High=8/Medium=24/Low=48. **"SLA per stage"** (per-workflow-stage time
+      budgets) remains a separate, fully NOT TESTABLE YET question, unaffected and untouched
+      by anything in this update; the vendor model, the cost model, and the
+      delegated-approver configuration rules remain exactly as blocked as before;
+      `TC-WARRANTY-001-07` remains **BLOCKED (partial)** on Open Finding F-03 (per-Asset-Type
+      useful-life values still not supplied), untouched. Neither addition introduces a new
+      `TC-` ID — both are recorded as further evidence against the existing
+      `AC-MAINT-001-10`/`TC-MAINT-001-10` pair, per this document's 1:1 AC↔TC convention.
+      `RAISE-FR-MAINT-001`'s verdict is not changed and no Gap is claimed closed by this
+      document — `RAISE-TRACEABILITY-MATRIX.md` owns Gap 25/Gap 26 and assesses them
+      separately, with Gap 26(a)'s closure specifically contingent on PR #124 merging.
+      §19 Test Case Summary row/Grand Total confirmed unchanged (`10 | 4 | 6 | 0 | 0`;
+      Grand Total `96 | 63 | 26 | 4 | 3`)
 
 ---
 
@@ -2262,6 +2418,111 @@ Suite ID → TC ID) into one master table for compliance review.
 ---
 
 ## Document Status
+
+**Version:** 0.32 (2026-09-09 — later the same day as v0.31, execution/coverage reporting only,
+no spec/scope change: v0.31 corrected an overstated claim about backend `slaHours` coverage and
+recorded two new backend unit tests; this revision records two further real executions that
+close the two remaining gaps v0.31's correction itself named — "no test exercises the frontend
+`slaHours` map and the backend `slaHours` map against each other" and "no run has exercised the
+Go tier through the HTTP path." **(a) HTTP-path execution — PASS.** A real running Docker stack
+(`stl_asset_pj-backend-1` Go/Fiber port 8080, `stl_asset_pj-db-1` postgres:16-alpine, both
+healthy; image provenance checked — built 2026-09-04, after `service/ticketService.go`'s last
+production change on 2026-08-23 commit `460bafb`, so the running code matches `main` today) was
+driven through the real JWT auth middleware: `POST /api/auth/login` → `GET /api/employees` +
+`GET /api/assets` → `POST /api/tickets` once per priority (all four HTTP 201) → `GET
+/api/tickets/{ticketCode}` as a separate request per ticket → a direct Postgres query.
+Critical=2/High=8/Medium=24/Low=48 confirmed identically across all **three** evidence layers
+(create response, independent read-back, `tickets.doc->>'slaTargetHours'` — there is no
+`sla_target_hours` column). Side effect recorded plainly: four real tickets
+(`ITR-2026-001..004`) now exist in the dev database. **(b) Cross-tier contract test — PASS, but
+NOT MERGED to `main` as of this revision.** PR #124 (branch `test/sla-map-contract`, commit
+`8f27358`) adds `go-template-main/service/slaContract_test.go`'s
+`TestSLAHoursMatchesFrontendContract`, comparing the frontend and backend `slaHours` maps in
+both directions and pinning both at exactly four entries; seven mutations (frontend/backend
+value drift, key removal, literal rename, non-integer value, missing source file, same-key
+dropped from both tiers) all failed as required, and every production file was verified
+byte-identical to HEAD afterward. A genuine limitation found by the mutation run itself is
+recorded, not hidden: the first mutation pass gave a false PASS via a cached `go test` result
+(the `.ts` source is outside the Go module and untracked by the test cache); `go test -count=1`
+correctly fails, and CI's backend Test step on PR #124 now uses `-count=1` for this reason —
+also unmerged as of this revision. `go build`/`go vet`/`go test -count=1 ./...` clean, `gofmt`
+clean, frontend `tsc` 0/ESLint 0/54 files/286 tests passing, CI green on both PR #124 jobs — all
+on the unmerged branch. **Neither (a) nor (b) introduces a new `TC-` ID or changes
+`TC-MAINT-001-10`'s existing frontend-tier PASS** — both are recorded as further evidence
+against the existing `AC-MAINT-001-10`/`TC-MAINT-001-10` pair, consistent with this document's
+1:1 AC↔TC convention (no new AC exists to pair a new TC against). **What remains uncovered after
+both:** nothing regarding the SLA-value-per-priority contract itself across tiers — it is now
+independently confirmed by three methods (frontend UI, backend HTTP path, byte-level cross-tier
+contract test pending merge). **"SLA per stage"** (per-workflow-stage time budgets) remains a
+separate, fully NOT TESTABLE YET question, unaffected; the vendor model, the cost model, and the
+delegated-approver configuration rules remain exactly as blocked as before; `TC-WARRANTY-001-07`
+remains **BLOCKED (partial)** on Open Finding F-03 (per-Asset-Type useful-life values still not
+supplied), untouched by this revision. `RAISE-FR-MAINT-001`'s verdict is **not** changed and no
+Gap is claimed closed by this document — `RAISE-TRACEABILITY-MATRIX.md` owns Gap 25/Gap 26 and
+assesses them separately, with Gap 26(a)'s closure specifically contingent on PR #124 merging.
+`RAISE-TEST-PLAN.md` and every earlier-layer document are untouched. See the Change Log entry
+below for full detail.)
+
+**Change Log — v0.31 → v0.32 (2026-09-09, later the same day, execution/coverage reporting
+only, no spec/scope change):**
+
+1. **Trigger.** v0.31 corrected an overstated backend-coverage claim and recorded two new
+   backend unit tests, but its own correction named two things still not covered: a cross-tier
+   comparison of the frontend and backend `slaHours` maps, and an HTTP-path execution of the Go
+   tier. Both are now addressed by real executions run the same day.
+2. **HTTP-path execution added.** A real running Docker stack was driven end to end through the
+   real JWT auth middleware — `POST /api/auth/login` → `GET /api/employees` + `GET /api/assets`
+   → `POST /api/tickets` once per priority → `GET /api/tickets/{ticketCode}` as a separate
+   request per ticket → a direct Postgres query — recording **PASS**: Critical=2/High=8/
+   Medium=24/Low=48 confirmed across three independent evidence layers (create response,
+   independent read-back, Postgres `tickets.doc` jsonb column). Image provenance was checked
+   before use as evidence (built 2026-09-04, after the code's last production change,
+   2026-08-23 commit `460bafb`). Recorded plainly: this run's own side effect created four real
+   tickets (`ITR-2026-001..004`) in the dev database; no failure occurred, so nothing was fixed
+   and no production code was touched.
+3. **Cross-tier contract test added, on an unmerged PR.** PR #124 (branch
+   `test/sla-map-contract`, commit `8f27358`) adds a Go test comparing the frontend and backend
+   `slaHours` maps in both directions, pinned at exactly four entries, mutation-tested against
+   seven failure modes (all seven failed as required) — recording **PASS, explicitly flagged as
+   NOT MERGED to `main` as of this revision**. A genuine limitation found by the mutation run
+   itself — a false PASS from a cached `go test` result on frontend-side mutations — is recorded
+   honestly, along with the `-count=1` fix now in PR #124's own CI (also unmerged).
+4. **No new `TC-` ID introduced.** Both additions are recorded as further evidence against the
+   existing `AC-MAINT-001-10`/`TC-MAINT-001-10` pair (§11), per this document's 1:1 AC↔TC
+   convention — there is no new AC criterion for either addition to pair against.
+   `TC-MAINT-001-10`'s existing 2026-09-09 frontend-tier **PASS is unchanged and not
+   re-litigated** by either addition.
+5. **§11, §19, §20 updated in place.** §11 gains a new dated Status Note paragraph and an
+   appended sentence on `TC-MAINT-001-10`'s own table row; §19 gains a new paragraph recording
+   both additions against the unchanged row/Grand Total counts (`10 | 4 | 6 | 0 | 0`; Grand
+   Total `96 | 63 | 26 | 4 | 3` — a coverage update, not a new or removed test case); §20 gains
+   three new checked items recording the HTTP-path execution, the cross-tier contract test (and
+   its unmerged status), and what remains uncovered after both.
+6. **What remains uncovered, stated plainly.** Nothing regarding the SLA-value-per-priority
+   contract itself across tiers — it is now independently confirmed by three methods. **"SLA per
+   stage"** (per-workflow-stage time budgets) remains separate and fully NOT TESTABLE YET,
+   unaffected; the vendor model, the cost model, and the delegated-approver configuration rules
+   remain exactly as blocked as before; `TC-WARRANTY-001-07` remains **BLOCKED (partial)** on
+   Open Finding F-03, untouched by this revision. `TC-DASH-01`/`TC-EXEC-001-01`'s preserved prior
+   PASS text, superseded labels, BLOCKED (partial) reclassification, and re-execution
+   requirement remain exactly as recorded, untouched.
+7. **No verdict or Gap claimed closed.** `RAISE-FR-MAINT-001`'s verdict in
+   `RAISE-TRACEABILITY-MATRIX.md` is **not** changed by this revision, and this revision does
+   **not** itself close Gap 25 or Gap 26 — the Traceability Matrix owns both and assesses them
+   separately, on its own schedule; Gap 26(a)'s closure specifically depends on PR #124 actually
+   merging, which has not happened as of this revision.
+8. **No other suite required changes.** `TC-LOGIN-*`, `TC-DASH-*`, `TC-ASSET-001-*`,
+   `TC-ASSET-001-D-*`, `TC-LIFE-001-*`, `TC-ASSET-002-*`, `TC-ASSET-003-*`, `TC-OPS-001-*`,
+   `TC-OPS-002-*`, `TC-MAINT-001-01` through `-09`, `TC-WARRANTY-001-*`, `TC-ORACLE-001-*`,
+   `TC-ALERT-001-*`, `TC-AUDIT-001-*`, `TC-EXEC-001-*`, `TC-AI-SEARCH-001-*`, `TC-AI-STATES-*`,
+   and `TC-AI-DOC-001..004` retain their prior status and wording verbatim. `RAISE-TEST-PLAN.md`,
+   `RAISE-ACCEPTANCE-CRITERIA.md`, and every earlier-layer document are untouched — this is
+   execution/coverage reporting only, not a scope or specification change.
+   `RAISE-TRACEABILITY-MATRIX.md` is not touched by this revision — it owns Gap 25/Gap 26 and
+   assesses them separately, on its own schedule. `OPEN-FINDINGS.md` is maintained separately and
+   is not touched by this revision.
+
+---
 
 **Version:** 0.31 (2026-09-09 — correction plus execution/coverage update, no spec/scope change:
 `TC-MAINT-001-10`'s (§11) 2026-09-09 execution note wrongly stated, in six places across this

@@ -9,7 +9,58 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-09-09, at `50fb36b` (**PR #123** merged). Suite **54 test files /
+**As of:** 2026-09-09, at `5f2c61b`, plus **`PR #124` open and unmerged**. Suite
+**54 test files / 286 tests** frontend, **6 backend subtests** on `main` (a seventh,
+the contract test, is on that PR). Test Cases **v0.32**, Matrix **v2.12**; PRD
+**v0.21**, Design **v0.19**, Prototype **v0.20**, AC **v0.19**, Test Plan **v0.20**.
+
+**Gap 26(b) → CLOSED. Gap 26(a) → evidence PASS, gap STAYS OPEN. Gap 27
+opened.** That split is the substance of this revision, not bookkeeping.
+
+**(b) PASSED against a real stack.** `docker compose` — Go/Fiber on 8080 plus
+**postgres:16-alpine** — driven directly over HTTP through the **real JWT auth
+middleware**: `POST /api/tickets` ×4, then a **separate** `GET /api/tickets/{code}` ×4,
+then a direct database query. **Critical 2 · High 8 · Medium 24 · Low 48**, matching
+across all three layers (`ITR-2026-001`…`004`, all HTTP 201). The middle layer is the
+load-bearing one: an independent read-back proves the value was **persisted and
+re-serialised**, not echoed by the handler that computed it. Image provenance was
+checked first — built 2026-09-04, `ticketService.go` last changed 2026-08-23 — so
+the running code is the code on `main`. **Side effect:** four real tickets now exist in
+the dev database.
+
+**(a)'s evidence is a genuine PASS, and the gap is still open — on purpose.** `PR #124`
+adds `slaContract_test.go`, which parses `SLA_HOURS` from the TypeScript source and
+compares it with the Go map **in both directions**, and **pins both at four entries** so
+that deleting the same key from both files cannot look like agreement. **Seven mutations,
+all seven fail**, including the source file going missing. But **`PR #124` is not merged**,
+and the matrix — asked for an independent verdict — held that **a gap tracking `main`
+cannot be closed by code that is not on `main`.** That verdict is adopted rather than
+overridden: **forcing the closure would be editing the document to make the result look
+better**, and the first reader to check out `main` and grep for the test would catch it.
+
+**The mutation run found a hole in the new test itself.** Every frontend-side mutation
+first reported PASS — because **`go test` served a cached result**; the `.ts` file sits
+outside the Go module and the cache does not track it. With the frontend map set wrong:
+plain `go test` said `ok (cached)`, `-count=1` said **FAIL**. CI now runs
+**`go test -count=1 ./...`** (also on that PR). Without it, a frontend-only drift gets a
+stale green — the exact silent pass the test exists to prevent.
+
+**Gap 27 is the honest remainder of (b).** (b) asked for a run with
+`TICKET_API_ENABLED=true`; what ran was `curl` against the Go API. Same Go tier, same
+HTTP path, but **`ticket-service.ts`'s real-API branch has still never been exercised by
+anything** — the UI run went through the mock repository, this one bypassed the
+frontend. Carried forward rather than stretched into the closure, the third time in a row
+(Gap 23 → 25 → 26 → 27).
+
+**`RAISE-FR-MAINT-001` stays full `PASS`** — the ceiling — now additionally resting on
+the HTTP-path confirmation. It still must **not** be read as resting on a merged
+cross-tier test, or on any frontend real-API execution.
+
+**F-03 remains the only outstanding business input and the only thing that would move a
+Compliance Review verdict** — one useful-life value per Asset Type, still not supplied,
+and not guessed at here. **Gap 21** and **F-52**'s remaining half stay blocked on it.
+
+Earlier the same day, at `50fb36b` (**PR #123** merged). Suite **54 test files /
 286 tests** frontend, plus **5 new backend subtests**; CI green. Test Cases **v0.31**,
 Matrix **v2.11**; PRD **v0.21**, Design **v0.19**, Prototype **v0.20**, AC **v0.19**,
 Test Plan **v0.20**.

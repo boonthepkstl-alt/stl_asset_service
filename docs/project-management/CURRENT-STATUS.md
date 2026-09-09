@@ -9,7 +9,52 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-09-09, at `d0770e4`. Suite **54 test files / 286 tests**; CI green.
+**As of:** 2026-09-09, at `50fb36b` (**PR #123** merged). Suite **54 test files /
+286 tests** frontend, plus **5 new backend subtests**; CI green. Test Cases **v0.31**,
+Matrix **v2.11**; PRD **v0.21**, Design **v0.19**, Prototype **v0.20**, AC **v0.19**,
+Test Plan **v0.20**.
+
+**Gap 25 closed — the backend `slaHours` map is now tested.**
+`TestCreateTicket_StampsSLATargetHoursForEveryPriority` asserts **2 / 8 / 24 / 48**
+across all four priorities, and `TestCreateTicket_UnknownPriorityGetsZeroSLATarget`
+pins the unknown-priority case at `0` as **observed behaviour, not an endorsed rule**
+(PRD §16 confirms four priorities and says nothing about a fifth, so no fallback was
+invented). Expected values are **hardcoded rather than read from the map** — a test
+that read the map it checks would pass against any values at all. Mutation-tested:
+`Critical: 2→4` fails 2 subtests, `Low: 48→24` fails 2, dropping the priority
+fails 5.
+
+**A claim this project had written into six documents was wrong, and is corrected in
+all six.** *"No backend test covers `slaHours`"* rested on a grep for `SlaTargetHours`;
+the Go field is **`SLATargetHours`**, so the case-sensitive pattern missed
+`ticketService_test.go:99`, which already asserted **High = 8**. The true position was
+**one of four priorities covered, not none** — the same failure mode as **F-49**: a real
+measurement whose conclusion outran what it showed. Each correction **quotes the wrong
+wording and names it wrong** rather than overwriting it.
+
+**Gap 26 is open, and is the honest remainder.** Two things the new tests do not reach:
+**(a)** nothing exercises the frontend and backend maps **against each other** — they are
+asserted by two separately-written sets of expectations that happen to agree, while
+`ticketService.go`'s comment claiming it *"mirrors the frontend map exactly"* stays
+unverified by anything executable; **(b)** no run has exercised the Go tier through the
+**HTTP path** (`TICKET_API_ENABLED` off by default). **Unlike Gap 25, (a) is not a pure
+test task** — making one map the source of the other changes production code, so it needs
+a decision before work starts.
+
+**`RAISE-FR-MAINT-001` stays full `PASS`** — already the ceiling, and the new evidence is a
+PASS, not a contradiction. What it **rests on** has changed again: the 4-stage evidence,
+**plus** the 2026-09-09 frontend execution, **plus** these backend tests. It still must not
+be read as verifying the two tiers agree, or as an HTTP-path execution.
+
+**Also corrected: Gap 25's own heading said `left OPEN` while its body recorded
+`CLOSED` 54 lines further down** — a reader scanning headings would have stopped at the
+wrong answer. Gap 23's heading had been updated correctly on closure; this one was
+missed in the same revision. Fixed with the old wording named, not silently replaced.
+
+**F-03 remains the only outstanding business input, and the only thing that would move a
+Compliance Review verdict** — one useful-life value per Asset Type, still not supplied.
+
+Earlier the same day, at `d0770e4`. Suite **54 test files / 286 tests**; CI green.
 Test Cases **v0.30**, Matrix **v2.10**; PRD **v0.21**, Design **v0.19**, Prototype
 **v0.20**, AC **v0.19**, Test Plan **v0.20**.
 

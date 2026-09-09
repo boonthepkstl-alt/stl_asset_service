@@ -5,6 +5,19 @@ Overwritten in place each time the protocol is re-run.
 
 **Run date:** 2026-09-08, after `CHECKPOINT-2026-09-08-003`.
 
+> **[STALE IN PART, 2026-09-09 — read this before the body below.]** This run's
+> figures and recommendation predate five merges (`d0770e4`, `651eace`, PR #123 at
+> `50fb36b`, and the two commits between). **The protocol has not been re-run** — this
+> note records what changed rather than rewriting a protocol output as though it had.
+> **What is no longer true:** the recommendation to execute `TC-MAINT-001-10` (**done
+> 2026-09-09, PASS on the frontend tier**), and **Gap 21 is no longer the only open gap**
+> — **Gap 26** is now open too. **Gap 23** (opened after this run) and **Gap 25**
+> are both **CLOSED**. **What is still true and is the reason this file is not simply
+> discarded:** **Gap 21 remains open and still blocks on F-03**, and **F-03's
+> per-Asset-Type useful-life values remain the only outstanding business input and the
+> only thing that would move a Compliance Review verdict.** For the current picture see
+> [`CURRENT-STATUS.md`](CURRENT-STATUS.md) and `CHECKPOINT-2026-09-09-002`.
+
 **Derived from** a direct read of `main` at `39bb2b0`: PRD **v0.20**, Design **v0.18**,
 Prototype **v0.18**, AC **v0.17**, Test Plan **v0.17**, Test Cases **v0.27**, Traceability
 Matrix **v2.7**, Compliance Review **v1.2**, `OPEN-FINDINGS.md`, and the source tree.

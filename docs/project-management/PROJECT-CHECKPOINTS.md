@@ -4698,6 +4698,46 @@ Targeting the tab took two corrections, both recorded in the test so the next pe
 
 ---
 
+## CHECKPOINT-2026-09-09-002
+
+**Phase:** Phase 5B — Maintenance / Ticket domain
+**Feature:** Per-priority SLA target hours (`RAISE-FR-MAINT-001`)
+**Task:** **PR #123** — cover `slaHours` on the backend, and correct this project's own claim that nothing did. **Gap 25 closed**, **Gap 26 opened**.
+
+**Requirement traced:** `RAISE-FR-MAINT-001`, full **`PASS`** — unchanged in level for the third consecutive checkpoint, but **what it rests on changed again**. Test-only: no behaviour was altered.
+
+**The tests.** `TestCreateTicket_StampsSLATargetHoursForEveryPriority` is table-driven over all four priorities, asserting **2 / 8 / 24 / 48** and that the priority itself survives onto the ticket. **Its expected values are hardcoded rather than read from `slaHours`, deliberately** — a test that reads the map it is checking would pass against *any* values, including a silent edit away from what business confirmed in **RQ53**; the point of the test is to make that edit fail. `TestCreateTicket_UnknownPriorityGetsZeroSLATarget` pins a priority outside the confirmed four at `0`, recorded as **observed behaviour, not an endorsed rule** — PRD §16 confirms four priorities and says nothing about a fifth, **so no fallback was invented**.
+
+| Mutation | Result |
+|---|---|
+| `Critical: 2 → 4` | **2 subtests fail** |
+| `Low: 48 → 24` | **2 subtests fail** |
+| drop `Priority: input.Priority` from the created ticket | **5 subtests fail** |
+
+Restored → **0 failures**. A guard that has not been made to fail is not yet a verified guard.
+
+**The error this PR exists to correct, stated before its result.** Gap 25 said *"no backend test covers `slaHours`"* — **and the grep that "confirmed" it was wrong too.** The search used `SlaTargetHours`; the Go field is **`SLATargetHours`** (capital `SLA`), so the case-sensitive pattern missed the one place it appeared. **`ticketService_test.go:99` already asserted `SLATargetHours = 8` for High**, incidentally, inside a broader snapshot test. **The true position was one of four priorities covered, not none.** This is the **same failure mode as F-49**: a real measurement whose conclusion outran what the measurement actually showed. **The claim had been repeated into six documents before anyone checked it** — Test Cases (6 occurrences), Matrix (8), `CURRENT-STATUS`, `DEVELOPMENT-LOG`, `NEXT-STEP`, `PROJECT-CHECKPOINTS`. Every one is corrected by **quoting the wrong wording and naming it wrong**, never by overwriting it.
+
+**What is still NOT covered, stated so the correction does not overshoot in the other direction.** **(a)** No test exercises the two maps **against each other** — they are asserted independently by two separately-written sets of expectations that happen to agree, while `ticketService.go`'s own comment claiming it *"mirrors the frontend map exactly"* remains **unverified by anything executable**. **(b)** No run has exercised the Go tier through the **real HTTP path**; `TICKET_API_ENABLED` is off by default and these are unit tests calling the service directly. **Matrix v2.11 carries that remainder as new Gap 26** rather than stretching Gap 25's closure over it.
+
+**A second, smaller correction, found by re-checking the matrix rather than trusting the subagent's report.** **Gap 25's heading still read `left OPEN`** while its own body recorded **`CLOSED 2026-09-09`** fifty-four lines further down. A reader scanning gap headings — which is how this section is actually read — would have stopped at the wrong answer. **Gap 23's heading had been updated correctly on closure in the same revision; Gap 25's was missed.** This is the register's existing convention for status cells (**lead with the current status**) applied to gap headings, and it is now applied to all six: Gap 21 OPEN, 22 opened+closed, 23 CLOSED, 24 opened+closed, **25 CLOSED**, 26 OPEN. **Gap 26's `left OPEN` was deliberately not touched** — it is genuinely open.
+
+**Files changed:** `go-template-main/service/ticketService_test.go` (**+64 lines, test-only, no production code**), `RAISE-TEST-CASES.md` (0.30→**0.31**), `RAISE-TRACEABILITY-MATRIX.md` (2.10→**2.11**, both through the `.claude/skills` subagents, plus the heading correction made directly), and the four project-management documents.
+
+**Validation on `main` `50fb36b`, run rather than assumed:** backend `go build` / `go vet` / `go test` clean, the 5 new subtests pass; `gofmt` clean **over LF-stripped content** — the **R-34 method**, since `core.autocrlf=true` makes the CRLF working tree flag files regardless. Frontend `tsc` **0**, ESLint **0 warnings**, **54 files / 286 tests pass** (unchanged, as expected for a backend-only test addition). CI on PR #123 green on both jobs before and after the heading correction. Register still **39 `F-` rows**.
+
+**Status:** ✅ Complete for its confirmed scope.
+
+**Known Issues:** **Gap 26 is open**, in two parts. **Part (b)** — an HTTP-path run — needs no decision. **Part (a) is not a pure test task, unlike Gap 25**: making one map the source of the other, or sharing a fixture between two runtimes, **changes production code**, so it needs a decision on approach before work starts. **Gap 21** stays open, blocked on F-03. *"SLA per stage"*, the vendor model, the cost model and the delegated-approver rules all remain TBD.
+
+**Remaining Work:** Gap 26 (a) and (b); then Gap 21's re-execution once F-03 unblocks.
+
+**Next Step:** **decide the approach for Gap 26 (a)**, since it is the only remaining item whose shape is not already settled. **F-03's per-Asset-Type useful-life values remain the only outstanding business input and the only thing that would move a Compliance Review verdict.**
+
+**What this checkpoint adds to the pattern.** Yesterday's lesson was *executing a case is not covering the behaviour it cites*. Today's is sharper and about this AI's own work: **a grep is evidence of what the pattern matched, not of what exists.** The measurement was real, the command ran, the output was empty — and the conclusion drawn from it was false, because the pattern was wrong by two characters. It then propagated into six documents unchallenged, because each subsequent document cited the previous one rather than the code. **The habit worth keeping: when a search returns nothing, the first hypothesis is that the search was wrong, not that the thing is absent** — and a negative claim about a codebase deserves a second search with a different pattern before it is written down anywhere, let alone six times.
+
+---
+
 ## Level 2 — Feature Checkpoints
 
 ### FEATURE-CHECKPOINT-project-tracking-governance

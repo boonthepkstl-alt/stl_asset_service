@@ -2,6 +2,134 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Requirement Traceability Matrix (RTM)
+**Version:** 2.10 Draft (`TC-MAINT-001-10` formally executed 2026-09-09,
+real result recorded — **current verdict first: Gap 23 is CLOSED for the
+substance it actually named — a formal execution of `TC-MAINT-001-10`
+against the real running app, which has now happened and PASSED. A new,
+narrower Gap 25 is OPENED for what that execution did not reach: the
+Go/backend tier's identical SLA map, which the case's own Expected Result
+explicitly cites, but which this run never exercised. `RAISE-FR-MAINT-001`
+stays a full `PASS` — there is nowhere higher to move it — but what that
+`PASS` rests on has genuinely changed: it now also rests on
+`TC-MAINT-001-10`'s executed, frontend-tier PASS, not only on
+`TC-MAINT-001-01..09`'s pre-existing 4-stage-workflow evidence.**)
+`RAISE-TEST-CASES.md` v0.30 §11 records that `TC-MAINT-001-10` — added
+executable-but-unexecuted at v0.29/v2.9 — **was formally executed
+2026-09-09**, the day after Resolved Question 53's confirmation and the
+v2.9 chain sync, against the real running app (`npm run dev`,
+`raise-frontend`, port 5173) on merged `main` @ `88f1017`, driving the
+actual UI rather than calling services directly. **Result: PASS.** The
+Priority selector at `/maintenance/create` was confirmed to offer exactly
+four options, labelled verbatim `Critical (2h SLA)`, `High (8h SLA)`,
+`Medium (24h SLA)`, `Low (48h SLA)`; one request was submitted per
+priority through the page's own form, and each ticket's own
+`slaTargetHours` was read from its own Ticket Detail page (`Target: {n}
+hours`), each ticket's subject separately confirmed on that same detail
+page so the figure could not have been misread off a neighbouring row:
+Critical → `ITR-2026-007` → 2 hours; High → `ITR-2026-008` → 8 hours;
+Medium → `ITR-2026-009` → 24 hours; Low → `ITR-2026-010` → 48 hours — all
+four matched Critical=2/High=8/Medium=24/Low=48 exactly. Zero console
+errors across the sweep.
+
+**The limitation, carried forward honestly, not glossed over: this
+execution exercised the frontend tier only.** `TICKET_API_ENABLED`
+(`frontend/src/config/featureFlags.ts:30`) is off by default, so the run
+went through the **mock ticket repository**, and the value observed
+traces to `frontend/src/services/ticket-service.ts:14` alone.
+`go-template-main/service/ticketService.go:19-26`'s identical map —
+explicitly cited by `AC-MAINT-001-10`/`TC-MAINT-001-10`'s own Expected
+Result as one of the two places `slaTargetHours` is defined — **was not
+exercised by this run**, and **no backend test covers `slaHours`**
+(`RAISE-TEST-CASES.md` v0.30 confirms grepping
+`go-template-main/service/*_test.go` returns nothing). That tier remains
+assured only by code inspection and by the Go file's own comment that it
+mirrors the frontend map exactly.
+
+**Gap 23 — independently assessed, CLOSED this revision, not merely
+because an execution happened, but because the execution discharges
+exactly what Gap 23's own "what would close this gap" clause named:**
+Gap 23 (v2.9, §6) stated its closure condition as "one thing only — a
+formal execution of `TC-MAINT-001-10` against the real running app,"
+without itself distinguishing tiers, and that formal execution has now
+happened and passed. Closing on that basis is not a shortcut: Gap 23's
+own substance, as written, was the *unexecuted case*, not an end-to-end,
+both-tiers assurance claim — it never asserted the Go tier had to be
+exercised too. That said, this document already applies the principle
+that a specification being correct is not the same as it being covered;
+the analogous principle applies here to a case that names two tiers in
+its Expected Result but is executed against only one — coverage of one
+tier is not coverage of both. Rather than stretch Gap 23's closure to
+quietly absorb that shortfall, or refuse to close a gap whose stated
+condition has genuinely been met, this document does both things
+explicitly: **Gap 23 is CLOSED** (§6), and a new, narrower **Gap 25 is
+OPENED** (§6) to carry forward, by itself, the one thing this execution
+did not reach — the untested Go/backend `slaHours` map. Gap 25 is, like
+Gap 23 before it, purely mechanical: no business decision and no code
+change are needed, only a backend test (or `TICKET_API_ENABLED=true`
+execution against the real API) asserting `ticketService.go:19-26`'s
+values directly.
+
+**`RAISE-FR-MAINT-001`'s row (§3): independently assessed, what it rests
+on has changed, its level has not.** Before this execution, the row's
+full `PASS` (recorded 2026-08-28) rested solely on
+`TC-MAINT-001-01..09`, confirming the 4-stage workflow's transitions
+(PRD §16 Resolved Question 33) — no executed test had ever asserted an
+SLA value. **That is no longer true.** `TC-MAINT-001-10` is now executed
+and PASS, on the frontend tier, and this document holds the row's `PASS`
+now rests on that evidence too, not only on the pre-2026-09-09 evidence.
+**This does not upgrade the row — full `PASS` is already the ceiling —
+and nothing forces a downgrade: the new evidence is a PASS, not a FAIL
+or a contradiction.** The row's text is updated to state plainly that
+its SLA component is now frontend-tier-executed-and-passed, with the
+backend/Go tier's identical map still unexercised (Gap 25), so the
+`PASS` must not be read as an end-to-end, both-tiers assurance for the
+SLA figures — only the 4-stage workflow transitions (`TC-MAINT-001-
+01..09`) and the frontend-tier SLA values (`TC-MAINT-001-10`) carry
+executed evidence.
+
+**Untouched by this revision, stated plainly:** "SLA per stage" (how
+long each of the four workflow stages may individually take) remains a
+separate, still fully open question, with no per-stage budget supplied
+or implemented anywhere — this execution asserted only the single
+overall per-priority target, exactly as Resolved Question 53 scoped it.
+The vendor model, the cost model, and the delegated-approver
+configuration rules stay exactly as open as before. **Gap 21 stays
+OPEN**, `TC-DASH-01`/`TC-EXEC-001-01` keep their superseded prior PASS
+records and their re-execution requirement untouched,
+`RAISE-FR-EXEC-001` stays `PASS (partial)`, and the Risk items still
+correctly assert absence per Resolved Question 47 — none of the NBV-line
+items are touched by this Maintenance-domain execution. Full revision
+history, including the v2.8 → v2.9 Resolved Question 53 sync and every
+earlier revision, is retained in the Change Log at the end of this
+document — see "Change Log — v2.9 → v2.10" and the preceding entries
+there.
+**Status:** Draft for Traceability Review
+**Source:** [`RAISE-TEST-CASES.md`](../06-test-cases/RAISE-TEST-CASES.md)
+v0.30 §11 (`TC-MAINT-001-10` formally executed 2026-09-09, PASS,
+frontend tier only — new this revision). `RAISE-PRD.md` v0.21,
+`RAISE-DESIGN.md` v0.19, `RAISE-PROTOTYPE.md` v0.20,
+[`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md)
+v0.19, and [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md)
+v0.20 are unchanged from v2.9 — this revision reports a real formal
+execution result, not a further chain sync. It closes **Gap 23**
+(independently assessed — the execution discharges exactly Gap 23's own
+stated closure condition), opens new **Gap 25** (the untested
+Go/backend `slaHours` tier, a narrower, purely mechanical remainder Gap
+23 itself never separated out), and updates **`RAISE-FR-MAINT-001`'s**
+row (§3) to state what its full `PASS` now rests on — the pre-existing
+4-stage-workflow evidence plus `TC-MAINT-001-10`'s executed frontend-tier
+PASS — without upgrading it beyond full `PASS` or downgrading it absent
+any contradicting evidence. Every other row is unaffected and retained
+in the Change Log for history.
+**Source of Truth:** RAISE PRD
+**Reference Only:** VERSCAN
+
+---
+
+**Retained below for history — full v2.9 header (PRD §16 Resolved
+Question 53 sync), not reproduced or altered, per this document's own
+append-don't-rewrite convention:**
+
 **Version:** 2.9 Draft (PRD §16 Resolved Question 53 sync, 2026-09-08 —
 **current verdict first: this closes Open Finding F-54, opens new Gap 23
 (a coverage-only gap needing an execution sweep, not a business decision
@@ -432,7 +560,7 @@ per v0.4 Gap 6's own closure criteria.
 | `RAISE-FR-ASSET-003` | Custody History | P0 / MVP | §4.2 Custody & Asset Operations | P-006 | AC-ASSET-003 | TS-ASSET-003 | TC-ASSET-003-01..03 | **PASS** — executed 2026-08-26: TC-ASSET-003-01 **PASS** (current holder "Sarah Chen" displays for asset `a1`). TC-ASSET-003-02/-03 originally **FAIL** — the "Assignment History" panel derived a single "current custody state" row instead of a chronological list, and a Check-in **replaced** the prior entry instead of appending — **now PASS**, re-executed after the fix (F-26): the History tab renders from the same per-asset audit trail `RAISE-FR-AUDIT-001` already builds (append-only by construction — `recordMockAuditEntry` only ever `unshift`s), which `assign`/`checkIn` already fed. Verified live on `a1`: Check-in appended "Asset checked in", then Assign appended "Asset assigned to Sarah Chen" alongside it (not replacing it) — both visible, newest-first. Independent of the still-open Check-in/Check-out-exclusivity question (Gap 4), which only concerns *other* write paths, not this one. **Holder-data-model question resolved 2026-09-01** (`RAISE-PRD.md` §16 Resolved Question 42, resolving Open Question 13, Open Finding F-02): confirmed as a **direct 1:1 link to an Employee record** (`Asset.assignedEmployeeId`/`assignedTo`) — no additional organizational relationship model (department, team, or location-based custody) is needed for MVP. This matches already-built, already-tested behavior exactly (the existing `TC-ASSET-003-01..03` results already exercise this data model); **no new field, model, or test execution was required or performed**. This resolution is independent of, and does **not** touch, the separate custody-writing-events exclusivity question (Gap 4, Open Finding F-10) — whether Check-in/Check-out is the *exclusive* writer of Custody History remains genuinely open, unaffected (`RAISE-PROTOTYPE.md` v0.12 explicitly restored F-10 to open after a v0.11 draft briefly and incorrectly over-resolved it). See Gap 14 (§6, opened and RESOLVED same revision, v1.5) for the full closure record. |
 | `RAISE-FR-OPS-001` | QR / Barcode | P0 / MVP | §4.2 Custody & Asset Operations | P-007 | AC-OPS-001 | TS-OPS-001 | TC-OPS-001-01..03 | **PASS** — re-executed 2026-08-26 (after the F-21 fix) against the real running app (`frontend/src/pages/Assets/index.tsx`'s Scan QR flow): TC-OPS-001-01 **PASS** (valid code `AST-0001` opens Asset Detail); TC-OPS-001-02 **PASS** (unmatched-but-well-formed code `AST-9999` shows "No asset found for..."); TC-OPS-001-03 **PASS** (malformed code `%%$#!!garbage///` now shows a distinct "Invalid code — ... doesn't look like a scannable asset code" message, without attempting a lookup — no longer the same message as TC-OPS-001-02). F-21 resolved (`OPEN-FINDINGS.md`). |
 | `RAISE-FR-OPS-002` | Check-in / Check-out (**narrowed 2026-09-02 for one category**: IT Hardware Check-out/Assign now requires a new 4-stage approval workflow — Initiation → Recipient Confirmation → IT Processing → IT Supervisor Approval — before status becomes Assigned; every other category, and Check-in for every category including IT Hardware, unaffected) | P0 / MVP | §4.2 Custody & Asset Operations; §4.2's new "IT Hardware Assignment Approval Workflow" subsection (category-scoped exception) | P-008 | AC-OPS-002 (AC-OPS-002-01/-02/-03 general rule; **AC-OPS-002-04..09**, IT Hardware exception) | TS-OPS-002 | TC-OPS-002-01..03 (general rule); **TC-OPS-002-04..09 (IT Hardware exception, implemented backend+frontend and PASS end-to-end)** | **PASS — Gap 15 (implementation gap) RESOLVED 2026-09-02 (v1.7, backend), frontend closure recorded this revision (v1.8).** General-rule evidence unchanged from 2026-08-28 execution against the real running app: TC-OPS-002-01 **PASS** (Assign — the app's actual affordance for identifying a holder and confirming, no distinct "Check-out" label exists but the behavior matches: custody state updated to the new holder on asset `a4`); TC-OPS-002-02 **PASS** (Check-in confirmed the asset's return to Available/Unassigned); TC-OPS-002-03 **PASS** (both operations created a corresponding Audit Log entry, verified visible with actor and timestamp). **Permission-gate and workflow-shape questions resolved 2026-09-01** (`RAISE-PRD.md` §16 Resolved Question 42, resolving Open Questions 11 and 12, Open Finding F-02): Check-in/Check-out is confirmed as an **immediate state-change operation**, with no approval step or exception-handling workflow, and the permission gate is confirmed as **any authenticated user, no role restriction** — matching the already-executed behavior exactly. This resolves only Check-in/Check-out's *own* permission requirement — it does **not** resolve the broader `RAISE-NFR-SEC-RBAC-001` role/permission-matrix-content question for other domains (PRD §16 Q21–Q22, Open Finding F-08), which remains genuinely open and unaffected. It also does **not** touch the separate, still-open question of whether Check-in/Check-out is the *exclusive* writer of Custody History (Gap 4, Open Finding F-10, unaffected). See Gap 14 (§6, opened and RESOLVED same revision, v1.5) for the full closure record of the general-rule resolution. **IT Hardware Assignment Approval Workflow, PRD §16 Resolved Question 43, narrowing Resolved Question 42 for the IT Hardware category only — confirmed 2026-09-02, implemented and formally tested end-to-end (backend v1.7, frontend v1.8), this same session:** a real Singer Thailand company form ("ใบดำเนินการเกี่ยวกับคอมพิวเตอร์และอุปกรณ์") supplied by the business user during a live session showed a genuine 4-signature approval process for IT equipment handovers, confirmed and digitized to 4 stages (Initiation → Recipient Confirmation → IT Processing (`IT_STAFF`) → IT Supervisor Approval (`IT_MANAGER`, only stage that flips status to Assigned); rejection at Stage 3/4 is terminal, returns to Available). Fully propagated through `RAISE-DESIGN.md` v0.12 §4.2, `RAISE-PROTOTYPE.md` v0.13 P-008, `RAISE-ACCEPTANCE-CRITERIA.md` v0.11 §11 (`AC-OPS-002-04..09`), `RAISE-TEST-PLAN.md` v0.11 (`TS-OPS-002` Partial, blocked on implementation) — and **now implemented, backend and frontend**: new `go-template-main` files `model/assetHandoverModel.go`, `repository/assetHandoverPGRepository.go`, `repository/assetHandoverRepository.go`, `service/assetHandoverService.go`, `controller/assetHandoverController.go`, `sql/pg/V5__AssetHandovers_Table.sql`; new routes `GET /handovers`, `GET /handovers/:code`, `POST /assets/:id/handover`, `POST /handovers/:code/confirm`, `POST /handovers/:code/process`, `POST /handovers/:code/decision`; `AssetService.AssignAsset` branches on Category `"IT Hardware"` to return HTTP 409 directing to the new handover flow, with non-IT-Hardware assets unaffected (regression-verified). **New this revision (v1.8, PR #74):** `frontend/src/types/handover.ts`, `services/handover-repository.ts` (Mock + Http), `services/handover-service.ts`, `hooks/useHandover(s).ts`, three new pages (`MyPendingAssignments`; `ITProcessingQueue`, role-gated `IT_STAFF`/`ADMIN`; `ITSupervisorApprovalQueue`, role-gated `IT_MANAGER`/`ADMIN`) plus `HandoverDetail` (4-stage governance indicator with a full audit timeline); `AssetDetail`'s existing Assign button now intercepts IT Hardware-category assets client-side and routes through this flow, every other category unaffected (regression-tested). `RAISE-TEST-CASES.md` v0.16 §10 records `TC-OPS-002-04..09` **all PASS**, formally re-executed end-to-end against the real running Docker stack (backend + Postgres) **and, once PR #74 shipped the same day, live end-to-end through the real running UI**: TC-OPS-002-04 **PASS** (Stage 1 Initiate enters `PENDING_RECIPIENT_CONFIRMATION`, asset stays Available, no early flip — confirmed via API and via clicking Assign on an IT Hardware asset in `AssetDetail`); TC-OPS-002-05 **PASS** (Stage 2 Confirm Receipt by the matching recipient advances to `PENDING_IT_PROCESSING`, with recipient-identity validation confirmed — mismatched/empty recipient rejected — confirmed via API and via `MyPendingAssignments`); TC-OPS-002-06 **PASS** (Stage 3 IT Processing advances to `PENDING_IT_SUPERVISOR_APPROVAL` — confirmed via API and via `ITProcessingQueue`); TC-OPS-002-07 **PASS** (Stage 4 IT Supervisor Approval is confirmed the *only* action that flips status to Assigned — no earlier stage does so — confirmed via API and via `ITSupervisorApprovalQueue`, plus the `HandoverDetail` governance indicator correctly marking all 4 stages Done); TC-OPS-002-08 **PASS** (rejection at both Stage 3 and Stage 4 confirmed terminal — asset returns to Available, no path reopens the rejected request — confirmed via API and via a UI reason-entry modal at both queues); TC-OPS-002-09 **PASS** (non-IT-Hardware Check-out regression guard confirmed unaffected — no 409, no pending/handover state introduced — confirmed via API and via `AssetDetail`'s Assign flow on a non-IT-Hardware asset). Corroborated by 18 new Go unit tests (`service/assetHandoverService_test.go`, all passing), 47 frontend test files / 196 automated tests passing, and clean `go build`/`go vet`/`go test` and `tsc --noEmit`/lint sweeps. A self-initiated code-review pass before merge found and fixed 3 real defects (the mock repository's Approve action not completing the asset assignment; a category-blind pending-handover badge; a Custody row contradicting the pending-assignment badge). `AC-OPS-002-01..09` are now all **PASS**, live-verified end to end. **Scope boundaries that remain genuinely open, NOT closed by this evidence (do not treat these as resolved):** (1) `IT_STAFF`/`IT_MANAGER` role gates are enforced only client-side in the UI (the queue pages are role-gated) and are **not** backend-enforced, consistent with this codebase's project-wide MVP decision (UI-only/client-side RBAC, PRD §16 Resolved Question 38) — not a gap specific to this feature; (2) the Stage-2 e-signature/acknowledgment-text-capture question remains genuinely open — the PRD's own `## NEEDS_PRD_CONFIRMATION` note is untouched (the user dismissed rather than answered this question); (3) the Stage-2 recipient-decline path was never asked and is not implemented; (4) Custody History write-timing across the 4 stages (`RAISE-DESIGN.md` §4.2's own flagged open design point) remains unresolved, distinct from and not resolving Open Finding F-10 (Gap 4); (5) "My Pending Assignments" recipient matching is name-string-based, since no `employeeId` link exists between the User/auth model and Employee/recipient model anywhere in this codebase — a documented, accepted MVP limitation. See **Gap 15 (§6, RESOLVED, updated this revision)** for the full closure record. Overall row status: **PASS** — the general Check-in/Check-out rule and the new IT Hardware Assignment Approval Workflow (all 4 stages, both terminal-rejection points, non-IT-Hardware regression guard) are now real, evidence-based PASS end to end, backend and frontend; backend role enforcement, the two Stage-2 sub-points, the Custody-History write-timing question, and name-based recipient matching remain out of this PASS's scope, tracked separately above and not silently folded in. |
-| `RAISE-FR-MAINT-001` | Maintenance (4-stage workflow: User Requisition → Dept Approval (Delegated) → IT Dispatch → Technician Execution; per-priority SLA target hours confirmed as-built 2026-09-08, `RAISE-DESIGN.md` v0.19 §5.1) | P0 / MVP | §5.1 Maintenance Domain (new "Per-Priority SLA Target Hours — Confirmed As-Built" subsection, 2026-09-08, `RAISE-DESIGN.md` v0.19) | P-009 (Stage 1 concept block corrected 2026-09-08, `RAISE-PROTOTYPE.md` v0.20 §15) | AC-MAINT-001 (AC-MAINT-001-01..09; **AC-MAINT-001-10, new 2026-09-08**, `RAISE-ACCEPTANCE-CRITERIA.md` v0.19 §12) | TS-MAINT-001 (`RAISE-TEST-PLAN.md` v0.20 §7/§8) | TC-MAINT-001-01..09; **TC-MAINT-001-10, new 2026-09-08, executable but NOT executed** (`RAISE-TEST-CASES.md` v0.29 §11) | **PASS** — executed 2026-08-28 against the real running app, all 9 cases: TC-MAINT-001-03 **PASS** (a new requisition submitted via "New IT Requisition" enters `PENDING_DEPT_APPROVAL`). TC-MAINT-001-04 **PASS** (Dept Sign-off → Approve transitions to `PENDING_IT_DISPATCH`). TC-MAINT-001-05 **PASS** (Reject on a separate `PENDING_DEPT_APPROVAL` ticket resulted in `REJECTED_BY_DEPT`, confirmed **not** `PENDING_IT_DISPATCH` — per this case's own scope, no claim is made about whether that specific resulting state is itself correct). TC-MAINT-001-06 **PASS** (Assign Tech + Dispatch transitions to `IN_PROGRESS`, one of the three allowed states). TC-MAINT-001-07 **PASS** (Update Status to On-Hold with a hold reason correctly reflects "3. On-Hold" and shows the reason banner). TC-MAINT-001-08 **PASS** (Mark Complete transitions to `DONE`/"4. Resolved & Closed" with resolution notes shown). TC-MAINT-001-01 originally **FAIL** — the Maintenance record list showed no date/cost fields (F-28) — **now PASS**, re-executed after the fix: each record now shows created date and cost, verified live on asset `a1`. TC-MAINT-001-09 originally **FAIL** — the 4-stage progress indicator (`GovernanceStep` in `TicketDetail/index.tsx`) only rendered two visual states (done ✓ vs. a plain gray circle with the step number), so the "Current" stage and any not-yet-reached "Pending" stage were visually identical (F-29) — **now PASS**, re-executed after the fix: the current stage is derived from `ticket.status` and rendered with a distinct brand-colored circle, ring, and a "Current" badge; verified live across `PENDING_DEPT_APPROVAL` (stage 2 current), `PENDING_IT_DISPATCH` (stage 3 current), and `DONE` (no stage marked current, all done). TC-MAINT-001-02 **PASS** (2 records for asset `a1` displayed in ascending-chronological order by observed outcome, though the underlying code has no explicit sort — `assetTickets` in `AssetDetail/index.tsx` is unsorted array-filter order — a fragility worth watching, not a current failure since the observed order was correct). **The 4-stage workflow shape and state model remain verified present in `RAISE-PRD.md` v0.9 §6 and §16 Resolved Question 33.** **Updated 2026-09-08 — PRD §16 Resolved Question 53 confirms the already-shipped per-priority SLA target hours (Critical 2h, High 8h, Medium 24h, Low 48h) as they stand; independently assessed, this does NOT change this row's level.** This row's existing full `PASS` rests entirely on the evidence above (`TC-MAINT-001-01..09`, executed 2026-08-28, confirming the 4-stage transitions per Resolved Question 33) — that evidence is untouched by this sync and the `PASS` is retained exactly as it stood. New `AC-MAINT-001-10`/`TC-MAINT-001-10` (per-priority SLA target hours: the Priority selector's four SLA-labelled options and the `slaTargetHours` stamping) are genuinely executable today — no RBAC dependency, no open PRD Question standing in the way — but **have not been executed**; `RAISE-TEST-CASES.md` v0.29 records this honestly (Blocked column `No`, no PASS claimed). This document does not carry the new case's testability forward as though it were covered by the existing `PASS`, and does not downgrade the row either, since the `PASS` never rested on an SLA assertion in the first place. See new **Gap 23** (§6, OPENED, left OPEN — the unexecuted `TC-MAINT-001-10`) for the tracking record. **"SLA per stage" (how long each of the four workflow stages may individually take) remains a separate, still fully open question**, untouched by Resolved Question 53 — do not read the confirmed per-priority target as resolving it. **Open Finding F-54** (the shipped SLA values previously carried no business authorisation) is independently assessed **CLOSED** by this sync — see new **Gap 24** (§6, opened and closed in this same revision) for the full record; F-54's closure does not extend to covering the still-unexecuted `TC-MAINT-001-10`, tracked separately under Gap 23. |
+| `RAISE-FR-MAINT-001` | Maintenance (4-stage workflow: User Requisition → Dept Approval (Delegated) → IT Dispatch → Technician Execution; per-priority SLA target hours confirmed as-built 2026-09-08, `RAISE-DESIGN.md` v0.19 §5.1, formally executed on the frontend tier 2026-09-09) | P0 / MVP | §5.1 Maintenance Domain (new "Per-Priority SLA Target Hours — Confirmed As-Built" subsection, 2026-09-08, `RAISE-DESIGN.md` v0.19) | P-009 (Stage 1 concept block corrected 2026-09-08, `RAISE-PROTOTYPE.md` v0.20 §15) | AC-MAINT-001 (AC-MAINT-001-01..09; **AC-MAINT-001-10, new 2026-09-08**, `RAISE-ACCEPTANCE-CRITERIA.md` v0.19 §12) | TS-MAINT-001 (`RAISE-TEST-PLAN.md` v0.20 §7/§8) | TC-MAINT-001-01..09; **TC-MAINT-001-10, new 2026-09-08, formally executed 2026-09-09 — PASS (frontend tier)** (`RAISE-TEST-CASES.md` v0.30 §11) | **PASS** — executed 2026-08-28 against the real running app, all 9 cases: TC-MAINT-001-03 **PASS** (a new requisition submitted via "New IT Requisition" enters `PENDING_DEPT_APPROVAL`). TC-MAINT-001-04 **PASS** (Dept Sign-off → Approve transitions to `PENDING_IT_DISPATCH`). TC-MAINT-001-05 **PASS** (Reject on a separate `PENDING_DEPT_APPROVAL` ticket resulted in `REJECTED_BY_DEPT`, confirmed **not** `PENDING_IT_DISPATCH` — per this case's own scope, no claim is made about whether that specific resulting state is itself correct). TC-MAINT-001-06 **PASS** (Assign Tech + Dispatch transitions to `IN_PROGRESS`, one of the three allowed states). TC-MAINT-001-07 **PASS** (Update Status to On-Hold with a hold reason correctly reflects "3. On-Hold" and shows the reason banner). TC-MAINT-001-08 **PASS** (Mark Complete transitions to `DONE`/"4. Resolved & Closed" with resolution notes shown). TC-MAINT-001-01 originally **FAIL** — the Maintenance record list showed no date/cost fields (F-28) — **now PASS**, re-executed after the fix: each record now shows created date and cost, verified live on asset `a1`. TC-MAINT-001-09 originally **FAIL** — the 4-stage progress indicator (`GovernanceStep` in `TicketDetail/index.tsx`) only rendered two visual states (done ✓ vs. a plain gray circle with the step number), so the "Current" stage and any not-yet-reached "Pending" stage were visually identical (F-29) — **now PASS**, re-executed after the fix: the current stage is derived from `ticket.status` and rendered with a distinct brand-colored circle, ring, and a "Current" badge; verified live across `PENDING_DEPT_APPROVAL` (stage 2 current), `PENDING_IT_DISPATCH` (stage 3 current), and `DONE` (no stage marked current, all done). TC-MAINT-001-02 **PASS** (2 records for asset `a1` displayed in ascending-chronological order by observed outcome, though the underlying code has no explicit sort — `assetTickets` in `AssetDetail/index.tsx` is unsorted array-filter order — a fragility worth watching, not a current failure since the observed order was correct). **The 4-stage workflow shape and state model remain verified present in `RAISE-PRD.md` v0.9 §6 and §16 Resolved Question 33.** **Updated 2026-09-08 — PRD §16 Resolved Question 53 confirms the already-shipped per-priority SLA target hours (Critical 2h, High 8h, Medium 24h, Low 48h) as they stand; independently assessed, this does NOT change this row's level.** This row's existing full `PASS` rests entirely on the evidence above (`TC-MAINT-001-01..09`, executed 2026-08-28, confirming the 4-stage transitions per Resolved Question 33) — that evidence is untouched by this sync and the `PASS` is retained exactly as it stood. New `AC-MAINT-001-10`/`TC-MAINT-001-10` (per-priority SLA target hours: the Priority selector's four SLA-labelled options and the `slaTargetHours` stamping) are genuinely executable today — no RBAC dependency, no open PRD Question standing in the way — but **have not been executed**; `RAISE-TEST-CASES.md` v0.29 records this honestly (Blocked column `No`, no PASS claimed). This document does not carry the new case's testability forward as though it were covered by the existing `PASS`, and does not downgrade the row either, since the `PASS` never rested on an SLA assertion in the first place. See new **Gap 23** (§6, OPENED, left OPEN — the unexecuted `TC-MAINT-001-10`) for the tracking record. **"SLA per stage" (how long each of the four workflow stages may individually take) remains a separate, still fully open question**, untouched by Resolved Question 53 — do not read the confirmed per-priority target as resolving it. **Open Finding F-54** (the shipped SLA values previously carried no business authorisation) is independently assessed **CLOSED** by this sync — see new **Gap 24** (§6, opened and closed in this same revision) for the full record; F-54's closure does not extend to covering the still-unexecuted `TC-MAINT-001-10`, tracked separately under Gap 23. **Updated 2026-09-09 — `TC-MAINT-001-10` formally executed, real result recorded (`RAISE-TEST-CASES.md` v0.30 §11); Gap 23 CLOSED, new Gap 25 OPENED; this row's resting evidence changes, its level does not.** Driving the real running app (`npm run dev`, `raise-frontend`, port 5173) on merged `main` @ `88f1017`, `TC-MAINT-001-10` is now **PASS**: the Priority selector at `/maintenance/create` offers exactly four options labelled `Critical (2h SLA)`/`High (8h SLA)`/`Medium (24h SLA)`/`Low (48h SLA)`, and one request submitted per priority was stamped with the matching `slaTargetHours`, each read off its own Ticket Detail page — Critical → `ITR-2026-007` → 2h; High → `ITR-2026-008` → 8h; Medium → `ITR-2026-009` → 24h; Low → `ITR-2026-010` → 48h — all four matched, zero console errors. **This execution reaches the frontend tier only** — `TICKET_API_ENABLED` (`frontend/src/config/featureFlags.ts:30`) is off by default, so the run went through the mock ticket repository and traces to `frontend/src/services/ticket-service.ts:14` alone; `go-template-main/service/ticketService.go:19-26`'s identical map, which this same case's Expected Result also names, was **not** exercised, and no backend test covers `slaHours` (confirmed by grepping `go-template-main/service/*_test.go` — no results). **Gap 23 is independently assessed CLOSED** — its own stated closure condition ("a formal execution of `TC-MAINT-001-10` against the real running app," not itself scoped to a specific tier) has now literally been met. **A new, narrower Gap 25 is OPENED** to carry, by itself, what this execution did not reach: the untested Go/backend `slaHours` map — a purely mechanical remainder, needing only a backend test or an execution with `TICKET_API_ENABLED=true`, no business decision or build. **This row's full `PASS` is not upgraded — full `PASS` is already the ceiling — and is not downgraded, since the new evidence is a PASS, not a contradiction; but what the `PASS` rests on has genuinely changed:** it now rests on `TC-MAINT-001-01..09`'s pre-existing 4-stage-workflow evidence **plus** `TC-MAINT-001-10`'s newly executed frontend-tier SLA evidence — the `PASS` must still not be read as an end-to-end, both-tiers assurance for the SLA figures, since the Go tier remains unexercised (Gap 25). "SLA per stage" remains untouched, still fully open. See new **Gap 25** (§6) and the updated **Gap 23** record (§6, now CLOSED) for the full assessment. |
 | `RAISE-FR-WARRANTY-001` | Warranty | P0 / MVP | §5.2 Warranty Domain (3-state model); §5.4 Settings Domain (NBV useful-life sub-section re-keyed to `Record<AssetType, usefulLifeYears>` 2026-09-08 (v2.8), `RAISE-DESIGN.md` v0.18 §5.4) | P-003 (Asset Registry column), P-004 (Asset Detail), P-018 (Settings > Warranty, new; NBV wireframe re-keyed to Type rows 2026-09-08 (v2.8), `RAISE-PROTOTYPE.md` v0.19 §23A) | AC-WARRANTY-001 (AC-WARRANTY-001-01..06 → this requirement; **AC-WARRANTY-001-07 → `RAISE-FR-EXEC-001`'s NBV scope, added 2026-09-05, rewritten to per-Asset-Type rows 2026-09-08 (v2.8)**, `RAISE-ACCEPTANCE-CRITERIA.md` v0.18 §13, see that row, §3) | TS-WARRANTY-001 (re-keyed 2026-09-08 (v2.8), `RAISE-TEST-PLAN.md` v0.19 §7/§8) | TC-WARRANTY-001-01..06 (this requirement, unaffected); **TC-WARRANTY-001-07** added 2026-09-05, BLOCKED (partial), belongs to `RAISE-FR-EXEC-001`'s NBV scope, not counted toward this row; **rewritten 2026-09-08 (v2.8)** from "all 5 categories" to one row per Asset Type, `RAISE-TEST-CASES.md` v0.28 | **PASS (partial)** — field-list blocker resolved 2026-08-29 (`RAISE-PRD.md` §16 Resolved Question 40, resolving Open Question 15: `warrantyExpiry` is the only MVP field). **Expiring-threshold blocker resolved 2026-09-01** (`RAISE-PRD.md` §16 Resolved Question 41, resolving follow-on Open Question 15b): the Expiring threshold is confirmed **per-Asset-Category configurable**, not a single global 90-day constant — defaulting to 90 days for all 5 current Asset Categories, admin-adjustable via a new P-018 Settings screen. **Implemented and formally executed 2026-09-01:** `frontend/src/lib/warranty.ts` (`getWarrantyStatus`, 3-state Active/Expiring/Expired), `frontend/src/types/settings.ts` (`WarrantySettings`), `frontend/src/services/settings-service.ts` + `settings-repository.ts` (per-category seed/merge), `frontend/src/pages/Settings/index.tsx` (new Warranty section, P-018), `frontend/src/pages/Assets/index.tsx` + `AssetDetail/index.tsx` (3-state badge). TC-WARRANTY-001-01 **PASS** (Warranty column/field displays `warrantyExpiry`). TC-WARRANTY-001-02 **PASS** (Active/Expiring/Expired badge correctly derived from `warrantyExpiry` + the asset's category's configured threshold, via `getWarrantyStatus()`). TC-WARRANTY-001-03 **PASS** — no longer BLOCKED: a category-specific threshold correctly flags an asset as Expiring, confirmed by automated test and live browser (setting IT Hardware to 5000 days flagged only IT Hardware assets Expiring, with an unrelated Mobile-category expired asset unaffected — no cross-category leakage). TC-WARRANTY-001-04 **PASS** (P-018 Settings > Warranty renders all 5 Asset Categories with a "90" default threshold input each). TC-WARRANTY-001-05 **PASS** (editing/saving one category's threshold recomputes only that category's assets; other categories unaffected). Verified via 151/151 automated tests (`tsc --noEmit`/lint clean) and live browser execution. **TC-WARRANTY-001-06 (non-admin access/write denial to P-018) formally executed 2026-09-01 and now PASS** — but only after a real defect was found and fixed first: the Settings route (`ROUTES.SETTINGS`) in `frontend/src/App.tsx` was **not actually gated to ADMIN**, sitting in the general authenticated-user route block instead of the existing `<Route element={<ProtectedRoute allowedRoles={['ADMIN']} />}>` block that already gates Administration/User Management/Role Management. Fixed by moving the Settings route into that existing block — no new RBAC mechanism invented, this reuses the exact mechanism already confirmed elsewhere in the app (PRD §16 Resolved Question 38, UI-only/client-side MVP enforcement level, per `RAISE-NFR-SEC-RBAC-001`). Confirmed by 2 new tests in `frontend/src/App.rbac.test.tsx` (non-ADMIN `EMPLOYEE`-role user redirected to the Forbidden page at `/settings`; ADMIN user let through), full suite 153/153 (was 151), `tsc --noEmit`/lint both clean, and live browser verification (2026-09-01): an EMPLOYEE-role user sees the app's real "403 — Access denied" Forbidden page at `/settings`, an ADMIN-role user sees the real Settings page render. **Both PRD-content blockers this row previously carried (field list, Q15; Expiring-threshold shape, Q15b) are now fully resolved** — see Gap 7 (§6, resolved 2026-08-29) and Gap 12 (§6, opened and RESOLVED same-revision, v1.3, 2026-09-01). **The one remaining coverage gap (TC-WARRANTY-001-06 unexecuted) is now also closed** — see Gap 13 (§6, opened v1.3, RESOLVED this revision v1.4, 2026-09-01). Overall row status: **PASS** — no remaining PRD-content blocker and no remaining unexecuted test case for this requirement. **New this revision (2026-09-05), noted but not affecting this row's PASS:** P-018 Settings gained a second, distinct configuration section — a per-Asset-Category NBV useful-life value (Prototype v0.16 §23A; `RAISE-ACCEPTANCE-CRITERIA.md` v0.14 §13, new `AC-WARRANTY-001-07`) — added to this same AC group/Suite because it shares the P-018 screen with the Warranty section, **not** because it is part of this requirement's own confirmed scope. `RAISE-ACCEPTANCE-CRITERIA.md` v0.14 §13 states this AC group's Requirement line explicitly as covering **both** `RAISE-FR-WARRANTY-001` (Warranty section, built) **and** `RAISE-FR-EXEC-001` (NBV section, shape-confirmed, not yet built) — an intentional dual-mapping (see §7 Chain Consistency Check). The new `TC-WARRANTY-001-07` is **BLOCKED (partial)**, tied to Open Finding F-03 (PRD §16 Open Question 3a, missing default per-Asset-Category useful-life values) — it does not weaken, and is not counted within, this row's `PASS`; its substantive discussion lives on the `RAISE-FR-EXEC-001` row (§3), which is the requirement it actually tests. **Re-keyed 2026-09-08 (v2.8), PRD §16 Resolved Question 52 — a re-key, not new scope, and this row's own `PASS` is unaffected:** the paragraph immediately above (2026-09-05) describes the NBV useful-life section as "a per-Asset-Category NBV useful-life value" — that keying is superseded, retained above verbatim as history, not deleted or silently rewritten. Business confirmed the value is configured **per Asset Type** instead (IT Hardware has no fixed value — "it depends on the equipment purchased" — the other four categories can each carry one; per-Type is a superset of per-Category, so nothing about the four fixed categories' coverage is lost). `RAISE-ACCEPTANCE-CRITERIA.md` v0.18 §13 rewrote `AC-WARRANTY-001-07` to one row per Asset Type (no longer five Category rows); `RAISE-PROTOTYPE.md` v0.19 §23A's P-018 wireframe now shows Type rows; `RAISE-TEST-CASES.md` v0.28 rewrote `TC-WARRANTY-001-07` identically (from "all 5 categories with editable useful-life inputs" to one row per Asset Type). This AC group's dual-mapping to `RAISE-FR-WARRANTY-001` (Warranty section, built, this row's own scope) and `RAISE-FR-EXEC-001` (NBV section, still not built) is unaffected by the re-key. `TC-WARRANTY-001-07` stays **BLOCKED (partial)**, tied to Open Finding F-03 (PRD §16 Open Question 3a, now re-scoped to per-Asset-Type values, still genuinely OPEN, no such number supplied) — it still does not weaken, and is not counted within, this row's own `PASS`. This row's own Warranty per-Category Expiring threshold (Resolved Question 41, `TC-WARRANTY-001-01..06`) is a distinct, genuinely per-Category concern and is untouched by this NBV-only re-key. |
 | `RAISE-FR-ORACLE-001` | Oracle FA Integration + NBV/Depreciation | P0 / MVP | §6 Oracle FA Integration (incl. §6.4 "Phase 6" label note) | P-011 | AC-ORACLE-001 | TS-ORACLE-001 | TC-ORACLE-001-01..04 | **FAIL** — executed 2026-08-29 against the real running app, and the result is worse than the pre-existing BLOCKED status: the route the app maps to `RAISE-FR-ORACLE-001` (`/reconciliation`, labeled "Oracle FA Reconcile" in navigation) renders `ModulePage` — a generic, literal "foundation placeholder" `EmptyState` ("Oracle FA Reconciliation — foundation placeholder / Migrates from src/pages/Reconciliation.tsx once Oracle FA is connected in Phase 6."), confirmed via `frontend/src/pages/_shared/ModulePage.tsx` and real page text. TC-ORACLE-001-01 **FAILS even on its testable-now scope** — no "Asset Number", "Acquisition Information", "NBV", "Depreciation", "Oracle Source", or "Synchronization Status" field exists anywhere on this page (the closest analog, Asset Detail's own "Financial" section added for F-24, shows only Purchase Cost/Current Value/Purchase Date — no Oracle-specific fields at all). TC-ORACLE-001-02/-03/-04 **FAIL** — no "data unavailable"/"sync error"/"data conflict" state is rendered anywhere; the placeholder has no state logic at all. This is independent of, and does not wait on, the still-open integration-mechanism question (PRD §16 Q6–Q10, tracked as F-04) or the `ReconciliationPage` mapping question (Open Question 10a) — even presence-only testing of the four UI states fails, since no P-011 screen was actually built (a stub exists in its place). See `OPEN-FINDINGS.md` F-31 for this new build-gap finding (distinct from F-04's integration-mechanism gap). |
 | `RAISE-FR-ALERT-001` | Alerts | P0 / MVP | §14 Alert Architecture; §14 "Header Bell — Second Surface Over the Same Derivation" (new, Design v0.16) | P-012; header bell, global chrome (Prototype v0.17 §6/§18 — not a distinct screen ID) | AC-ALERT-001 (AC-ALERT-001-01..11, P-012 itself; **AC-ALERT-001-12..17, new**, the header bell second surface) | TS-ALERT-001 | TC-ALERT-001-01..11 (P-012); **TC-ALERT-001-12..17 (new, header bell)** | **Current verdict, 2026-09-07 (Gap 20 execution sweep complete) — honestly re-derived from the v2.5 `PASS (partial)` to a full, unqualified `PASS`.** `RAISE-TEST-CASES.md` v0.26 §14 records all six header-bell cases, `TC-ALERT-001-12..17`, formally executed against merged `main` `6a6bcac`, the real running app, storage cleared to zero before sign-in as `admin@raise.dev`/`ADMIN`. `TC-ALERT-001-13` through `-17` were executed first and **PASSED**: `-13` — the dropdown lists exactly five rows, each with condition label, description, and `CODE · Name`; `-14` — the case the business decision most turned on — recorded the bell's five rows in one session with no reload, then used "View all alerts" to reach P-012 in that same session, and the two lists were **identical in content, count, and order** (automated comparison returned `true`); `-15` — "View all alerts" navigates to `/notifications`; `-16` — no acknowledge/dismiss/read-unread/snooze affordance exists anywhere in the panel; `-17` — the button exposes `aria-label`/`aria-expanded` correctly, closed and open. **`TC-ALERT-001-12` could not be executed as originally written and was not marked PASS mid-execution** — its step asked the tester to read a numeral rendered on the closed bell button, but the closed button renders no numeral, only a presence dot — the same discipline already applied to `TC-ALERT-001-09` / Open Finding F-42, not a procedure rewritten around whatever passed. **The cause is recorded honestly: an AI-introduced specification error, not a business decision and not a product defect.** The criterion was drafted during the 2026-09-05 chain sync from an imprecise description ("the bell badge shows the TOTAL alert count") that was true of the *panel* badge and was mis-read as the *header* badge. PRD §16 Resolved Question 49 never specified a numeral on the closed button, and the pre-existing bell already used a dot — the product matched the business decision as built; the specification over-reached beyond it, not the product falling short of it. Business confirmed 2026-09-07 that the fix is to correct the specification, not the product: `AC-ALERT-001-12` was rewritten in place (`RAISE-ACCEPTANCE-CRITERIA.md` v0.16 §15) to describe what is actually built — a presence dot on the closed button, the numeral exposed via `aria-label` and the panel header badge, matching P-012's own total — `RAISE-TEST-PLAN.md` v0.16 §7 followed, and `TC-ALERT-001-12`'s steps/expected result were corrected in `RAISE-TEST-CASES.md` v0.25 and **deliberately left unexecuted there**, so the correction could not be shaped around whatever happened to pass. `TC-ALERT-001-12` was then formally executed against the corrected procedure in `RAISE-TEST-CASES.md` v0.26 — **PASS**: the closed button's own rendered text was empty (no digit could be present); enumerating its child elements found exactly one, a class-only span (the presence dot) with empty text content; the button's `aria-label` read "Notifications, 19 alerts"; the panel header badge, once opened, read "19"; P-012's own pagination, read in the same session, showed "Showing 1-10 of 19"; an automated equality check across all three numerals returned `true` (19 = 19 = 19). **With this, all seventeen `TC-ALERT-001-01..17` are formally executed and PASS — none is BLOCKED, none is unexecuted.** **Gap 20 is CLOSED this revision** — it was opened solely to track this execution sweep, and the sweep is now complete; see Gap 20's own closure note, §6. **PRD §16 Open Question 22a (per-user alert filtering) is explicitly weighed here, not left implicit:** it is raised but unspecified, and it is not specifiable today — there is no link between the authenticated `User` and an `Employee` record (`User` carries only `id`/`username`/`fullName`/`role`; Handovers, P-008, matches recipients by comparing `fullName` strings, a documented MVP limitation, not a reusable identity link) — and `RAISE-ACCEPTANCE-CRITERIA.md` deliberately writes no criterion for it. The same three independent signals this document applied when it first reached a full PASS at v2.2 are re-confirmed, not re-derived, this revision: (1) PRD §16 Resolved Question 45 itself states Q22a "is a distinct, separate question, not a sub-part of Q22"; (2) PRD §17's own Requirement Traceability Matrix records Q22a as open without revising the requirement's `APPROVED` status or reopening any of its confirmed trigger conditions; (3) the AC layer treats it as not-yet-specified, future/roadmap-facing scope, not as an untested part of `AC-ALERT-001`. **This document's verdict: Q22a sits outside `RAISE-FR-ALERT-001`'s confirmed scope, not inside it, and does not keep this row at `PASS (partial)`.** Open Finding F-08 (role/permission-matrix content for screens other than Alerts; authentication mechanism) remains untouched, genuinely open, unaffected. Open Finding F-03 (NBV default useful-life values) is unaffected, stays open, and belongs to `RAISE-FR-EXEC-001`'s row, not this one. **Superseded, retained verbatim below for history, per this document's own append-don't-rewrite convention (v2.5 record — described the state before the six header-bell cases were formally executed):** **PASS (partial)** — re-derived from the v2.2 full `PASS`, 2026-09-07, on newly-grown, not-yet-executed scope, not on any regression (see the v2.5 record immediately below for its own full reasoning; that reasoning's Q22a weighing is unchanged and is the same reasoning re-confirmed, not repeated, above).
@@ -2019,9 +2147,10 @@ still-unbuilt NBV tile/section (Gap 21, Open Finding F-03) — both remain
 genuinely OPEN, unaffected by this closure, tracked separately under Gap 21
 above, not under Gap 22.
 
-**Gap 23 (OPENED 2026-09-08 — a coverage-only gap, left OPEN, execution
-pending; distinct from every other tracked gap in this document in that
-it needs neither a business decision nor a build):** `RAISE-PRD.md` v0.21
+**Gap 23 (OPENED 2026-09-08, CLOSED 2026-09-09 — a coverage-only gap;
+distinct from every other tracked gap in this document in that it needed
+neither a business decision nor a build, only a formal execution):**
+`RAISE-PRD.md` v0.21
 §16 Resolved Question 53 (confirmed 2026-09-08) confirms the
 already-shipped **per-priority SLA target hours** for
 `RAISE-FR-MAINT-001` — Critical 2h, High 8h, Medium 24h, Low 48h
@@ -2061,18 +2190,82 @@ retained exactly as it stood; the new criterion/case are simply not yet
 reflected by any executed evidence, positive or negative, and remain
 outside what that `PASS` can honestly be said to cover.**
 
-**What would close this gap:** one thing only — a formal execution of
-`TC-MAINT-001-10` against the real running app (submit one maintenance
-request per Priority value, confirm the selector's four SLA-labelled
-options and the resulting `slaTargetHours` match Critical=2/High=8/
-Medium=24/Low=48). Unlike Gap 21, this does not wait on any business
-decision — the spec is already correct and the code already ships the
-behaviour; only the execution sweep itself is missing. **"SLA per
-stage" is explicitly NOT closed by this gap and must not be treated as
-in scope for it** — it is a distinct, still fully open question (how
-long each of the four workflow stages may individually take), with no
-per-stage budget supplied or implemented anywhere, unaffected by
-Resolved Question 53 or by this gap's eventual closure.
+**What would close this gap (as stated at v2.9):** one thing only — a
+formal execution of `TC-MAINT-001-10` against the real running app
+(submit one maintenance request per Priority value, confirm the
+selector's four SLA-labelled options and the resulting `slaTargetHours`
+match Critical=2/High=8/Medium=24/Low=48). Unlike Gap 21, this did not
+wait on any business decision — the spec was already correct and the
+code already shipped the behaviour; only the execution sweep itself was
+missing. **"SLA per stage" was explicitly NOT in scope for this gap** —
+it is a distinct, still fully open question (how long each of the four
+workflow stages may individually take), with no per-stage budget
+supplied or implemented anywhere, unaffected by Resolved Question 53 or
+by this gap's closure.
+
+**CLOSED 2026-09-09 — independently assessed against `RAISE-TEST-
+CASES.md` v0.30 §11 directly, not taken on trust.** `TC-MAINT-001-10`
+was formally executed against the real running app (`npm run dev`,
+`raise-frontend`, port 5173) on merged `main` @ `88f1017`, driving the
+actual UI: the Priority selector offered exactly the four SLA-labelled
+options, and one request per priority was stamped with the matching
+`slaTargetHours` — Critical=2, High=8, Medium=24, Low=48, all four
+confirmed on each ticket's own Ticket Detail page. **Result: PASS.**
+This literally satisfies the gap's own stated closure condition above,
+word for word: "a formal execution of `TC-MAINT-001-10` against the
+real running app" — that condition never itself named a specific tier,
+and it has now been met.
+
+**What this closure does not cover, assessed honestly rather than
+stretched to fit:** the same execution went through the **mock ticket
+repository only** (`TICKET_API_ENABLED`,
+`frontend/src/config/featureFlags.ts:30`, off by default), so the value
+observed traces to `frontend/src/services/ticket-service.ts:14` alone.
+`go-template-main/service/ticketService.go:19-26`'s identical map —
+named by this same case's own Expected Result as one of the two places
+`slaTargetHours` is defined — was **not** exercised, and no backend test
+covers `slaHours` anywhere in `go-template-main/service/*_test.go`. This
+document already applies the principle that a specification being
+correct is not the same as it being covered; the analogous principle
+holds here for a case whose Expected Result names two tiers but is
+executed against only one — exercising one tier does not, by itself,
+constitute coverage of the other. Rather than let Gap 23's closure
+silently absorb that shortfall, it is carried forward, narrowed and
+by itself, as new **Gap 25** immediately below.
+
+`OPEN-FINDINGS.md` update (recording this closure, if tracked there) is
+handled separately, out of this document's scope.
+
+**Gap 25 (OPENED 2026-09-09 — a coverage-only gap, left OPEN, carved out
+of Gap 23's closure; like Gap 23 before it, needs neither a business
+decision nor a build, only a backend-side execution or test):**
+`TC-MAINT-001-10`'s Expected Result (`RAISE-ACCEPTANCE-CRITERIA.md`
+v0.19 `AC-MAINT-001-10`; `RAISE-TEST-CASES.md` v0.30 §11) names **two**
+places the per-priority SLA target hours are defined —
+`frontend/src/services/ticket-service.ts:14` and
+`go-template-main/service/ticketService.go:19-26` — as both shipping the
+identical Critical=2/High=8/Medium=24/Low=48 map. The 2026-09-09
+execution of `TC-MAINT-001-10` (Gap 23, above) exercised the frontend
+tier only, via the mock ticket repository, because `TICKET_API_ENABLED`
+is off by default. **The Go tier's map has never been exercised by any
+test, automated or manual, and no backend test file
+(`go-template-main/service/*_test.go`) asserts a `slaHours` value at
+all** — that tier is assured only by code inspection and by the Go
+file's own comment stating it mirrors the frontend map exactly, which is
+a claim about intent, not a verified fact. **This is not a build defect
+and not a specification defect** — the Go map already exists and already
+matches the frontend one by inspection; only verification is missing.
+**What would close this gap:** either (a) a backend test
+(`go-template-main/service/*_test.go`) asserting
+`ticketService.go:19-26`'s `slaHours` map returns 2/8/24/48 for
+Critical/High/Medium/Low, or (b) a formal execution of
+`TC-MAINT-001-10` with `TICKET_API_ENABLED=true` against the real
+running Go API, confirming the same four values end to end through the
+real backend. **This gap does not touch, and must not be read as
+touching:** `RAISE-FR-MAINT-001`'s row (§3), which stays a full `PASS`
+resting on evidence this gap does not contradict; "SLA per stage," a
+distinct, still fully open question; or the vendor model, cost model,
+and delegated-approver configuration rules, all unaffected.
 
 `OPEN-FINDINGS.md` update (recording this gap, if tracked there) is
 handled separately, out of this document's scope.
@@ -2109,8 +2302,12 @@ coverage question F-54 itself never raised (F-54's own text is explicit
 that its finding "does not invalidate `RAISE-FR-MAINT-001`'s full
 `PASS`," since no verdict ever rested on an executed SLA test — this
 matrix's Gap 23 record is consistent with, not a reopening of, that same
-point); and (b) "SLA per stage" (how long each of the four workflow
-stages may individually take) — a distinct question F-54 never raised
+point; **updated 2026-09-09 — `TC-MAINT-001-10` has since been formally
+executed and PASSED on the frontend tier, closing Gap 23 for the
+substance it named; the untested Go/backend tier is now tracked as new
+Gap 25, unaffected by F-54's own closure recorded here**); and (b) "SLA
+per stage" (how long each of the four workflow stages may individually
+take) — a distinct question F-54 never raised
 and Resolved Question 53 does not touch, remaining genuinely open under
 PRD §16 Q14's own remainder note. The vendor model, the cost model, and
 the delegated-approver configuration rules are likewise untouched by
@@ -2797,6 +2994,30 @@ downstream document's citation of an upstream document's content:
   assessment that Open Finding F-54's authorisation gap is resolved by
   Resolved Question 53 (see Gap 23/Gap 24, §6, for the full assessment
   and for what each does not cover).
+- **`RAISE-FR-MAINT-001` — `TC-MAINT-001-10` real formal execution
+  thread walked end-to-end this revision (2026-09-09), verified against
+  `RAISE-TEST-CASES.md` v0.30 §11 directly, not taken on trust; all
+  other upstream documents unchanged from v2.9 (PRD v0.21, Design v0.19,
+  Prototype v0.20, AC v0.19, Test Plan v0.20):** `RAISE-TEST-CASES.md`
+  v0.30 §11 records `TC-MAINT-001-10` formally executed 2026-09-09
+  against the real running app, **PASS** — the four SLA-labelled
+  Priority options confirmed, and `slaTargetHours`
+  Critical=2/High=8/Medium=24/Low=48 confirmed per-ticket on each
+  ticket's own Ticket Detail page, frontend tier only
+  (`TICKET_API_ENABLED` off by default; `go-template-main/service/
+  ticketService.go:19-26`'s identical map not exercised, no backend
+  test covers `slaHours`). No layer claims the Go/backend tier was
+  exercised, and none claims `RAISE-FR-MAINT-001`'s row is upgraded
+  beyond full `PASS` (there is nowhere higher). This matrix's own §3
+  row mirrors this exactly: full `PASS`, unchanged in level, now
+  resting on `TC-MAINT-001-01..09`'s pre-existing 4-stage-workflow
+  evidence **plus** `TC-MAINT-001-10`'s newly executed frontend-tier
+  SLA evidence. Thread confirmed complete — **Gap 23** (§6) is
+  independently assessed **CLOSED**, its own stated closure condition
+  having been literally met; new **Gap 25** (§6) is OPENED, left OPEN,
+  carrying forward, by itself, the untested Go/backend `slaHours` tier
+  (see Gap 23/Gap 25, §6, for the full assessment and for what each
+  does and does not cover).
 
 ---
 
@@ -3201,6 +3422,33 @@ not touched by this correction.
   spec is already correct and the code already ships the behaviour;
   only the execution itself is outstanding. See Gap 23 (new, OPEN) and
   Gap 24 (new, opened and closed), §6, for the full record.
+- **New this revision (2026-09-09, v2.10) — `TC-MAINT-001-10` formally
+  executed, PASS on the frontend tier; Gap 23 CLOSED, new Gap 25
+  OPENED.** `RAISE-TEST-CASES.md` v0.30 §11 records `TC-MAINT-001-10`
+  executed against the real running app, confirming the four
+  SLA-labelled Priority options and `slaTargetHours`
+  Critical=2/High=8/Medium=24/Low=48, all via the mock ticket repository
+  (`TICKET_API_ENABLED` off by default). **Compliance Review may** treat
+  Gap 23 as closed — its own stated closure condition (a formal
+  execution of `TC-MAINT-001-10` against the real running app) has been
+  literally met — and may treat `RAISE-FR-MAINT-001`'s row as now
+  resting on real executed frontend-tier SLA evidence, not only on the
+  pre-existing 4-stage-workflow evidence. **Compliance Review must
+  not**, however, treat this as: (a) an upgrade of
+  `RAISE-FR-MAINT-001`'s row beyond full `PASS` — there is nowhere
+  higher; (b) evidence that the Go/backend `slaHours` map has been
+  verified — it has not, `go-template-main/service/ticketService.go:19-
+  26` remains unexercised by any test, tracked as new Gap 25 (§6),
+  which needs only a backend test or a `TICKET_API_ENABLED=true`
+  execution, not a business decision; (c) resolution of "SLA per
+  stage," untouched; or (d) any change to Gap 21, the NBV superseded-
+  PASS records, `RAISE-FR-EXEC-001`'s `PASS (partial)` row, the vendor
+  model, the cost model, or the delegated-approver configuration rules,
+  all unaffected. **Compliance Review should also note** that Gap 25,
+  like Gap 23 before it, is unusually cheap to close — the Go map
+  already exists and already matches the frontend one by inspection;
+  only a backend-side assertion is missing. See Gap 23 (closed) and Gap
+  25 (new, OPEN), §6, for the full record.
 
 ---
 
@@ -3564,6 +3812,51 @@ not touched by this correction.
       superseded-PASS records, and `RAISE-FR-EXEC-001`'s `PASS (partial)`
       row are unaffected by this revision** — none of the NBV-line items
       are touched by the Maintenance-domain SLA sync
+- [x] **New this revision (2026-09-09, v2.10) — `TC-MAINT-001-10`
+      formally executed against the real running app, real result
+      recorded, verified directly against `RAISE-TEST-CASES.md` v0.30
+      §11, not taken on trust.** Result: **PASS** — the four
+      SLA-labelled Priority options confirmed, and `slaTargetHours`
+      Critical=2/High=8/Medium=24/Low=48 confirmed per-ticket, on the
+      frontend tier
+- [x] **Confirmed: the frontend-only limitation is recorded plainly, not
+      glossed over** — `TICKET_API_ENABLED` off by default means the run
+      went through the mock ticket repository
+      (`frontend/src/services/ticket-service.ts:14`);
+      `go-template-main/service/ticketService.go:19-26`'s identical map
+      was **not** exercised, and no backend test covers `slaHours`
+      (confirmed by grepping `go-template-main/service/*_test.go` — no
+      results)
+- [x] **Gap 23 (§6) independently assessed CLOSED** — its own stated
+      closure condition (a formal execution of `TC-MAINT-001-10` against
+      the real running app, not itself scoped to a tier) has been
+      literally met; this document does not force closure merely because
+      an execution happened — it verified the execution against the
+      gap's own stated condition first
+- [x] **New Gap 25 (§6) OPENED, left OPEN** — carved narrowly out of Gap
+      23's closure to carry forward, by itself, the untested Go/backend
+      `slaHours` tier that `TC-MAINT-001-10`'s own Expected Result names
+      but this execution did not exercise; needs only a backend test or
+      a `TICKET_API_ENABLED=true` execution, not a business decision or
+      a build
+- [x] **`RAISE-FR-MAINT-001` (§3) reviewed and confirmed NOT upgraded
+      beyond its existing full `PASS`** (there is nowhere higher) **and
+      NOT downgraded** (the new evidence is a PASS, not a contradiction)
+      — but its row text is updated to state plainly that the `PASS` now
+      rests on `TC-MAINT-001-01..09`'s pre-existing 4-stage-workflow
+      evidence **plus** `TC-MAINT-001-10`'s newly executed frontend-tier
+      SLA evidence, not on the pre-existing evidence alone
+- [x] **Confirmed: "SLA per stage" remains genuinely OPEN**, untouched by
+      this execution — no per-stage budget was supplied, implemented, or
+      asserted by this run
+- [x] **Confirmed: Gap 21 (§6), the `TC-DASH-01`/`TC-EXEC-001-01`
+      superseded-PASS records, and `RAISE-FR-EXEC-001`'s `PASS (partial)`
+      row are unaffected by this revision** — none of the NBV-line items
+      are touched by this Maintenance-domain execution
+- [x] **Confirmed: this revision is dated 2026-09-09**, one day after the
+      2026-09-08 Resolved Question 53 confirmation and chain sync, per
+      this execution's own date — not carried forward from the prior
+      sync's date
 
 ---
 
@@ -3588,6 +3881,45 @@ Development (Source Code)
       ↓
 RAISE-COMPLIANCE-REVIEW.md
 ```
+
+**Current state (2026-09-09, v2.10): `TC-MAINT-001-10` formally executed,
+real result PASS (frontend tier); Gap 23 CLOSED, new Gap 25 OPENED —
+`RAISE-FR-MAINT-001`'s row stays full `PASS`, now resting on that new
+evidence too, stated here plainly, not left to be inferred.**
+`RAISE-TEST-CASES.md` v0.30 §11 records `TC-MAINT-001-10` — added
+executable-but-unexecuted at v0.29/v2.9 — formally executed 2026-09-09
+against the real running app (`npm run dev`, `raise-frontend`, port
+5173) on merged `main` @ `88f1017`: the Priority selector's four
+SLA-labelled options confirmed, and `slaTargetHours`
+Critical=2/High=8/Medium=24/Low=48 confirmed per-ticket on each ticket's
+own Ticket Detail page. **This run exercised the frontend tier only** —
+`TICKET_API_ENABLED` off by default routed it through the mock ticket
+repository; `go-template-main/service/ticketService.go:19-26`'s
+identical map was **not** exercised, and no backend test covers
+`slaHours`. **Gap 23 (§6) is independently assessed CLOSED** — its own
+stated closure condition (a formal execution of `TC-MAINT-001-10`
+against the real running app) is literally met, and this document
+verified that against the condition's own words rather than closing
+merely because an execution happened. **New Gap 25 (§6) is OPENED, left
+OPEN** — carved narrowly out of Gap 23's closure to carry, by itself,
+the untested Go/backend `slaHours` tier; unlike almost every other gap
+in this document, it needs only a backend test or a
+`TICKET_API_ENABLED=true` execution, not a business decision or a
+build. **`RAISE-FR-MAINT-001`'s row (§3) is NOT upgraded beyond its
+existing full `PASS`** (there is nowhere higher) **and is NOT
+downgraded** (the new evidence is a PASS, not a contradiction) — but the
+row's text now states plainly that the `PASS` rests on
+`TC-MAINT-001-01..09`'s pre-existing 4-stage-workflow evidence **plus**
+`TC-MAINT-001-10`'s newly executed frontend-tier SLA evidence, not on
+the pre-existing evidence alone. **"SLA per stage" remains genuinely
+OPEN**, untouched by this execution; **no number beyond the four
+confirmed values is invented, suggested, or illustrated anywhere in
+this revision**. Gap 21, the `TC-DASH-01`/`TC-EXEC-001-01`
+superseded-PASS records, and `RAISE-FR-EXEC-001`'s `PASS (partial)` row
+are unaffected. See Gap 23 (closed) and Gap 25 (new), §6, and the
+`RAISE-FR-MAINT-001` row, §3, for the full record.
+
+**Superseded by the paragraph immediately above, retained for history:**
 
 **Current state (2026-09-08, v2.9): Open Finding F-54 CLOSED, new Gap 23
 OPENED (execution pending), new Gap 24 opened and closed same revision —
@@ -4594,6 +4926,100 @@ while iPhone 15 Pro (Mobile, already-expired) still correctly showed
 Pro showed "Expiring" consistently in both its Lifecycle row and Warranty &
 Coverage section badge. `TC-WARRANTY-001-06` was **not** executed that
 pass — this is exactly the gap v1.4 closes above.
+
+**Change Log — v2.9 → v2.10 (this revision, 2026-09-09, `TC-MAINT-001-10`
+real formal execution — PASS on the frontend tier; Gap 23 CLOSED, new Gap
+25 OPENED — verified directly against `RAISE-TEST-CASES.md` v0.30 §11
+directly, not taken on trust; all other upstream documents unchanged from
+v2.9):**
+
+1. **Trigger.** `TC-MAINT-001-10` — added executable-but-unexecuted at
+   `RAISE-TEST-CASES.md` v0.29/this matrix's v2.9 — was **formally
+   executed 2026-09-09**, the day after Resolved Question 53's
+   confirmation and the v2.9 chain sync, against the real running app
+   (`npm run dev`, `raise-frontend`, port 5173) on merged `main` @
+   `88f1017`, driving the actual UI rather than calling services
+   directly. `RAISE-TEST-CASES.md` v0.30 §11 records the real result:
+   **PASS**. The Priority selector at `/maintenance/create` offered
+   exactly four options, labelled verbatim `Critical (2h SLA)`, `High
+   (8h SLA)`, `Medium (24h SLA)`, `Low (48h SLA)`; one request was
+   submitted per priority through the page's own form, and each
+   ticket's own `slaTargetHours` was read from its own Ticket Detail
+   page: Critical → `ITR-2026-007` → 2h; High → `ITR-2026-008` → 8h;
+   Medium → `ITR-2026-009` → 24h; Low → `ITR-2026-010` → 48h — all four
+   matched. Zero console errors.
+2. **The limitation, recorded plainly, not glossed over.** This
+   execution exercised the **frontend tier only** —
+   `TICKET_API_ENABLED` (`frontend/src/config/featureFlags.ts:30`) is
+   off by default, so the run went through the mock ticket repository
+   and the value observed traces to
+   `frontend/src/services/ticket-service.ts:14` alone.
+   `go-template-main/service/ticketService.go:19-26`'s identical map —
+   named by `AC-MAINT-001-10`/`TC-MAINT-001-10`'s own Expected Result as
+   one of the two places `slaTargetHours` is defined — was **not**
+   exercised, and no backend test covers `slaHours` anywhere in
+   `go-template-main/service/*_test.go` (confirmed by grep, no
+   results). That tier remains assured only by code inspection and by
+   the Go file's own comment that it mirrors the frontend map exactly.
+3. **§3 `RAISE-FR-MAINT-001` row updated, its level unchanged.** The row
+   stays a full `PASS` (there is nowhere higher) and is not downgraded
+   (the new evidence is a PASS, not a contradiction) — but its text now
+   states plainly that the `PASS` rests on `TC-MAINT-001-01..09`'s
+   pre-existing 4-stage-workflow evidence **plus**
+   `TC-MAINT-001-10`'s newly executed frontend-tier SLA evidence, where
+   before it rested solely on the former. The row's metadata columns
+   (Prototype Screen, TC ID) were updated to cite the execution and
+   `RAISE-TEST-CASES.md` v0.30.
+4. **§6 Gap 23 independently assessed CLOSED.** Gap 23's own "what would
+   close this gap" clause (v2.9) named one thing only — a formal
+   execution of `TC-MAINT-001-10` against the real running app, without
+   itself naming a specific tier — and that condition has now literally
+   been met. This document verified the closure against the gap's own
+   stated words rather than closing merely because an execution
+   happened.
+5. **§6 new Gap 25 OPENED, left OPEN.** Carved narrowly out of Gap 23's
+   closure: this document already applies the principle that a
+   specification being correct is not the same as it being covered, and
+   holds an analogous principle for a case whose Expected Result names
+   two tiers but is executed against only one. Gap 25 tracks, by
+   itself, the untested Go/backend `slaHours` map — a purely mechanical
+   gap needing only a backend test or a `TICKET_API_ENABLED=true`
+   execution, not a business decision or a build.
+6. **§7 Chain Consistency Check** gained a new bullet walking the
+   `TC-MAINT-001-10` execution thread, confirming no layer claims the
+   Go/backend tier was exercised or that `RAISE-FR-MAINT-001`'s row is
+   upgraded beyond full `PASS`.
+7. **§8 Compliance Review Readiness** gained a new bullet instructing
+   Compliance Review it may treat Gap 23 as closed and the row as
+   resting on the new frontend-tier evidence, but must not treat this as
+   an upgrade beyond full `PASS`, as evidence the Go tier is verified,
+   as resolving "SLA per stage," or as touching Gap 21/the NBV
+   superseded-PASS records/`RAISE-FR-EXEC-001`.
+8. **§9 Checklist** gained ten new checked items recording the execution
+   result, the frontend-only limitation, Gap 23's closure, Gap 25's
+   opening, the row's updated resting evidence, and confirming "SLA per
+   stage," Gap 21, the NBV superseded-PASS records,
+   `RAISE-FR-EXEC-001`, and this revision's own 2026-09-09 date.
+9. **§10 Next Step** gained a new leading current-state paragraph
+   (`TC-MAINT-001-10` executed, PASS frontend tier; Gap 23 closed; Gap
+   25 opened) with the prior v2.9 leading paragraph preserved beneath as
+   superseded history.
+10. **Document Status header and top-of-file Version block** rewritten
+    to place the current v2.10 verdict first, with the v2.9 record
+    preserved beneath as history, per this document's own
+    append-don't-rewrite convention.
+11. **Unaffected.** `RAISE-PRD.md`, `RAISE-DESIGN.md`,
+    `RAISE-PROTOTYPE.md`, `RAISE-ACCEPTANCE-CRITERIA.md`, and
+    `RAISE-TEST-PLAN.md` are unchanged from v2.9 (v0.21/v0.19/v0.20/
+    v0.19/v0.20 respectively) — only `RAISE-TEST-CASES.md` (v0.29 →
+    v0.30) reports a real change, an execution result, not a further
+    chain sync. "SLA per stage," the vendor model, the cost model, the
+    delegated-approver configuration rules, Gap 21, the
+    `TC-DASH-01`/`TC-EXEC-001-01` superseded-PASS records, and
+    `RAISE-FR-EXEC-001`'s `PASS (partial)` row are read-only inputs (or,
+    for Gap 21/the PASS records/`RAISE-FR-EXEC-001`, untouched rows) to
+    this document and are unaffected by this revision — this revision
+    updates only `RAISE-TRACEABILITY-MATRIX.md` itself.
 
 **Change Log — v2.8 → v2.9 (this revision, 2026-09-08, PRD §16 Resolved
 Question 53 sync — already-shipped per-priority SLA target hours for

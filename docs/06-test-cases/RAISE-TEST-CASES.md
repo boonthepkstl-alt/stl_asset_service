@@ -2,7 +2,7 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Test Cases
-**Version:** 0.30 Draft
+**Version:** 0.31 Draft
 **Status:** Draft for Test Case Review
 **Source:** [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.20 §7 (Test Suites, including the 2026-09-07 TS-DASH/TS-EXEC-001 ten-tile NBV re-specification, PRD §16 Resolved Questions 50–51, the 2026-09-08 PRD §16 Resolved Question 52 re-key of the NBV useful-life configuration from Asset Category to Asset Type, and the 2026-09-08 PRD §16 Resolved Question 53 confirmation of TS-MAINT-001's per-priority SLA target hours) + §8 (Blocked Items) + §8.1 (Fully-Blocked Suites — AI Document Intelligence Capabilities) + §3.3 (PRD §10 NFR Backlog — No Suite), expanding [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.19
 **Source of Truth:** RAISE PRD
@@ -597,15 +597,41 @@ hours; Low → `ITR-2026-010` → 48 hours — all four matched. **This run exer
 frontend tier only.** `TICKET_API_ENABLED` (`frontend/src/config/featureFlags.ts:30`) is
 off by default, so the mock ticket repository served the request and the value observed
 traces to `frontend/src/services/ticket-service.ts:14` alone —
-`go-template-main/service/ticketService.go:19-26`'s identical map was **not** exercised,
-and **no backend test covers `slaHours`** (confirmed by grepping
-`go-template-main/service/*_test.go`: no results); the backend tier remains assured only by
-code inspection and the Go file's own comment that it mirrors the frontend map. This
-execution does **not** change `RAISE-FR-MAINT-001`'s existing verdict and does **not**
-itself close Gap 23 (`RAISE-TRACEABILITY-MATRIX.md` owns that assessment separately).
-**"SLA per stage,"** the vendor model, the cost model, and the delegated-approver
-configuration rules remain exactly as open/blocked as recorded above, untouched by this
-execution.
+`go-template-main/service/ticketService.go:19-26`'s identical map was **not** exercised by
+this run.
+
+**Corrected same day (2026-09-09) — the claim recorded here, "and no backend test covers
+`slaHours` (confirmed by grepping `go-template-main/service/*_test.go`: no results)," was
+itself wrong, and so was the grep that produced it.** The grep used the case-sensitive
+pattern `SlaTargetHours`; the actual Go field is `SLATargetHours` (capital `SLA`), so the
+search silently missed the one place it already appeared:
+`go-template-main/service/ticketService_test.go:99`,
+`assert.Equal(t, 8, ticket.SLATargetHours)` ("High priority, matching frontend's
+SLA_HOURS map"), inside `TestCreateTicket_BuildsSnapshotAndInitialTimeline`. The accurate
+statement was **"one of the four priorities (High) was already covered on the backend,
+incidentally,"** not "no backend test covers `slaHours`" — Critical, Medium, and Low, and
+the map as a whole, were genuinely uncovered. Two new tests added the same day close that
+remainder: `TestCreateTicket_StampsSLATargetHoursForEveryPriority` (table-driven over all
+four priorities, asserting `SLATargetHours` 2/8/24/48 for Critical/High/Medium/Low against
+**hardcoded** expected values, deliberately not read from the `slaHours` map itself — a
+test that read the map it checks would pass against any silent edit to that map) and
+`TestCreateTicket_UnknownPriorityGetsZeroSLATarget` (pins the *observed*, not endorsed,
+zero-fallback behavior for a priority outside the confirmed four — PRD §16 confirms values
+for four priorities only and invents no fifth). Both were mutation-tested (Critical `2→4`
+fails 2 subtests; Low `48→24` fails 2 subtests; dropping the priority from the created
+ticket fails 5 subtests); `go build`, `go vet`, and `go test ./...` are clean, and
+`gofmt` is clean checked over LF content. **As of this correction, all four priorities plus
+the unknown-priority case are covered by backend unit tests** — the backend tier is no
+longer untested. **What still is not covered:** no test exercises the frontend map and the
+backend map against each other, and no run has exercised the Go tier through the HTTP path
+(`TICKET_API_ENABLED=true` with the backend running) — the maps' agreement still rests on
+the comment in `ticketService.go` plus two independently-written test expectations that
+happen to match. This correction does **not** change `TC-MAINT-001-10`'s recorded **PASS**
+(the 2026-09-09 UI execution above is unaffected and is not being re-litigated), does
+**not** change `RAISE-FR-MAINT-001`'s existing verdict, and does **not** itself close Gap
+23 (`RAISE-TRACEABILITY-MATRIX.md` owns that assessment separately). **"SLA per stage,"**
+the vendor model, the cost model, and the delegated-approver configuration rules remain
+exactly as open/blocked as recorded above, untouched by this correction.
 
 | TC ID | Title | Steps | Test Data | Expected Result | Blocked |
 |---|---|---|---|---|---|
@@ -618,7 +644,7 @@ execution.
 | TC-MAINT-001-07 | Stage 4 — Technician updates execution status | 1. Open a request in state `PLANNING`, `IN_PROGRESS`, or `ON_HOLD`. 2. As the assigned technician, change the status control to a different one of the three values. | 1 request in any of `PLANNING`/`IN_PROGRESS`/`ON_HOLD` | Request's displayed status reflects the newly selected value | **BLOCKED (partial)** — the status-update behavior itself is testable; depends on `RAISE-NFR-SEC-RBAC-001` — MVP enforcement level confirmed UI-only/client-side, but role list/permission matrix (Q22) remain TBD, so this case cannot verify that the acting user is a correctly-gated Technician, only that the status control updates the displayed value. |
 | TC-MAINT-001-08 | Stage 4 — Mark Complete transitions to Done | 1. Open a request in state `PLANNING`, `IN_PROGRESS`, or `ON_HOLD`. 2. As the assigned technician, select Mark Complete. | 1 request in any of `PLANNING`/`IN_PROGRESS`/`ON_HOLD` | Request transitions to state `DONE` | **BLOCKED (partial)** — the Mark Complete→`DONE` state transition itself is testable; depends on `RAISE-NFR-SEC-RBAC-001` — MVP enforcement level confirmed UI-only/client-side, but role list/permission matrix (Q22) remain TBD, so this case cannot verify that the acting user is a correctly-gated Technician. No behavior is defined for Mark Complete attempted from any other state, or for skipped/reversed stages — no test case exists for those, since none is shown in the Prototype. |
 | TC-MAINT-001-09 | Stage-progress indicator reflects current state | 1. Open the detail view for a maintenance request at each of: `PENDING_DEPT_APPROVAL`, `PENDING_IT_DISPATCH`, `PLANNING`/`IN_PROGRESS`/`ON_HOLD`, and `DONE`. | 4 requests, one per listed state (or state group) | The 4-stage progress indicator (User Requisition → Dept Approval → IT Dispatch → Technician Execution) shows Done/Current/Pending consistent with each request's current state | No |
-| TC-MAINT-001-10 | Per-priority SLA target hours — Priority selector options and `slaTargetHours` stamping | 1. As any user, open the maintenance-request form (Stage 1 — User Requisition) at `/maintenance/create` (reachable from the Maintenance list, Asset Detail, or Employee Detail). 2. Open the Priority selector and inspect its options. 3. Separately, for each of the four Priority values in turn, select that value and submit the request. 4. Inspect the created request's `slaTargetHours` value. | One maintenance request per Priority value (Critical, High, Medium, Low) — no other numeric value is used or asserted | The Priority selector offers exactly four options, labeled "Critical (2h SLA)," "High (8h SLA)," "Medium (24h SLA)," and "Low (48h SLA)"; the request created with each priority is stamped with the matching `slaTargetHours` — Critical=2, High=8, Medium=24, Low=48 — per `frontend/src/services/ticket-service.ts:14` and `go-template-main/service/ticketService.go:19-26`. This asserts a **single overall SLA target per ticket, keyed by its priority** only — it does not assert, and must not be read as asserting, a time budget for any individual one of the four workflow stages. | No — **PASS**, formally executed 2026-09-09 against the real running app (`npm run dev`, `raise-frontend`, port 5173) on merged `main` @ `88f1017`, driving the actual UI (not calling services directly). **Step 2:** read the Priority selector's live DOM at `/maintenance/create` — confirmed exactly four options, labeled verbatim "Critical (2h SLA)," "High (8h SLA)," "Medium (24h SLA)," "Low (48h SLA)" (values `Critical`/`High`/`Medium`/`Low`). **Steps 3–4:** for each priority in turn, subject and priority were set on the real form, the request was submitted through the page's own Submit button, and the created ticket's SLA target was read from its Ticket Detail page (`Target: {ticket.slaTargetHours} hours`, `frontend/src/pages/TicketDetail/index.tsx:302`): Critical → `ITR-2026-007` → **Target: 2 hours**; High → `ITR-2026-008` → **Target: 8 hours**; Medium → `ITR-2026-009` → **Target: 24 hours**; Low → `ITR-2026-010` → **Target: 48 hours** — all four matched the expected value. Each ticket's own subject was confirmed present on its own detail page, confirming the SLA figure read belongs to the ticket just created and not a neighbouring row. Zero console errors across the whole sweep. **Frontend tier only, recorded plainly rather than glossed over:** `TICKET_API_ENABLED` (`import.meta.env.VITE_TICKET_API_ENABLED === 'true'`, `frontend/src/config/featureFlags.ts:30`) is off by default, so this run went through the **mock ticket repository**, and the value observed came from `frontend/src/services/ticket-service.ts:14` only. `go-template-main/service/ticketService.go:19-26`'s identical map was **not** exercised by this run, and **no backend test covers `slaHours`** — confirmed by grepping `go-template-main/service/*_test.go`, which returns nothing; that tier remains assured only by code inspection and by the Go file's own comment stating it mirrors the frontend map exactly. This execution does **not** change `RAISE-FR-MAINT-001`'s existing verdict and does **not** itself close Gap 23 — the Traceability Matrix owns Gap 23 and assesses it separately. **"SLA per stage"** (the four workflow stages' own individual time budgets) remains a separate, still fully **NOT TESTABLE YET** question, unaffected by this execution; the vendor model, the cost model, and the delegated-approver configuration rules remain exactly as blocked/open as before. |
+| TC-MAINT-001-10 | Per-priority SLA target hours — Priority selector options and `slaTargetHours` stamping | 1. As any user, open the maintenance-request form (Stage 1 — User Requisition) at `/maintenance/create` (reachable from the Maintenance list, Asset Detail, or Employee Detail). 2. Open the Priority selector and inspect its options. 3. Separately, for each of the four Priority values in turn, select that value and submit the request. 4. Inspect the created request's `slaTargetHours` value. | One maintenance request per Priority value (Critical, High, Medium, Low) — no other numeric value is used or asserted | The Priority selector offers exactly four options, labeled "Critical (2h SLA)," "High (8h SLA)," "Medium (24h SLA)," and "Low (48h SLA)"; the request created with each priority is stamped with the matching `slaTargetHours` — Critical=2, High=8, Medium=24, Low=48 — per `frontend/src/services/ticket-service.ts:14` and `go-template-main/service/ticketService.go:19-26`. This asserts a **single overall SLA target per ticket, keyed by its priority** only — it does not assert, and must not be read as asserting, a time budget for any individual one of the four workflow stages. | No — **PASS**, formally executed 2026-09-09 against the real running app (`npm run dev`, `raise-frontend`, port 5173) on merged `main` @ `88f1017`, driving the actual UI (not calling services directly). **Step 2:** read the Priority selector's live DOM at `/maintenance/create` — confirmed exactly four options, labeled verbatim "Critical (2h SLA)," "High (8h SLA)," "Medium (24h SLA)," "Low (48h SLA)" (values `Critical`/`High`/`Medium`/`Low`). **Steps 3–4:** for each priority in turn, subject and priority were set on the real form, the request was submitted through the page's own Submit button, and the created ticket's SLA target was read from its Ticket Detail page (`Target: {ticket.slaTargetHours} hours`, `frontend/src/pages/TicketDetail/index.tsx:302`): Critical → `ITR-2026-007` → **Target: 2 hours**; High → `ITR-2026-008` → **Target: 8 hours**; Medium → `ITR-2026-009` → **Target: 24 hours**; Low → `ITR-2026-010` → **Target: 48 hours** — all four matched the expected value. Each ticket's own subject was confirmed present on its own detail page, confirming the SLA figure read belongs to the ticket just created and not a neighbouring row. Zero console errors across the whole sweep. **Frontend tier only, recorded plainly rather than glossed over:** `TICKET_API_ENABLED` (`import.meta.env.VITE_TICKET_API_ENABLED === 'true'`, `frontend/src/config/featureFlags.ts:30`) is off by default, so this run went through the **mock ticket repository**, and the value observed came from `frontend/src/services/ticket-service.ts:14` only. `go-template-main/service/ticketService.go:19-26`'s identical map was **not** exercised by this run. **Corrected same day (2026-09-09):** this cell originally added, "and no backend test covers `slaHours` — confirmed by grepping `go-template-main/service/*_test.go`, which returns nothing" — that claim, and the grep behind it, were both wrong: the grep used the case-sensitive pattern `SlaTargetHours` against the actual field `SLATargetHours` (capital `SLA`), missing the one place it already appeared (`go-template-main/service/ticketService_test.go:99`, asserting `SLATargetHours` = 8 for High, inside `TestCreateTicket_BuildsSnapshotAndInitialTimeline`) — so High was already covered, incidentally, while Critical/Medium/Low and the map as a whole were not. Two new tests added the same day, `TestCreateTicket_StampsSLATargetHoursForEveryPriority` (all four priorities, hardcoded expected values 2/8/24/48, not read from the map) and `TestCreateTicket_UnknownPriorityGetsZeroSLATarget` (observed, not endorsed, zero-fallback for an out-of-scope priority), close the remainder — both mutation-tested and passing against a clean `go build`/`go vet`/`go test ./...`/`gofmt`. All four priorities plus the unknown-priority case are now covered by backend unit tests; the backend tier is no longer untested. **Still not covered:** no test exercises the frontend map and the backend map against each other, and no run has exercised the Go tier through the HTTP path (`TICKET_API_ENABLED=true` with the backend running) — see §11's Status Note for full detail. This correction does not change this case's recorded **PASS**. This execution does **not** change `RAISE-FR-MAINT-001`'s existing verdict and does **not** itself close Gap 23 — the Traceability Matrix owns Gap 23 and assesses it separately. **"SLA per stage"** (the four workflow stages' own individual time budgets) remains a separate, still fully **NOT TESTABLE YET** question, unaffected by this execution; the vendor model, the cost model, and the delegated-approver configuration rules remain exactly as blocked/open as before. |
 
 ---
 
@@ -1522,8 +1548,16 @@ Priority-selector labels and all four `slaTargetHours` stampings (Critical=2, Hi
 Medium=24, Low=48) were confirmed against the created tickets' own Ticket Detail pages,
 recording a **PASS**. This run exercised the **frontend tier only** (mock ticket
 repository, `TICKET_API_ENABLED` off by default); `go-template-main`'s identical SLA map
-was not exercised and no backend test covers `slaHours`, both recorded plainly in §11's
-Status Note and the case's own Blocked column, not glossed over. TS-MAINT-001's row and
+was not exercised by this run. **Corrected same day (2026-09-09):** this note originally
+also said "no backend test covers `slaHours`" — that claim (and the case-sensitive grep for
+`SlaTargetHours` that produced it, which missed the actual field name `SLATargetHours`) was
+wrong; High was already covered incidentally by an existing test, and two new tests added
+the same day now cover all four priorities plus an unknown-priority case, both
+mutation-tested — see §11's Status Note for full detail. Still not covered: the frontend
+and backend maps have not been exercised against each other, and no run has exercised the
+Go tier through the HTTP path. Both the original PASS recorded above and this correction
+are recorded plainly in §11's Status Note and the case's own Blocked column, not glossed
+over. TS-MAINT-001's row and
 the Grand Total are unchanged by this execution (`10 | 4 | 6 | 0 | 0`; Grand Total
 `96 | 63 | 26 | 4 | 3`). This execution does not change `RAISE-FR-MAINT-001`'s verdict and
 does not itself close Gap 23 — that remains the Traceability Matrix's own assessment,
@@ -2162,14 +2196,36 @@ Before moving to the Requirement Traceability Matrix / Development:
       not glossed over:** `TICKET_API_ENABLED` is off by default, so the run went through
       the mock ticket repository (`frontend/src/services/ticket-service.ts:14`) only —
       `go-template-main/service/ticketService.go:19-26`'s identical map was **not**
-      exercised, and **no backend test covers `slaHours`** (confirmed by grepping
-      `go-template-main/service/*_test.go`: no results). This execution does **not**
+      exercised by this run
+- [x] **Corrected same day (2026-09-09):** the item above, and §11/§19, had each recorded
+      "no backend test covers `slaHours`" — confirmed, they said, "by grepping
+      `go-template-main/service/*_test.go`: no results." **That claim, and the grep that
+      produced it, were both wrong.** The grep used the case-sensitive pattern
+      `SlaTargetHours`; the actual Go field is `SLATargetHours` (capital `SLA`), so it
+      missed the one place already testing it: `go-template-main/service/
+      ticketService_test.go:99`, `assert.Equal(t, 8, ticket.SLATargetHours)`, inside
+      `TestCreateTicket_BuildsSnapshotAndInitialTimeline` — **High (8) was already covered
+      incidentally.** Critical, Medium, and Low, and the map as a whole, were genuinely
+      uncovered. Two new tests added the same day close that remainder:
+      `TestCreateTicket_StampsSLATargetHoursForEveryPriority` (all four priorities, against
+      **hardcoded** expected values 2/8/24/48, deliberately not read from the `slaHours`
+      map itself) and `TestCreateTicket_UnknownPriorityGetsZeroSLATarget` (the observed, not
+      endorsed, zero-fallback for a priority outside the confirmed four). Both are
+      mutation-tested (Critical `2→4` and Low `48→24` each fail 2 subtests; dropping the
+      priority from the created ticket fails 5 subtests); `go build`, `go vet`,
+      `go test ./...`, and `gofmt` (checked over LF content) are clean. All four priorities
+      plus the unknown-priority case are now covered by backend unit tests — the backend
+      tier is no longer untested. **Still not covered:** no test exercises the frontend map
+      and the backend map against each other, and no run has exercised the Go tier through
+      the HTTP path (`TICKET_API_ENABLED=true` with the backend running). `TC-MAINT-001-10`'s
+      recorded **PASS** is unchanged by this correction. This correction does **not**
       change `RAISE-FR-MAINT-001`'s verdict and does **not** itself close Gap 23 — that
       remains the Traceability Matrix's own separate assessment. "SLA per stage," the
       vendor model, the cost model, and the delegated-approver configuration rules
       confirmed unaffected and remain exactly as open/blocked as before. §19 Test Case
-      Summary row/Grand Total counts confirmed unchanged by this execution (the case was
-      already counted as Fully Testable prior to execution). NBV cases (`TC-DASH-03b`,
+      Summary row/Grand Total counts confirmed unchanged by this correction (the case was
+      already counted as Fully Testable prior to execution, and no row-count changes for a
+      backend coverage correction). NBV cases (`TC-DASH-03b`,
       `TC-EXEC-001-03b`, `TC-DASH-04`, `TC-EXEC-001-04`, `TC-WARRANTY-001-07`) confirmed
       untouched, remaining BLOCKED (partial) on Q3a; `TC-DASH-01`/`TC-EXEC-001-01`'s
       preserved prior PASS text, superseded labels, BLOCKED (partial) reclassification,
@@ -2207,6 +2263,122 @@ Suite ID → TC ID) into one master table for compliance review.
 
 ## Document Status
 
+**Version:** 0.31 (2026-09-09 — correction plus execution/coverage update, no spec/scope change:
+`TC-MAINT-001-10`'s (§11) 2026-09-09 execution note wrongly stated, in six places across this
+document, that "no backend test covers `slaHours`," in at least one case adding that this was
+"confirmed by grepping `go-template-main/service/*_test.go`." **That claim, and the grep that
+produced it, were both wrong.** The grep used the case-sensitive pattern `SlaTargetHours`; the
+actual Go field is `SLATargetHours` (capital `SLA`), so the search missed the one place it
+already appeared — `go-template-main/service/ticketService_test.go:99`,
+`assert.Equal(t, 8, ticket.SLATargetHours)`, inside `TestCreateTicket_BuildsSnapshotAndInitialTimeline`
+— meaning **High (8) was already covered on the backend, incidentally**; Critical, Medium, and
+Low, and the map as a whole, were genuinely uncovered. The accurate statement is "one of the
+four priorities was covered, incidentally," not "no backend test covers `slaHours`" — the same
+shape of overstatement as Open Finding F-49's set-equality claim: a real measurement whose
+conclusion outran what the measurement actually showed. Two new tests, added to
+`go-template-main/service/ticketService_test.go` and passing, close the remainder:
+`TestCreateTicket_StampsSLATargetHoursForEveryPriority` (table-driven over all four priorities,
+asserting `SLATargetHours` 2/8/24/48 for Critical/High/Medium/Low against **hardcoded** expected
+values, deliberately not read from the `slaHours` map itself, and that the priority survives
+onto the ticket) and `TestCreateTicket_UnknownPriorityGetsZeroSLATarget` (pins the *observed*,
+not endorsed, zero-fallback for a priority outside the confirmed four — PRD §16 confirms values
+for four priorities only and invents no fifth). Both were mutation-tested (Critical `2→4` fails
+2 subtests; Low `48→24` fails 2 subtests; dropping the priority from the created ticket fails 5
+subtests); `go build`, `go vet`, and `go test ./...` are clean, and `gofmt` is clean checked over
+LF content. All six occurrences of the wrong claim are corrected in place — quoted and named as
+wrong, not silently overwritten, per this document's established convention. **`TC-MAINT-001-10`'s
+recorded PASS is unchanged** — the 2026-09-09 UI execution is unaffected and is not
+re-litigated; it still exercised the **frontend tier only** (`TICKET_API_ENABLED` off by
+default). What is now true: all four priorities plus the unknown-priority case are covered by
+backend unit tests — the backend tier is no longer untested. **What still is not covered:** no
+test exercises the frontend map and the backend map against each other, and no run has
+exercised the Go tier through the HTTP path (`TICKET_API_ENABLED=true` with the backend
+running) — the maps' agreement still rests on the comment in `ticketService.go` plus two
+independently-written test expectations that happen to match. `RAISE-FR-MAINT-001`'s verdict is
+**not** changed and no Gap is claimed closed — `RAISE-TRACEABILITY-MATRIX.md` owns Gap 23/Gap 25
+and assesses them separately. "SLA per stage," the vendor model, the cost model, and the
+delegated-approver configuration rules remain untouched, exactly as open/blocked as before. The
+NBV cases (`TC-DASH-03b`, `TC-EXEC-001-03b`, `TC-DASH-04`, `TC-EXEC-001-04`,
+`TC-WARRANTY-001-07`) and `TC-DASH-01`/`TC-EXEC-001-01`'s preserved prior PASS text/superseded
+labels/BLOCKED (partial) reclassification/re-execution requirement are all confirmed
+undisturbed by this correction. See the Change Log entry below for full detail.)
+
+**Change Log — v0.30 → v0.31 (2026-09-09, correction plus execution/coverage update, no
+spec/scope change):**
+
+1. **Trigger.** The 2026-09-09 execution note attached to `TC-MAINT-001-10` (recorded in v0.30)
+   stated, in six places across §11 (twice — its section note and its own table row), §19, §20,
+   and the Document Status section (its version paragraph and its Change Log entry), that "no
+   backend test covers `slaHours`," at least one occurrence adding that this was "confirmed by
+   grepping `go-template-main/service/*_test.go`." That claim, and the grep that produced it,
+   were both wrong.
+2. **Root cause.** The grep used the case-sensitive pattern `SlaTargetHours`; the actual Go
+   field is `SLATargetHours` (capital `SLA`), so the search missed the one place it already
+   appeared: `go-template-main/service/ticketService_test.go:99`,
+   `assert.Equal(t, 8, ticket.SLATargetHours)` ("High priority, matching frontend's SLA_HOURS
+   map"), inside `TestCreateTicket_BuildsSnapshotAndInitialTimeline`. The accurate prior state
+   was "one of the four priorities (High) was covered, incidentally," not "no backend test
+   covers `slaHours`."
+3. **All six occurrences corrected in place**, each quoting the original wrong claim and naming
+   it as wrong rather than silently overwriting it, per this document's established convention
+   (the same handling already used for the "Priority (conceptual — TBD)" and nine-tile
+   corrections): §11's section note (the paragraph dated "Updated 2026-09-09"), §11's
+   `TC-MAINT-001-10` table row (Blocked column), §19's Test Case Summary note, §20's Test Case
+   Review Checklist item, the Document Status v0.30 version paragraph, and the Document Status
+   v0.29→v0.30 Change Log entry (item 3).
+4. **New backend coverage recorded.** Two tests added to
+   `go-template-main/service/ticketService_test.go`, both passing:
+   `TestCreateTicket_StampsSLATargetHoursForEveryPriority` (table-driven over all four
+   priorities, asserting `SLATargetHours` 2/8/24/48 for Critical/High/Medium/Low against
+   **hardcoded** expected values — deliberately not read from the `slaHours` map itself, so the
+   test cannot pass against a silent edit to that map — and that the priority itself survives
+   onto the created ticket) and `TestCreateTicket_UnknownPriorityGetsZeroSLATarget` (pins the
+   *observed* behavior that an out-of-scope priority yields `SLATargetHours` 0 because
+   `slaHours` is a plain map lookup — recorded as observed behavior, not an endorsed rule, since
+   PRD §16 confirms values for four priorities only and no fallback is invented). Both were
+   mutation-tested: `Critical: 2 → 4` fails 2 subtests; `Low: 48 → 24` fails 2 subtests; dropping
+   the priority from the created ticket fails 5 subtests. `go build`, `go vet`, and
+   `go test ./...` are clean; `gofmt` is clean checked over LF content (the R-34 method — the
+   CRLF working tree flags files regardless of formatting).
+5. **`TC-MAINT-001-10`'s PASS is unchanged.** The 2026-09-09 UI execution recorded in v0.30
+   stands exactly as before: it exercised the **frontend tier only**
+   (`TICKET_API_ENABLED` off by default via `frontend/src/config/featureFlags.ts:30`), and that
+   part of the record was and remains true. Nothing about this correction re-litigates that
+   PASS.
+6. **What is now covered, and what still is not, stated plainly.** As of this correction, all
+   four priorities plus the unknown-priority case are covered by backend unit tests — the
+   backend tier is no longer untested (previously only High was covered, incidentally). Still
+   **not** covered: no test exercises the frontend `slaHours` map and the backend `slaHours` map
+   against each other, and no run has exercised the Go tier through the HTTP path
+   (`TICKET_API_ENABLED=true` with the backend running) — the two maps' agreement still rests on
+   the comment in `ticketService.go` plus two independently-written test expectations that
+   happen to match.
+7. **No verdict or Gap claimed closed.** `RAISE-FR-MAINT-001`'s verdict in
+   `RAISE-TRACEABILITY-MATRIX.md` is **not** changed by this correction, and this correction does
+   **not** itself close Gap 23 or Gap 25 — the Traceability Matrix owns both and assesses them
+   separately, on its own schedule. "SLA per stage," the vendor model, the cost model, and the
+   delegated-approver configuration rules remain exactly as open/blocked as before.
+8. **§19 Test Case Summary and §20 Test Case Review Checklist.** Both updated in place with the
+   correction (item 3 above); no row-count or Grand Total change (`10 | 4 | 6 | 0 | 0` for
+   TS-MAINT-001; Grand Total `96 | 63 | 26 | 4 | 3`, unchanged) — this is a coverage/accuracy
+   correction, not a new or removed test case. NBV cases (`TC-DASH-03b`, `TC-EXEC-001-03b`,
+   `TC-DASH-04`, `TC-EXEC-001-04`, `TC-WARRANTY-001-07`) confirmed untouched, remaining BLOCKED
+   (partial) on Q3a; `TC-DASH-01`/`TC-EXEC-001-01`'s preserved prior PASS text, superseded
+   labels, BLOCKED (partial) reclassification, and re-execution requirement confirmed intact and
+   unaffected.
+9. **No other suite required changes.** `TC-LOGIN-*`, `TC-DASH-*`, `TC-ASSET-001-*`,
+   `TC-ASSET-001-D-*`, `TC-LIFE-001-*`, `TC-ASSET-002-*`, `TC-ASSET-003-*`, `TC-OPS-001-*`,
+   `TC-OPS-002-*`, `TC-MAINT-001-01` through `-09`, `TC-WARRANTY-001-*`, `TC-ORACLE-001-*`,
+   `TC-ALERT-001-*`, `TC-AUDIT-001-*`, `TC-EXEC-001-*`, `TC-AI-SEARCH-001-*`, `TC-AI-STATES-*`,
+   and `TC-AI-DOC-001..004` retain their prior status and wording verbatim. `RAISE-TEST-PLAN.md`,
+   `RAISE-ACCEPTANCE-CRITERIA.md`, and every earlier-layer document are untouched — this is a
+   correction plus an execution/coverage update, not a scope or specification change.
+   `RAISE-TRACEABILITY-MATRIX.md` is not touched by this correction — it owns Gap 23/Gap 25 and
+   assesses them separately, on its own schedule. `OPEN-FINDINGS.md` is maintained separately and
+   is not touched by this correction.
+
+---
+
 **Version:** 0.30 (2026-09-09 — real formal execution reporting, no spec change: `TC-MAINT-001-10`
 (§11) was formally executed against the real running app (`npm run dev`, `raise-frontend`, port
 5173) on merged `main` @ `88f1017`, driving the actual UI rather than calling services directly.
@@ -2214,16 +2386,21 @@ Result: **PASS.** The Priority selector's four labeled options were confirmed li
 `slaTargetHours` values (Critical=2, High=8, Medium=24, Low=48) were confirmed via each created
 ticket's own Ticket Detail page. This run exercised the **frontend tier only** — `TICKET_API_ENABLED`
 is off by default, so the mock ticket repository served the requests, and
-`go-template-main/service/ticketService.go:19-26`'s identical map was **not** exercised; no backend
-test covers `slaHours` (confirmed by grepping `go-template-main/service/*_test.go`: no results),
-both recorded plainly rather than glossed over. `RAISE-FR-MAINT-001`'s verdict is **not** changed by
-this sync and no Gap is claimed closed — `RAISE-TRACEABILITY-MATRIX.md` owns Gap 23 and assesses it
-separately. "SLA per stage," the vendor model, the cost model, and the delegated-approver
-configuration rules remain untouched, exactly as open/blocked as before. The NBV cases
-(`TC-DASH-03b`, `TC-EXEC-001-03b`, `TC-DASH-04`, `TC-EXEC-001-04`, `TC-WARRANTY-001-07`) and
-`TC-DASH-01`/`TC-EXEC-001-01`'s preserved prior PASS text/superseded labels/BLOCKED (partial)
-reclassification/re-execution requirement are all confirmed undisturbed by this sync. See the
-Change Log entry below for full detail.)
+`go-template-main/service/ticketService.go:19-26`'s identical map was **not** exercised by that
+run. This v0.30 entry originally also stated, at this point, "no backend test covers `slaHours`
+(confirmed by grepping `go-template-main/service/*_test.go`: no results)" — **that claim, and the
+grep behind it, were wrong**, corrected the same day in v0.31 (see below): the grep's
+case-sensitive pattern `SlaTargetHours` missed the actual field `SLATargetHours` (capital `SLA`),
+which one existing test already asserted for High; two new tests since cover all four priorities
+plus an unknown-priority case, both mutation-tested. `TC-MAINT-001-10`'s recorded PASS above is
+unaffected by this correction. `RAISE-FR-MAINT-001`'s verdict is **not** changed by this sync (or
+by v0.31's correction) and no Gap is claimed closed — `RAISE-TRACEABILITY-MATRIX.md` owns Gap 23
+and assesses it separately. "SLA per stage," the vendor model, the cost model, and the
+delegated-approver configuration rules remain untouched, exactly as open/blocked as before. The
+NBV cases (`TC-DASH-03b`, `TC-EXEC-001-03b`, `TC-DASH-04`, `TC-EXEC-001-04`,
+`TC-WARRANTY-001-07`) and `TC-DASH-01`/`TC-EXEC-001-01`'s preserved prior PASS text/superseded
+labels/BLOCKED (partial) reclassification/re-execution requirement are all confirmed undisturbed
+by this sync. See the Change Log entry below for full detail.)
 
 **Change Log — v0.29 → v0.30 (2026-09-09, real formal execution reporting, no spec change):**
 
@@ -2246,9 +2423,11 @@ Change Log entry below for full detail.)
    featureFlags.ts:30`) is off by default, so this run went through the mock ticket repository
    and the value observed traces to `frontend/src/services/ticket-service.ts:14` only.
    `go-template-main/service/ticketService.go:19-26`'s identical map was **not** exercised by
-   this run, and **no backend test covers `slaHours`** — confirmed by grepping
-   `go-template-main/service/*_test.go`, which returns nothing; that tier remains assured only
-   by code inspection and by the Go file's own comment stating it mirrors the frontend map.
+   this run. This item originally also stated "no backend test covers `slaHours` — confirmed
+   by grepping `go-template-main/service/*_test.go`, which returns nothing" — **that claim,
+   and the grep that produced it, were wrong** (case-sensitive `SlaTargetHours` vs. the actual
+   `SLATargetHours`); see v0.31's Change Log entry below for the correction and the new
+   backend test coverage recorded as a result.
 4. **No verdict or Gap claimed.** This execution does **not** change `RAISE-FR-MAINT-001`'s
    existing verdict in `RAISE-TRACEABILITY-MATRIX.md`, and does **not** itself close Gap 23 —
    that matrix owns Gap 23 and assesses it separately, on its own schedule. "SLA per stage," the

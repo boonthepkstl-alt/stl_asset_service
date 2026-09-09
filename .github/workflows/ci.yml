@@ -111,7 +111,14 @@ jobs:
 
       - name: Test
         if: '!cancelled()'
-        run: go test ./...
+        # `-count=1` disables the test result cache, and it is load-bearing rather than
+        # belt-and-braces. `service/slaContract_test.go` reads
+        # `frontend/src/services/ticket-service.ts`, which is OUTSIDE this Go module, and
+        # the test cache does not track it: verified 2026-09-09 by editing the frontend map
+        # to a wrong value and running twice -- plain `go test` reported `ok (cached)` while
+        # `-count=1` reported FAIL. Without this flag a frontend-only drift can be served a
+        # stale green, which is the exact silent pass that test exists to prevent.
+        run: go test -count=1 ./...
 
       # `gofmt` IS a gate, as of 2026-09-07. The note that used to sit here said it could
       # not be, because "its Go sources are committed with CRLF line endings, so `gofmt -l`

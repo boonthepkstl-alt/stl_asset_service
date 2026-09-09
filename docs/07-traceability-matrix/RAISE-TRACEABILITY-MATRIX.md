@@ -2361,9 +2361,13 @@ corrected Gap 25 (now CLOSED) and new Gap 26 immediately below.
 `OPEN-FINDINGS.md` update (recording this closure, if tracked there) is
 handled separately, out of this document's scope.
 
-**Gap 25 (OPENED 2026-09-09 — a coverage-only gap, left OPEN, carved out
-of Gap 23's closure; like Gap 23 before it, needs neither a business
-decision nor a build, only a backend-side execution or test):**
+**Gap 25 (OPENED 2026-09-09, CLOSED 2026-09-09 same revision — a
+coverage-only gap, carved out of Gap 23's closure; like Gap 23 before
+it, needed neither a business decision nor a build, only a backend-side
+execution or test. This heading read "left OPEN" when first written and
+is corrected here rather than left to contradict this entry's own
+CLOSED assessment below, which a reader scanning headings would never
+reach):**
 `TC-MAINT-001-10`'s Expected Result (`RAISE-ACCEPTANCE-CRITERIA.md`
 v0.19 `AC-MAINT-001-10`; `RAISE-TEST-CASES.md` v0.30 §11) names **two**
 places the per-priority SLA target hours are defined —

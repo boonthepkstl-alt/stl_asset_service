@@ -4785,6 +4785,50 @@ Restored → **0 failures**. A guard that has not been made to fail is not yet a
 
 ---
 
+## CHECKPOINT-2026-09-09-004
+
+**Phase:** Phase 5B — Maintenance / Ticket domain
+**Feature:** Per-priority SLA target hours (`RAISE-FR-MAINT-001`)
+**Task:** Merge **PR #124** and discharge the one contingency `CHECKPOINT-2026-09-09-003` left open — **Gap 26(a) and Gap 26 overall: CLOSED.**
+
+**Requirement traced:** `RAISE-FR-MAINT-001`, full **`PASS`** — unchanged in level for the fifth consecutive checkpoint (full `PASS` is the ceiling), and now resting on a **merged** cross-tier test where v2.12 had to state explicitly that it did not.
+
+**This checkpoint exists to close a loop the previous one deliberately left open, and that is the whole point of it.** `CHECKPOINT-2026-09-09-003` recorded a **disagreement**: the instruction was to record Gap 26(a) as closed, and the matrix — asked for an independent verdict — refused, on the reasoning that **a gap opened against the state of `main` cannot be closed by code that does not exist on `main`.** That reasoning was adopted rather than overridden, and the closure was written as *contingent on `PR #124` merging*. **The contingency has now been discharged by the merge actually happening — not by re-arguing the point.** The value of having refused is visible here: the closure now rests on a verifiable fact about `main`, and a reader who checks will find the test where the document says it is.
+
+**Pre-merge checks, run rather than assumed.** CI green on both jobs (Backend 21s, Frontend 1m23s) at `8f27358`; `mergeable: MERGEABLE`, `mergeStateStatus: CLEAN`. **The diff was reviewed line by line and is exactly two files:** the new `go-template-main/service/slaContract_test.go`, and one changed line in `.github/workflows/ci.yml` (`go test ./...` → `go test -count=1 ./...`) with its reason in a comment. **No production code in the diff** — confirmed by filtering the file list for anything that is neither a `_test.go` nor the workflow. **One caveat stated rather than glossed:** CI last ran at `8f27358`, before `main` advanced by `a7aeb1e`, which was docs-only and cannot affect a Go test — so no re-run was required, and `CLEAN` confirmed no conflict.
+
+**Merged as `9e125d6`** (squash, branch `test/sla-map-contract` deleted).
+
+**Post-merge validation on `main`, every item run against the repository rather than inferred from the merge succeeding:**
+
+| Check | Result |
+|---|---|
+| `go-template-main/service/slaContract_test.go` exists on `main` | **yes** |
+| `.github/workflows/ci.yml:121` | **`run: go test -count=1 ./...`** |
+| `go build ./...` · `go vet ./...` | **clean** |
+| `go test -count=1 ./service/` | **`--- PASS: TestSLAHoursMatchesFrontendContract`** |
+| `TestCreateTicket_StampsSLATargetHoursForEveryPriority` | **PASS**, all four subtests |
+
+**The CI half matters as much as the test half, and is the reason the flag was in the same PR.** Without `-count=1` the contract test can be served a cached green after a frontend-only drift — the `.ts` file is outside the Go module and the cache does not track it. That was found by mutation-testing the test itself, and it is now in the pipeline on `main`, not only on a branch.
+
+**Matrix v2.13 independently assessed Gap 26(a) CLOSED and reassessed Gap 26 CLOSED overall**, and **corrected its own heading**, which had read "STAYS OPEN OVERALL" — naming the old wording rather than overwriting it, and citing the Gap 25 heading-lag it had already had to fix once. It verified the merge against the repository itself (the `main` ref, the test file's contents, the workflow line) instead of taking the report on trust.
+
+**Verified after the subagent returned rather than taken on its report:** all seven gap headings lead with a status matching their body — Gap 21 **OPEN**, 22 opened+closed, 23 **CLOSED**, 24 opened+closed, 25 **CLOSED**, **26 CLOSED**, **27 left OPEN**; `RAISE-FR-EXEC-001` still `PASS (partial)`; **F-03 still open** (94 mentions); hour figures across the document are still only **2h / 8h / 24h / 48h** — no value invented; and the only files touched are the matrix and the project-management documents.
+
+**Files changed:** `RAISE-TRACEABILITY-MATRIX.md` (2.12→**2.13**, through the `.claude/skills` subagent) and this document. **Zero product code, zero test code, no other chain document** — `RAISE-TEST-CASES.md` stays **v0.32**, which already recorded the test as passing-but-unmerged; the merge changes the matrix's gap verdict, not the test case's result.
+
+**Status:** ✅ Complete for its confirmed scope — and unlike `CHECKPOINT-2026-09-09-003` (🟡), this one is ✅ because the thing that made it partial has actually happened.
+
+**Known Issues:** **Gap 27 OPEN** — `frontend/src/services/ticket-service.ts`'s real-API branch (gated by `TICKET_API_ENABLED`) has still **never been exercised by any run**: the 2026-09-09 UI execution went through the mock repository and the HTTP-path run bypassed the frontend entirely. Needs no business decision and no build. **Gap 21 OPEN**, blocked on **F-03**. *"SLA per stage"*, the vendor model, the cost model and the delegated-approver rules remain TBD. **Four test tickets** (`ITR-2026-001`…`004`) still exist in the dev database.
+
+**Remaining Work:** Gap 27; then Gap 21's re-execution once F-03 unblocks.
+
+**Next Step:** **Gap 27** is the only item on the board that needs neither a business decision nor a build — not started, by explicit instruction, pending the post-merge report. **F-03's per-Asset-Type useful-life values remain the only outstanding business input and the only thing that would move a Compliance Review verdict** — still not supplied, still not guessed at.
+
+**What this checkpoint adds to the pattern.** The previous entry's lesson was that *a closure names the state of the thing it is about, not the strength of the evidence pointing at it.* This one is the other half: **when the state then changes, the closure has to be written, and written where the reader looks.** A contingency recorded and never discharged is worse than no contingency, because it reads as an open gap forever while everyone involved believes it was handled. **The habit worth keeping: every "contingent on X" written into a document is a debt, and the moment X happens the debt is due** — the merge itself is not the record.
+
+---
+
 ## Level 2 — Feature Checkpoints
 
 ### FEATURE-CHECKPOINT-project-tracking-governance

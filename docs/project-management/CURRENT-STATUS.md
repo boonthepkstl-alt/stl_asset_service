@@ -9,7 +9,41 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-09-09, at `5f2c61b`, plus **`PR #124` open and unmerged**. Suite
+**As of:** 2026-09-09, at `9e125d6` (**PR #124 merged**). Suite **54 test files /
+286 tests** frontend; **7 backend subtests** covering the SLA figures, all on `main`.
+Test Cases **v0.32**, Matrix **v2.13**; PRD **v0.21**, Design **v0.19**, Prototype
+**v0.20**, AC **v0.19**, Test Plan **v0.20**.
+
+**Gap 26 is CLOSED — both sub-parts, and the way (a) closed is the part worth
+reading.** `CHECKPOINT-2026-09-09-003` recorded a refusal: the matrix would not close
+(a) while the test existed only on a branch, because **a gap opened against the state of
+`main` cannot be closed by code that is not on `main`.** The closure was written as
+contingent on the merge instead. **The merge then happened, and the contingency was
+discharged by fact rather than by re-argument** — `9e125d6`.
+
+**Verified on `main` after the merge, not inferred from it:** `slaContract_test.go`
+exists; `ci.yml:121` reads **`go test -count=1 ./...`**; `go build`/`vet` clean; and
+`go test -count=1 ./service/` reports **`PASS: TestSLAHoursMatchesFrontendContract`**
+alongside all four priority subtests. **The CI flag matters as much as the test** — the
+`.ts` file is outside the Go module, so without it a frontend-only drift can be served a
+cached green.
+
+**What `RAISE-FR-MAINT-001`'s full `PASS` now rests on**, having grown four times in two
+days without the verdict moving: the 4-stage evidence, the frontend-tier SLA execution,
+the backend unit tests, the HTTP-path run against a real backend and Postgres, and now a
+**merged** cross-tier comparison. It still must not be read as resting on any frontend
+real-API execution.
+
+**Gap 27 is open and is now the only item needing neither a business decision nor a
+build.** `frontend/src/services/ticket-service.ts`'s real-API branch has **never been
+exercised by any run** — the UI execution went through the mock repository, and the
+HTTP-path run bypassed the frontend entirely.
+
+**F-03 remains the only outstanding business input and the only thing that would move a
+Compliance Review verdict** — one useful-life value per Asset Type, still not supplied,
+still not guessed at. **Gap 21** and **F-52**'s remaining half stay blocked on it.
+
+Earlier the same day, at `5f2c61b`, plus **`PR #124` open and unmerged**. Suite
 **54 test files / 286 tests** frontend, **6 backend subtests** on `main` (a seventh,
 the contract test, is on that PR). Test Cases **v0.32**, Matrix **v2.12**; PRD
 **v0.21**, Design **v0.19**, Prototype **v0.20**, AC **v0.19**, Test Plan **v0.20**.

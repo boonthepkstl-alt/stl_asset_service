@@ -25,6 +25,12 @@ Overwritten in place each time the protocol is re-run.
 > real-API branch has never been exercised. Test Cases **v0.32**, Matrix **v2.12**, and
 > `CHECKPOINT-2026-09-09-003` carry the full record. **F-03 is unchanged and still the
 > only outstanding business input.**
+>
+> **[AND FINALLY, 2026-09-09.]** **`PR #124` is MERGED** (`9e125d6`), so **Gap 26(a) and
+> Gap 26 overall are CLOSED** (Matrix **v2.13**) — the contingency above was discharged
+> by the merge, not by re-argument. **Gap 27 is now the only open item needing neither a
+> business decision nor a build.** `CHECKPOINT-2026-09-09-004` carries the post-merge
+> validation. **F-03 is still BLOCKED and still the only outstanding business input.**
 
 **Derived from** a direct read of `main` at `39bb2b0`: PRD **v0.20**, Design **v0.18**,
 Prototype **v0.18**, AC **v0.17**, Test Plan **v0.17**, Test Cases **v0.27**, Traceability

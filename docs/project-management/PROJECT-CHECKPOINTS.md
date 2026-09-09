@@ -4829,6 +4829,55 @@ Restored → **0 failures**. A guard that has not been made to fail is not yet a
 
 ---
 
+## CHECKPOINT-2026-09-09-005
+
+**Phase:** Phase 5B — Maintenance / Ticket domain
+**Feature:** Per-priority SLA target hours (`RAISE-FR-MAINT-001`)
+**Task:** **Gap 27 executed and CLOSED** — the frontend's own real-API branch driven through a browser for the first time. **Open Finding F-55 opened and left open.**
+
+**Requirement traced:** `RAISE-FR-MAINT-001`, full **`PASS`** — unchanged in level for the sixth consecutive checkpoint (full `PASS` is the ceiling), with what it rests on grown once more.
+
+**What Gap 27 asked, and why neither earlier run answered it.** `frontend/src/services/ticket-service.ts`'s real-API branch, gated by `TICKET_API_ENABLED`, had **never been executed by anything**: the 2026-09-09 UI execution went through the **mock** repository, and the 2026-09-09 HTTP-path run used `curl` and **bypassed the frontend entirely**. Two green results, neither touching the branch in question.
+
+**The mechanism was the project's own, not a new harness.** `docker-compose.yml:63` already bakes `VITE_TICKET_API_ENABLED: ${VITE_TICKET_API_ENABLED:-true}`, so the composed frontend container serves a bundle with the real-API branch selected. The container (port 3000) was used rather than a `npm run dev` server on 5173 because the backend's `CORS_ALLOW_ORIGINS` is **`http://localhost:3000` only** — a dev server would have been refused at the browser, not by the app. **Provenance checked before the run counted as evidence:** the existing image was built 2026-09-03 while `CreateRequisition/index.tsx` last changed 2026-09-08, so the frontend was rebuilt from current source (new image 2026-09-09T09:08); `ticket-service.ts` (2026-08-23), `ticket-repository.ts` (2026-08-25) and `featureFlags.ts` (2026-09-02) predate both images.
+
+**Proof the real-API branch was actually selected, rather than assumed:** on first page load the browser issued `GET http://localhost:8080/api/tickets` → 200. **In mock mode that request does not exist at all** — which makes its presence, not a config file, the evidence.
+
+| Priority | POST | Ticket | Frontend Ticket Detail read-back | Postgres `doc->>` | Expected |
+|---|---|---|---|---|---|
+| Critical | **201** | `ITR-2026-005` | **2 hours** | **2** | 2 ✅ |
+| High | **201** | `ITR-2026-006` | **8 hours** | **8** | 8 ✅ |
+| Medium | **201** | `ITR-2026-007` | **24 hours** | **24** | 24 ✅ |
+| Low | **201** | `ITR-2026-008` | **48 hours** | **48** | 48 ✅ |
+
+Evidence came from the **browser's own network log**, not `curl`: four `POST http://localhost:8080/api/tickets` → **201**, each preceded by an `OPTIONS` preflight (genuine cross-origin from `:3000`), the first response body showing `"slaTargetHours":2` **as received by the frontend**, then four `GET /api/tickets/ITR-2026-005..008` → **200** issued by the app itself when each Ticket Detail page opened. Each ticket's own subject was confirmed on its own page, so no figure was read off a neighbouring row. **No production code was changed.**
+
+**A real defect was found, and keeping it separate from the PASS is the substance of this checkpoint.** The **first** submit failed: `GET /api/employees/e1` → **404**, **no POST followed**, and the page showed a generic *"Unable to submit… Please try again."* Cause: `CreateRequisition/index.tsx:60` defaults `requesterId` to **`'e1'`**, a `mockData.ts` fixture id that does not exist in Postgres, so `ticket-service.ts:31` throws before any POST. **It resolves in mock mode because the mock repository is seeded from that same fixture file** — which is also why the whole 54-file / 286-test suite and `tsc` are blind to it: `'e1'` is a valid `string` either way.
+
+**Filed as F-55** (`OPEN-FINDINGS.md`, `40c85be`), status **`OPEN — BLOCKED on a business decision, and deliberately not fixed`**, and **not** absorbed into Gap 27. **The decision it waits on:** how the requester is resolved in the default flow — the logged-in user, an explicit employee/delegated-requester selection, or another rule the stakeholder specifies. **A constraining fact, verified rather than assumed:** `AuthContext`'s `User` is `{id, username, fullName, role}` (`types/auth.ts:4-9`) with **no employee id**, and the demo user's `id` is the literal `"admin"`, so it cannot stand in for one — making F-55 partly downstream of **F-08** (PRD §16 Q21—Q22, still open).
+
+**How the execution completed anyway, and why that is not a fudge.** The page already supports a `requesterId` query param — its documented Employee Detail entry point, described in that file's own comment block at lines 55-57 — so the run used `/maintenance/create?requesterId=<a real employee UUID from GET /api/employees>&assetId=seed-a1&priority=<P>`. **A supported entry point, not a code change and not a product workaround.** Gap 27 asked whether the branch had ever been executed; it now has been, end to end, four times. **Conflating the two would have forced a choice between falsifying a real PASS and burying a real defect.** The **default, no-param entry into that page is currently blocked by F-55 in real-API mode**, and both documents say so.
+
+**Matrix v2.14 assessed Gap 27 CLOSED, and its reasoning is worth keeping:** unlike Gap 26(b), which closed on *substance* while its literally-named mechanism went unused, **every clause of Gap 27's own condition was literally met** — real backend and database up, UI-driven rather than `curl`, `slaTargetHours` read off the rendered Ticket Detail page for all four priorities, `TICKET_API_ENABLED` on. **No remainder was carved out**, because the condition never constrained which entry point into the form was used — the first time in five consecutive gaps (23→25→26→27) that no successor gap was needed.
+
+**Two corrections this session, both mine, both caught by checking rather than by review.** **(1)** I told both subagents the compose flag sat at `docker-compose.yml:62`. **It is line 63** — line 62 is `VITE_EMPLOYEE_API_ENABLED`. The matrix subagent **caught it independently and refused to propagate it**; the test-cases subagent had already written it, so it was corrected through the same subagent (Test Cases 0.33→**0.34**, recorded as a **citation correction only** — no verdict, status, figure or business value touched). **(2)** A residue stated rather than left to be found: **Matrix v2.14 cites `RAISE-TEST-CASES.md` v0.33, which is now v0.34.** The matrix's assessment rests on content that did not change between them — only a line number did — so the basis is unaffected and no re-assessment is owed; the pointer is one version behind and this is the record of why.
+
+**Files changed:** `RAISE-TEST-CASES.md` (0.32→0.33→**0.34**) and `RAISE-TRACEABILITY-MATRIX.md` (2.13→**2.14**), both through the `.claude/skills` subagents, plus the project-management documents. **Zero product code, zero test code.** `OPEN-FINDINGS.md` was **not** edited this round — F-55 was committed separately at `40c85be` and is referenced, not re-written.
+
+**Verified after each subagent returned, before proceeding to the next layer:** Test Cases **v0.34**, no new TC or AC id invented (the 1:1 AC→TC convention held — `TC-MAINT-001-10` remains the only case in this family), suite totals **unchanged** (`96 | 63 | 26 | 4 | 3`), F-55 referenced **16×** and never marked resolved, live compose citations all `:63`. Matrix **v2.14**, all seven gap headings leading with a status matching their body — Gap 21 **OPEN**, 22 opened+closed, 23 **CLOSED**, 24 opened+closed, 25 **CLOSED**, 26 **CLOSED**, **27 CLOSED** — F-55 referenced **26×** with no resolved claim, `RAISE-FR-EXEC-001` still `PASS (partial)`, **F-03 still open (104 mentions)**, hour figures across both documents still only **2h / 8h / 24h / 48h**.
+
+**Status:** ✅ Complete for its confirmed scope.
+
+**Known Issues:** **F-55 OPEN** — the default Create Requisition entry is unusable in real-API mode; **blocked on a business decision, not on work**, and partly downstream of **F-08**. **Gap 21 OPEN**, blocked on **F-03**. *"SLA per stage"*, the vendor model, the cost model and the delegated-approver rules remain TBD. **Eight test tickets** now exist in the dev database (`ITR-2026-001`…`008`). **Matrix v2.14's Test Cases pointer reads v0.33 rather than v0.34**, as recorded above.
+
+**Remaining Work:** F-55's requester-resolution decision, then its implementation; Gap 21's re-execution once F-03 unblocks.
+
+**Next Step:** **no coverage gap remains open on the SLA figures** — for the first time since Gap 23 opened, there is no execution or test left to run on them. **Both remaining items on this board are business decisions: F-55's requester rule and F-03's per-Asset-Type useful-life values.** F-03 stays the only one that would move a Compliance Review verdict. Neither is guessed at here.
+
+**What this checkpoint adds to the pattern.** For five consecutive gaps the lesson was about what a green result does *not* cover. This one is the inverse and is easier to get wrong: **a real defect found during an execution does not make that execution a failure.** The run passed every assertion it set out to make, and separately exposed a defect that had been invisible to 286 tests and to the type-checker because every test is mock-backed. Recording one verdict would have cost the other. **The habit worth keeping: when a run both proves something and breaks something, write two records, not one** — and let the coverage question and the defect question keep their own status, their own evidence, and their own closing condition.
+
+---
+
 ## Level 2 — Feature Checkpoints
 
 ### FEATURE-CHECKPOINT-project-tracking-governance

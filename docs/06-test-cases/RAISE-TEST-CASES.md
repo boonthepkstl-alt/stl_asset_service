@@ -2,7 +2,7 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Test Cases
-**Version:** 0.32 Draft
+**Version:** 0.34 Draft
 **Status:** Draft for Test Case Review
 **Source:** [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) v0.20 §7 (Test Suites, including the 2026-09-07 TS-DASH/TS-EXEC-001 ten-tile NBV re-specification, PRD §16 Resolved Questions 50–51, the 2026-09-08 PRD §16 Resolved Question 52 re-key of the NBV useful-life configuration from Asset Category to Asset Type, and the 2026-09-08 PRD §16 Resolved Question 53 confirmation of TS-MAINT-001's per-priority SLA target hours) + §8 (Blocked Items) + §8.1 (Fully-Blocked Suites — AI Document Intelligence Capabilities) + §3.3 (PRD §10 NFR Backlog — No Suite), expanding [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) v0.19
 **Source of Truth:** RAISE PRD
@@ -717,6 +717,80 @@ same `AC-MAINT-001-10` criterion (single overall SLA target per ticket, keyed by
 that `TC-MAINT-001-10` already covers — consistent with this document's 1:1 AC↔TC
 convention, which does not admit a new TC without a new AC.
 
+**Updated 2026-09-09 (Gap 27 execution) — the frontend's own real-API code path
+(`frontend/src/services/ticket-service.ts`'s real-API branch, gated by
+`TICKET_API_ENABLED`) is now executed for the first time, end to end, through a browser —
+PASS. No new `TC-` ID is introduced (same reasoning as (a)/(b) above: further evidence
+against the existing `AC-MAINT-001-10`/`TC-MAINT-001-10` pair, not a new criterion).**
+Gap 27 (opened by Matrix v2.12, left OPEN in v2.13) observed that neither prior execution
+had exercised this branch: the 2026-09-09 UI execution recorded above went through the
+**mock** repository (`TICKET_API_ENABLED` off), and (a)'s HTTP-path execution used `curl`
+against the backend directly, bypassing the frontend entirely. This run closes that gap
+using the project's own existing mechanism, not a new harness: `docker-compose.yml:63`
+already bakes `VITE_TICKET_API_ENABLED: ${VITE_TICKET_API_ENABLED:-true}` into the composed
+frontend image, so the container (port 3000, matching the backend's
+`CORS_ALLOW_ORIGINS=http://localhost:3000`) serves a bundle with the real-API branch
+selected — rather than a `npm run dev` server on 5173, which the backend's CORS
+configuration would reject. **Provenance checked before the run counted:** the existing
+frontend image was built 2026-09-03, while `CreateRequisition/index.tsx` last changed
+2026-09-08, so `docker compose up -d --build frontend` was run first, producing a new image
+(2026-09-09T09:08) built from current source; `ticket-service.ts` (2026-08-23),
+`ticket-repository.ts` (2026-08-25), and `featureFlags.ts` (2026-09-02) all predate both
+images, so no relevant production file changed between build and run. **Proof the real-API
+branch was actually selected, not assumed:** on first page load the browser issued
+`GET http://localhost:8080/api/tickets` → 200 — a request that does not exist at all in
+mock mode. **Flow driven through the browser, not `curl`:** login via the app's own form
+(`POST /api/auth/login` → 200) → `/maintenance/create` → fill and submit the real form, once
+per priority → the app's own Ticket Detail page for each created ticket. **HTTP evidence
+taken from the browser's own network log:** four `POST http://localhost:8080/api/tickets` →
+**201 Created** (request ids `33408.189`/`.252`/`.315`/`.378`), each preceded by an
+`OPTIONS` preflight confirming a genuine cross-origin call from `http://localhost:3000`; the
+first response body captured in full,
+`{"ticketCode":"ITR-2026-005","priority":"Critical","slaTargetHours":2,"requester":{"id":"04ac3239-...","name":"Layout Test User"},"status":"PENDING_DEPT_APPROVAL"}`
+— i.e. the frontend **received** the backend's `slaTargetHours`; four
+`GET http://localhost:8080/api/tickets/ITR-2026-005..008` → **200**, issued by the frontend
+itself when each Ticket Detail page was opened (request ids
+`33408.412`/`.415`/`.416`/`.417`). **Results, all four priorities, three independent
+evidence layers, each ticket's own subject
+(`Gap 27 real-API path - <priority>`) confirmed on its own detail page so no figure was read
+off a neighbouring row:**
+
+| Priority | POST | Ticket | Frontend Ticket Detail read-back | Postgres `doc->>'slaTargetHours'` | Expected |
+|---|---|---|---|---|---|
+| Critical | 201 | `ITR-2026-005` | 2 hours | 2 | 2 |
+| High | 201 | `ITR-2026-006` | 8 hours | 8 | 8 |
+| Medium | 201 | `ITR-2026-007` | 24 hours | 24 | 24 |
+| Low | 201 | `ITR-2026-008` | 48 hours | 48 | 48 |
+
+Values remain the confirmed Critical 2 / High 8 / Medium 24 / Low 48; no new value is
+introduced. Side effect recorded, not hidden: four more tickets (`ITR-2026-005..008`) now
+exist in the dev database, on top of `ITR-2026-001..004` from (a) above. No production code
+was changed — `git status` showed only documentation changes for this revision.
+
+**A real defect was found by this run, and it is recorded separately, not folded into this
+PASS.** The first submit attempt failed:
+`GET http://localhost:8080/api/employees/e1` → **404**, with no `POST /api/tickets`
+following, and the page showing "Unable to submit the IT requisition. Please try again."
+Root cause: `frontend/src/pages/CreateRequisition/index.tsx:60` defaults `requesterId` to
+`'e1'`, a `mockData.ts` fixture id (`mockData.ts:345`) that does not exist in Postgres, so
+`ticket-service.ts:31` throws before any `POST` is issued. It resolves silently in mock mode
+only because the mock repository is seeded from that same fixture file. This is filed as
+**Open Finding F-55** (`OPEN-FINDINGS.md`, opened 2026-09-09, commit `40c85be`), status
+**`OPEN — BLOCKED on a business decision, and deliberately not fixed`**. This document does
+**not** mark F-55 resolved and does **not** absorb it into Gap 27's result. The execution
+above completed despite it by using a **supported entry point, not a code change and not a
+product workaround** — the page's own documented `requesterId` query param (see that file's
+comment block at lines 55-57, the documented Employee Detail entry point):
+`/maintenance/create?requesterId=<a real employee UUID fetched from GET /api/employees>&assetId=seed-a1&priority=<P>`.
+Gap 27 asked only whether the real-API branch had ever been executed; it now has been, end
+to end, through the browser. **Stated plainly, so the two are not conflated:** the default
+(no-param) entry into this page is currently blocked by F-55 in real-API mode; this remains
+true and unaffected by the PASS recorded above. This execution does not itself change
+`RAISE-FR-MAINT-001`'s verdict and does not itself close Gap 27 — `RAISE-TRACEABILITY-MATRIX.md`
+owns Gap 27 and assesses it separately. `TC-MAINT-001-10`'s existing 2026-09-09 frontend-tier
+(mock) PASS, and both (a) and (b) above, stand unchanged and are not re-litigated by this
+addition; `TC-WARRANTY-001-07` remains **BLOCKED (partial)** on Open Finding F-03, untouched.
+
 | TC ID | Title | Steps | Test Data | Expected Result | Blocked |
 |---|---|---|---|---|---|
 | TC-MAINT-001-01 | Maintenance record displays | 1. Open Maintenance screen for an asset with a record. | 1 asset, 1 maintenance record (date/event/status/cost) | Record fields are displayed | **BLOCKED (partial)** — display testable; full field model TBD (PRD §16 Q14) |
@@ -728,7 +802,7 @@ convention, which does not admit a new TC without a new AC.
 | TC-MAINT-001-07 | Stage 4 — Technician updates execution status | 1. Open a request in state `PLANNING`, `IN_PROGRESS`, or `ON_HOLD`. 2. As the assigned technician, change the status control to a different one of the three values. | 1 request in any of `PLANNING`/`IN_PROGRESS`/`ON_HOLD` | Request's displayed status reflects the newly selected value | **BLOCKED (partial)** — the status-update behavior itself is testable; depends on `RAISE-NFR-SEC-RBAC-001` — MVP enforcement level confirmed UI-only/client-side, but role list/permission matrix (Q22) remain TBD, so this case cannot verify that the acting user is a correctly-gated Technician, only that the status control updates the displayed value. |
 | TC-MAINT-001-08 | Stage 4 — Mark Complete transitions to Done | 1. Open a request in state `PLANNING`, `IN_PROGRESS`, or `ON_HOLD`. 2. As the assigned technician, select Mark Complete. | 1 request in any of `PLANNING`/`IN_PROGRESS`/`ON_HOLD` | Request transitions to state `DONE` | **BLOCKED (partial)** — the Mark Complete→`DONE` state transition itself is testable; depends on `RAISE-NFR-SEC-RBAC-001` — MVP enforcement level confirmed UI-only/client-side, but role list/permission matrix (Q22) remain TBD, so this case cannot verify that the acting user is a correctly-gated Technician. No behavior is defined for Mark Complete attempted from any other state, or for skipped/reversed stages — no test case exists for those, since none is shown in the Prototype. |
 | TC-MAINT-001-09 | Stage-progress indicator reflects current state | 1. Open the detail view for a maintenance request at each of: `PENDING_DEPT_APPROVAL`, `PENDING_IT_DISPATCH`, `PLANNING`/`IN_PROGRESS`/`ON_HOLD`, and `DONE`. | 4 requests, one per listed state (or state group) | The 4-stage progress indicator (User Requisition → Dept Approval → IT Dispatch → Technician Execution) shows Done/Current/Pending consistent with each request's current state | No |
-| TC-MAINT-001-10 | Per-priority SLA target hours — Priority selector options and `slaTargetHours` stamping | 1. As any user, open the maintenance-request form (Stage 1 — User Requisition) at `/maintenance/create` (reachable from the Maintenance list, Asset Detail, or Employee Detail). 2. Open the Priority selector and inspect its options. 3. Separately, for each of the four Priority values in turn, select that value and submit the request. 4. Inspect the created request's `slaTargetHours` value. | One maintenance request per Priority value (Critical, High, Medium, Low) — no other numeric value is used or asserted | The Priority selector offers exactly four options, labeled "Critical (2h SLA)," "High (8h SLA)," "Medium (24h SLA)," and "Low (48h SLA)"; the request created with each priority is stamped with the matching `slaTargetHours` — Critical=2, High=8, Medium=24, Low=48 — per `frontend/src/services/ticket-service.ts:14` and `go-template-main/service/ticketService.go:19-26`. This asserts a **single overall SLA target per ticket, keyed by its priority** only — it does not assert, and must not be read as asserting, a time budget for any individual one of the four workflow stages. | No — **PASS**, formally executed 2026-09-09 against the real running app (`npm run dev`, `raise-frontend`, port 5173) on merged `main` @ `88f1017`, driving the actual UI (not calling services directly). **Step 2:** read the Priority selector's live DOM at `/maintenance/create` — confirmed exactly four options, labeled verbatim "Critical (2h SLA)," "High (8h SLA)," "Medium (24h SLA)," "Low (48h SLA)" (values `Critical`/`High`/`Medium`/`Low`). **Steps 3–4:** for each priority in turn, subject and priority were set on the real form, the request was submitted through the page's own Submit button, and the created ticket's SLA target was read from its Ticket Detail page (`Target: {ticket.slaTargetHours} hours`, `frontend/src/pages/TicketDetail/index.tsx:302`): Critical → `ITR-2026-007` → **Target: 2 hours**; High → `ITR-2026-008` → **Target: 8 hours**; Medium → `ITR-2026-009` → **Target: 24 hours**; Low → `ITR-2026-010` → **Target: 48 hours** — all four matched the expected value. Each ticket's own subject was confirmed present on its own detail page, confirming the SLA figure read belongs to the ticket just created and not a neighbouring row. Zero console errors across the whole sweep. **Frontend tier only, recorded plainly rather than glossed over:** `TICKET_API_ENABLED` (`import.meta.env.VITE_TICKET_API_ENABLED === 'true'`, `frontend/src/config/featureFlags.ts:30`) is off by default, so this run went through the **mock ticket repository**, and the value observed came from `frontend/src/services/ticket-service.ts:14` only. `go-template-main/service/ticketService.go:19-26`'s identical map was **not** exercised by this run. **Corrected same day (2026-09-09):** this cell originally added, "and no backend test covers `slaHours` — confirmed by grepping `go-template-main/service/*_test.go`, which returns nothing" — that claim, and the grep behind it, were both wrong: the grep used the case-sensitive pattern `SlaTargetHours` against the actual field `SLATargetHours` (capital `SLA`), missing the one place it already appeared (`go-template-main/service/ticketService_test.go:99`, asserting `SLATargetHours` = 8 for High, inside `TestCreateTicket_BuildsSnapshotAndInitialTimeline`) — so High was already covered, incidentally, while Critical/Medium/Low and the map as a whole were not. Two new tests added the same day, `TestCreateTicket_StampsSLATargetHoursForEveryPriority` (all four priorities, hardcoded expected values 2/8/24/48, not read from the map) and `TestCreateTicket_UnknownPriorityGetsZeroSLATarget` (observed, not endorsed, zero-fallback for an out-of-scope priority), close the remainder — both mutation-tested and passing against a clean `go build`/`go vet`/`go test ./...`/`gofmt`. All four priorities plus the unknown-priority case are now covered by backend unit tests; the backend tier is no longer untested. **Still not covered:** no test exercises the frontend map and the backend map against each other, and no run has exercised the Go tier through the HTTP path (`TICKET_API_ENABLED=true` with the backend running) — see §11's Status Note for full detail. This correction does not change this case's recorded **PASS**. This execution does **not** change `RAISE-FR-MAINT-001`'s existing verdict and does **not** itself close Gap 23 — the Traceability Matrix owns Gap 23 and assesses it separately. **"SLA per stage"** (the four workflow stages' own individual time budgets) remains a separate, still fully **NOT TESTABLE YET** question, unaffected by this execution; the vendor model, the cost model, and the delegated-approver configuration rules remain exactly as blocked/open as before. **Updated 2026-09-09 (later the same day):** the two gaps named above are now further evidenced — (a) an HTTP-path execution against the real Docker stack (**PASS**, three evidence layers: create response, independent read-back, Postgres row) confirms Critical=2/High=8/Medium=24/Low=48 through `TICKET_API_ENABLED=true`'s own code path; (b) a cross-tier contract test, PR #124 (**PASS, but unmerged as of this revision**), confirms the frontend and backend `slaHours` maps agree byte-for-byte in both directions and are each pinned at exactly four entries, mutation-tested against seven failure modes, all seven failing as required. This case's own recorded **PASS** is unchanged by either — see §11's Status Note (paragraph dated "Updated 2026-09-09 (later the same day)") for full detail, including what remains uncovered. |
+| TC-MAINT-001-10 | Per-priority SLA target hours — Priority selector options and `slaTargetHours` stamping | 1. As any user, open the maintenance-request form (Stage 1 — User Requisition) at `/maintenance/create` (reachable from the Maintenance list, Asset Detail, or Employee Detail). 2. Open the Priority selector and inspect its options. 3. Separately, for each of the four Priority values in turn, select that value and submit the request. 4. Inspect the created request's `slaTargetHours` value. | One maintenance request per Priority value (Critical, High, Medium, Low) — no other numeric value is used or asserted | The Priority selector offers exactly four options, labeled "Critical (2h SLA)," "High (8h SLA)," "Medium (24h SLA)," and "Low (48h SLA)"; the request created with each priority is stamped with the matching `slaTargetHours` — Critical=2, High=8, Medium=24, Low=48 — per `frontend/src/services/ticket-service.ts:14` and `go-template-main/service/ticketService.go:19-26`. This asserts a **single overall SLA target per ticket, keyed by its priority** only — it does not assert, and must not be read as asserting, a time budget for any individual one of the four workflow stages. | No — **PASS**, formally executed 2026-09-09 against the real running app (`npm run dev`, `raise-frontend`, port 5173) on merged `main` @ `88f1017`, driving the actual UI (not calling services directly). **Step 2:** read the Priority selector's live DOM at `/maintenance/create` — confirmed exactly four options, labeled verbatim "Critical (2h SLA)," "High (8h SLA)," "Medium (24h SLA)," "Low (48h SLA)" (values `Critical`/`High`/`Medium`/`Low`). **Steps 3–4:** for each priority in turn, subject and priority were set on the real form, the request was submitted through the page's own Submit button, and the created ticket's SLA target was read from its Ticket Detail page (`Target: {ticket.slaTargetHours} hours`, `frontend/src/pages/TicketDetail/index.tsx:302`): Critical → `ITR-2026-007` → **Target: 2 hours**; High → `ITR-2026-008` → **Target: 8 hours**; Medium → `ITR-2026-009` → **Target: 24 hours**; Low → `ITR-2026-010` → **Target: 48 hours** — all four matched the expected value. Each ticket's own subject was confirmed present on its own detail page, confirming the SLA figure read belongs to the ticket just created and not a neighbouring row. Zero console errors across the whole sweep. **Frontend tier only, recorded plainly rather than glossed over:** `TICKET_API_ENABLED` (`import.meta.env.VITE_TICKET_API_ENABLED === 'true'`, `frontend/src/config/featureFlags.ts:30`) is off by default, so this run went through the **mock ticket repository**, and the value observed came from `frontend/src/services/ticket-service.ts:14` only. `go-template-main/service/ticketService.go:19-26`'s identical map was **not** exercised by this run. **Corrected same day (2026-09-09):** this cell originally added, "and no backend test covers `slaHours` — confirmed by grepping `go-template-main/service/*_test.go`, which returns nothing" — that claim, and the grep behind it, were both wrong: the grep used the case-sensitive pattern `SlaTargetHours` against the actual field `SLATargetHours` (capital `SLA`), missing the one place it already appeared (`go-template-main/service/ticketService_test.go:99`, asserting `SLATargetHours` = 8 for High, inside `TestCreateTicket_BuildsSnapshotAndInitialTimeline`) — so High was already covered, incidentally, while Critical/Medium/Low and the map as a whole were not. Two new tests added the same day, `TestCreateTicket_StampsSLATargetHoursForEveryPriority` (all four priorities, hardcoded expected values 2/8/24/48, not read from the map) and `TestCreateTicket_UnknownPriorityGetsZeroSLATarget` (observed, not endorsed, zero-fallback for an out-of-scope priority), close the remainder — both mutation-tested and passing against a clean `go build`/`go vet`/`go test ./...`/`gofmt`. All four priorities plus the unknown-priority case are now covered by backend unit tests; the backend tier is no longer untested. **Still not covered:** no test exercises the frontend map and the backend map against each other, and no run has exercised the Go tier through the HTTP path (`TICKET_API_ENABLED=true` with the backend running) — see §11's Status Note for full detail. This correction does not change this case's recorded **PASS**. This execution does **not** change `RAISE-FR-MAINT-001`'s existing verdict and does **not** itself close Gap 23 — the Traceability Matrix owns Gap 23 and assesses it separately. **"SLA per stage"** (the four workflow stages' own individual time budgets) remains a separate, still fully **NOT TESTABLE YET** question, unaffected by this execution; the vendor model, the cost model, and the delegated-approver configuration rules remain exactly as blocked/open as before. **Updated 2026-09-09 (later the same day):** the two gaps named above are now further evidenced — (a) an HTTP-path execution against the real Docker stack (**PASS**, three evidence layers: create response, independent read-back, Postgres row) confirms Critical=2/High=8/Medium=24/Low=48 through `TICKET_API_ENABLED=true`'s own code path; (b) a cross-tier contract test, PR #124 (**PASS, but unmerged as of this revision**), confirms the frontend and backend `slaHours` maps agree byte-for-byte in both directions and are each pinned at exactly four entries, mutation-tested against seven failure modes, all seven failing as required. This case's own recorded **PASS** is unchanged by either — see §11's Status Note (paragraph dated "Updated 2026-09-09 (later the same day)") for full detail, including what remains uncovered. **Updated 2026-09-09 (Gap 27) — PASS.** The frontend's own real-API code path (`ticket-service.ts`'s real-API branch, `TICKET_API_ENABLED=true`) was driven end to end through a browser for the first time, via the composed Docker frontend container (port 3000, matching backend CORS), confirming `GET /api/tickets` on load (proof the real branch was selected, not assumed), login through the app's own form, and four `POST /api/tickets` (201) each followed by the app's own Ticket Detail read-back — Critical=2/High=8/Medium=24/Low=48 confirmed across POST response, frontend read-back, and Postgres, on new tickets `ITR-2026-005..008`. This case's own recorded PASS, and (a)/(b) above, are unchanged and not re-litigated. **A separate defect was found and is not folded into this PASS:** the page's default (no-param) `requesterId` of `'e1'` does not exist in Postgres, so the first submit attempt 404'd before any POST — filed as **Open Finding F-55**, `OPEN — BLOCKED on a business decision, and deliberately not fixed`, and left open by this document. The run completed using the page's own documented `requesterId` query-param entry point (a supported entry point, not a code change), not by working around the defect. See §11's Status Note (paragraph dated "Updated 2026-09-09 (Gap 27 execution)") for full detail. |
 
 ---
 
@@ -1674,6 +1748,36 @@ remains **BLOCKED (partial)** on Open Finding F-03, untouched. This addition doe
 Matrix owns both and assesses them separately, with Gap 26(a)'s closure specifically
 contingent on PR #124 merging.
 
+**`TC-MAINT-001-10` — Gap 27 execution recorded 2026-09-09, row-count unchanged:** the
+frontend's own real-API code path (`frontend/src/services/ticket-service.ts`'s real-API
+branch, gated by `TICKET_API_ENABLED`) had never been exercised by any prior run — the
+2026-09-09 frontend-tier execution above used the mock repository, and (a)'s HTTP-path
+execution used `curl` against the backend directly, bypassing the frontend. This gap
+(Matrix Gap 27, opened v2.12, left OPEN in v2.13) is now closed by a real browser-driven
+run through the project's own `docker-compose.yml:63` (`VITE_TICKET_API_ENABLED` baked into
+the composed frontend image) — **PASS**: `GET /api/tickets` on page load confirmed the
+real-API branch was actually selected (that request does not exist in mock mode); login and
+four ticket creations were driven through the app's own form; four
+`POST /api/tickets` returned 201 and four `GET /api/tickets/{code}` (issued by the app's own
+Ticket Detail page) returned 200; Critical=2/High=8/Medium=24/Low=48 confirmed across the
+POST response, the frontend read-back, and Postgres, on new tickets `ITR-2026-005..008`.
+Image provenance was checked before use as evidence (frontend image rebuilt 2026-09-09 from
+current source, after `CreateRequisition/index.tsx`'s last change). No new `TC-` ID is
+introduced — recorded as further evidence against the existing
+`AC-MAINT-001-10`/`TC-MAINT-001-10` pair, per this document's 1:1 AC↔TC convention.
+`TC-MAINT-001-10`'s existing 2026-09-09 frontend-tier (mock) PASS, and (a)/(b) above, are
+unchanged and not re-litigated. **A separate defect surfaced by this run is recorded, not
+absorbed into the PASS:** the page's default (no-param) `requesterId` fixture id does not
+exist in Postgres, causing the first submit attempt to 404 before any POST — filed as
+**Open Finding F-55** (`OPEN-FINDINGS.md`, opened 2026-09-09), `OPEN — BLOCKED on a business
+decision, and deliberately not fixed`. The run completed using the page's own documented
+`requesterId` query-param entry point, a supported entry point rather than a code change or
+workaround. TS-MAINT-001's row and the Grand Total are unchanged by this execution
+(`10 | 4 | 6 | 0 | 0`; Grand Total `96 | 63 | 26 | 4 | 3`). This execution does not change
+`RAISE-FR-MAINT-001`'s verdict and does not itself close Gap 27 — the Traceability Matrix
+owns Gap 27 and assesses it separately. `TC-WARRANTY-001-07` remains **BLOCKED (partial)**
+on Open Finding F-03, untouched.
+
 **TS-DASH and TS-EXEC-001 updated 2026-09-08 (this sync's actual date; PRD §16 Resolved
 Questions 50–51 were confirmed by business 2026-09-07, not the date this document was
 synced — a prior draft mislabeled the sync itself as 2026-09-07, corrected here;
@@ -2386,6 +2490,39 @@ Before moving to the Requirement Traceability Matrix / Development:
       separately, with Gap 26(a)'s closure specifically contingent on PR #124 merging.
       §19 Test Case Summary row/Grand Total confirmed unchanged (`10 | 4 | 6 | 0 | 0`;
       Grand Total `96 | 63 | 26 | 4 | 3`)
+- [x] **Gap 27 execution recorded 2026-09-09** — the frontend's own real-API code path
+      (`frontend/src/services/ticket-service.ts`'s real-API branch, gated by
+      `TICKET_API_ENABLED`) is confirmed executed through a browser for the first time,
+      closing Matrix Gap 27 (opened v2.12, left OPEN in v2.13): neither the earlier
+      frontend-tier execution (mock repository) nor (a)'s HTTP-path execution (`curl`,
+      bypassing the frontend) had exercised it before. Confirmed via the project's own
+      `docker-compose.yml:63` (`VITE_TICKET_API_ENABLED` baked into the composed frontend
+      image, port 3000, matching backend CORS) with image provenance checked first (rebuilt
+      2026-09-09 from current source, after `CreateRequisition/index.tsx`'s last change) —
+      **PASS**: `GET /api/tickets` on page load proves the real-API branch was selected
+      (does not exist in mock mode); login and four ticket creations driven through the
+      app's own form; four `POST /api/tickets` → 201, four `GET /api/tickets/{code}` (issued
+      by the app's own Ticket Detail page) → 200; Critical=2/High=8/Medium=24/Low=48
+      confirmed across the POST response, frontend read-back, and Postgres, on new tickets
+      `ITR-2026-005..008`. No new `TC-` ID introduced — recorded as further evidence against
+      the existing `AC-MAINT-001-10`/`TC-MAINT-001-10` pair, per this document's 1:1 AC↔TC
+      convention. `TC-MAINT-001-10`'s existing frontend-tier (mock) PASS, and (a)/(b) above,
+      confirmed unchanged and not re-litigated
+- [x] **A separate defect surfaced by the Gap 27 run is confirmed recorded, not absorbed
+      into the PASS:** the page's default (no-param) `requesterId` fixture id (`'e1'`) does
+      not exist in Postgres, causing the first submit attempt to 404 (`GET /api/employees/e1`
+      → 404) before any POST — filed as **Open Finding F-55**, status `OPEN — BLOCKED on a
+      business decision, and deliberately not fixed`, and confirmed left open by this
+      document (not marked resolved). The run completed using the page's own documented
+      `requesterId` query-param entry point — confirmed a supported entry point, not a code
+      change or product workaround — and it is stated plainly that the default (no-param)
+      entry into this page remains blocked by F-55 in real-API mode
+- [x] Confirmed: this execution does not change `RAISE-FR-MAINT-001`'s verdict and does not
+      itself close Gap 27 — `RAISE-TRACEABILITY-MATRIX.md` owns Gap 27 and assesses it
+      separately. `TC-WARRANTY-001-07` remains **BLOCKED (partial)** on Open Finding F-03,
+      untouched; §19 Test Case Summary row/Grand Total confirmed unchanged
+      (`10 | 4 | 6 | 0 | 0`; Grand Total `96 | 63 | 26 | 4 | 3`); `RAISE-TEST-PLAN.md` and
+      every earlier-layer document confirmed untouched by this revision
 
 ---
 
@@ -2418,6 +2555,157 @@ Suite ID → TC ID) into one master table for compliance review.
 ---
 
 ## Document Status
+
+**Version:** 0.34 (2026-09-09 — citation correction only, no verdict/status/evidence/business
+value change: v0.33 cited the `VITE_TICKET_API_ENABLED` build arg's location in
+`docker-compose.yml` as line 62, in five places across the `TC-MAINT-001-10` narrative, the
+Test Case Summary / coverage-report text, the Review Checklist, the Document Status entry, and
+the Change Log — all describing the same 2026-09-09 Gap 27 browser-driven execution. Verified
+directly against the repository, that line number was wrong: line 62 of `docker-compose.yml`
+is `VITE_EMPLOYEE_API_ENABLED`, not `VITE_TICKET_API_ENABLED`. The correct line is
+`docker-compose.yml:63` (`VITE_TICKET_API_ENABLED: ${VITE_TICKET_API_ENABLED:-true}`). All five
+occurrences of `docker-compose.yml:62` are corrected to `docker-compose.yml:63` in this
+revision. Everything else the citation supports is unchanged and correct: the flag does
+default to `true` in that compose service's build args, and the composed frontend container
+remains the mechanism used for the Gap 27 execution. No PASS record, no BLOCKED status, no
+`ITR-2026-005..008` figure (2 / 8 / 24 / 48), no Open Finding F-55 status, no
+`TC-WARRANTY-001-07` / F-03 tie, and no suite total changes as a result of this revision —
+only the source-reference line number. `RAISE-TEST-PLAN.md` and every earlier-layer document
+remain untouched. See the Change Log entry below for full detail.)
+
+**Version:** 0.33 (2026-09-09 — later the same day as v0.32, execution/coverage reporting
+only, no spec/scope change: Matrix Gap 27 — "no run, automated or manual, has ever exercised
+the frontend's own HTTP-repository code (`frontend/src/services/ticket-service.ts`'s
+real-API branch, gated by `TICKET_API_ENABLED`)" — is now closed by a real browser-driven
+execution. Neither v0.32's frontend-tier execution (mock repository, `TICKET_API_ENABLED`
+off) nor its HTTP-path execution (a) (`curl` against the backend directly, bypassing the
+frontend) had exercised that branch. **The mechanism used was the project's own, not a new
+harness:** `docker-compose.yml:63` already bakes
+`VITE_TICKET_API_ENABLED: ${VITE_TICKET_API_ENABLED:-true}` into the composed frontend
+image, so the container (port 3000, matching the backend's
+`CORS_ALLOW_ORIGINS=http://localhost:3000`) serves a bundle with the real-API branch
+selected — a `npm run dev` server on 5173 would be rejected by that same CORS
+configuration. **Provenance checked before the run counted:** the existing frontend image
+was built 2026-09-03, while `CreateRequisition/index.tsx` last changed 2026-09-08, so
+`docker compose up -d --build frontend` was run first, producing a new image
+(2026-09-09T09:08) built from current source; `ticket-service.ts` (2026-08-23),
+`ticket-repository.ts` (2026-08-25), and `featureFlags.ts` (2026-09-02) all predate both
+images. **Proof the real-API branch was actually selected, not assumed:** on first page load
+the browser issued `GET http://localhost:8080/api/tickets` → 200 — a request that does not
+exist in mock mode. **Flow driven through the browser, not `curl`:** login via the app's own
+form (`POST /api/auth/login` → 200) → `/maintenance/create` → fill and submit the real form,
+once per priority → the app's own Ticket Detail page for each created ticket. **HTTP
+evidence taken from the browser's own network log:** four
+`POST http://localhost:8080/api/tickets` → **201 Created**, each preceded by an `OPTIONS`
+preflight confirming a genuine cross-origin call from `http://localhost:3000`; the first
+response body captured in full, showing `slaTargetHours: 2` for Critical — i.e. the
+frontend **received** the backend's `slaTargetHours`; four
+`GET http://localhost:8080/api/tickets/ITR-2026-005..008` → **200**, issued by the frontend
+itself when each Ticket Detail page was opened. **Results, all four priorities, three
+independent evidence layers:** Critical → `ITR-2026-005` → 2 hours (frontend) / 2
+(Postgres); High → `ITR-2026-006` → 8 / 8; Medium → `ITR-2026-007` → 24 / 24; Low →
+`ITR-2026-008` → 48 / 48 — all matching Expected. Values remain the confirmed Critical 2 /
+High 8 / Medium 24 / Low 48; no new value is introduced. Side effect recorded, not hidden:
+four more tickets (`ITR-2026-005..008`) now exist in the dev database, on top of
+`ITR-2026-001..004` from v0.32's (a). No production code was changed — `git status` showed
+only documentation changes for this revision. **A real defect was found by this run and is
+recorded separately, not folded into this PASS.** The first submit attempt failed:
+`GET http://localhost:8080/api/employees/e1` → **404**, with no `POST /api/tickets`
+following. Root cause: `frontend/src/pages/CreateRequisition/index.tsx:60` defaults
+`requesterId` to `'e1'`, a `mockData.ts` fixture id (`mockData.ts:345`) that does not exist
+in Postgres, so `ticket-service.ts:31` throws before any `POST`; it resolves silently in
+mock mode only because the mock repository is seeded from that same fixture file. This is
+filed as **Open Finding F-55** (`OPEN-FINDINGS.md`, opened 2026-09-09, commit `40c85be`),
+status **`OPEN — BLOCKED on a business decision, and deliberately not fixed`** — this
+document does **not** mark F-55 resolved and does **not** absorb it into Gap 27's result.
+The execution completed using a **supported entry point, not a code change and not a
+product workaround** — the page's own documented `requesterId` query param:
+`/maintenance/create?requesterId=<a real employee UUID>&assetId=seed-a1&priority=<P>`.
+Stated plainly so the two are not conflated: the default (no-param) entry into this page
+remains blocked by F-55 in real-API mode. **No new `TC-` ID is introduced** — recorded as
+further evidence against the existing `AC-MAINT-001-10`/`TC-MAINT-001-10` pair, per this
+document's 1:1 AC↔TC convention (no new AC exists to pair a new TC against, the same
+reasoning already applied to v0.32's (a)/(b)). `TC-MAINT-001-10`'s existing 2026-09-09
+frontend-tier (mock) PASS, and v0.32's (a)/(b), stand unchanged and are not re-litigated.
+`TC-DASH-01`/`TC-EXEC-001-01`'s preserved prior PASS records, and `TC-WARRANTY-001-07`'s
+**BLOCKED (partial)** status on Open Finding F-03 (per-Asset-Type useful-life values still
+not supplied), are untouched. **"SLA per stage"** remains a separate, fully open question,
+unaffected. `RAISE-FR-MAINT-001`'s verdict is **not** changed and no Gap is claimed closed
+by this document — `RAISE-TRACEABILITY-MATRIX.md` owns Gap 27 and assesses it separately.
+`RAISE-TEST-PLAN.md` and every earlier-layer document are untouched. See the Change Log
+entry below for full detail.)
+
+**Change Log — v0.33 → v0.34 (2026-09-09, citation correction only, no verdict/status/evidence/
+business value change):**
+
+1. **Trigger.** v0.33 cited `docker-compose.yml:62` as the location of the
+   `VITE_TICKET_API_ENABLED` build arg used to run the Gap 27 browser-driven execution. That
+   line number was wrong: verified directly against the repository, line 62 of
+   `docker-compose.yml` is `VITE_EMPLOYEE_API_ENABLED`, and line 63 is
+   `VITE_TICKET_API_ENABLED: ${VITE_TICKET_API_ENABLED:-true}`.
+2. **Correction made.** Every occurrence of `docker-compose.yml:62` in this document is
+   corrected to `docker-compose.yml:63`. Five occurrences were found and corrected, in the
+   `TC-MAINT-001-10` narrative, the Test Case Summary / coverage-report text, the Review
+   Checklist, the Document Status entry, and the Change Log.
+3. **What did not change.** No verdict, no status (including `TC-MAINT-001-10`'s PASS records,
+   Open Finding F-55's `OPEN — BLOCKED` status, and `TC-WARRANTY-001-07`'s **BLOCKED
+   (partial)** tie to F-03), no evidence figure (`ITR-2026-005..008` → 2 / 8 / 24 / 48), and no
+   suite total. The flag's default value (`true`) and the fact that the composed frontend
+   container was the mechanism used are both unaffected and remain correct — only the source
+   line number cited was wrong. `RAISE-TEST-PLAN.md` and every earlier-layer document, and
+   `OPEN-FINDINGS.md`, are untouched.
+
+**Change Log — v0.32 → v0.33 (2026-09-09, later the same day, execution/coverage reporting
+only, no spec/scope change):**
+
+1. **Trigger.** Matrix Gap 27 (opened v2.12, left OPEN in v2.13) observed that no run had
+   ever exercised the frontend's own real-API code path
+   (`frontend/src/services/ticket-service.ts`'s branch gated by `TICKET_API_ENABLED`) — the
+   2026-09-09 frontend-tier execution used the mock repository, and v0.32's HTTP-path
+   execution (a) used `curl` directly against the backend, bypassing the frontend entirely.
+2. **Gap 27 execution added, PASS.** A real browser-driven run through the composed Docker
+   frontend container (`docker-compose.yml:63`'s `VITE_TICKET_API_ENABLED`, port 3000,
+   matching backend CORS) confirmed the real-API branch was selected (`GET /api/tickets` on
+   load, absent in mock mode), then drove login and four ticket creations through the app's
+   own form, confirming Critical=2/High=8/Medium=24/Low=48 across the POST response, the
+   frontend's own Ticket Detail read-back, and Postgres, on new tickets `ITR-2026-005..008`.
+   Image provenance was checked before use as evidence (frontend image rebuilt 2026-09-09
+   from current source, predating no relevant production file).
+3. **A separate defect recorded, not folded into the PASS.** The page's default (no-param)
+   `requesterId` fixture id (`'e1'`) does not exist in Postgres, causing the first submit
+   attempt to 404 before any POST — filed as **Open Finding F-55**, `OPEN — BLOCKED on a
+   business decision, and deliberately not fixed`, left open by this document. The
+   execution completed via the page's own documented `requesterId` query-param entry point
+   (a supported entry point, not a workaround); the default (no-param) entry remains blocked
+   by F-55 in real-API mode.
+4. **No new `TC-` ID introduced.** Recorded as further evidence against the existing
+   `AC-MAINT-001-10`/`TC-MAINT-001-10` pair (§11), per this document's 1:1 AC↔TC convention
+   — there is no new AC criterion for this addition to pair against.
+   `TC-MAINT-001-10`'s existing 2026-09-09 frontend-tier (mock) **PASS**, and v0.32's (a)/(b),
+   are unchanged and not re-litigated.
+5. **§11, §19, §20 updated in place.** §11 gains a new dated Status Note paragraph and an
+   appended sentence on `TC-MAINT-001-10`'s own table row; §19 gains a new paragraph
+   recording the execution against the unchanged row/Grand Total counts
+   (`10 | 4 | 6 | 0 | 0`; Grand Total `96 | 63 | 26 | 4 | 3`); §20 gains three new checked
+   items recording the Gap 27 execution, the separate F-55 defect, and confirmation that no
+   verdict or Gap is claimed closed by this document.
+6. **No verdict or Gap claimed closed.** `RAISE-FR-MAINT-001`'s verdict in
+   `RAISE-TRACEABILITY-MATRIX.md` is **not** changed by this revision, and this revision does
+   **not** itself close Gap 27 — the Traceability Matrix owns Gap 27 and assesses it
+   separately, on its own schedule.
+7. **No other suite required changes.** `TC-LOGIN-*`, `TC-DASH-*`, `TC-ASSET-001-*`,
+   `TC-ASSET-001-D-*`, `TC-LIFE-001-*`, `TC-ASSET-002-*`, `TC-ASSET-003-*`, `TC-OPS-001-*`,
+   `TC-OPS-002-*`, `TC-MAINT-001-01` through `-09`, `TC-WARRANTY-001-*`, `TC-ORACLE-001-*`,
+   `TC-ALERT-001-*`, `TC-AUDIT-001-*`, `TC-EXEC-001-*`, `TC-AI-SEARCH-001-*`, `TC-AI-STATES-*`,
+   and `TC-AI-DOC-001..004` retain their prior status and wording verbatim. `RAISE-TEST-PLAN.md`,
+   `RAISE-ACCEPTANCE-CRITERIA.md`, and every earlier-layer document are untouched — this is
+   execution/coverage reporting only, not a scope or specification change.
+   `RAISE-TRACEABILITY-MATRIX.md` is not touched by this revision — it owns Gap 27 and
+   assesses it separately, on its own schedule. `OPEN-FINDINGS.md` is maintained separately
+   and is not touched by this revision (F-55 was filed there by the execution itself, on
+   2026-09-09, commit `40c85be`, prior to this document's own revision).
+
+---
 
 **Version:** 0.32 (2026-09-09 — later the same day as v0.31, execution/coverage reporting only,
 no spec/scope change: v0.31 corrected an overstated claim about backend `slaHours` coverage and

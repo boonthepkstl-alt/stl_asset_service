@@ -26,6 +26,18 @@ Overwritten in place each time the protocol is re-run.
 > `CHECKPOINT-2026-09-09-003` carry the full record. **F-03 is unchanged and still the
 > only outstanding business input.**
 >
+> **[LATEST, 2026-09-09 — this run's recommendation is now fully discharged.]**
+> **Gap 27 is CLOSED** (Matrix **v2.14**, Test Cases **v0.34**): the frontend's own
+> real-API branch was driven through a browser, all four priorities, `ITR-2026-005`…`008`.
+> **No coverage gap remains open on the SLA figures** — the first time since Gap 23
+> opened. **New: F-55**, `OPEN — BLOCKED on a business decision` — the default Create
+> Requisition entry cannot submit in real-API mode (`requesterId` defaults to the mock
+> fixture id `'e1'`), and how the requester should resolve is a stakeholder call, partly
+> downstream of **F-08**. **Both remaining items are business decisions, not work: F-55's
+> requester rule and F-03's per-Asset-Type useful-life values.** F-03 stays the only one
+> that would move a Compliance Review verdict. `CHECKPOINT-2026-09-09-005` has the full
+> record.
+>
 > **[AND FINALLY, 2026-09-09.]** **`PR #124` is MERGED** (`9e125d6`), so **Gap 26(a) and
 > Gap 26 overall are CLOSED** (Matrix **v2.13**) — the contingency above was discharged
 > by the merge, not by re-argument. **Gap 27 is now the only open item needing neither a

@@ -9,7 +9,54 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-09-09, at `9e125d6` (**PR #124 merged**). Suite **54 test files /
+**As of:** 2026-09-09, at `40c85be`. Suite **54 test files / 286 tests** frontend,
+**7 backend subtests** covering the SLA figures. Test Cases **v0.34**, Matrix **v2.14**;
+PRD **v0.21**, Design **v0.19**, Prototype **v0.20**, AC **v0.19**, Test Plan **v0.20**.
+
+**Gap 27 is CLOSED, and with it every coverage gap on the SLA figures.** For the first
+time since Gap 23 opened, **there is no execution or test left to run on them** — the
+four values are now confirmed by the frontend against mocks, by backend unit tests, by a
+`curl`-driven HTTP run, by a merged cross-tier contract test, and now by the frontend's
+own real-API branch driven through a browser.
+
+**How Gap 27 was executed, using the project's own mechanism rather than a new harness:**
+`docker-compose.yml:63` already bakes `VITE_TICKET_API_ENABLED` to `true`, so the composed
+frontend container serves a bundle with the real-API branch selected. The container was
+used rather than a dev server because the backend's `CORS_ALLOW_ORIGINS` is
+**`http://localhost:3000` only**. **Proof the branch was actually selected, not assumed:**
+on first load the browser issued `GET /api/tickets` → 200 — a request that does not
+exist at all in mock mode.
+
+**Four priorities, three independent layers, all from the browser's own network log:**
+`POST /api/tickets` → **201** ×4 (each with an `OPTIONS` preflight, so genuinely
+cross-origin), the first response carrying `"slaTargetHours":2` **as received by the
+frontend**, then `GET /api/tickets/ITR-2026-005..008` → **200** ×4 issued by the app
+itself — **2 / 8 / 24 / 48**, matching in the POST response, the frontend read-back and
+the Postgres row. **No production code changed.**
+
+**A real defect was found during that run, and it is deliberately not folded into the
+PASS.** The first submit failed: `GET /api/employees/e1` → **404**, no `POST` followed,
+and the page reported a generic retryable error. `CreateRequisition/index.tsx:60` defaults
+`requesterId` to **`'e1'`**, a `mockData.ts` fixture id absent from Postgres, so
+`ticket-service.ts:31` throws first. **It resolves in mock mode because the mock
+repository is seeded from that same fixture file** — which is why 286 tests and `tsc`
+were blind to it.
+
+**F-55 carries it: `OPEN — BLOCKED on a business decision, and deliberately not fixed`.**
+The decision: how the requester resolves in the default flow — the logged-in user, an
+explicit employee/delegated-requester selection, or another stakeholder rule. **A fact that
+constrains the first option:** `AuthContext`'s `User` carries **no employee id** and the
+demo user's `id` is the literal `"admin"`, so F-55 is partly downstream of **F-08**.
+**The default, no-param entry into that page is unusable in real-API mode until this is
+decided.** The execution reached the code path through the page's own supported
+`?requesterId=` entry point — a supported route, not a fix.
+
+**Both remaining items on the board are business decisions, not work:** **F-55**'s
+requester rule, and **F-03**'s per-Asset-Type useful-life values — the latter still the
+only one that would move a Compliance Review verdict, still not supplied, still not
+guessed at. **Gap 21** and **F-52**'s remaining half stay blocked on F-03.
+
+Earlier the same day, at `9e125d6` (**PR #124 merged**). Suite **54 test files /
 286 tests** frontend; **7 backend subtests** covering the SLA figures, all on `main`.
 Test Cases **v0.32**, Matrix **v2.13**; PRD **v0.21**, Design **v0.19**, Prototype
 **v0.20**, AC **v0.19**, Test Plan **v0.20**.

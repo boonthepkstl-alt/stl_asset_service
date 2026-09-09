@@ -2,6 +2,75 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Requirement Traceability Matrix (RTM)
+**Version:** 2.15 Draft (Stale-pointer fix only — no reassessment,
+2026-09-09 — **current statement first: no verdict, gap status, evidence,
+figure, or business value changes in this revision.** v2.14's own header
+(retained below, unaltered) cited `RAISE-TEST-CASES.md` as v0.33, current
+at the time it was written. That document has since moved to **v0.34** —
+checked directly against its own version banner and Change Log, not taken
+on trust. `RAISE-TEST-CASES.md` v0.34's own Change Log states the only
+change from v0.33 is a **citation-only correction**: the wrong source line
+number cited for `VITE_TICKET_API_ENABLED` in `docker-compose.yml`
+(`docker-compose.yml:62`, wrong) is corrected to the right one
+(`docker-compose.yml:63`). Independently re-confirmed here, not taken on
+the strength of v0.34's own Change Log alone: line 62 is
+`VITE_EMPLOYEE_API_ENABLED`; line 63 is `VITE_TICKET_API_ENABLED:
+${VITE_TICKET_API_ENABLED:-true}`. **No verdict, status, evidence figure,
+test result, or business value differs between v0.33 and v0.34** — v0.34's
+own Change Log says so explicitly, confirmed directly rather than adopted
+on request. **This document's v2.14 body was never wrong**: its header and
+§6 Gap 27 text already independently cited the correct line
+(`docker-compose.yml` line 63, not line 62) at the time, so the error being
+corrected in Test Cases v0.34 originated in the source material v2.14
+cited, not in anything this document itself wrote — no text in v2.14's
+body requires correction as a result, only this document's *pointer* to
+the Test Cases document's version number was one revision behind.
+**Nothing in this revision reassesses, reopens, or re-verifies any gap,
+finding, or requirement row; it only advances a version pointer to match a
+source document's own citation fix.** Gap 27 stays **CLOSED** (assessed in
+v2.14, on its own literally-met closing condition, no successor gap carved
+out). Gap 26 stays **CLOSED** overall, both sub-parts, not re-litigated.
+Gap 23's, Gap 24's, and Gap 25's closures stand, undisturbed. **Gap 21
+stays OPEN**, blocked on Open Finding **F-03**, which **remains genuinely
+BLOCKED** — no per-Asset-Type useful-life value has been supplied by
+anyone, and none is invented or inferred here; F-52's remaining half stays
+open likewise. Open Finding **F-55** stays `OPEN — BLOCKED on a business
+decision, and deliberately not fixed` — referenced only in this revision,
+not resolved, and not absorbed into Gap 27's closure; `OPEN-FINDINGS.md` is
+not edited. `RAISE-FR-MAINT-001` stays a full `PASS`; `RAISE-FR-EXEC-001`
+stays `PASS (partial)`; `TC-DASH-01`/`TC-EXEC-001-01`'s superseded PASS
+records stay untouched; every `slaTargetHours` figure stays **2 / 8 / 24 /
+48**; the `ITR-2026-001`…`008` evidence stays as recorded. "SLA per stage"
+remains a separate, fully open question; the vendor model, cost model, and
+delegated-approver configuration rules remain TBD — no business decision
+is made on the stakeholder's behalf by this revision.)
+**Status:** Draft for Traceability Review
+**Source:** `RAISE-TEST-CASES.md` v0.34 (version banner, line 5, and its
+own Change Log, both read directly) — the only change from v0.33 is the
+citation-only line-number correction described above; `docker-compose.yml`
+(re-read directly, line 63, confirming the correction) and this document's
+own v2.14 header (re-read directly, confirming it already cited line 63,
+not line 62, and that no other v2.14 text depends on the corrected line
+number). `RAISE-PRD.md` v0.21, `RAISE-DESIGN.md` v0.19, `RAISE-PROTOTYPE.md`
+v0.20, `RAISE-ACCEPTANCE-CRITERIA.md` v0.19, and `RAISE-TEST-PLAN.md`
+v0.20 are unchanged from v2.14 — this revision advances only the
+`RAISE-TEST-CASES.md` version pointer (v0.33 → v0.34) to match that
+document's own current version banner; it is not a further chain sync of
+any of the other five documents, and reassesses nothing. Full revision
+history, including the v2.13 → v2.14 reassessment and every earlier
+revision, is retained in the Change Log at the end of this document — see
+"Change Log — v2.14 → v2.15" and the preceding entries there.
+**Source of Truth:** RAISE PRD
+**Reference Only:** VERSCAN
+
+---
+
+**Retained below for history — full v2.14 header (Gap 27 assessed —
+CLOSED, 2026-09-09), unaltered — its own `RAISE-TEST-CASES.md` v0.33
+citations are historical (a correct record of what was current when this
+header was written) and are deliberately left as v0.33, not advanced to
+v0.34, per this document's append-don't-rewrite convention:**
+
 **Version:** 2.14 Draft (Gap 27 assessed — **CLOSED**, 2026-09-09 —
 **current verdict first, independently checked against Gap 27's own stated
 closing condition, not adopted from any framing offered for this
@@ -6317,6 +6386,70 @@ while iPhone 15 Pro (Mobile, already-expired) still correctly showed
 Pro showed "Expiring" consistently in both its Lifecycle row and Warranty &
 Coverage section badge. `TC-WARRANTY-001-06` was **not** executed that
 pass — this is exactly the gap v1.4 closes above.
+
+**Change Log — v2.14 → v2.15 (this revision, 2026-09-09, stale-pointer fix
+only — this document's cited `RAISE-TEST-CASES.md` version corrected
+v0.33 → v0.34; no verdict, gap status, evidence, figure, or business value
+changes; all six upstream citations otherwise unchanged from v2.14):**
+
+1. **Trigger.** `RAISE-TEST-CASES.md` advanced to v0.34 without a
+   corresponding update to this document's own version pointer to it,
+   leaving v2.14's `RAISE-TEST-CASES.md v0.33` citations one revision
+   behind the source document's actual current version — a stale pointer,
+   not a stale assessment.
+2. **What changed in `RAISE-TEST-CASES.md` v0.33 → v0.34, confirmed
+   directly, not taken on trust.** Its own Change Log entry states the
+   only change is a citation-only correction: the wrong source line
+   number cited for `VITE_TICKET_API_ENABLED` in `docker-compose.yml` —
+   `docker-compose.yml:62` (wrong) corrected to `docker-compose.yml:63`
+   (right). Independently re-confirmed here: line 62 is
+   `VITE_EMPLOYEE_API_ENABLED`; line 63 is `VITE_TICKET_API_ENABLED:
+   ${VITE_TICKET_API_ENABLED:-true}`. No verdict, test result, evidence
+   figure, or business value differs between v0.33 and v0.34.
+3. **This document's own v2.14 body was never wrong.** v2.14's header and
+   §6 Gap 27 text already independently cited the correct line
+   (`docker-compose.yml` line 63, not line 62) at the time — the error
+   corrected in Test Cases v0.34 originated in the source material v2.14
+   cited, not in anything this document itself wrote. Confirmed by direct
+   re-read; no text in this document's body requires correction as a
+   result.
+4. **Only the version pointer moves.** This document's top-of-file
+   Version block is bumped to v2.15, citing `RAISE-TEST-CASES.md` v0.34;
+   v2.14's own header is preserved beneath, unaltered, as history — its
+   `RAISE-TEST-CASES.md v0.33` citations are left exactly as they were (a
+   correct record of what was current when v2.14 was written), per this
+   document's append-don't-rewrite convention. No other reference to
+   `RAISE-TEST-CASES.md` anywhere else in this document (§6 Gap
+   narratives, §7 Chain Consistency Check, or any earlier Change Log
+   entry) is touched — each of those is a historical record of what was
+   true at the revision that wrote it, not a live pointer, and this
+   document does not rewrite history to relabel already-frozen citations.
+5. **Confirmed unaffected, explicitly re-checked, not assumed.** Gap 27
+   stays **CLOSED** (assessed in v2.14, on its own literally-met closing
+   condition, no successor gap carved out). Gap 26 stays **CLOSED**
+   overall, both sub-parts. Gap 23's, Gap 24's, and Gap 25's closures
+   stand. **Gap 21 stays OPEN**, blocked on Open Finding **F-03**, which
+   **remains genuinely BLOCKED** (no per-Asset-Type useful-life value
+   supplied by anyone, none invented here); F-52's remaining half stays
+   open likewise. Open Finding **F-55** stays `OPEN — BLOCKED on a
+   business decision, and deliberately not fixed` — referenced only, not
+   resolved, not absorbed into Gap 27's closure; `OPEN-FINDINGS.md` is not
+   edited by this revision. `RAISE-FR-MAINT-001` stays a full `PASS`;
+   `RAISE-FR-EXEC-001` stays `PASS (partial)`; `TC-DASH-01`/
+   `TC-EXEC-001-01`'s superseded PASS records stay untouched; every
+   `slaTargetHours` figure stays **2 / 8 / 24 / 48**; the
+   `ITR-2026-001`…`008` evidence stays as recorded. "SLA per stage," the
+   vendor model, the cost model, and the delegated-approver configuration
+   rules remain TBD.
+6. **Unaffected.** `RAISE-PRD.md`, `RAISE-DESIGN.md`, `RAISE-PROTOTYPE.md`,
+   `RAISE-ACCEPTANCE-CRITERIA.md`, and `RAISE-TEST-PLAN.md` are unchanged
+   from v2.14; only the cited `RAISE-TEST-CASES.md` version pointer moves,
+   v0.33 → v0.34. §3/§4 Master Matrix rows, §6 Gap headings and bodies,
+   §7 Chain Consistency Check, §8 Compliance Review Readiness, §9
+   Checklist, and §10 Next Step are all unchanged by this revision — none
+   of them required a version-pointer correction, since their own
+   `RAISE-TEST-CASES.md` citations are already-frozen historical records
+   of specific past revisions, not live pointers.
 
 **Change Log — v2.13 → v2.14 (this revision, 2026-09-09, Gap 27 assessed
 against a new browser-driven execution recorded in `RAISE-TEST-CASES.md`

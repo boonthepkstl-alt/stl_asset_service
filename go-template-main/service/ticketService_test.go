@@ -198,3 +198,67 @@ func TestListTechnicians_ReturnsSeededTechnicians(t *testing.T) {
 	assert.Len(t, technicians, 1)
 	assert.Equal(t, "Alex Rivera", technicians[0].Name)
 }
+
+// Covers every priority in the slaHours map, not just the one High assertion inside
+// TestCreateTicket_BuildsSnapshotAndInitialTimeline above. The values are business-confirmed
+// (PRD Sec16 Resolved Question 53, 2026-09-08) and this map is the backend half of a pair --
+// slaHours here and SLA_HOURS in frontend/src/services/ticket-service.ts:14 -- whose whole
+// contract is that the two agree. That agreement is asserted in a comment on the map and was
+// not, until now, asserted by anything executable on this side.
+//
+// Why it is worth a test of its own: TC-MAINT-001-10 was executed 2026-09-09 against the
+// running app and passed, but TICKET_API_ENABLED is off by default, so that run exercised the
+// frontend map only. This is the backend half of that coverage (Gap 25).
+func TestCreateTicket_StampsSLATargetHoursForEveryPriority(t *testing.T) {
+	// Expected values are duplicated here on purpose rather than read from slaHours: a test
+	// that reads the map it is checking would pass against any values at all, including a
+	// silent edit away from what business confirmed.
+	cases := []struct {
+		priority string
+		wantSLA  int
+	}{
+		{"Critical", 2},
+		{"High", 8},
+		{"Medium", 24},
+		{"Low", 48},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.priority, func(t *testing.T) {
+			ticketSvc, employeeID, assetID := seedTicketDeps(t)
+
+			ticket, err := ticketSvc.CreateTicket(model.CreateTicketRequest{
+				RequesterID: employeeID,
+				AssetID:     assetID,
+				Category:    "Hardware Fault & Repair",
+				Priority:    tc.priority,
+				Title:       "SLA coverage for " + tc.priority,
+			})
+
+			assert.NoError(t, err)
+			assert.Equal(t, tc.wantSLA, ticket.SLATargetHours)
+			// The priority must survive onto the ticket too: a service that stamped the right
+			// hours while dropping or rewriting the priority would otherwise pass.
+			assert.Equal(t, tc.priority, ticket.Priority)
+		})
+	}
+}
+
+// An unknown priority yields a zero SLA target rather than a default or a panic, because
+// slaHours is a plain map lookup. Pinned as observed behaviour, not endorsed as a rule: PRD
+// Sec16 confirms values for the four priorities only and says nothing about a fifth, so no
+// fallback is invented here. If business ever defines one, this test is where it lands.
+func TestCreateTicket_UnknownPriorityGetsZeroSLATarget(t *testing.T) {
+	ticketSvc, employeeID, assetID := seedTicketDeps(t)
+
+	ticket, err := ticketSvc.CreateTicket(model.CreateTicketRequest{
+		RequesterID: employeeID,
+		AssetID:     assetID,
+		Category:    "Hardware Fault & Repair",
+		Priority:    "Urgent", // not one of the four confirmed values
+		Title:       "Priority outside the confirmed set",
+	})
+
+	assert.NoError(t, err)
+	assert.Equal(t, 0, ticket.SLATargetHours)
+}

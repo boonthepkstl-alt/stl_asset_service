@@ -23,7 +23,7 @@ its own Ticket Detail page. Zero console errors.
 **Gap 23 closed; Gap 25 opened — and the split is the point.** `TICKET_API_ENABLED`
 is off by default, so the run exercised the **frontend tier only**;
 `ticketService.go:19-26`'s identical map was **not exercised** and **no backend test covers
-`slaHours`**. Matrix v2.10 closed Gap 23 because its stated condition (*a formal execution*
+`slaHours`** **[CORRECTED 2026-09-09]** The claim quoted just above was wrong, and so was the grep that "confirmed" it. The search used `SlaTargetHours`; the Go field is **`SLATargetHours`** (capital `SLA`), so the case-sensitive pattern missed the one place it appears. `ticketService_test.go:99` already asserted `SLATargetHours` **= 8** for High, incidentally, inside a broader snapshot test. The true position was **one of four priorities covered**, not none. Same failure mode as **F-49** — a real measurement whose conclusion outran what it showed. **All four priorities plus the unknown-priority case are now covered** by `TestCreateTicket_StampsSLATargetHoursForEveryPriority` and `TestCreateTicket_UnknownPriorityGetsZeroSLATarget`. What is still uncovered: **no test compares the two maps against each other**, and **no run has exercised the Go tier through the HTTP path**.. Matrix v2.10 closed Gap 23 because its stated condition (*a formal execution*
 *against the real running app*) was literally met, and carved the backend shortfall out as
 **Gap 25** rather than stretching the closure or refusing one that was earned. Its
 reasoning was this project's own principle — *a specification being correct is not*

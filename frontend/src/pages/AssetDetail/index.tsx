@@ -309,13 +309,23 @@ export function AssetDetailPage() {
                 <span className="flex items-center gap-1.5"><Package className="h-3.5 w-3.5" />{asset.location}</span>
                 <span className="flex items-center gap-1.5"><Calendar className="h-3.5 w-3.5" />Purchased {asset.purchaseDate}</span>
                 {asset.assignedTo ? (
-                  <button
-                    onClick={() => navigate(`/employees/${asset.assignedEmployeeId || 'e1'}`)}
-                    className="flex items-center gap-1.5 text-brand-600 hover:text-brand-700 hover:underline transition-colors font-medium"
-                  >
-                    <User className="h-3.5 w-3.5 text-brand-500" />
-                    {asset.assignedTo}
-                  </button>
+                  asset.assignedEmployeeId ? (
+                    // F-56 (OPEN-FINDINGS.md): only link when assignedEmployeeId is a real,
+                    // resolvable id -- never guess one. assignedTo (the label) is still shown
+                    // either way; only the navigable link is conditional.
+                    <button
+                      onClick={() => navigate(`/employees/${asset.assignedEmployeeId}`)}
+                      className="flex items-center gap-1.5 text-brand-600 hover:text-brand-700 hover:underline transition-colors font-medium"
+                    >
+                      <User className="h-3.5 w-3.5 text-brand-500" />
+                      {asset.assignedTo}
+                    </button>
+                  ) : (
+                    <span className="flex items-center gap-1.5 text-surface-500">
+                      <User className="h-3.5 w-3.5" />
+                      {asset.assignedTo}
+                    </span>
+                  )
                 ) : (
                   <span className="flex items-center gap-1.5"><User className="h-3.5 w-3.5" />Unassigned</span>
                 )}

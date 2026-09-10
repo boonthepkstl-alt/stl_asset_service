@@ -128,4 +128,46 @@ describe('AssetDetailPage', () => {
     // the earlier itAssignment.estimatedCost of 350).
     expect(screen.getByText('2026-08-15 09:30 AM · Cost: $120')).toBeInTheDocument();
   });
+
+  // F-56 (OPEN-FINDINGS.md). a9 (Epson PowerLite Projector) has assignedTo: 'Conference Room A'
+  // but assignedEmployeeId: null in mockData.ts -- a room-style assignee with no employee record
+  // behind it. The assignee control used to fall back to the hardcoded fixture id 'e1' and link
+  // there regardless, silently sending the user to Sarah Chen's real profile instead. Locks in
+  // the fix: the label is still shown, but it must not be a link, and must never target /e1.
+  it('F-56: an assignee with no employee id is shown as plain text, not a link to a guessed id', async () => {
+    renderWithProviders(<AssetDetailPage />, {
+      route: '/assets/a9',
+      path: '/assets/:assetId',
+      extraRoutes: [{ path: '/employees/e1', element: <div>WRONG EMPLOYEE ROUTE (e1)</div> }],
+    });
+    await waitFor(() => screen.getByText('AST-0009 · EPPL0912'));
+
+    // The header shows "Conference Room A" alone; the unrelated Lifecycle tab's own "Custody:
+    // Assigned to Conference Room A" summary button has a different, longer accessible name, so
+    // an exact match here targets only the header control this fix touches.
+    expect(screen.getByText('Conference Room A')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Conference Room A' })).not.toBeInTheDocument();
+
+    // Belt-and-braces: even a direct click on the label must not navigate to /e1.
+    fireEvent.click(screen.getByText('Conference Room A'));
+    expect(screen.queryByText('WRONG EMPLOYEE ROUTE (e1)')).not.toBeInTheDocument();
+  });
+
+  // F-56 companion case: an asset that DOES have a real assignedEmployeeId must still link there,
+  // so the fix doesn't overcorrect into removing the link for the case that was already correct.
+  it('F-56: an assignee with a real employee id is still a working link to that id', async () => {
+    renderWithProviders(<AssetDetailPage />, {
+      route: '/assets/a1',
+      path: '/assets/:assetId',
+      extraRoutes: [{ path: '/employees/e1', element: <div>EMPLOYEE ROUTE (e1)</div> }],
+    });
+    await waitFor(() => screen.getByText('AST-0001 · C02XK1ABJGH'));
+
+    // Exact match, same reasoning as the F-56 case above -- the header's own link has the
+    // accessible name "Sarah Chen" alone, distinct from the Lifecycle tab's longer summary.
+    fireEvent.click(screen.getByRole('button', { name: 'Sarah Chen' }));
+    await waitFor(() => {
+      expect(screen.getByText('EMPLOYEE ROUTE (e1)')).toBeInTheDocument();
+    });
+  });
 });

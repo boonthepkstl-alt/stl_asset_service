@@ -42,16 +42,55 @@ import (
 // of reading a foreign-runtime source, stated here rather than left to be rediscovered.
 const frontendTicketServicePath = "../../frontend/src/services/ticket-service.ts"
 
-// slaHoursLiteral matches the object literal on the SLA_HOURS declaration line, e.g.
+// slaHoursOpen matches up to and including the opening brace of the SLA_HOURS declaration,
+// e.g. the underlined part of:
 //
 //	const SLA_HOURS: Record<CreateTicketInput['priority'], number> = { Critical: 2, ... };
+//	                                                                  ^ match ends here
 //
-// It deliberately anchors on `SLA_HOURS` and takes everything to the closing brace, so a
-// rename or a move to another file fails loudly rather than matching something else.
+// It deliberately anchors on `SLA_HOURS` so a rename or a move to another file fails loudly
+// rather than matching something else. It intentionally does NOT also match the closing
+// brace: a regex has no way to find the brace that actually balances an opening one -- a
+// naive `\{(.*?)\}` (non-greedy) stops at the FIRST `}` regardless of nesting, so it would
+// silently truncate if the literal ever gained a nested value (`Critical: { hours: 2 }`) or
+// an inline `//` comment containing `}` before the real close. Finding 5 (2026-09-09 code
+// review) named exactly these two cases; extractBalancedObjectBody below, not a regex, finds
+// the true matching close by counting brace depth and skipping `//` comments as it goes.
 var (
-	slaHoursLiteral = regexp.MustCompile(`(?s)\bSLA_HOURS\b[^=]*=\s*\{(.*?)\}`)
-	slaHoursEntry   = regexp.MustCompile(`([A-Za-z_][A-Za-z0-9_]*)\s*:\s*(-?\d+)`)
+	slaHoursOpen  = regexp.MustCompile(`(?s)\bSLA_HOURS\b[^=]*=\s*\{`)
+	slaHoursEntry = regexp.MustCompile(`([A-Za-z_][A-Za-z0-9_]*)\s*:\s*(-?\d+)`)
 )
+
+// extractBalancedObjectBody returns the source between the object literal's opening brace
+// (whose index, pointing AT the `{`, is openBraceIdx) and the `}` that actually closes it,
+// exclusive of both braces. It tracks nesting depth rather than stopping at the first `}`,
+// and skips over `//`-style line comments while scanning so a comment containing a stray `}`
+// can't be mistaken for the real close either. It does not need to understand string literals:
+// the only thing ever extracted from the body afterward is `identifier: number` pairs (see
+// slaHoursEntry), so a `}` inside a string that happens to survive this scan changes nothing
+// about what gets parsed out of the result.
+func extractBalancedObjectBody(source []byte, openBraceIdx int) (string, error) {
+	depth := 1
+	i := openBraceIdx + 1
+	for i < len(source) {
+		switch {
+		case source[i] == '/' && i+1 < len(source) && source[i+1] == '/':
+			for i < len(source) && source[i] != '\n' {
+				i++
+			}
+			continue
+		case source[i] == '{':
+			depth++
+		case source[i] == '}':
+			depth--
+			if depth == 0 {
+				return string(source[openBraceIdx+1 : i]), nil
+			}
+		}
+		i++
+	}
+	return "", fmt.Errorf("unterminated object literal starting at byte offset %d: never found the closing `}`", openBraceIdx)
+}
 
 // parseFrontendSLAHours returns the frontend's SLA_HOURS map, or an error explaining which
 // step failed. It never returns an empty map with a nil error.
@@ -62,14 +101,20 @@ func parseFrontendSLAHours(path string) (map[string]int, error) {
 		return nil, fmt.Errorf("could not read the frontend ticket service at %s (resolved to %s): %w", path, abs, err)
 	}
 
-	match := slaHoursLiteral.FindSubmatch(source)
-	if match == nil {
+	openLoc := slaHoursOpen.FindIndex(source)
+	if openLoc == nil {
 		return nil, fmt.Errorf("found %s but no `SLA_HOURS = { ... }` declaration in it", path)
 	}
+	openBraceIdx := openLoc[1] - 1 // FindIndex's end is exclusive; the brace is the last byte matched
 
-	entries := slaHoursEntry.FindAllStringSubmatch(string(match[1]), -1)
+	body, err := extractBalancedObjectBody(source, openBraceIdx)
+	if err != nil {
+		return nil, fmt.Errorf("matched the start of SLA_HOURS in %s but could not find its end: %w", path, err)
+	}
+
+	entries := slaHoursEntry.FindAllStringSubmatch(body, -1)
 	if len(entries) == 0 {
-		return nil, fmt.Errorf("matched SLA_HOURS in %s but its literal contained no `Priority: number` entries: %q", path, strings.TrimSpace(string(match[1])))
+		return nil, fmt.Errorf("matched SLA_HOURS in %s but its literal contained no `Priority: number` entries: %q", path, strings.TrimSpace(body))
 	}
 
 	parsed := make(map[string]int, len(entries))
@@ -122,4 +167,89 @@ func TestSLAHoursMatchesFrontendContract(t *testing.T) {
 	// shipped behaviour quietly stopped matching PRD §16 Resolved Question 53.
 	assert.Len(t, frontend, 4, "expected the four priorities confirmed in PRD §16 RQ53; a change here needs a business decision, not a test edit")
 	assert.Len(t, slaHours, 4, "expected the four priorities confirmed in PRD §16 RQ53; a change here needs a business decision, not a test edit")
+}
+
+// Finding 5 (2026-09-09 code review, hardened here): the old `\{(.*?)\}` regex stopped at the
+// FIRST `}` after the opening brace, which is correct only by luck for today's flat,
+// single-line SLA_HOURS declaration. These two cases are the ones the finding named as able to
+// break that luck. Both are regression tests for extractBalancedObjectBody directly, so they
+// exercise the exact fixed logic rather than the full file-reading path (that path is covered
+// separately below, and by TestSLAHoursMatchesFrontendContract above against the real file).
+func TestExtractBalancedObjectBody_NestedValue(t *testing.T) {
+	// Under the old regex, this would have truncated at the `}` that closes `{ hours: 2 }`,
+	// losing High/Medium/Low entirely -- not a loud failure, a silently short result.
+	source := []byte(`const SLA_HOURS = { Critical: { hours: 2 }, High: 8, Medium: 24, Low: 48 };`)
+	openIdx := strings.Index(string(source), "{")
+
+	body, err := extractBalancedObjectBody(source, openIdx)
+
+	assert.NoError(t, err)
+	assert.Contains(t, body, "High: 8", "the old truncating regex would have cut the body before this")
+	assert.Contains(t, body, "Medium: 24", "the old truncating regex would have cut the body before this")
+	assert.Contains(t, body, "Low: 48", "the old truncating regex would have cut the body before this")
+}
+
+func TestExtractBalancedObjectBody_CommentContainingBrace(t *testing.T) {
+	// Under the old regex, this would have truncated at the `}` inside the comment, on the
+	// very first line -- losing every entry.
+	source := []byte("const SLA_HOURS = {\n  // due in 2h }\n  Critical: 2, High: 8, Medium: 24, Low: 48\n};")
+	openIdx := strings.Index(string(source), "{")
+
+	body, err := extractBalancedObjectBody(source, openIdx)
+
+	assert.NoError(t, err)
+	assert.Contains(t, body, "Critical: 2", "the old truncating regex would have cut the body before this -- it's after the comment's stray `}`")
+	assert.Contains(t, body, "Low: 48")
+}
+
+func TestExtractBalancedObjectBody_UnterminatedFailsLoudly(t *testing.T) {
+	// No closing brace at all: must error, not return a truncated/empty body silently.
+	source := []byte(`const SLA_HOURS = { Critical: 2, High: 8`)
+	openIdx := strings.Index(string(source), "{")
+
+	_, err := extractBalancedObjectBody(source, openIdx)
+
+	assert.Error(t, err)
+}
+
+// parseFrontendSLAHours end to end, against real temp files rather than the in-memory helper
+// above -- proves the fix works through the actual file-reading path this test suite depends
+// on, for both cases Finding 5 named.
+func TestParseFrontendSLAHours_SurvivesNestedValueAndComment(t *testing.T) {
+	cases := []struct {
+		name   string
+		source string
+	}{
+		{
+			name: "nested value in one entry",
+			source: `const SLA_HOURS: Record<CreateTicketInput['priority'], number> = ` +
+				`{ Critical: 2, High: { hours: 8 }, Medium: 24, Low: 48 };`,
+		},
+		{
+			name: "inline comment containing a brace before the real close",
+			source: "const SLA_HOURS: Record<CreateTicketInput['priority'], number> = {\n" +
+				"  // was { fast: 1 } before RQ53, now:\n" +
+				"  Critical: 2, High: 8, Medium: 24, Low: 48,\n" +
+				"};",
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			path := filepath.Join(t.TempDir(), "ticket-service.ts")
+			assert.NoError(t, os.WriteFile(path, []byte(tc.source), 0o644))
+
+			parsed, err := parseFrontendSLAHours(path)
+
+			assert.NoError(t, err)
+			assert.Equal(t, 2, parsed["Critical"])
+			assert.Equal(t, 24, parsed["Medium"])
+			assert.Equal(t, 48, parsed["Low"])
+			// "High" is deliberately not asserted in the nested-value case: `High: { hours: 8 }`
+			// has no direct `High: <number>` entry (the number is one level deeper), so
+			// slaHoursEntry correctly does not extract it as one -- that is correct parsing of
+			// what's actually there, not a regression. What this test proves is that the SCAN
+			// reaches Medium/Low at all, which the old truncating regex never would have.
+		})
+	}
 }

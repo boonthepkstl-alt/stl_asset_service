@@ -4944,6 +4944,51 @@ Evidence came from the **browser's own network log**, not `curl`: four `POST htt
 
 ---
 
+## CHECKPOINT-2026-09-10-003
+
+**Phase:** Phase 5B — Maintenance / Ticket domain (test infrastructure)
+**Feature:** Cross-tier SLA contract test (`RAISE-FR-MAINT-001`)
+**Task:** Merge **PR #128**; close out **Finding 5** (`slaContract_test.go` regex-truncation fragility).
+
+**Requirement traced:** none directly — this hardens a test's own parsing logic against a hypothetical future edit; it does not change `RAISE-FR-MAINT-001`'s confirmed behaviour or verdict. Recorded here following this project's practice of logging every merged PR regardless of whether it advances a tracked requirement.
+
+**What Finding 5 was, and why it has no `F-NN` row.** Found during the 2026-09-09 code review, same review as Finding 4 and F-56: `slaContract_test.go`'s `slaHoursLiteral` regex (`(?s)\bSLA_HOURS\b[^=]*=\s*\{(.*?)\}`) is non-greedy, so it stops at the **first** `}` after the opening brace — correct only by luck for today's flat, single-line `SLA_HOURS` declaration. A **nested value** (`Critical: { hours: 2 }`) or an **inline `//` comment containing a stray `}`** before the real close would silently truncate the captured body, missing every entry after the truncation point — not a loud failure, just a parse that stops early. **Never filed as a numbered finding in `OPEN-FINDINGS.md`** — tracked only in that review's own report. Per this session's explicit instruction, no `F-NN` row is invented after the fact; the close-out is recorded directly in `DEVELOPMENT-LOG.md` and here, the same as any merged PR.
+
+**The vulnerability was confirmed real before it was fixed, not assumed from the finding's own description.** A standalone Go program, run outside this test file, reproduced the exact old regex against both named cases: it captured `" Critical: { hours: 2 "` for the nested-value case and `"\n  // due in 2h "` for the comment case — both missing `Low: 48`. This is the same discipline this project applied when confirming Finding 5 in the first place (PLAUSIBLE verdict, not CONFIRMED, because the real file was flat) and when F-49/R-34 confirmed a formatting claim before acting on it.
+
+**The fix, minimal by design.** `slaHoursOpen` now anchors only up to the opening brace, dropping the closing-brace capture entirely. A new `extractBalancedObjectBody` (~20 lines) scans forward from the opening brace, incrementing/decrementing a depth counter on `{`/`}` and skipping `//`-style line comments as it goes, returning the body between the true matching braces or an explicit error if none is found. **No new dependency, no parser framework, no refactor of unrelated code:** `slaHoursEntry` (the part that extracts `identifier: number` pairs) is untouched, and the test's pass/fail semantics — every failure mode fails loudly, per the file's own existing rule — are unchanged.
+
+**Four new tests, each confirmed running and passing individually rather than trusted from a package-level `ok`:**
+
+| Test | Proves |
+|---|---|
+| `TestExtractBalancedObjectBody_NestedValue` | scan reaches past a nested `{ hours: 2 }` to `High`/`Medium`/`Low` |
+| `TestExtractBalancedObjectBody_CommentContainingBrace` | scan reaches past a `//` comment's stray `}` to `Critical`/`Low` |
+| `TestExtractBalancedObjectBody_UnterminatedFailsLoudly` | a genuinely unterminated literal still **errors**, not a silent truncated result |
+| `TestParseFrontendSLAHours_SurvivesNestedValueAndComment` | both cases survive through the **real file-reading path**, via temp files, not just the in-memory helper |
+
+`TestSLAHoursMatchesFrontendContract` re-verified passing against the **real, unmodified** frontend and backend source — `2/8/24/48` unchanged on both tiers, confirmed by direct `grep` against both files, not merely by the test passing.
+
+**Pre-merge validation:** `go build`/`go vet` clean, `go test -count=1 ./...` clean across `controller`/`middleware`/`service`, `gofmt` clean both on the raw working tree and over LF content (R-34), `git diff --check` clean. CI green on both jobs (Backend 42s, Frontend 1m18s) before merge. Diff confirmed scoped to exactly one file (`go-template-main/service/slaContract_test.go`).
+
+**Merged as `646000e`** (squash, branch `test/finding5-sla-contract-regex-hardening` deleted).
+
+**Post-merge verification on `main`, run rather than inferred from CI:** `go build`/`go vet` clean; `go test -count=1 ./...` clean across all three packages; all four new Finding-5 tests plus `TestSLAHoursMatchesFrontendContract` and `TestCreateTicket_StampsSLATargetHoursForEveryPriority` explicitly re-run and confirmed `PASS` individually on the merged commit; `gofmt` clean (raw and R-34); `git diff --check` clean; SLA values `2/8/24/48` re-confirmed present and unchanged in both `ticketService.go` and `ticket-service.ts` by direct `grep`.
+
+**Files changed:** `go-template-main/service/slaContract_test.go` (test-only, +139/-9 lines), plus the project-management documents this close-out touches. **Zero production code, zero business rule, zero SLA value.**
+
+**Status:** ✅ Complete for its confirmed scope.
+
+**Known Issues:** none newly introduced. **Both 2026-09-09 code-review findings (4 and 5) are now resolved.** **F-55 stays `OPEN — BLOCKED on a business decision`** (requester resolution). **F-03 remains BLOCKED**: a decision-request draft covering both F-03 and F-55 was prepared and sent to the stakeholder 2026-09-10; **no answer has been received in this session** — the per-Asset-Type useful-life values are still not supplied, and nothing here invents or infers them. **Gap 21** and **F-52**'s remaining half stay blocked on F-03, unaffected by this merge.
+
+**Remaining Work:** F-03 and F-55, whenever the business decisions land. No engineering work remains queued that isn't downstream of one of those two.
+
+**Next Step:** **nothing on this board is unblocked engineering work right now.** Both review findings from 2026-09-09 are closed; **F-03 and F-55 both wait on the stakeholder's response to the decision request already sent** — F-03 remains the one item that would move a Compliance Review verdict.
+
+**What this checkpoint adds to the pattern.** The same discipline as Finding 4's close-out, applied to a second untracked review finding: real pre-merge validation, a real post-merge re-verification (not inferred from a green CI run), and a close-out recorded in the same documents and to the same standard as any tracked `F-NN` would get. **The habit worth keeping, stated plainly because it generalizes past this specific fix: a finding's absence from the register is not a reason to skip verification, and fixing it is not a reason to invent a register row for it after the fact either.**
+
+---
+
 ## Level 2 — Feature Checkpoints
 
 ### FEATURE-CHECKPOINT-project-tracking-governance

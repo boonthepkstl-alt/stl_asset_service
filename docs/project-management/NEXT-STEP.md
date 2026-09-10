@@ -62,6 +62,18 @@ Overwritten in place each time the protocol is re-run.
 > exactly as blocked as before. **F-03 is still the only item that would move a
 > Compliance Review verdict**, and **Gap 21**/**F-52**'s remaining half stay blocked on
 > it, unchanged by this merge.
+>
+> **[LATEST, 2026-09-10.]** **`PR #128` is MERGED** (`646000e`), resolving **Finding 5**
+> (the `slaContract_test.go` regex-truncation fragility from the same 2026-09-09 code
+> review — never a numbered `F-NN`, closed out directly, same as Finding 4). The
+> non-greedy `\{(.*?)\}` capture is replaced with a brace-depth-counting scan; four new
+> tests confirm it survives a nested value and an inline comment containing `}`, both
+> confirmed to have actually truncated the old regex before the fix. `2/8/24/48`
+> unchanged on both tiers. **Both 2026-09-09 review findings (4 and 5) are now
+> resolved.** **F-03 and F-55 remain exactly as blocked as before** — the decision
+> request sent 2026-09-10 has no answer yet in this session. **F-03 is still the only
+> item that would move a Compliance Review verdict**, and **Gap 21**/**F-52**'s
+> remaining half stay blocked on it, unaffected by this merge.
 
 **Derived from** a direct read of `main` at `39bb2b0`: PRD **v0.20**, Design **v0.18**,
 Prototype **v0.18**, AC **v0.17**, Test Plan **v0.17**, Test Cases **v0.27**, Traceability

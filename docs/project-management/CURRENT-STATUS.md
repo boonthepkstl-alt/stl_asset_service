@@ -9,10 +9,10 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-09-10, at `1da449f` (**PR #127** merged). Suite **54 test
-files / 288 tests** frontend, **7 backend subtests** covering the SLA figures.
-Test Cases **v0.34**, Matrix **v2.14**; PRD **v0.21**, Design **v0.19**, Prototype
-**v0.20**, AC **v0.19**, Test Plan **v0.20**.
+**As of:** 2026-09-10, at `646000e` (**PR #128** merged). Suite **54 test
+files / 288 tests** frontend, backend SLA coverage extended with new regression tests
+(Finding 5). Test Cases **v0.34**, Matrix **v2.14**; PRD **v0.21**, Design **v0.19**,
+Prototype **v0.20**, AC **v0.19**, Test Plan **v0.20**.
 
 **F-56 is RESOLVED** (`c3bac79`) — the Asset Detail assignee link no longer falls
 back to the hardcoded fixture id `'e1'` when `assignedEmployeeId` is missing. Found
@@ -36,27 +36,31 @@ invalid-priority errors return 400, and a genuine repository/DB failure returns 
 no raw error text in the body — previously every cause collapsed into the same 400,
 indistinguishable to the caller and to 5xx-based monitoring.
 
-**Finding 4 is RESOLVED** (`1da449f`) — `docker-compose.yml` and
-`frontend/.env.example` each stated an opposite, unqualified default for the same
-`VITE_*_API_ENABLED` flag names (`true` "for this stack" vs. `false` "the default"),
-with neither cross-referencing the other. Found during the 2026-09-09 code review;
-**never filed as a numbered finding in `OPEN-FINDINGS.md`** — tracked only in that
-review's own report. Fixed with one comment in each file, explaining the two contexts
-(composed Docker stack vs. plain local dev/test) and pointing to the other file's note.
-**Comment-only** — confirmed via `git diff` that no non-comment line moved in either
-file, `docker compose config -q` still resolves, and `.env.example` still holds only
-placeholder values.
+**Finding 5 is RESOLVED** (`646000e`) — `slaContract_test.go`'s
+`SLA_HOURS`-parsing regex was non-greedy and stopped at the first `}` after the opening
+brace, correct only by luck for today's flat, single-line declaration; a nested value or
+an inline `//` comment containing a stray `}` would have silently truncated it. Found
+during the 2026-09-09 code review; **never filed as a numbered finding in
+`OPEN-FINDINGS.md`** — tracked only in that review's own report, same as Finding 4.
+**Confirmed the vulnerability was real before fixing it:** a standalone reproduction of
+the old regex against both cases captured a truncated body in each, missing `Low: 48`
+both times. Fixed with a ~20-line brace-depth-counting scan (`extractBalancedObjectBody`)
+replacing the regex's closing-brace capture — no new dependency, no parser
+framework, `slaHoursEntry` and the test's pass/fail semantics unchanged. Four new tests,
+all verified running and passing individually. `TestSLAHoursMatchesFrontendContract
+re-verified against the real, unmodified files — `2/8/24/48` unchanged on both
+tiers.
 
-**Nothing else on the board is unblocked work right now.** Finding 5 (contract-test
-regex fragility on a hypothetical future edit) remains deliberately deferred, low
-priority. **F-55** stays `OPEN — BLOCKED on a business decision` (requester
-resolution). **F-03 remains BLOCKED and is still the only item that would move a
-Compliance Review verdict** — the per-Asset-Type useful-life values, still not
-supplied, still not guessed at. **Gap 21** and **F-52**'s remaining half stay blocked on
-it.
+**Nothing on the board is unblocked work right now.** Both review findings from
+2026-09-09 (Finding 4, Finding 5) are now resolved. **F-55** stays `OPEN — BLOCKED on
+a business decision` (requester resolution). **F-03 remains BLOCKED and is still the
+only item that would move a Compliance Review verdict** — the per-Asset-Type
+useful-life values, still not supplied, still not guessed at — a decision request
+for both was sent to the stakeholder 2026-09-10, no answer received in this session.
+**Gap 21** and **F-52**'s remaining half stay blocked on F-03, unaffected by this merge.
 
-Earlier the same day, at `265c152` (**PR #125** and **PR #126** merged). Suite **54 test
-files / 288 tests** frontend (was 286), **7 backend subtests** covering the SLA figures.
+Earlier the same day, at `1da449f` (**PR #127** merged). Suite **54 test
+files / 288 tests** frontend, **7 backend subtests** covering the SLA figures.
 Test Cases **v0.34**, Matrix **v2.14**; PRD **v0.21**, Design **v0.19**, Prototype
 **v0.20**, AC **v0.19**, Test Plan **v0.20**.
 

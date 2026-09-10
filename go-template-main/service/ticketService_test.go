@@ -244,21 +244,71 @@ func TestCreateTicket_StampsSLATargetHoursForEveryPriority(t *testing.T) {
 	}
 }
 
-// An unknown priority yields a zero SLA target rather than a default or a panic, because
-// slaHours is a plain map lookup. Pinned as observed behaviour, not endorsed as a rule: PRD
-// Sec16 confirms values for the four priorities only and says nothing about a fifth, so no
-// fallback is invented here. If business ever defines one, this test is where it lands.
-func TestCreateTicket_UnknownPriorityGetsZeroSLATarget(t *testing.T) {
-	ticketSvc, employeeID, assetID := seedTicketDeps(t)
+// Supersedes the old TestCreateTicket_UnknownPriorityGetsZeroSLATarget (2026-09-09 code review
+// finding): an unrecognized Priority used to yield a silent zero SLA target rather than a
+// rejection, because slaHours was a plain unvalidated map lookup -- the ticket still saved with
+// 201 and no error was ever surfaced. That was never an endorsed rule (PRD Sec16 RQ53 confirms
+// values for the four priorities only and says nothing about a fifth), and letting it through
+// unvalidated meant a malformed or hand-crafted request could ship an SLA-bearing ticket with a
+// wrong-looking 0-hour target instead of being told what was wrong.
+//
+// This does not invent a business rule or change the four confirmed values -- it only rejects
+// what was never one of them, which the PRD's own silence already implied.
+func TestCreateTicket_RejectsUnknownPriority(t *testing.T) {
+	cases := []struct {
+		name     string
+		priority string
+	}{
+		{"empty string", ""},
+		{"whitespace", "   "},
+		{"wrong case", "critical"},
+		{"unrecognized value", "Urgent"},
+	}
 
-	ticket, err := ticketSvc.CreateTicket(model.CreateTicketRequest{
-		RequesterID: employeeID,
-		AssetID:     assetID,
-		Category:    "Hardware Fault & Repair",
-		Priority:    "Urgent", // not one of the four confirmed values
-		Title:       "Priority outside the confirmed set",
-	})
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			ticketSvc, employeeID, assetID := seedTicketDeps(t)
 
-	assert.NoError(t, err)
-	assert.Equal(t, 0, ticket.SLATargetHours)
+			ticket, err := ticketSvc.CreateTicket(model.CreateTicketRequest{
+				RequesterID: employeeID,
+				AssetID:     assetID,
+				Category:    "Hardware Fault & Repair",
+				Priority:    tc.priority,
+				Title:       "Priority outside the confirmed set",
+			})
+
+			assert.ErrorIs(t, err, ErrInvalidPriority)
+			assert.Equal(t, model.TicketModel{}, ticket)
+
+			// Not merely an error return -- confirm nothing was actually persisted, i.e. the
+			// rejection happens before the repository is ever touched, not after a ticket with
+			// SLATargetHours: 0 was already written.
+			list, listErr := ticketSvc.ListTickets(model.TicketListQuery{})
+			assert.NoError(t, listErr)
+			assert.Equal(t, 0, list.Total)
+		})
+	}
+}
+
+// The four confirmed priorities must still succeed after adding the validation above --
+// TestCreateTicket_StampsSLATargetHoursForEveryPriority already covers this directly, but this
+// makes the "valid priorities are unaffected" half of the fix explicit and named as such.
+func TestCreateTicket_ValidPrioritiesStillSucceed(t *testing.T) {
+	for _, priority := range []string{"Critical", "High", "Medium", "Low"} {
+		t.Run(priority, func(t *testing.T) {
+			ticketSvc, employeeID, assetID := seedTicketDeps(t)
+
+			ticket, err := ticketSvc.CreateTicket(model.CreateTicketRequest{
+				RequesterID: employeeID,
+				AssetID:     assetID,
+				Category:    "Hardware Fault & Repair",
+				Priority:    priority,
+				Title:       "Still valid after the priority-validation fix",
+			})
+
+			assert.NoError(t, err)
+			assert.Equal(t, priority, ticket.Priority)
+			assert.Greater(t, ticket.SLATargetHours, 0)
+		})
+	}
 }

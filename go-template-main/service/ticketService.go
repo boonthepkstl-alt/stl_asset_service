@@ -14,6 +14,12 @@ import (
 var (
 	ErrTicketNotFound     = errors.New("ticket not found")
 	ErrTechnicianNotFound = errors.New("technician not found")
+	// ErrInvalidPriority guards the slaHours lookup below (finding from the 2026-09-09 code
+	// review): Priority used to be looked up with no validation at all, so an empty, wrong-case,
+	// or otherwise unrecognized value silently produced SLATargetHours: 0 via Go's map
+	// zero-value and the ticket still saved with 201. Validating against the confirmed set does
+	// not change PRD §16 RQ53's four values or any of them -- it only rejects everything else.
+	ErrInvalidPriority = errors.New("invalid priority")
 )
 
 // slaHours mirrors frontend/src/services/ticket-service.ts's SLA_HOURS map exactly.
@@ -88,13 +94,31 @@ func (s *ticketService) CreateTicket(input model.CreateTicketRequest) (model.Tic
 	log := logger.GetLogger()
 	log.Infof("CreateTicket - input: %+v", input)
 
+	// Validated first, before either lookup: a malformed Priority is a client input error
+	// regardless of whether RequesterID/AssetID happen to resolve, and failing fast here means
+	// the two lookups below never run against input that's going to be rejected anyway.
+	if _, ok := slaHours[input.Priority]; !ok {
+		return model.TicketModel{}, fmt.Errorf("%w: %q", ErrInvalidPriority, input.Priority)
+	}
+
 	requester, err := s.employeeService.GetEmployee(input.RequesterID)
 	if err != nil {
-		return model.TicketModel{}, fmt.Errorf("employee %s not found", input.RequesterID)
+		// Preserve the underlying cause rather than replacing it: ErrEmployeeNotFound is a
+		// client input error (400), but GetEmployee/GetByID can also surface a genuine
+		// repository/DB error, which must not be reported as if the client's input were at
+		// fault (finding from the 2026-09-09 code review -- both used to collapse to the same
+		// generic message, indistinguishable to the controller).
+		if errors.Is(err, ErrEmployeeNotFound) {
+			return model.TicketModel{}, fmt.Errorf("employee %s not found: %w", input.RequesterID, err)
+		}
+		return model.TicketModel{}, err
 	}
 	asset, err := s.assetService.GetAsset(input.AssetID)
 	if err != nil {
-		return model.TicketModel{}, fmt.Errorf("asset %s not found", input.AssetID)
+		if errors.Is(err, ErrAssetNotFound) {
+			return model.TicketModel{}, fmt.Errorf("asset %s not found: %w", input.AssetID, err)
+		}
+		return model.TicketModel{}, err
 	}
 
 	_, total, err := s.repo.List(model.TicketListQuery{})

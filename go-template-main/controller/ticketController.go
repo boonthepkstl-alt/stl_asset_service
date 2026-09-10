@@ -131,7 +131,17 @@ func (obj *ticketController) CreateTicket(c *fiber.Ctx) error {
 	created, err := obj.ticketService.CreateTicket(input)
 	if err != nil {
 		log.Errorf("CreateTicket service error: %v", err)
-		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"message": "Failed to create ticket"})
+		// Discriminate expected client-input errors (bad/unknown Priority, an RequesterID/AssetID
+		// that doesn't resolve to a real record) from everything else, mirroring updateTicket's
+		// own pattern below for the other three ticket endpoints. Before this, every error here
+		// -- including a genuine repository/DB failure from s.repo.Create -- collapsed to the
+		// same 400, indistinguishable to the caller and to any 5xx-rate-based monitoring.
+		if errors.Is(err, service.ErrEmployeeNotFound) || errors.Is(err, service.ErrAssetNotFound) || errors.Is(err, service.ErrInvalidPriority) {
+			return c.Status(http.StatusBadRequest).JSON(fiber.Map{"message": "Failed to create ticket", "error": err.Error()})
+		}
+		// Unrecognized cause (e.g. a repository/DB error): a genuine server-side failure, and
+		// per this codebase's F-19 convention the raw error text must not reach the response body.
+		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{"message": "Failed to create ticket"})
 	}
 	obj.recordAudit(c, "Ticket created", created.ID)
 	return c.Status(http.StatusCreated).JSON(created)

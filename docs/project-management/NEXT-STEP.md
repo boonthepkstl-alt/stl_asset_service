@@ -52,6 +52,16 @@ Overwritten in place each time the protocol is re-run.
 > by the merge, not by re-argument. **Gap 27 is now the only open item needing neither a
 > business decision nor a build.** `CHECKPOINT-2026-09-09-004` carries the post-merge
 > validation. **F-03 is still BLOCKED and still the only outstanding business input.**
+>
+> **[LATEST, 2026-09-10.]** **`PR #127` is MERGED** (`1da449f`), resolving **Finding 4**
+> (the `docker-compose.yml`/`.env.example` conflicting-default-claims item from the
+> 2026-09-09 code review — never a numbered `F-NN`, closed out directly). Comment-only;
+> no runtime, no compose config, no environment-variable semantics changed. **Finding 5
+> stays deferred.** A stakeholder decision request for **F-03** and **F-55** was prepared
+> and sent 2026-09-10, but **no answer has been received in this session** — both remain
+> exactly as blocked as before. **F-03 is still the only item that would move a
+> Compliance Review verdict**, and **Gap 21**/**F-52**'s remaining half stay blocked on
+> it, unchanged by this merge.
 
 **Derived from** a direct read of `main` at `39bb2b0`: PRD **v0.20**, Design **v0.18**,
 Prototype **v0.18**, AC **v0.17**, Test Plan **v0.17**, Test Cases **v0.27**, Traceability

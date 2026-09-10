@@ -4912,6 +4912,38 @@ Evidence came from the **browser's own network log**, not `curl`: four `POST htt
 
 ---
 
+## CHECKPOINT-2026-09-10-002
+
+**Phase:** Infra / DX (developer experience) 
+**Feature:** Local dev environment configuration (`docker-compose.yml`, `frontend/.env.example`) 
+**Task:** Merge **PR #127**; close out **Finding 4** (docker-compose/.env.example conflicting default claims).
+
+**Requirement traced:** none directly — this is a developer-experience clarity fix, not a change to any `RAISE-FR-*`/`RAISE-NFR-*` requirement. Recorded here because it is real merged work, following this project's own recent practice of logging every merged PR regardless of whether it advances a tracked requirement.
+
+**What Finding 4 was, and why it has no `F-NN` row.** Found during the 2026-09-09 code review of the SLA work: `docker-compose.yml`'s build-args comment states `true` as *"Default ... for this stack"* for the `VITE_*_API_ENABLED` flags; `frontend/.env.example`'s comment states `false` as *"the default"* for the same flag names. **Both are correct for their own context** — the composed Docker stack runs a real backend and Postgres, so `true` is right there; plain local `npm run dev`/`npm test` runs neither, so `false` is right there — but **neither file said so**, and a developer reading only one of them sees an unqualified, and therefore misleading, claim. Unlike F-56 (opened the same review, same day), this was **reported only in that review's own output**, never promoted to a numbered finding in `OPEN-FINDINGS.md`. Per this session's explicit instruction on this task, no `F-NN` row is invented after the fact to give it one — it is closed out directly, in `DEVELOPMENT-LOG.md` and here, the same way any merged PR is recorded.
+
+**The fix, pre-merge.** One comment added in each file: `docker-compose.yml`'s explains that `.env.example`'s `false` default is correct for a different, unstated context and points to that file's matching note; `.env.example`'s does the mirror image. **Comment-only** — verified via `git diff -U0` before commit that every added line in both files begins with `#`, so no non-comment line was touched in either file.
+
+**Pre-merge validation:** `docker compose config -q` clean, a direct `yaml.safe_load` clean, `.env.example` confirmed still holding only placeholder values (`localhost`, `false`, `development` — no real secret introduced), `git diff --check` clean (no whitespace errors), line endings confirmed unchanged (CRLF in both files, matching their pre-existing state — `.gitattributes` pins only `*.go` to `eol=lf`, neither of these files is covered by that rule). CI green on both jobs (Backend 37s, Frontend 1m25s) before merge.
+
+**Merged as `1da449f`** (squash, branch `docs/finding4-compose-env-cross-reference` deleted).
+
+**Post-merge verification on `main`, run rather than inferred from CI:** `docker compose config -q` re-run clean; both comments confirmed present (`grep` for the shared phrase *"Finding 4, code review 2026-09-09"*, one hit per file); every runtime default value confirmed byte-identical to pre-merge (`.env.example`'s four `VITE_*_API_ENABLED` flags all still `false`; `docker-compose.yml`'s seven still all `:-true`) — this PR changed zero behavior, and the verification confirms that claim rather than assuming it from a clean diff alone.
+
+**Files changed:** `docker-compose.yml` (+7 lines, comment only), `frontend/.env.example` (+6 lines, comment only), plus the project-management documents this close-out touches. **Zero product code, zero test code, zero runtime configuration.**
+
+**Status:** ✅ Complete for its confirmed scope.
+
+**Known Issues:** none newly introduced. **Finding 5** (the SLA contract-test regex's fragility on a hypothetical future edit to the frontend `SLA_HOURS` declaration) remains deliberately deferred, low priority, not started. **F-55 stays `OPEN — BLOCKED on a business decision`** (requester resolution, partly downstream of F-08). **F-03 remains BLOCKED**: a decision-request draft covering both F-03 and F-55 was prepared and sent to the stakeholder 2026-09-10, but **no answer has been received in this session** — the per-Asset-Type useful-life values are still not supplied, and nothing here invents or infers them. **Gap 21** and **F-52**'s remaining half stay blocked on F-03, unaffected by this merge.
+
+**Remaining Work:** Finding 5, whenever prioritized; F-03 and F-55, whenever the business decisions land.
+
+**Next Step:** **nothing on this board is unblocked engineering work right now.** Finding 5 is deferred by choice, not by dependency. **F-03 and F-55 both wait on the stakeholder's response to the decision request already sent** — F-03 remains the one item that would move a Compliance Review verdict.
+
+**What this checkpoint adds to the pattern.** A small one: **an untracked review finding still gets a real close-out**, in the same documents and with the same rigor (pre-merge diff scoped to comments only, post-merge values re-verified byte-identical) as a numbered `F-NN` would get — the absence of a register row is not a reason to skip verification, and is not, on its own, a reason to manufacture one after the fact either.
+
+---
+
 ## Level 2 — Feature Checkpoints
 
 ### FEATURE-CHECKPOINT-project-tracking-governance

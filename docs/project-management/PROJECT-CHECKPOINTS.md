@@ -4878,6 +4878,40 @@ Evidence came from the **browser's own network log**, not `curl`: four `POST htt
 
 ---
 
+## CHECKPOINT-2026-09-10-001
+
+**Phase:** Phase 5B — Maintenance / Ticket domain, plus Asset domain
+**Feature:** Two findings from the 2026-09-09 code review, both fixed, reviewed, and merged: **F-56** (Asset Detail) and **Findings 2+3** (ticket create validation and error classification).
+**Task:** Merge **PR #125** and **PR #126**; verify `main`; mark **F-56 Resolved**.
+
+**Requirement traced:** `RAISE-FR-ASSET-001` (Asset Detail's assignee link, untouched otherwise) and `RAISE-FR-MAINT-001` (`CreateTicket`, whose full `PASS` is unaffected — both fixes are defensive/correctness hardening, not a behaviour the acceptance criteria assert).
+
+**Why two PRs instead of one, restated because it shaped everything below:** the two findings are unrelated in domain (Asset Detail vs. Ticket creation) and in root cause, so they were kept as separate branches/PRs per this project's one-branch-per-change convention, even though both came out of the same review pass.
+
+**PR #125 → `c3bac79`, resolves F-56.** `AssetDetail/index.tsx:313`'s assignee link fell back to the literal `'e1'` whenever `assignedEmployeeId` was missing, gated only on `assignedTo`'s truthiness — the same hardcoded-fixture-id pattern as **F-55**, in a second location F-55's own investigation hadn't covered. **Reachable today, not merely hypothetical:** fixture `a9` (Conference Room A) has `assignedTo` set, `assignedEmployeeId: null` — clicking its link navigated to Sarah Chen's real profile. **Unlike F-55, no business decision was needed:** there is no "who is the requester" question, only "do not guess an id." Fix: link only when `assignedEmployeeId` is present, plain text otherwise. Two new tests (`a9` no-link/no-navigation; `a1` still-links) both pass.
+
+**PR #126 → `265c152`, Findings 2+3.** **Finding 2:** `CreateTicket` stamped `SLATargetHours: slaHours[input.Priority]` with zero validation — any value outside the four confirmed priorities silently zeroed the SLA target and the ticket still saved with 201. Now rejected before either lookup runs, via a new `ErrInvalidPriority` sentinel; the confirmed four (`2/8/24/48`) are untouched. **Finding 3:** the controller collapsed every error — not-found **and** genuine repository/DB failures alike — into the same blanket 400. Now discriminates exactly like `updateTicket` already does for the other three ticket endpoints: `ErrEmployeeNotFound`/`ErrAssetNotFound`/`ErrInvalidPriority` → 400, anything else → 500, with no raw error text in the 5xx body. **A quiet but real defect this fix corrects along the way:** the two not-found sentinels already existed in `employeeService.go`/`assetService.go`, but `ticketService.go`'s `CreateTicket` was discarding them and constructing a fresh, unsentineled error in their place — the fix preserves the original via `errors.Is` before re-wrapping it, so the sentinel now survives to the controller.
+
+**One process defect caught and fixed before it shipped, worth recording precisely because it is the same class of mistake this project has corrected in itself before:** the new `controller/ticketController_test.go`, written 2026-09-09, failed `gofmt` when checked the right way (**R-34** — over LF-stripped content, not the CRLF working tree, which flags every file regardless). Caught during this session's own pre-commit validation, not by CI, and fixed by running `gofmt` on the file directly before committing. Confirmed clean by R-34 on merged `main` afterward.
+
+**Post-merge validation on `main`, run rather than inferred from CI:** `go build`/`vet` clean, `gofmt` clean over LF content (R-34), `go test -count=1 ./...` clean across `controller`/`middleware`/`service`; `TestSLAHoursMatchesFrontendContract` and `TestCreateTicket_StampsSLATargetHoursForEveryPriority` re-verified passing; frontend `tsc` **0**, ESLint **0 warnings**, **54 files / 288 tests** (was 286, +2 from F-56's tests).
+
+**F-56: OPENED and RESOLVED in the same session, deliberately not the same step.** Opened 2026-09-09 when found; fix committed same day; **PR #125 merged 2026-09-10 (`c3bac79`)**, and only then marked Resolved, citing the merge commit rather than the branch commit `6b43b25` — the same principle this project applied to **Gap 26(a)** two revisions ago: a finding tied to code that is not yet on `main` is not closed by that code. **The intermediate "FIX COMMITTED / PR OPEN / CI GREEN — PENDING MERGE" status, recorded explicitly rather than skipped, is what made this merge's Resolved marking a fact rather than a formality** — a reader following the register between 2026-09-09 and today saw exactly where the fix stood at every point.
+
+**Files changed:** `docs/project-management/OPEN-FINDINGS.md` (F-56 → RESOLVED), this document, `DEVELOPMENT-LOG.md` (two new rows). **Zero product code, zero test code** — both already merged in PR #125/#126; this checkpoint records the merge and verification, not new work.
+
+**Status:** ✅ Complete for its confirmed scope.
+
+**Known Issues:** none newly introduced. Finding 4 (`docker-compose.yml`/`.env.example` default-claim conflict) and Finding 5 (contract-test regex fragility on a hypothetical future edit) remain from the same review, deliberately deferred — neither was in this session's scope. **F-55 OPEN — BLOCKED on a business decision** (requester resolution). **F-03 BLOCKED** (per-Asset-Type useful-life values) — still the only item that would move a Compliance Review verdict. **Gap 21** and **F-52**'s remaining half stay blocked on F-03. Eight test tickets (`ITR-2026-001`…`008`) remain in the dev database from earlier sessions' Gap 26/27 executions.
+
+**Remaining Work:** Finding 4/5, whenever prioritized; F-55 and F-03, whenever the business decisions land.
+
+**Next Step:** **nothing on this board is unblocked work right now** — every remaining item is either a deferred low-priority cleanup (Finding 4/5) or waits on a stakeholder decision (F-55, F-03). **F-03 remains the one item that would move a Compliance Review verdict**, and is not guessed at here.
+
+**What this checkpoint adds to the pattern.** Nothing new, and that is itself worth noting: this is the first checkpoint in several revisions whose entire content is "two already-reviewed fixes landed cleanly, and the process defect found along the way (a bad gofmt check) was caught before commit rather than after." No overstatement to correct, no heading to fix, no contingency left dangling. **The habit worth keeping is the same one every recent checkpoint has kept: closure follows fact, and the intermediate states between "found" and "resolved" are worth writing down, not just the two endpoints.**
+
+---
+
 ## Level 2 — Feature Checkpoints
 
 ### FEATURE-CHECKPOINT-project-tracking-governance

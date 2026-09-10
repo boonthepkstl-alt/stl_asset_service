@@ -26,6 +26,15 @@ Overwritten in place each time the protocol is re-run.
 > `CHECKPOINT-2026-09-09-003` carry the full record. **F-03 is unchanged and still the
 > only outstanding business input.**
 >
+> **[LATEST, 2026-09-10.]** Both PRs from the 2026-09-09 code review are merged: **PR #125**
+> (`c3bac79`, F-56 → **RESOLVED**) and **PR #126** (`265c152`, Findings 2+3 — `Priority`
+> validation and `CreateTicket` error classification). Verified on merged `main`: `tsc` 0,
+> ESLint 0, **54 files / 288 tests**, backend `go build`/`vet`/`test -count=1` clean, SLA
+> contract test still passing, `2/8/24/48` unchanged. `CHECKPOINT-2026-09-10-001` has the
+> full record. **Nothing on the board is unblocked work right now** — Finding 4/5 stay
+> deliberately deferred (low priority), and **F-55**/**F-03** both wait on a business
+> decision. **F-03 is still the only item that would move a Compliance Review verdict.**
+>
 > **[LATEST, 2026-09-09 — this run's recommendation is now fully discharged.]**
 > **Gap 27 is CLOSED** (Matrix **v2.14**, Test Cases **v0.34**): the frontend's own
 > real-API branch was driven through a browser, all four priorities, `ITR-2026-005`…`008`.

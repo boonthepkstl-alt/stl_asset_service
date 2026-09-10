@@ -9,7 +9,43 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-09-09, at `40c85be`. Suite **54 test files / 286 tests** frontend,
+**As of:** 2026-09-10, at `265c152` (**PR #125** and **PR #126** merged). Suite **54 test
+files / 288 tests** frontend (was 286), **7 backend subtests** covering the SLA figures.
+Test Cases **v0.34**, Matrix **v2.14**; PRD **v0.21**, Design **v0.19**, Prototype
+**v0.20**, AC **v0.19**, Test Plan **v0.20**.
+
+**F-56 is RESOLVED** (`c3bac79`) — the Asset Detail assignee link no longer falls
+back to the hardcoded fixture id `'e1'` when `assignedEmployeeId` is missing. Found
+2026-09-09 during a code review of the SLA work, as a second instance of **F-55**'s own
+hardcoded-fixture-id pattern; unlike F-55, needed no business decision — the fix is
+only "do not guess an id," so `assignedTo`'s own display and business meaning are
+unchanged. Opened and Resolved in the same session, deliberately not the same step:
+recorded as **`FIX COMMITTED / PR OPEN / CI GREEN — PENDING MERGE`** while the PR
+was open, then Resolved only once merged — the same principle already applied to
+**Gap 26(a)**, that a finding is not closed by code that is not yet on `main`.
+
+**Two more findings from the same review are also fixed** (`265c152`), unrelated in
+domain and kept as a separate PR per this project's one-branch-per-change convention.
+**`CreateTicket` now validates `Priority`** against the four confirmed values (PRD §16
+RQ53) before either the employee or asset lookup runs — previously an empty,
+wrong-case, or unrecognized value silently produced `SLATargetHours: 0` via Go's map
+zero-value, with no error, and the ticket still saved with 201. **Does not change or add
+to the confirmed set** — `2/8/24/48` are untouched, only what was never one of them
+is now rejected. **`CreateTicket`'s errors are now classified correctly**: not-found and
+invalid-priority errors return 400, and a genuine repository/DB failure returns 500 with
+no raw error text in the body — previously every cause collapsed into the same 400,
+indistinguishable to the caller and to 5xx-based monitoring.
+
+**Nothing on the board is unblocked work right now.** Finding 4
+(`docker-compose.yml`/`.env.example` conflicting default claims) and Finding 5
+(contract-test regex fragility on a hypothetical future edit) remain deliberately
+deferred, low priority. **F-55** stays `OPEN — BLOCKED on a business decision`
+(requester resolution). **F-03 remains BLOCKED and is still the only item that would
+move a Compliance Review verdict** — the per-Asset-Type useful-life values, still not
+supplied, still not guessed at. **Gap 21** and **F-52**'s remaining half stay blocked on
+it.
+
+Earlier the same week, at `40c85be`. Suite **54 test files / 286 tests** frontend,
 **7 backend subtests** covering the SLA figures. Test Cases **v0.34**, Matrix **v2.14**;
 PRD **v0.21**, Design **v0.19**, Prototype **v0.20**, AC **v0.19**, Test Plan **v0.20**.
 

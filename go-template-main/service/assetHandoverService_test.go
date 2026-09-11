@@ -1,7 +1,9 @@
 package service
 
 import (
+	"fmt"
 	"singer/go-template-new-2026-06/model"
+	"sort"
 	"strings"
 	"testing"
 
@@ -43,12 +45,42 @@ func (m *mockAssetHandoverRepository) Update(id string, handover model.AssetHand
 	return true, nil
 }
 
+// List applies the same pagination semantics as assetHandoverPGRepository.List / the real
+// asset_handovers SQL (ORDER BY handover_code DESC, then LIMIT/OFFSET), so service-level tests
+// can exercise real page/limit behavior without a live Postgres connection (there is no
+// repository-level test harness for any PG repository in this codebase -- this mock is the
+// closest thing to one). Filters (Search/Status/RecipientEmployeeID) are unaffected by this
+// change and remain unapplied here, matching this mock's existing (pre-pagination-hardening)
+// fidelity level -- a pre-existing gap, not introduced or fixed by this change.
 func (m *mockAssetHandoverRepository) List(query model.AssetHandoverListQuery) ([]model.AssetHandoverModel, int, error) {
 	items := make([]model.AssetHandoverModel, 0, len(m.handovers))
 	for _, h := range m.handovers {
 		items = append(items, h)
 	}
-	return items, len(items), nil
+	sort.Slice(items, func(i, j int) bool { return items[i].HandoverCode > items[j].HandoverCode })
+
+	total := len(items)
+	limit := query.Limit
+	if limit <= 0 {
+		limit = total
+		if limit <= 0 {
+			limit = 1
+		}
+	}
+	page := query.Page
+	if page <= 0 {
+		page = 1
+	}
+	offset := (page - 1) * limit
+
+	if offset >= len(items) {
+		return []model.AssetHandoverModel{}, total, nil
+	}
+	end := offset + limit
+	if end > len(items) {
+		end = len(items)
+	}
+	return items[offset:end], total, nil
 }
 
 func (m *mockAssetHandoverRepository) HasActiveForAsset(assetID string) (bool, error) {
@@ -324,4 +356,131 @@ func TestGetHandover_UnknownCodeReturnsNotFound(t *testing.T) {
 	_, err := handoverSvc.GetHandover("does-not-exist")
 
 	assert.ErrorIs(t, err, ErrHandoverNotFound)
+}
+
+// seedHandoversForPagination seeds n handovers directly into the mock repo (bypassing
+// InitiateHandover, which needs an IT Hardware asset and enforces one-active-handover-per-asset)
+// with HandoverCode "AHO-01".."AHO-0n" so ordering (ORDER BY handover_code DESC, matching the
+// real SQL) is deterministic and known ahead of time.
+func seedHandoversForPagination(t *testing.T, repo *mockAssetHandoverRepository, n int) {
+	t.Helper()
+	for i := 1; i <= n; i++ {
+		code := fmt.Sprintf("AHO-%02d", i)
+		repo.handovers[code] = model.AssetHandoverModel{ID: code, HandoverCode: code}
+	}
+}
+
+func handoverCodesOf(items []model.AssetHandoverModel) []string {
+	codes := make([]string, len(items))
+	for i, h := range items {
+		codes[i] = h.HandoverCode
+	}
+	return codes
+}
+
+// Pagination hardening (2026-09-11). Same eight scenarios as TestListEmployees_Pagination /
+// TestListTickets_Pagination; AHO-05 sorts first because the real SQL orders
+// handover_code DESC.
+func TestListAssetHandovers_Pagination(t *testing.T) {
+	newSvc := func(repo *mockAssetHandoverRepository) AssetHandoverService {
+		return NewAssetHandoverService(repo, NewAssetService(newMockAssetRepository()))
+	}
+
+	t.Run("default (no page/limit) returns everything, preserving pre-hardening behavior", func(t *testing.T) {
+		repo := newMockAssetHandoverRepository()
+		seedHandoversForPagination(t, repo, 5)
+		svc := newSvc(repo)
+
+		resp, err := svc.ListHandovers(model.AssetHandoverListQuery{})
+
+		assert.NoError(t, err)
+		assert.Equal(t, 5, resp.Total)
+		assert.Equal(t, []string{"AHO-05", "AHO-04", "AHO-03", "AHO-02", "AHO-01"}, handoverCodesOf(resp.Data))
+	})
+
+	t.Run("explicit limit narrows the page without changing total", func(t *testing.T) {
+		repo := newMockAssetHandoverRepository()
+		seedHandoversForPagination(t, repo, 5)
+		svc := newSvc(repo)
+
+		resp, err := svc.ListHandovers(model.AssetHandoverListQuery{Limit: 2})
+
+		assert.NoError(t, err)
+		assert.Equal(t, 5, resp.Total, "total reflects the full matching set, not just this page")
+		assert.Equal(t, []string{"AHO-05", "AHO-04"}, handoverCodesOf(resp.Data))
+	})
+
+	t.Run("explicit page advances the offset", func(t *testing.T) {
+		repo := newMockAssetHandoverRepository()
+		seedHandoversForPagination(t, repo, 5)
+		svc := newSvc(repo)
+
+		resp, err := svc.ListHandovers(model.AssetHandoverListQuery{Limit: 2, Page: 2})
+
+		assert.NoError(t, err)
+		assert.Equal(t, 5, resp.Total)
+		assert.Equal(t, []string{"AHO-03", "AHO-02"}, handoverCodesOf(resp.Data))
+	})
+
+	t.Run("boundary: last page may be a partial page", func(t *testing.T) {
+		repo := newMockAssetHandoverRepository()
+		seedHandoversForPagination(t, repo, 5)
+		svc := newSvc(repo)
+
+		resp, err := svc.ListHandovers(model.AssetHandoverListQuery{Limit: 2, Page: 3})
+
+		assert.NoError(t, err)
+		assert.Equal(t, 5, resp.Total)
+		assert.Equal(t, []string{"AHO-01"}, handoverCodesOf(resp.Data))
+	})
+
+	t.Run("boundary: a page entirely past the end returns an empty page, not an error", func(t *testing.T) {
+		repo := newMockAssetHandoverRepository()
+		seedHandoversForPagination(t, repo, 5)
+		svc := newSvc(repo)
+
+		resp, err := svc.ListHandovers(model.AssetHandoverListQuery{Limit: 2, Page: 10})
+
+		assert.NoError(t, err)
+		assert.Equal(t, 5, resp.Total, "total is unaffected by requesting a page past the end")
+		assert.Empty(t, resp.Data)
+	})
+
+	t.Run("empty result: no handovers at all, with pagination params supplied", func(t *testing.T) {
+		svc := newSvc(newMockAssetHandoverRepository())
+
+		resp, err := svc.ListHandovers(model.AssetHandoverListQuery{Limit: 10, Page: 1})
+
+		assert.NoError(t, err)
+		assert.Equal(t, 0, resp.Total)
+		assert.Empty(t, resp.Data)
+	})
+
+	t.Run("filter query params alongside pagination params do not break the pagination math", func(t *testing.T) {
+		// This mock does not apply Search/Status/RecipientEmployeeID filtering (a pre-existing
+		// gap unrelated to and not fixed by this change -- only the real PG query filters), so
+		// this asserts pagination still behaves correctly when filter fields are also set, not
+		// that filtering itself works here.
+		repo := newMockAssetHandoverRepository()
+		seedHandoversForPagination(t, repo, 5)
+		svc := newSvc(repo)
+
+		resp, err := svc.ListHandovers(model.AssetHandoverListQuery{Status: "PENDING_IT_PROCESSING", Limit: 2, Page: 2})
+
+		assert.NoError(t, err)
+		assert.Equal(t, []string{"AHO-03", "AHO-02"}, handoverCodesOf(resp.Data))
+	})
+
+	t.Run("ordering is deterministic across repeated calls with identical params", func(t *testing.T) {
+		repo := newMockAssetHandoverRepository()
+		seedHandoversForPagination(t, repo, 5)
+		svc := newSvc(repo)
+
+		first, err := svc.ListHandovers(model.AssetHandoverListQuery{Limit: 3})
+		assert.NoError(t, err)
+		second, err := svc.ListHandovers(model.AssetHandoverListQuery{Limit: 3})
+		assert.NoError(t, err)
+
+		assert.Equal(t, handoverCodesOf(first.Data), handoverCodesOf(second.Data))
+	})
 }

@@ -28,11 +28,16 @@ type EmployeeModel struct {
 }
 
 // EmployeeListQuery mirrors the frontend's EmployeeListQuery (frontend/src/types/employee.ts).
+// Page/Limit added for pagination hardening (2026-09-11): the list SQL below had no LIMIT/
+// OFFSET at all, unlike AssetListQuery/AuditListQuery's already-paginated pattern, which these
+// two fields and the repository logic below now mirror exactly.
 type EmployeeListQuery struct {
 	Search     string `query:"search"`
 	Department string `query:"department"`
 	Location   string `query:"location"`
 	Status     string `query:"status"`
+	Page       int    `query:"page"`
+	Limit      int    `query:"limit"`
 }
 
 // EmployeeListResponse mirrors the frontend's EmployeeListResult shape ({data, total}), same
@@ -81,4 +86,4 @@ var SQL_employee_pg_delete = `DELETE FROM employees WHERE id = $1`
 
 var SQL_employee_pg_count_base = `SELECT COUNT(*) FROM employees WHERE ($1 = '' OR name ILIKE '%' || $1 || '%' OR job_title ILIKE '%' || $1 || '%' OR email ILIKE '%' || $1 || '%' OR department ILIKE '%' || $1 || '%' OR employee_code ILIKE '%' || $1 || '%') AND ($2 = '' OR department = $2) AND ($3 = '' OR location = $3) AND ($4 = '' OR status = $4)`
 
-var SQL_employee_pg_list_base = `SELECT id, employee_code, name, email, phone, job_title, title, department, department_id, location, desk_location, manager, manager_id, status, avatar_color, initials, start_date, workstation_type, primary_os, assigned_count FROM employees WHERE ($1 = '' OR name ILIKE '%' || $1 || '%' OR job_title ILIKE '%' || $1 || '%' OR email ILIKE '%' || $1 || '%' OR department ILIKE '%' || $1 || '%' OR employee_code ILIKE '%' || $1 || '%') AND ($2 = '' OR department = $2) AND ($3 = '' OR location = $3) AND ($4 = '' OR status = $4) ORDER BY employee_code`
+var SQL_employee_pg_list_base = `SELECT id, employee_code, name, email, phone, job_title, title, department, department_id, location, desk_location, manager, manager_id, status, avatar_color, initials, start_date, workstation_type, primary_os, assigned_count FROM employees WHERE ($1 = '' OR name ILIKE '%' || $1 || '%' OR job_title ILIKE '%' || $1 || '%' OR email ILIKE '%' || $1 || '%' OR department ILIKE '%' || $1 || '%' OR employee_code ILIKE '%' || $1 || '%') AND ($2 = '' OR department = $2) AND ($3 = '' OR location = $3) AND ($4 = '' OR status = $4) ORDER BY employee_code LIMIT $5 OFFSET $6`

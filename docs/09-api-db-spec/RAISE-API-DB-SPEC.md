@@ -223,7 +223,137 @@ create/update endpoint exists (read-only, matching the frontend mock).
 
 ---
 
-## 5. Template demo domain (not RAISE) and planned-but-not-built
+## 5. Audit Log (`RAISE-FR-AUDIT-001`)
+
+| Method | Path | Purpose |
+|---|---|---|
+| GET | `/audit-logs?entityType=&entityId=&page=&limit=` | List/filter |
+
+`AuditController` deliberately exposes only this one route (AC-AUDIT-001-03:
+authorized users can view audit information) — there is no create/update/
+delete route. Recording happens as a side effect of other domains' mutations
+(e.g. `assetController.go`, `assetHandoverController.go`), not through a
+route a client could call directly. This also makes the log immutable by
+omission (AC-AUDIT-001-02) — no UPDATE/DELETE exists anywhere in the code
+against `audit_logs`.
+
+**AuditLogModel** (wire shape, `model/auditModel.go`):
+```
+id, actor, action, entityType, entityId, createdAt
+```
+Note: the table has a `doc jsonb` column (see below) but the list query's
+SELECT list excludes it — `doc` is stored but not returned on this endpoint.
+
+No role gate beyond `JWTAuth`: the "audit-review access" role model is
+undefined (PRD §16 Open Question 22), same MVP RBAC posture as every other
+domain in this document (`RAISE-NFR-SEC-RBAC-001`, PRD §16 Resolved Question
+38 — client-side/UI-only enforcement for MVP).
+
+### Table `audit_logs` (`sql/pg/V4__Audit_Table.sql`)
+```sql
+CREATE TABLE audit_logs (
+    id varchar(64) NOT NULL,
+    actor varchar(200) NOT NULL,
+    action varchar(200) NOT NULL,
+    entity_type varchar(50) NOT NULL,
+    entity_id varchar(64) NOT NULL,
+    created_at timestamptz NOT NULL DEFAULT now(),
+    doc jsonb NOT NULL,
+    CONSTRAINT audit_logs_pk PRIMARY KEY (id)
+);
+-- indexes: (entity_type, entity_id), created_at DESC
+```
+
+---
+
+## 6. Asset Handovers (`RAISE-FR-OPS-002`)
+
+IT Hardware Assignment Approval Workflow (PRD §16 Resolved Question 43,
+narrowing Resolved Question 42) — a category-scoped exception: assigning an
+IT Hardware asset creates one of these records instead of immediately
+flipping the asset's status to `Assigned`. `POST /assets/:id/assign` (§2)
+rejects IT Hardware with `409`, directing the caller here instead.
+
+| Method | Path | Purpose |
+|---|---|---|
+| GET | `/handovers?search=&status=&recipientEmployeeId=&page=&limit=` | List/filter |
+| GET | `/handovers/:code` | Get one (by `handoverCode`) |
+| POST | `/assets/:id/handover` | Stage 1 — Initiate |
+| POST | `/handovers/:code/confirm` | Stage 2 — Recipient confirms receipt |
+| POST | `/handovers/:code/process` | Stage 3 — IT processing |
+| POST | `/handovers/:code/decision` | Stage 4 — IT supervisor approve/reject |
+
+**State model** (`model/assetHandoverModel.go`):
+```
+PENDING_RECIPIENT_CONFIRMATION -> PENDING_IT_PROCESSING ->
+PENDING_IT_SUPERVISOR_APPROVAL -> ASSIGNED
+```
+`-> REJECTED` is a terminal branch, reachable only from Stage 3 or Stage 4
+(via the decision endpoint's `REJECT` outcome). There is no recipient-decline
+path at Stage 2.
+
+**AssetHandoverModel** (wire shape):
+```
+id, handoverCode, status, createdAt,
+asset{id, code, name, category, type},
+recipient{id, name, role?}, initiatedBy{id, name, role?}, initiatedAt,
+confirmedAt?, processedBy?{id, name, role?}, processedAt?,
+approvedBy?{id, name, role?}, approvedAt?,
+rejectedBy?{id, name, role?}, rejectedAt?, rejectionStage?, rejectionReason?,
+timeline[]
+```
+
+`POST /assets/:id/handover` body (`InitiateHandoverRequest`): `employeeId,
+employeeName`. Server generates `handoverCode = AHO-<year>-<seq>` and starts
+`status=PENDING_RECIPIENT_CONFIRMATION`. Guarded so only one active handover
+per asset exists at a time.
+
+`POST /handovers/:code/confirm` body (`ConfirmReceiptRequest`): `recipientId,
+recipientName`.
+
+`POST /handovers/:code/process` body (`ProcessHandoverRequest`): `actorId,
+actorName`.
+
+`POST /handovers/:code/decision` body (`HandoverDecisionRequest`): `decision
+('APPROVE'|'REJECT'), actorId, actorName, reason?`.
+
+**Error mapping** (`controller/assetHandoverController.go`'s
+`mapHandoverError`): handover/asset not found → `404`; invalid recipient →
+`400`; asset not IT Hardware, asset not available, handover already active,
+wrong stage, wrong recipient, or invalid decision → `409`; unexpected → `500`.
+
+No role gate beyond `JWTAuth` — same MVP RBAC posture as §5 and every other
+domain (`RAISE-NFR-SEC-RBAC-001`).
+
+Every mutating action records an audit entry (`entity_type="asset_handover"`)
+via the same audit mechanism described in §5.
+
+### Table `asset_handovers` (`sql/pg/V5__AssetHandovers_Table.sql`)
+```sql
+CREATE TABLE asset_handovers (
+    id varchar(64) NOT NULL,
+    handover_code varchar(50) NOT NULL,
+    asset_id varchar(64) NOT NULL,
+    asset_code varchar(100) NULL,
+    asset_name varchar(200) NULL,
+    recipient_employee_id varchar(64) NOT NULL,
+    recipient_name varchar(200) NULL,
+    status varchar(40) NOT NULL,
+    doc jsonb NOT NULL,
+    CONSTRAINT asset_handovers_pk PRIMARY KEY (id),
+    CONSTRAINT asset_handovers_code_uk UNIQUE (handover_code)
+);
+-- indexes: status, asset_id, recipient_employee_id
+```
+Same JSONB "document" storage pattern as `tickets` (§4): `doc` holds the
+full record; `asset_code`/`asset_name`/`recipient_name`/`status` are
+denormalized purely to support `List()`'s filters without parsing JSON.
+`asset_id`/`recipient_employee_id` are soft references — no FK constraint
+exists, same convention as `assets.assigned_employee_id` (§2).
+
+---
+
+## 7. Template demo domain (not RAISE) and planned-but-not-built
 
 - `GET/POST/PUT/DELETE /sample(s)*` and `GET /health` are the company Go
   template's own demo domain (`samplemodel` table, `V0__Initial_Table.sql`)
@@ -232,13 +362,13 @@ create/update endpoint exists (read-only, matching the frontend mock).
   extend this domain for RAISE features.
 - **Not yet built** (mock-only on the frontend, no endpoint exists):
   Warranty (beyond the `warrantyExpiry` field already on `assets`), QR/
-  Barcode, License, Alerts, Audit Log, Oracle FA Integration, Executive
-  Dashboard aggregation endpoints, Natural Language Search, Document
-  Intelligence, User/Role management. See
-  [`RAISE-PROJECT-TIMELINE.md`](../project-management/RAISE-PROJECT-TIMELINE.md)
+  Barcode, License, Alerts, Oracle FA Integration, Executive Dashboard
+  aggregation endpoints, Natural Language Search, Document Intelligence,
+  User/Role management. See
+  [`PROJECT-TIMELINE.md`](../project-management/PROJECT-TIMELINE.md)
   §3–§4 for which of these are buildable now vs. blocked on a PRD decision.
 
-## 6. Error Response Shape
+## 8. Error Response Shape
 
 Every endpoint above returns, on error:
 ```json

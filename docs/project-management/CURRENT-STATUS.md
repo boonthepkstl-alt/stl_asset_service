@@ -9,10 +9,28 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-09-10, at `646000e` (**PR #128** merged). Suite **54 test
-files / 288 tests** frontend, backend SLA coverage extended with new regression tests
-(Finding 5). Test Cases **v0.34**, Matrix **v2.14**; PRD **v0.21**, Design **v0.19**,
-Prototype **v0.20**, AC **v0.19**, Test Plan **v0.20**.
+**As of:** 2026-09-11, at `0e5bfbe` (**PR #131** merged, fast-forward). Suite **54 test
+files / 288 tests** frontend (unchanged this session — all three PRs below are
+backend/docs-only), backend `go build`/`vet`/`test` clean. Test Cases **v0.34**,
+Matrix **v2.14**; PRD **v0.21**, Design **v0.19**, Prototype **v0.20**, AC **v0.19**,
+Test Plan **v0.20**.
+
+**The 2026-09-10 database status review's three follow-ups are now all merged.**
+**P0 — PR #129** (`6b5e1f5`): `page`/`limit` pagination added to Employee, Ticket,
+and Asset Handover list/count queries — Assets already had it, the other three
+domains didn't. **P1 — PR #130** (`8271e4e`): 5 missing indexes added
+(`V6__Additional_Indexes.sql`) on exact-match filter columns found to have none
+(`tickets.priority`/`category`/`requester_name`, `employees.location`,
+`asset_handovers.recipient_employee_id`) — deliberately excludes ILIKE-matched
+free-text columns (would need `pg_trgm`) and any column no query filters on
+today. **P2 — PR #131** (`bea06ea`): `RAISE-API-DB-SPEC.md` corrected —
+**Audit Log** (`RAISE-FR-AUDIT-001`) was wrongly listed as "not yet built" when
+it is fully built; **Asset Handovers** (`RAISE-FR-OPS-002`, V5 migration) was
+entirely undocumented and now has its own section; a broken link to a
+nonexistent `RAISE-PROJECT-TIMELINE.md` was fixed to the real
+`PROJECT-TIMELINE.md`. All three are documentation/hardening only — **no
+business rule, migration semantics, or `OPEN-FINDINGS.md` entry changed**; F-16
+(manual migration tooling), F-03, and F-55 remain open exactly as before.
 
 **F-56 is RESOLVED** (`c3bac79`) — the Asset Detail assignee link no longer falls
 back to the hardcoded fixture id `'e1'` when `assignedEmployeeId` is missing. Found
@@ -1010,7 +1028,7 @@ paragraph, which is a summary of a summary and can drift.
 | [`RAISE-TEST-CASES.md`](../06-test-cases/RAISE-TEST-CASES.md) | 0.16 | 72 test cases; `TC-OPS-002-04..09` PASS, full-stack scope (backend PR #72 + frontend PR #74, both live-verified) — "backend/API-level scope only, no frontend UI yet" caveat removed 2026-09-03 (PR #75) |
 | [`RAISE-TRACEABILITY-MATRIX.md`](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md) | 1.8 | Gap 15 (IT Hardware handover approval) closed — `TC-OPS-002-04..09` PASS, full-stack scope recorded (PR #75, 2026-09-03) |
 | [`RAISE-HIGH-LEVEL-ARCHITECTURE.md`](../08-architecture/RAISE-HIGH-LEVEL-ARCHITECTURE.md) | — | As-built, not versioned against PRD chain |
-| [`RAISE-API-DB-SPEC.md`](../09-api-db-spec/RAISE-API-DB-SPEC.md) | — | As-built |
+| [`RAISE-API-DB-SPEC.md`](../09-api-db-spec/RAISE-API-DB-SPEC.md) | — | As-built. Corrected 2026-09-11 (PR #131): Audit Log section added (was wrongly listed "not yet built"), Asset Handovers section added (was entirely undocumented), broken `PROJECT-TIMELINE.md` link fixed |
 | [`RAISE-DETAILED-DESIGN.md`](../10-detailed-design/RAISE-DETAILED-DESIGN.md) | — | As-built |
 
 ## 3. Domain Build Status

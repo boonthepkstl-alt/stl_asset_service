@@ -77,8 +77,25 @@ func (r *ticketPGRepository) List(query model.TicketListQuery) ([]model.TicketMo
 		return nil, 0, err
 	}
 
+	// Pagination hardening (2026-09-11): mirrors AssetPGRepository.List/AuditPGRepository.List's
+	// limit/offset resolution exactly. limit<=0 means "no limit was requested" -- default to the
+	// full result set (total), preserving every existing caller's current unpaginated behavior.
+	// page<=0 defaults to page 1.
+	limit := query.Limit
+	if limit <= 0 {
+		limit = total
+		if limit <= 0 {
+			limit = 1
+		}
+	}
+	page := query.Page
+	if page <= 0 {
+		page = 1
+	}
+	offset := (page - 1) * limit
+
 	rows, err := rdb.DB.QueryContext(ctx, model.SQL_ticket_pg_list_base,
-		query.Status, query.Priority, query.Category, query.Department, query.RequesterName, query.Search,
+		query.Status, query.Priority, query.Category, query.Department, query.RequesterName, query.Search, limit, offset,
 	)
 	if err != nil {
 		log.Errorf("ticket PG list query: %v", err)

@@ -122,7 +122,10 @@ type ITTechnician struct {
 	CompletedThisMonth int    `json:"completedThisMonth"`
 }
 
-// TicketListQuery mirrors the frontend's TicketListQuery.
+// TicketListQuery mirrors the frontend's TicketListQuery. Page/Limit added for pagination
+// hardening (2026-09-11): the list SQL below had no LIMIT/OFFSET at all, unlike
+// AssetListQuery/AuditListQuery's already-paginated pattern, which these two fields and the
+// repository logic below now mirror exactly.
 type TicketListQuery struct {
 	Search        string `query:"search"`
 	Status        string `query:"status"`
@@ -130,6 +133,8 @@ type TicketListQuery struct {
 	Category      string `query:"category"`
 	Department    string `query:"department"`
 	RequesterName string `query:"requesterName"`
+	Page          int    `query:"page"`
+	Limit         int    `query:"limit"`
 }
 
 type TicketListResponse struct {
@@ -203,6 +208,6 @@ var SQL_ticket_pg_list_base = `SELECT doc FROM tickets WHERE
 	AND ($4 = '' OR department = $4)
 	AND ($5 = '' OR requester_name = $5)
 	AND ($6 = '' OR title ILIKE '%' || $6 || '%' OR ticket_code ILIKE '%' || $6 || '%' OR asset_name ILIKE '%' || $6 || '%' OR asset_code ILIKE '%' || $6 || '%' OR requester_name ILIKE '%' || $6 || '%' OR technician_name ILIKE '%' || $6 || '%')
-	ORDER BY ticket_code DESC`
+	ORDER BY ticket_code DESC LIMIT $7 OFFSET $8`
 
 var SQL_technician_pg_list = `SELECT id, name, role, specialty, avatar_color, initials, active_tickets_count, completed_this_month FROM technicians ORDER BY id`

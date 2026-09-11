@@ -1,7 +1,9 @@
 package service
 
 import (
+	"fmt"
 	"singer/go-template-new-2026-06/model"
+	"sort"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -51,12 +53,42 @@ func (m *mockTicketRepository) Update(id string, ticket model.TicketModel) (bool
 	return true, nil
 }
 
+// List applies the same pagination semantics as ticketPGRepository.List / the real tickets SQL
+// (ORDER BY ticket_code DESC, then LIMIT/OFFSET), so service-level tests can exercise real
+// page/limit behavior without a live Postgres connection (there is no repository-level test
+// harness for any PG repository in this codebase -- this mock is the closest thing to one).
+// Filters (Status/Priority/Category/Department/RequesterName/Search) are unaffected by this
+// change and remain unapplied here, matching this mock's existing (pre-pagination-hardening)
+// fidelity level -- a pre-existing gap, not introduced or fixed by this change.
 func (m *mockTicketRepository) List(query model.TicketListQuery) ([]model.TicketModel, int, error) {
 	items := make([]model.TicketModel, 0, len(m.tickets))
 	for _, t := range m.tickets {
 		items = append(items, t)
 	}
-	return items, len(items), nil
+	sort.Slice(items, func(i, j int) bool { return items[i].TicketCode > items[j].TicketCode })
+
+	total := len(items)
+	limit := query.Limit
+	if limit <= 0 {
+		limit = total
+		if limit <= 0 {
+			limit = 1
+		}
+	}
+	page := query.Page
+	if page <= 0 {
+		page = 1
+	}
+	offset := (page - 1) * limit
+
+	if offset >= len(items) {
+		return []model.TicketModel{}, total, nil
+	}
+	end := offset + limit
+	if end > len(items) {
+		end = len(items)
+	}
+	return items[offset:end], total, nil
 }
 
 func (m *mockTicketRepository) ListTechnicians() ([]model.ITTechnician, error) {
@@ -311,4 +343,130 @@ func TestCreateTicket_ValidPrioritiesStillSucceed(t *testing.T) {
 			assert.Greater(t, ticket.SLATargetHours, 0)
 		})
 	}
+}
+
+// seedTicketsForPagination seeds n tickets directly into the mock repo (bypassing CreateTicket,
+// whose sequence-based codes and employee/asset dependency aren't needed here) with TicketCode
+// "ITR-01".."ITR-0n" so ordering (ORDER BY ticket_code DESC, matching the real SQL) is
+// deterministic and known ahead of time.
+func seedTicketsForPagination(t *testing.T, repo *mockTicketRepository, n int) {
+	t.Helper()
+	for i := 1; i <= n; i++ {
+		code := fmt.Sprintf("ITR-%02d", i)
+		repo.tickets[code] = model.TicketModel{ID: code, TicketCode: code, Title: code}
+	}
+}
+
+func ticketCodesOf(items []model.TicketModel) []string {
+	codes := make([]string, len(items))
+	for i, tk := range items {
+		codes[i] = tk.TicketCode
+	}
+	return codes
+}
+
+// Pagination hardening (2026-09-11). Same eight scenarios as TestListEmployees_Pagination;
+// ITR-05 sorts first because the real SQL orders ticket_code DESC.
+func TestListTickets_Pagination(t *testing.T) {
+	newSvc := func(repo *mockTicketRepository) TicketService {
+		return NewTicketService(repo, NewAssetService(newMockAssetRepository()), NewEmployeeService(newMockEmployeeRepository()))
+	}
+
+	t.Run("default (no page/limit) returns everything, preserving pre-hardening behavior", func(t *testing.T) {
+		repo := newMockTicketRepository()
+		seedTicketsForPagination(t, repo, 5)
+		svc := newSvc(repo)
+
+		resp, err := svc.ListTickets(model.TicketListQuery{})
+
+		assert.NoError(t, err)
+		assert.Equal(t, 5, resp.Total)
+		assert.Equal(t, []string{"ITR-05", "ITR-04", "ITR-03", "ITR-02", "ITR-01"}, ticketCodesOf(resp.Data))
+	})
+
+	t.Run("explicit limit narrows the page without changing total", func(t *testing.T) {
+		repo := newMockTicketRepository()
+		seedTicketsForPagination(t, repo, 5)
+		svc := newSvc(repo)
+
+		resp, err := svc.ListTickets(model.TicketListQuery{Limit: 2})
+
+		assert.NoError(t, err)
+		assert.Equal(t, 5, resp.Total, "total reflects the full matching set, not just this page")
+		assert.Equal(t, []string{"ITR-05", "ITR-04"}, ticketCodesOf(resp.Data))
+	})
+
+	t.Run("explicit page advances the offset", func(t *testing.T) {
+		repo := newMockTicketRepository()
+		seedTicketsForPagination(t, repo, 5)
+		svc := newSvc(repo)
+
+		resp, err := svc.ListTickets(model.TicketListQuery{Limit: 2, Page: 2})
+
+		assert.NoError(t, err)
+		assert.Equal(t, 5, resp.Total)
+		assert.Equal(t, []string{"ITR-03", "ITR-02"}, ticketCodesOf(resp.Data))
+	})
+
+	t.Run("boundary: last page may be a partial page", func(t *testing.T) {
+		repo := newMockTicketRepository()
+		seedTicketsForPagination(t, repo, 5)
+		svc := newSvc(repo)
+
+		resp, err := svc.ListTickets(model.TicketListQuery{Limit: 2, Page: 3})
+
+		assert.NoError(t, err)
+		assert.Equal(t, 5, resp.Total)
+		assert.Equal(t, []string{"ITR-01"}, ticketCodesOf(resp.Data))
+	})
+
+	t.Run("boundary: a page entirely past the end returns an empty page, not an error", func(t *testing.T) {
+		repo := newMockTicketRepository()
+		seedTicketsForPagination(t, repo, 5)
+		svc := newSvc(repo)
+
+		resp, err := svc.ListTickets(model.TicketListQuery{Limit: 2, Page: 10})
+
+		assert.NoError(t, err)
+		assert.Equal(t, 5, resp.Total, "total is unaffected by requesting a page past the end")
+		assert.Empty(t, resp.Data)
+	})
+
+	t.Run("empty result: no tickets at all, with pagination params supplied", func(t *testing.T) {
+		svc := newSvc(newMockTicketRepository())
+
+		resp, err := svc.ListTickets(model.TicketListQuery{Limit: 10, Page: 1})
+
+		assert.NoError(t, err)
+		assert.Equal(t, 0, resp.Total)
+		assert.Empty(t, resp.Data)
+	})
+
+	t.Run("filter query params alongside pagination params do not break the pagination math", func(t *testing.T) {
+		// This mock does not apply Status/Priority/Category/Department/RequesterName/Search
+		// filtering (a pre-existing gap unrelated to and not fixed by this change -- only the
+		// real PG query filters), so this asserts pagination still behaves correctly when
+		// filter fields are also set, not that filtering itself works here.
+		repo := newMockTicketRepository()
+		seedTicketsForPagination(t, repo, 5)
+		svc := newSvc(repo)
+
+		resp, err := svc.ListTickets(model.TicketListQuery{Priority: "High", Limit: 2, Page: 2})
+
+		assert.NoError(t, err)
+		assert.Equal(t, []string{"ITR-03", "ITR-02"}, ticketCodesOf(resp.Data))
+	})
+
+	t.Run("ordering is deterministic across repeated calls with identical params", func(t *testing.T) {
+		repo := newMockTicketRepository()
+		seedTicketsForPagination(t, repo, 5)
+		svc := newSvc(repo)
+
+		first, err := svc.ListTickets(model.TicketListQuery{Limit: 3})
+		assert.NoError(t, err)
+		second, err := svc.ListTickets(model.TicketListQuery{Limit: 3})
+		assert.NoError(t, err)
+
+		assert.Equal(t, ticketCodesOf(first.Data), ticketCodesOf(second.Data))
+	})
 }

@@ -58,11 +58,16 @@ type HandoverPerson struct {
 	Role string `json:"role,omitempty"`
 }
 
-// AssetHandoverListQuery mirrors the frontend's equivalent list-query shape.
+// AssetHandoverListQuery mirrors the frontend's equivalent list-query shape. Page/Limit added
+// for pagination hardening (2026-09-11): the list SQL below had no LIMIT/OFFSET at all, unlike
+// AssetListQuery/AuditListQuery's already-paginated pattern, which these two fields and the
+// repository logic below now mirror exactly.
 type AssetHandoverListQuery struct {
 	Search              string `query:"search"`
 	Status              string `query:"status"`
 	RecipientEmployeeID string `query:"recipientEmployeeId"`
+	Page                int    `query:"page"`
+	Limit               int    `query:"limit"`
 }
 
 type AssetHandoverListResponse struct {
@@ -118,7 +123,7 @@ var SQL_asset_handover_pg_list_base = `SELECT doc FROM asset_handovers WHERE
 	($1 = '' OR handover_code ILIKE '%' || $1 || '%' OR asset_name ILIKE '%' || $1 || '%' OR asset_code ILIKE '%' || $1 || '%' OR recipient_name ILIKE '%' || $1 || '%')
 	AND ($2 = '' OR status = $2)
 	AND ($3 = '' OR recipient_employee_id = $3)
-	ORDER BY handover_code DESC`
+	ORDER BY handover_code DESC LIMIT $4 OFFSET $5`
 
 // SQL_asset_handover_pg_active_for_asset guards against creating a second concurrent handover
 // for the same asset while one is already pending -- an implementation-level safeguard (not an

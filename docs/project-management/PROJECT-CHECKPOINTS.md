@@ -4995,20 +4995,20 @@ Evidence came from the **browser's own network log**, not `curl`: four `POST htt
 **Feature:** List/count query pagination
 **Task:** Merge **PR #129**; add `page`/`limit` pagination to Employee, Ticket, and Asset Handover list endpoints (P0).
 
-**What was implemented:** `Page`/`Limit` fields on `EmployeeListQuery`, `TicketListQuery`, `AssetHandoverListQuery`; server-side default/clamp; `LIMIT $n OFFSET $n` appended to each domain's `SQL_*_pg_list_base` query.
-**What was modified:** `model/employeeModel.go`, `model/ticketModel.go`, `model/assetHandoverModel.go` and their repository callers.
-**What was fixed:** Missing pagination — found during the 2026-09-10 database status review; `assets` already had it, the other three domains did not.
-**What was added:** Pagination parameters and SQL clauses only. `List*Response{Data, Total}` shape unchanged.
+**What was implemented:** `Page`/`Limit` fields on `EmployeeListQuery`, `TicketListQuery`, `AssetHandoverListQuery`; server-side **defaulting only — there is no upper clamp** (`limit <= 0` → the full result set, i.e. today's unpaginated behavior; `page <= 0` → page 1; `offset = (page-1)*limit`); `LIMIT $n OFFSET $n` appended to each domain's `SQL_*_pg_list_base` query. **The `SQL_*_pg_count_base` queries were deliberately left unchanged** — a count must still return the full filtered set, not one page of it.
+**What was modified:** `model/employeeModel.go`, `model/ticketModel.go`, `model/assetHandoverModel.go`, their three PG repository callers, and the three service test files' mock repositories (extended to apply the same limit/offset math in-memory, with deterministic ordering so the new tests aren't flaky).
+**What was fixed:** Missing pagination — found during the 2026-09-10 database status review; `assets` **and `audit_logs`** already paginated, and their existing contract was reused exactly rather than reinvented. The other three domains had no `LIMIT`/`OFFSET` at all.
+**What was added:** Pagination parameters, the list-query SQL clauses, and **24 new subtests** (8 per domain). `List*Response{Data, Total}` shape unchanged — no `page`/`limit`/`total_pages` envelope was introduced.
 **What was removed:** None.
 
-**Files changed:** `go-template-main/model/employeeModel.go`, `ticketModel.go`, `assetHandoverModel.go` (+ corresponding repository files).
+**Files changed:** 9 files, +551/-11. Models: `go-template-main/model/employeeModel.go`, `ticketModel.go`, `assetHandoverModel.go`. Repositories: `repository/employeePGRepository.go`, `ticketPGRepository.go`, `assetHandoverPGRepository.go`. Tests: `service/employeeService_test.go` (+159), `service/ticketService_test.go` (+160), `service/assetHandoverService_test.go` (+161).
 **Database changes:** None (no migration — pagination is a query-shape change, not a schema change).
 **API changes:** `GET /employees`, `GET /tickets`, `GET /handovers` now accept and honor `page`/`limit` query params.
-**Frontend changes:** None — frontend callers not yet updated to pass `page`/`limit`; omitting them still returns a sane default page, so this is not a regression, but is tracked as remaining work.
+**Frontend changes:** None — frontend callers not yet updated to pass `page`/`limit`; omitting them returns the **full result set** exactly as before, so this is not a regression, but is tracked as remaining work.
 
 **Tests:**
-- Unit Test: `go test -count=1 ./...` clean across `controller`/`middleware`/`service`.
-- Integration Test: live dev-stack `GET` calls against `/employees`, `/tickets`, `/handovers` with `page`/`limit` confirmed to return the expected page slices and matching `total`.
+- Unit Test: **3 new test functions, 24 new subtests** — `TestListEmployees_Pagination`, `TestListTickets_Pagination`, `TestListAssetHandovers_Pagination`, 8 subtests each: default/no-params, explicit limit, explicit page, partial last page, a page past the end (empty, not an error), empty result set, a filter param alongside pagination params, and deterministic ordering across repeated calls. All run and verified passing individually. `go test -count=1 ./...` clean across `controller`/`middleware`/`service`.
+- Integration Test: **None — and deliberately recorded as none.** This codebase has no repository-level test harness (verified: zero test files under `repository/`), so the pagination SQL is exercised only through each service's in-memory mock repository, not against a real Postgres instance. **The `LIMIT`/`OFFSET` SQL has not been executed against a live database.**
 - E2E Test: None run (backend-only change).
 
 **Validation:**
@@ -5027,8 +5027,12 @@ Test Case: Not touched.
 Branch: `feature/pagination-employees-tickets-handovers`
 Commit: `6b5e1f5`
 
-**Known Issues:** Frontend does not yet send `page`/`limit` on these three list calls — deferred, not a regression.
-**Remaining Work:** Wire frontend list views for Employee/Ticket/Handovers to pass `page`/`limit` when pagination-driven UI (e.g. a page-size selector) is prioritized. Not urgent at current seed data volume.
+**Known Issues:**
+- Frontend does not yet send `page`/`limit` on these three list calls — deferred, not a regression.
+- **No upper bound on `limit`.** A client may request any page size; the only clamp anywhere in the backend is `controller/sampleController.go:224` (`if query.Limit > 100`), which belongs to the company template's **non-RAISE** demo domain. An unparameterized call still returns the whole table. Bounding it was not in this PR's scope and is not claimed here.
+- **The pagination SQL has never run against a real database** — see the Integration Test field above.
+
+**Remaining Work:** Wire frontend list views for Employee/Ticket/Handovers to pass `page`/`limit` when pagination-driven UI (e.g. a page-size selector) is prioritized. Not urgent at current seed data volume. Separately: decide whether a maximum page size belongs on the RAISE domains, and verify the `LIMIT`/`OFFSET` SQL against the live stack at least once.
 **Next Step:** Proceed to the P1 index-hardening pass identified in the same 2026-09-10 review (`CHECKPOINT-2026-09-11-002`).
 
 ---
@@ -5113,7 +5117,7 @@ Test Case: Not touched.
 
 **Git:**
 Branch: `docs/api-db-spec-reconciliation`
-Commit: `bea06ea` (merge `0e5bfbe`, fast-forward)
+Commit: `bea06ea` (merge commit `0e5bfbe`, two parents — `8271e4e` and `bea06ea`; created by `gh pr merge --merge`. The "Fast-forward" line in that command's output described the **local** `main` being advanced to the already-created merge commit, not the merge strategy.)
 
 **Known Issues:** None introduced. F-16 (migration tooling), F-03, F-55 remain open and untouched, exactly as scoped.
 **Remaining Work:** None for this task. The 2026-09-10 database status review's three follow-ups (P0 pagination, P1 index hardening, P2 spec reconciliation) are now all merged.

@@ -9,16 +9,23 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-09-11, at `0e5bfbe` (**PR #131** merged, fast-forward). Suite **54 test
-files / 288 tests** frontend (unchanged this session — all three PRs below are
-backend/docs-only), backend `go build`/`vet`/`test` clean. Test Cases **v0.34**,
+**As of:** 2026-09-11, at `0e5bfbe` (**PR #131** merged; `0e5bfbe` is a merge commit
+with two parents, not a fast-forward). Suite **54 test files / 288 tests** frontend
+(unchanged this session — all three PRs below are backend/docs-only), backend
+`go build`/`vet`/`test -count=1` clean **and 24 new backend subtests added by PR #129**.
+Test Cases **v0.34**,
 Matrix **v2.14**; PRD **v0.21**, Design **v0.19**, Prototype **v0.20**, AC **v0.19**,
 Test Plan **v0.20**.
 
 **The 2026-09-10 database status review's three follow-ups are now all merged.**
-**P0 — PR #129** (`6b5e1f5`): `page`/`limit` pagination added to Employee, Ticket,
-and Asset Handover list/count queries — Assets already had it, the other three
-domains didn't. **P1 — PR #130** (`8271e4e`): 5 missing indexes added
+**P0 — PR #129** (`6b5e1f5`): `page`/`limit` pagination added to the Employee, Ticket,
+and Asset Handover **list** queries (the matching `_count_base` queries were
+deliberately left unpaginated — a count must still cover the full filtered set).
+`assets` **and `audit_logs`** already paginated and were untouched; their existing
+contract was reused exactly. Defaulting only — **no upper clamp on `limit`**, so an
+unparameterized call still returns the full result set, exactly as before. 24 new
+backend subtests; **no live-database verification** (no repository-level test harness
+exists). **P1 — PR #130** (`8271e4e`): 5 missing indexes added
 (`V6__Additional_Indexes.sql`) on exact-match filter columns found to have none
 (`tickets.priority`/`category`/`requester_name`, `employees.location`,
 `asset_handovers.recipient_employee_id`) — deliberately excludes ILIKE-matched

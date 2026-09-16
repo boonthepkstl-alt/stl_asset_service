@@ -9,10 +9,9 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-09-11, at `0e5bfbe` (**PR #131** merged; `0e5bfbe` is a merge commit
-with two parents, not a fast-forward). Suite **54 test files / 288 tests** frontend
-(unchanged this session — all three PRs below are backend/docs-only), backend
-`go build`/`vet`/`test -count=1` clean **and 24 new backend subtests added by PR #129**.
+**As of:** 2026-09-16, at `b05dd66` (**PR #133** merged; a merge commit with two
+parents, not a fast-forward). Suite **54 test files / 288 tests** frontend, backend
+`go build`/`vet`/`test -count=1` clean **and 24 backend subtests added by PR #129**.
 Test Cases **v0.34**,
 Matrix **v2.14**; PRD **v0.21**, Design **v0.19**, Prototype **v0.20**, AC **v0.19**,
 Test Plan **v0.20**.
@@ -38,6 +37,19 @@ nonexistent `RAISE-PROJECT-TIMELINE.md` was fixed to the real
 `PROJECT-TIMELINE.md`. All three are documentation/hardening only — **no
 business rule, migration semantics, or `OPEN-FINDINGS.md` entry changed**; F-16
 (manual migration tooling), F-03, and F-55 remain open exactly as before.
+
+**PR #129 is now `COMPLETED`, not just merged (2026-09-16).** Its pagination
+`LIMIT`/`OFFSET` SQL had only ever run against in-memory mocks; it was executed
+against the live stack for all three domains — 18 cases, all passing, including
+`total` cross-checked against direct `SELECT COUNT(*)` on filtered queries
+(`/tickets?priority=Low` → `total=2` vs SQL `2`; `/handovers?status=PENDING_RECIPIENT_CONFIRMATION`
+→ `total=3` vs SQL `3`). That is the live confirmation that leaving
+`SQL_*_pg_count_base` unpaginated was correct. **A stale container was caught
+first:** the running backend image predated the pagination commit by two days and
+was rebuilt before anything was measured — see `CHECKPOINT-2026-09-16-001`.
+**Still open from that work: there is no maximum page size on any RAISE list
+endpoint** (the only clamp in the repository is in the non-RAISE template demo
+domain), so a single request may still ask for the entire table.
 
 **F-56 is RESOLVED** (`c3bac79`) — the Asset Detail assignee link no longer falls
 back to the hardcoded fixture id `'e1'` when `assignedEmployeeId` is missing. Found

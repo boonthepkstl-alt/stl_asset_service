@@ -4989,6 +4989,142 @@ Evidence came from the **browser's own network log**, not `curl`: four `POST htt
 
 ---
 
+## CHECKPOINT-2026-09-11-001
+
+**Phase:** Phase 5A/5B/Phase 3 — Employee, Maintenance/Ticket, Asset Handovers (cross-cutting)
+**Feature:** List/count query pagination
+**Task:** Merge **PR #129**; add `page`/`limit` pagination to Employee, Ticket, and Asset Handover list endpoints (P0).
+
+**What was implemented:** `Page`/`Limit` fields on `EmployeeListQuery`, `TicketListQuery`, `AssetHandoverListQuery`; server-side **defaulting only — there is no upper clamp** (`limit <= 0` → the full result set, i.e. today's unpaginated behavior; `page <= 0` → page 1; `offset = (page-1)*limit`); `LIMIT $n OFFSET $n` appended to each domain's `SQL_*_pg_list_base` query. **The `SQL_*_pg_count_base` queries were deliberately left unchanged** — a count must still return the full filtered set, not one page of it.
+**What was modified:** `model/employeeModel.go`, `model/ticketModel.go`, `model/assetHandoverModel.go`, their three PG repository callers, and the three service test files' mock repositories (extended to apply the same limit/offset math in-memory, with deterministic ordering so the new tests aren't flaky).
+**What was fixed:** Missing pagination — found during the 2026-09-10 database status review; `assets` **and `audit_logs`** already paginated, and their existing contract was reused exactly rather than reinvented. The other three domains had no `LIMIT`/`OFFSET` at all.
+**What was added:** Pagination parameters, the list-query SQL clauses, and **24 new subtests** (8 per domain). `List*Response{Data, Total}` shape unchanged — no `page`/`limit`/`total_pages` envelope was introduced.
+**What was removed:** None.
+
+**Files changed:** 9 files, +551/-11. Models: `go-template-main/model/employeeModel.go`, `ticketModel.go`, `assetHandoverModel.go`. Repositories: `repository/employeePGRepository.go`, `ticketPGRepository.go`, `assetHandoverPGRepository.go`. Tests: `service/employeeService_test.go` (+159), `service/ticketService_test.go` (+160), `service/assetHandoverService_test.go` (+161).
+**Database changes:** None (no migration — pagination is a query-shape change, not a schema change).
+**API changes:** `GET /employees`, `GET /tickets`, `GET /handovers` now accept and honor `page`/`limit` query params.
+**Frontend changes:** None — frontend callers not yet updated to pass `page`/`limit`; omitting them returns the **full result set** exactly as before, so this is not a regression, but is tracked as remaining work.
+
+**Tests:**
+- Unit Test: **3 new test functions, 24 new subtests** — `TestListEmployees_Pagination`, `TestListTickets_Pagination`, `TestListAssetHandovers_Pagination`, 8 subtests each: default/no-params, explicit limit, explicit page, partial last page, a page past the end (empty, not an error), empty result set, a filter param alongside pagination params, and deterministic ordering across repeated calls. All run and verified passing individually. `go test -count=1 ./...` clean across `controller`/`middleware`/`service`.
+- Integration Test: **None — and deliberately recorded as none.** This codebase has no repository-level test harness (verified: zero test files under `repository/`), so the pagination SQL is exercised only through each service's in-memory mock repository, not against a real Postgres instance. **The `LIMIT`/`OFFSET` SQL has not been executed against a live database.**
+- E2E Test: None run (backend-only change).
+
+**Validation:**
+- Build: `go build ./...` clean.
+- Lint: `go vet ./...` clean.
+- Test: `go test -count=1 ./...` clean.
+- Type Check: N/A (Go).
+
+**Requirement Traceability:**
+PRD: `RAISE-FR-ASSET-003` (Employee), `RAISE-FR-MAINT-001` (Ticket), `RAISE-FR-OPS-002` (Asset Handovers) — pagination is a scalability hardening, not a new business rule; none of the three requirements' confirmed AC changed.
+Design: Not touched.
+Acceptance Criteria: Not touched.
+Test Case: Not touched.
+
+**Git:**
+Branch: `feature/pagination-employees-tickets-handovers`
+Commit: `6b5e1f5`
+
+**Known Issues:**
+- Frontend does not yet send `page`/`limit` on these three list calls — deferred, not a regression.
+- **No upper bound on `limit`.** A client may request any page size; the only clamp anywhere in the backend is `controller/sampleController.go:224` (`if query.Limit > 100`), which belongs to the company template's **non-RAISE** demo domain. An unparameterized call still returns the whole table. Bounding it was not in this PR's scope and is not claimed here.
+- **The pagination SQL has never run against a real database** — see the Integration Test field above.
+
+**Remaining Work:** Wire frontend list views for Employee/Ticket/Handovers to pass `page`/`limit` when pagination-driven UI (e.g. a page-size selector) is prioritized. Not urgent at current seed data volume. Separately: decide whether a maximum page size belongs on the RAISE domains, and verify the `LIMIT`/`OFFSET` SQL against the live stack at least once.
+**Next Step:** Proceed to the P1 index-hardening pass identified in the same 2026-09-10 review (`CHECKPOINT-2026-09-11-002`).
+
+---
+
+## CHECKPOINT-2026-09-11-002
+
+**Phase:** Phase 5A/5B/Phase 3 — Employee, Maintenance/Ticket, Asset Handovers (cross-cutting)
+**Feature:** Database index hardening
+**Task:** Merge **PR #130**; add 5 missing indexes on exact-match filter columns (P1).
+
+**What was implemented:** New migration `V6__Additional_Indexes.sql` adding `CREATE INDEX` on `tickets.priority`, `tickets.category`, `tickets.requester_name`, `employees.location`, `asset_handovers.recipient_employee_id`.
+**What was modified:** None (additive migration only).
+**What was fixed:** Five confirmed sequential-scan gaps — each column is used as an exact-match (`$n = col`) predicate in an existing `List`/`count` query's `WHERE` clause but had no index, found during the 2026-09-10 database status review.
+**What was added:** The migration file itself.
+**What was removed:** None. Deliberately excluded free-text ILIKE-matched columns (would need `pg_trgm`, a heavier decision not made here) and any column not referenced by an existing query.
+
+**Files changed:** `go-template-main/sql/pg/V6__Additional_Indexes.sql` (new file).
+**Database changes:** 5 new B-tree indexes, applied to the live Postgres container and confirmed via `pg_indexes`.
+**API changes:** None.
+**Frontend changes:** None.
+
+**Tests:**
+- Unit Test: `go test -count=1 ./...` clean (no Go code changed).
+- Integration Test: live `GET /api/tickets?priority=Critical` re-confirmed returning correct, matching results with the index in place; `EXPLAIN` shows the planner still choosing a sequential scan at current ~8-row seed volume (expected/correct at this scale).
+- E2E Test: None.
+
+**Validation:**
+- Build: `go build ./...` clean.
+- Lint: `go vet ./...` clean.
+- Test: `go test -count=1 ./...` clean.
+- Type Check: N/A.
+
+**Requirement Traceability:**
+PRD: Cross-cutting scalability hardening — not tied to a single `RAISE-FR-*` acceptance criterion; no AC status changed.
+Design: Not touched.
+Acceptance Criteria: Not touched.
+Test Case: Not touched.
+
+**Git:**
+Branch: `feature/p1-index-hardening`
+Commit: `8271e4e`
+
+**Known Issues:** F-16 (migration tooling is manual, no framework) explicitly not addressed by this PR.
+**Remaining Work:** None queued for index hardening itself — the 2026-09-10 review's index gap is fully closed.
+**Next Step:** P2 API-DB-SPEC documentation reconciliation (`CHECKPOINT-2026-09-11-003`), the third and final item identified by the 2026-09-10 database status review.
+
+---
+
+## CHECKPOINT-2026-09-11-003
+
+**Phase:** As-built documentation (`08-architecture/` – `10-detailed-design/`, non-numbered extension)
+**Feature:** API/DB Spec accuracy
+**Task:** Merge **PR #131**; reconcile `RAISE-API-DB-SPEC.md` with the actual implemented API/DB state (P2), documentation-only.
+
+**What was implemented:** New §5 (Audit Log, `RAISE-FR-AUDIT-001`) and new §6 (Asset Handovers, `RAISE-FR-OPS-002`) in `RAISE-API-DB-SPEC.md`; old §5/§6 renumbered to §7/§8.
+**What was modified:** The "not yet built" list in what is now §7 — removed "Audit Log", which is in fact fully built.
+**What was fixed:** A broken relative link to a nonexistent `RAISE-PROJECT-TIMELINE.md`, corrected to the real `PROJECT-TIMELINE.md`.
+**What was added:** Full documentation of the Audit Log endpoint/table (verified against `controller/auditController.go`, `model/auditModel.go`, `V4__Audit_Table.sql`) and the Asset Handovers domain — 6 routes, 4-stage state machine, request/response shapes, error mapping, table DDL (verified against `controller/assetHandoverController.go`, `model/assetHandoverModel.go`, `V5__AssetHandovers_Table.sql`, `V6__Additional_Indexes.sql`).
+**What was removed:** The false "Audit Log: not yet built" claim.
+
+**Files changed:** `docs/09-api-db-spec/RAISE-API-DB-SPEC.md` only (136 insertions, 6 deletions).
+**Database changes:** None — documentation only, no migration created or modified.
+**API changes:** None — no route, controller, or model touched.
+**Frontend changes:** None.
+
+**Tests:**
+- Unit Test: N/A (no code changed).
+- Integration Test: N/A.
+- E2E Test: N/A.
+
+**Validation:**
+- Build: N/A (doc-only); re-confirmed at session close-out that `go build ./...` and frontend `tsc`/`vitest` still pass (see below), proving this PR did not regress anything.
+- Lint: `git diff --check` clean.
+- Test: N/A for this PR's own diff.
+- Type Check: N/A.
+
+**Requirement Traceability:**
+PRD: `RAISE-FR-AUDIT-001`, `RAISE-FR-OPS-002` — documentation now correctly reflects these requirements' already-implemented state; no requirement status changed.
+Design: Not touched.
+Acceptance Criteria: Not touched.
+Test Case: Not touched.
+
+**Git:**
+Branch: `docs/api-db-spec-reconciliation`
+Commit: `bea06ea` (merge commit `0e5bfbe`, two parents — `8271e4e` and `bea06ea`; created by `gh pr merge --merge`. The "Fast-forward" line in that command's output described the **local** `main` being advanced to the already-created merge commit, not the merge strategy.)
+
+**Known Issues:** None introduced. F-16 (migration tooling), F-03, F-55 remain open and untouched, exactly as scoped.
+**Remaining Work:** None for this task. The 2026-09-10 database status review's three follow-ups (P0 pagination, P1 index hardening, P2 spec reconciliation) are now all merged.
+**Next Step:** No unblocked engineering work identified by this review. **F-03 and F-55 remain the highest-leverage open items**, both waiting on a stakeholder business decision (per `CHECKPOINT-2026-09-10-003`).
+
+---
+
 ## Level 2 — Feature Checkpoints
 
 ### FEATURE-CHECKPOINT-project-tracking-governance

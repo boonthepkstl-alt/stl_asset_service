@@ -14,6 +14,15 @@ changes user-visible or API-visible behavior. Pure documentation-sync PRs
 
 ---
 
+## 2026-09-11
+
+### Changed
+- **Employee, Ticket, and Asset Handover list endpoints now accept `page`/`limit`
+  query parameters**, matching the pagination the Asset Registry and Audit Log
+  already had. Omitting them returns the full result set exactly as before, so no
+  existing caller breaks — there is no default page size, and no maximum page size
+  is enforced yet.
+
 ## 2026-09-08
 
 ### Changed

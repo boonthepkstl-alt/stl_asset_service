@@ -3,338 +3,256 @@
 **Live output of [`NEXT-STEP-PROTOCOL.md`](NEXT-STEP-PROTOCOL.md).**
 Overwritten in place each time the protocol is re-run.
 
-**Run date:** 2026-09-08, after `CHECKPOINT-2026-09-08-003`.
+**Run date:** 2026-09-16, after `CHECKPOINT-2026-09-11-003` and the merge of
+**PR #132** (`d35b34a`).
 
-> **[STALE IN PART, 2026-09-09 — read this before the body below.]** This run's
-> figures and recommendation predate five merges (`d0770e4`, `651eace`, PR #123 at
-> `50fb36b`, and the two commits between). **The protocol has not been re-run** — this
-> note records what changed rather than rewriting a protocol output as though it had.
-> **What is no longer true:** the recommendation to execute `TC-MAINT-001-10` (**done
-> 2026-09-09, PASS on the frontend tier**), and **Gap 21 is no longer the only open gap**
-> — **Gap 26** is now open too. **Gap 23** (opened after this run) and **Gap 25**
-> are both **CLOSED**. **What is still true and is the reason this file is not simply
-> discarded:** **Gap 21 remains open and still blocks on F-03**, and **F-03's
-> per-Asset-Type useful-life values remain the only outstanding business input and the
-> only thing that would move a Compliance Review verdict.** For the current picture see
-> [`CURRENT-STATUS.md`](CURRENT-STATUS.md) and `CHECKPOINT-2026-09-09-002`.
->
-> **[FURTHER, later on 2026-09-09.]** **Gap 26(b) is CLOSED** (HTTP-path execution
-> against the real backend + Postgres, PASS). **Gap 26(a)'s evidence is a PASS but the
-> gap STAYS OPEN**, contingent on **`PR #124`** merging — a gap tracking `main` cannot
-> be closed by code that is not on `main`. **New Gap 27** is open: the frontend's own
-> real-API branch has never been exercised. Test Cases **v0.32**, Matrix **v2.12**, and
-> `CHECKPOINT-2026-09-09-003` carry the full record. **F-03 is unchanged and still the
-> only outstanding business input.**
->
-> **[LATEST, 2026-09-10.]** Both PRs from the 2026-09-09 code review are merged: **PR #125**
-> (`c3bac79`, F-56 → **RESOLVED**) and **PR #126** (`265c152`, Findings 2+3 — `Priority`
-> validation and `CreateTicket` error classification). Verified on merged `main`: `tsc` 0,
-> ESLint 0, **54 files / 288 tests**, backend `go build`/`vet`/`test -count=1` clean, SLA
-> contract test still passing, `2/8/24/48` unchanged. `CHECKPOINT-2026-09-10-001` has the
-> full record. **Nothing on the board is unblocked work right now** — Finding 4/5 stay
-> deliberately deferred (low priority), and **F-55**/**F-03** both wait on a business
-> decision. **F-03 is still the only item that would move a Compliance Review verdict.**
->
-> **[LATEST, 2026-09-09 — this run's recommendation is now fully discharged.]**
-> **Gap 27 is CLOSED** (Matrix **v2.14**, Test Cases **v0.34**): the frontend's own
-> real-API branch was driven through a browser, all four priorities, `ITR-2026-005`…`008`.
-> **No coverage gap remains open on the SLA figures** — the first time since Gap 23
-> opened. **New: F-55**, `OPEN — BLOCKED on a business decision` — the default Create
-> Requisition entry cannot submit in real-API mode (`requesterId` defaults to the mock
-> fixture id `'e1'`), and how the requester should resolve is a stakeholder call, partly
-> downstream of **F-08**. **Both remaining items are business decisions, not work: F-55's
-> requester rule and F-03's per-Asset-Type useful-life values.** F-03 stays the only one
-> that would move a Compliance Review verdict. `CHECKPOINT-2026-09-09-005` has the full
-> record.
->
-> **[AND FINALLY, 2026-09-09.]** **`PR #124` is MERGED** (`9e125d6`), so **Gap 26(a) and
-> Gap 26 overall are CLOSED** (Matrix **v2.13**) — the contingency above was discharged
-> by the merge, not by re-argument. **Gap 27 is now the only open item needing neither a
-> business decision nor a build.** `CHECKPOINT-2026-09-09-004` carries the post-merge
-> validation. **F-03 is still BLOCKED and still the only outstanding business input.**
->
-> **[LATEST, 2026-09-10.]** **`PR #127` is MERGED** (`1da449f`), resolving **Finding 4**
-> (the `docker-compose.yml`/`.env.example` conflicting-default-claims item from the
-> 2026-09-09 code review — never a numbered `F-NN`, closed out directly). Comment-only;
-> no runtime, no compose config, no environment-variable semantics changed. **Finding 5
-> stays deferred.** A stakeholder decision request for **F-03** and **F-55** was prepared
-> and sent 2026-09-10, but **no answer has been received in this session** — both remain
-> exactly as blocked as before. **F-03 is still the only item that would move a
-> Compliance Review verdict**, and **Gap 21**/**F-52**'s remaining half stay blocked on
-> it, unchanged by this merge.
->
-> **[LATEST, 2026-09-10.]** **`PR #128` is MERGED** (`646000e`), resolving **Finding 5**
-> (the `slaContract_test.go` regex-truncation fragility from the same 2026-09-09 code
-> review — never a numbered `F-NN`, closed out directly, same as Finding 4). The
-> non-greedy `\{(.*?)\}` capture is replaced with a brace-depth-counting scan; four new
-> tests confirm it survives a nested value and an inline comment containing `}`, both
-> confirmed to have actually truncated the old regex before the fix. `2/8/24/48`
-> unchanged on both tiers. **Both 2026-09-09 review findings (4 and 5) are now
-> resolved.** **F-03 and F-55 remain exactly as blocked as before** — the decision
-> request sent 2026-09-10 has no answer yet in this session. **F-03 is still the only
-> item that would move a Compliance Review verdict**, and **Gap 21**/**F-52**'s
-> remaining half stay blocked on it, unaffected by this merge.
-
-**Derived from** a direct read of `main` at `39bb2b0`: PRD **v0.20**, Design **v0.18**,
-Prototype **v0.18**, AC **v0.17**, Test Plan **v0.17**, Test Cases **v0.27**, Traceability
-Matrix **v2.7**, Compliance Review **v1.2**, `OPEN-FINDINGS.md`, and the source tree.
+> **Process note on this run, stated once and not repeated below.** The
+> previous instance of this file was last *generated* on 2026-09-08 and then
+> carried **six appended stale-notes** written between 2026-09-09 and
+> 2026-09-10, each correcting the one above it. That is not what this file is:
+> the protocol says it is **overwritten in place**, same convention as
+> `CURRENT-STATUS.md`. This run discards that accumulation rather than adding a
+> seventh note to it. Nothing from the old body is lost that matters — every
+> fact it carried is in `PROJECT-CHECKPOINTS.md`, `OPEN-FINDINGS.md`, or the
+> matrix, which are the durable records; this file is a recommendation, not a
+> history.
 
 ---
 
 ## Current State
 
-- **Validation, run rather than assumed:** frontend `tsc` **0**, ESLint clean, **54 test
-  files / 286 tests pass**; backend `go build`/`vet`/`test` clean; CI green.
-- **Three PRs merged after this run**, all product work on the requisition form and the
-  create/edit layout — **PR #120** (`24bbd31`), **PR #121** (`79f71eb`) and **PR #122**
-  (`71ba972`). Between them they account for the **+1 file / +8 tests** against this run's
-  figures. **None needed a chain change** (`AC-MAINT-001-03` constrains state, not
-  presentation) and **none moved a verdict**, so they change nothing in this run's
-  recommendation — noted here only so the figures above reconcile with `main`.
-- **The chain moved a full step today.** PRD §16 **Resolved Questions 50 and 51** were
-  recorded and propagated through all six downstream layers, sequentially, through the
-  `.claude/skills` subagents.
-- **Matrix v2.7 carries one open gap — Gap 21 — and that is correct**, not a regression. It
-  tracks the re-execution of `TC-DASH-01` / `TC-EXEC-001-01` against a real ten-tile grid.
-  **A complete specification is not coverage.**
-- **`RAISE-FR-EXEC-001` stays `PASS (partial)`.** It was not upgraded; its component
-  breakdown was corrected *downward* in detail (`-01` PASS → BLOCKED), because those cases
-  passed against an assertion that no longer stands.
+**Git.** `main` is at **`d35b34a`** — the merge commit for **PR #132**
+(two parents, `0e5bfbe` and `1bd258d`; **not** a fast-forward merge, verified
+with `git rev-list --parents`). **No pull requests are open.** Working tree
+clean apart from the pre-existing, untracked-by-this-work
+`.claude/scheduled_tasks.lock`.
 
----
+**The last three merges, all closed out.** PR #129 (`6b5e1f5`, P0 pagination),
+PR #130 (`8271e4e`, P1 index hardening), PR #131 (`bea06ea`, P2 API-DB-SPEC
+reconciliation) — the three follow-ups from the 2026-09-10 database status
+review. Recorded as `CHECKPOINT-2026-09-11-001/-002/-003`. PR #132 then
+recorded those checkpoints and, in its second commit (`1bd258d`), corrected
+**seven factual errors** a max-effort code review found in the first.
 
-## What changed today — in both directions
+**Chain document versions.** PRD **v0.21**, Design **v0.19**, Prototype
+**v0.20**, AC **v0.19**, Test Plan **v0.20**, Test Cases **v0.34**, Matrix
+**v2.15**.
 
-**The remaining F-03 work splits into two halves that need *different* inputs.** That
-observation is what turned "nothing can proceed" into a full day of legitimate work:
+**Test/validation state** (run 2026-09-11 during the close-out, not assumed):
+frontend **54 files / 288 tests** passing, `tsc --noEmit` and
+`eslint --max-warnings=0` clean; backend `go build`/`go vet`/
+`go test -count=1 ./...` clean across `controller`/`middleware`/`service`.
+PR #129 added **24 backend subtests** (8 per domain) on top of that.
 
-| Half | Needs | Status |
+**Traceability matrix.** **Gap 21 is the only open gap** — Gaps 1–20 and
+22–27 are all closed; 27 is the highest gap number in the document.
+
+**Open blockers, and what kind of blocker each one is.** Both items that gate
+real progress are **business decisions, not engineering work**, and neither
+moved this session:
+
+| Item | Blocks | Waiting on |
 |---|---|---|
-| **Dashboard tile — specification** | **DoR-3** (the presentation decision) | ✅ **done today** |
-| **Settings NBV section — build** | the useful-life values | 🔴 still blocked |
-| **Dashboard tile — build** | the useful-life values | 🔴 still blocked |
-| **Second chain sync — re-key to Type** | nothing | ✅ **done** (F-53 → R-39) |
+| **F-03** | **Gap 21** (NBV tile, `NBVSettings`, Settings section — none built) | One useful-life value **per Asset Type present in the data** (PRD §16 RQ52 amended RQ46 from per-Category). Asked repeatedly; not supplied. **Still the only item that would move a Compliance Review verdict.** |
+| **F-55** | `RAISE-FR-MAINT-001`'s primary create flow **in real-API mode only** | How the requester resolves when no `requesterId` param is passed. Partly downstream of **F-08** (no `User`→`Employee` link exists). |
 
-The proof that a presence criterion can be written **without any default value** was already
-in the repository: `TC-WARRANTY-001-07` states in its own test-data column *"no
-illustrative/placeholder default value is asserted"*. **An earlier run of this protocol
-concluded no engineering work was available at all. That was wrong**, and this run is the
-correction — the claim had bundled two halves with different blockers into one blocked unit.
+**Two new facts about shipped code**, surfaced by the 2026-09-15 code review of
+the close-out commit and now recorded in `CHECKPOINT-2026-09-11-001`'s Known
+Issues. Neither has an `F-NN` row, following the same precedent as Findings 4
+and 5 (review findings closed out directly rather than back-filled into the
+register):
 
-**RQ50 — the KPI grid becomes ten tiles.** NBV is specified as a **tenth tile** on **P-002**
-and **P-014**. The existing static illustrative **"Monthly Depreciation"** tile is **kept
-unchanged**; business explicitly accepted that a real computed figure will sit beside a
-fabricated one. `AC-DASH-03b` / `AC-EXEC-001-03b` and their test cases flipped from
-**absence** to **presence** — the substance of **F-52**.
-
-**RQ51 — unconfigured Asset Category.** An Asset whose `category` has no configured useful
-life contributes **`purchaseCost` unchanged** and stays **included** in the portfolio total.
-New `AC-DASH-04`, `AC-EXEC-001-04`, `TC-DASH-04`, `TC-EXEC-001-04`. It **confirms
-already-shipped, test-pinned behaviour (R-36)** rather than requesting a change, so **no code
-follows from it**.
-
-**Handled rather than hidden.** `TC-DASH-01` / `TC-EXEC-001-01` were **PASS** against the
-superseded nine-tile assertion. Their PASS text is preserved **verbatim as history**,
-labelled superseded, and both are reclassified **BLOCKED (partial)** pending re-execution.
-Neither is carried into a verdict; neither is deleted.
-
-**F-52 was judged in two halves, not closed wholesale** — forward-specification **CLOSED**,
-build/execution **still OPEN**. The day's plan had said this sync would "close F-52"; **it
-closed half**, and the record says so.
+1. **There is no upper bound on `limit` in any RAISE domain.** The only clamp
+   anywhere in the backend is `controller/sampleController.go:224`
+   (`if query.Limit > 100`), which belongs to the company template's
+   **non-RAISE** demo domain. `employeeController.go`, `ticketController.go`
+   and `assetHandoverController.go` do not reference `Limit` at all. A single
+   request may still ask for the entire table.
+2. **The pagination `LIMIT`/`OFFSET` SQL has never been executed against a
+   real database.** This codebase has no repository-level test harness —
+   verified, zero test files under `repository/` — so PR #129's 24 subtests
+   exercise each service's **in-memory mock repository**, not Postgres. PR
+   #130, by contrast, *was* applied to the live container and confirmed via
+   `pg_indexes`.
 
 ---
 
 ## Primary Next Step
 
-**F-03 — obtain one useful-life value per Asset Type.**
+**Execute the pagination `LIMIT`/`OFFSET` SQL against the live stack for all
+three domains, and record the result — taking PR #129 from `VALIDATING` to
+`COMPLETED`.**
 
-**The ask changed today, and the change is the more important news.** Asked for the five
-per-Category values, business answered that **IT Hardware has no fixed value** —
-*"it depends on the equipment purchased"* — while confirming the other four
-categories can each carry one. **That is not a missing number; it is a statement that
-RQ46's per-Category model does not fit.** PRD §16 **Resolved Question 52** now keys the
-useful life **per Asset Type**, amending RQ46 without deleting it, and `Asset.type`
-already exists end to end so **no new field is needed**.
-
-**What is needed, as seeded** — one value each for Laptop, Monitor, Headphones,
-Smartphone, Tablet, Printer, Projector, Router, Server, Camera. **Not a fixed list of ten:**
-`type` is a free-text `varchar(100)` that grows exactly as `category` does, so the rule is
-one value per type present in the data. For the four categories with a fixed value, the
-same number may simply repeat across that category's types.
-
-**Status: `BLOCKED` — business-input pending, and now the *only* input outstanding.**
-
-### Why This Is Next
-
-It is the only remaining item that would move a Compliance Review verdict, and **every other
-input is now in hand.** F-03's Definition of Ready is **one item from complete**:
-
-| # | Criterion | Status |
-|---|---|---|
-| **DoR-1** | one value per Asset Type, in years | 🔴 **FAIL** — none supplied |
-| **DoR-2** | recorded in PRD §16 with authority | 🟡 RQ50/RQ51 recorded; awaits one more for the values |
-| **DoR-3** | tile presentation decision | ✅ **RQ50** |
-| **DoR-4** | unconfigured-category behaviour | ✅ **RQ51** |
-| **DoR-5** | chain consistent with the confirmed model | ✅ **PASS again** — re-keyed to Type across all six documents (**F-53** → **R-39**) |
-
-**Everything buildable is specified — verified in source this run:**
-
-| Piece | State on `23b9c72` |
-|---|---|
-| Formula | ✅ `frontend/src/lib/nbv.ts` implements RQ46 in full (R-36) |
-| Tests | ✅ `nbv.test.ts`, 15 tests, three mutations |
-| Configuration shape | ✅ `NBVSettings: Record<AssetType, usefulLifeYears>` — re-keyed from `Record<AssetCategory, …>` by **RQ52** (F-53 → R-39) |
-| Settings precedent | ✅ `Settings/index.tsx:144-161` (Warranty threshold, per-category) |
-| Tile precedent | ✅ `Dashboard/index.tsx:29,66,74` (Utilization ← `computeUtilization`) |
-| **Specification, all layers** | ✅ **complete as of today** |
-| The per-Type values | 🔴 **absent** |
-| Chain keyed to Type | ✅ **done** — Design v0.18 through Matrix v2.8 |
-
-**Verified absent, not assumed.** A repository-wide search — `docs/`, `frontend/src`,
-`go-template-main`, English and Thai — returns only statements that the values are undefined.
-PRD §16 **Q3a is still open** and the constraint is explicit: *"Do not invent or use an
-illustrative number as if confirmed."*
-
-### Dependencies
-
-One for this task, and it is not technical: **one useful-life value per Asset Type** — as seeded,
-**Laptop, Monitor, Headphones, Smartphone, Tablet, Printer, Projector, Router, Server,
-Camera**. **Not** the five per-Category values this section asked for before **RQ52**
-re-keyed the configuration (see Primary Next Step above); and **not a fixed list of ten**,
-since `type` is a free-text `varchar(100)` that grows exactly as `category` does.
-
-### Expected Output
-
-`NBVSettings` on `PlatformSettings`; a Settings NBV section modelled on the Warranty
-Threshold precedent; the NBV tile as the tenth tile on both dashboards, fed by
-`computePortfolioNbv`.
-
-**Then execution against specifications that already exist** — no further spec work:
-`TC-WARRANTY-001-07`, `TC-DASH-03b`, `TC-EXEC-001-03b`, `TC-DASH-04`, `TC-EXEC-001-04`, plus
-**re-execution** of `TC-DASH-01` / `TC-EXEC-001-01` against the real ten-tile grid, which
-closes **Gap 21**.
-
-### Acceptance Criteria
-
-`AC-WARRANTY-001-07`, `AC-DASH-01`, `AC-DASH-03b`, `AC-DASH-04`, `AC-EXEC-001-01`,
-`AC-EXEC-001-03b`, `AC-EXEC-001-04` — **all written, all currently NOT TESTABLE YET on Q3a
-alone.** `RAISE-FR-EXEC-001` moves `PASS (partial)` → full `PASS` **only after execution**,
-never on implementation alone.
-
-### Validation
-
-`tsc`, ESLint, Vitest, `vite build`; `go build`/`vet`/`test`; `gofmt` over LF content; **CI
-green on the PR head before merge.**
-
-### Risks / Blockers
-
-**Blocked outright on DoR-1.** The only risk of proceeding is the one the PRD names:
-inventing a number, producing a tile that looks authoritative and is fabricated.
-
-**Do not touch the Monthly Depreciation tile.** RQ50 keeps it unchanged — not removed, not
-relabelled, not re-pointed at real data.
-
-### Files to Update
-
-**Code:** `frontend/src/types/settings.ts`, `frontend/src/pages/Settings/`,
-`frontend/src/pages/Dashboard/`, `frontend/src/services/dashboard-service.ts`.
-
-**Chain — before any code:** `RAISE-PRD.md` §16, to record the per-Type values as a Resolved
-Question and **close Q3a**. **After execution:** Test Cases statuses, Matrix (closing Gap 21),
-Compliance Review.
-
-**No specification pass remains.** The second one — re-keying the configuration from
-Category to Type across Design, Prototype, AC, Test Plan, Test Cases and Matrix — was
-performed on 2026-09-08 (**F-53** → **R-39**), including its sharpest instance:
-`TC-WARRANTY-001-07` no longer reads *"all 5 categories with editable useful-life inputs"*.
-It had been deferred to bundle with the values; **that deferral was reversed on evidence**,
-since the values had been requested three times across two days and the last answer changed
-the model instead of supplying numbers.
-
-**Tracking:** `OPEN-FINDINGS.md`, `PROJECT-CHECKPOINTS.md`, `DEVELOPMENT-LOG.md`,
-`CURRENT-STATUS.md`.
-
-### Next Checkpoint
-
-`CHECKPOINT-2026-09-08-003`, on receipt of the per-Type values.
+Classification: **`VALIDATION`**. Priority: highest *selectable* item (see
+below).
 
 ---
 
-## Candidate Evaluation
+## Why This Is Next
 
-| Candidate | Class | Basis |
-|---|---|---|
-| **F-03** (values → Settings + tile + execution) | 🟡 **business input** | Everything else is built or specified |
-| **F-52** build/execution half | 🔴 dependency | Same values; specification half closed today |
-| **F-53** chain re-key to Type | ✅ **RESOLVED** (R-39) | Closed the same day it was created, after the deferral was reversed on evidence |
-| **Gap 21** re-execution | 🔴 dependency | Cannot re-execute a ten-tile grid that does not exist |
-| **F-54** SLA values | ✅ **RESOLVED** (R-40) | Raised 2026-09-08. `ticket-service.ts:14` and `ticketService.go:19-26` ship `{2, 8, 24, 48}` and the UI labels them as SLA, while PRD/Prototype/AC all say SLA is **TBD** and no test asserts a value. Moves no verdict; three exits, all business decisions |
-| **F-43(a)** decoder text | 🟡 business decision | 21 sites (17 RAISE-domain, 4 in the company template's `sampleController.go`) |
-| **PRD Q22a** | 🔴 dependency | No `User`↔`Employee` link exists |
-| **F-09 · F-35 · F-36 · F-37 · F-39** | 🟡 business decision | Independent product questions, none gating a P0 verdict |
-| **F-04 → F-31**, **F-06 / F-07** | 🔴 dependency | Oracle FA mechanism; no AI engine exists |
-| **F-38** backend, **F-13/15/16/17** | ⚪ out of scope | No requirement to trace to |
-| **A fresh 🟢 item** | ⚪ none found | Zero TODOs, zero skipped RAISE tests, zero failing gates |
+**The two higher-priority items cannot be selected, and the protocol says so
+explicitly.** Step 4: *"Never start a task if a required dependency is
+incomplete. If a dependency blocks the planned task, select the dependency
+instead."* For both **F-03/Gap 21** and **F-55**, the incomplete dependency is
+a **stakeholder decision**, which is not a task this project may complete on
+its own behalf — Step 5's "don't invent" rule forbids supplying the missing
+values or picking the requester rule unilaterally. So neither is available,
+and neither is deferred out of preference.
 
----
+**Among what remains, this one ranks first on the protocol's own Completion
+Rule rather than on appeal.** That rule distinguishes `IMPLEMENTED` (code
+exists) from `COMPLETED` (acceptance criteria **and required validation** have
+both passed). PR #129 is merged and on `main`, so its code exists — but its
+SQL has only ever run against mocks. By the project's own definition it is
+**`VALIDATING`, not `COMPLETED`**, and closing that is the cheapest
+outstanding step that changes a real status.
 
-## Recommendation
+**It is also the honest follow-through on a correction just made.** The
+close-out record originally claimed live dev-stack verification of exactly
+this; the review established that never happened, and PR #132 replaced the
+claim with a plain statement that the SQL has not run against a real database.
+Performing the verification is what turns that corrected record from an
+admission into a closed item — and it is small, because the stack, the seed
+data and the method are all already proven by PR #130's identical live pass.
 
-**One item still needs no business input at all — but it is no longer Gap 23.**
-**Gap 23 is closed:** `TC-MAINT-001-10` was executed 2026-09-09 and **passed**, with the four
-priorities stamping 2 / 8 / 24 / 48 hours in the running app.
-
-**What the execution exposed is now Gap 25.** `TICKET_API_ENABLED` is off by default, so the
-run exercised the **frontend tier only**; `go-template-main/service/ticketService.go:19-26`'s
-identical map was **not exercised**, and **no backend test covers `slaHours`** **[CORRECTED 2026-09-09]** The claim quoted just above was wrong, and so was the grep that "confirmed" it. The search used `SlaTargetHours`; the Go field is **`SLATargetHours`** (capital `SLA`), so the case-sensitive pattern missed the one place it appears. `ticketService_test.go:99` already asserted `SLATargetHours` **= 8** for High, incidentally, inside a broader snapshot test. The true position was **one of four priorities covered**, not none. Same failure mode as **F-49** — a real measurement whose conclusion outran what it showed. **All four priorities plus the unknown-priority case are now covered** by `TestCreateTicket_StampsSLATargetHoursForEveryPriority` and `TestCreateTicket_UnknownPriorityGetsZeroSLATarget`. What is still uncovered: **no test compares the two maps against each other**, and **no run has exercised the Go tier through the HTTP path**.. Closing Gap 25
-needs a backend test, or a run with the ticket API flag on — **no decision, no feature build.**
-
-**One business input remains outstanding: F-03.** It is the only item that would move a
-Compliance Review verdict.
-
-**F-54 was the other one, and it is closed (R-40)** — business confirmed the four shipped SLA
-values as they stand, so the numbers users were already reading now have authority behind
-them. It took one sentence from business and no code change. **Its execution followed on
-2026-09-09 and passed** (Gap 23 closed). **What remains from it is not a decision either:**
-the run exercised the frontend tier only, so `slaHours` on the Go side is still unexercised
-and untested — **Gap 25**.
-
-**Supply one useful-life value per Asset Type.** The model question is now settled and the
-decisions are
-recorded with authority, the specification is complete end to end, and the code precedents
-exist. On receipt, `RAISE-FR-EXEC-001` can reach a full `PASS` — the last P0 verdict short of
-one — and **Gap 21** closes with it.
+**What is deliberately NOT bundled in.** Adding the missing **max page size**
+is a *behaviour change that requires choosing a number*, and this project has
+an explicit, repeatedly-tested rule against inventing numbers (F-03 held open
+across four requests; F-54 was raised precisely because four SLA numbers were
+shipped without authority). It is listed as the secondary task below with a
+defensible non-invented option, not folded into a validation pass.
 
 ---
 
-## Known Issue carried forward
+## Dependencies
 
-**A dating slip in today's sync.** Five of the six chain documents date this sync
-**2026-09-07** (the date of the *decisions*) though it was performed **2026-09-08**; only the
-Matrix used the correct date. **Not blanket-corrected**, because that date string appears
-roughly **80 times** across those files and most instances legitimately refer to when the
-decisions were confirmed — a mechanical replace would corrupt the correct ones. Worth a
-deliberate pass, not an automated one.
+- **Docker stack runnable** — `docker-compose.yml` + the two Dockerfiles, live
+  since 2026-09-01 (`DOCKER.md`). Already used for PR #130's live index
+  verification and PR #129/#131-era work, so this is proven, not assumed.
+- **Seeded data in Postgres** — PR #130's pass ran against roughly 8 seeded
+  ticket rows. Enough to exercise page boundaries, though see Risks below.
+- **No dependency on F-03, F-55, F-08 or F-16.** This step touches none of
+  them and must not be reported as advancing any of them.
 
 ---
 
-## Document Status
+## Expected Output
 
-**Status:** Live — regenerated 2026-09-08 from `main` `39bb2b0` (the commit named at the top of this file), then revised twice the same day; figures in "Current State" and the
-"Everything buildable is specified" table were re-verified against `23b9c72`. **The `4a442be` this line used to cite was the *first* regeneration's commit and was never updated through
-the later revisions — a third instance of the same sweep failure, found in the same pass.**
+- A live execution against the running stack covering, per domain
+  (`/employees`, `/tickets`, `/handovers`):
+  - default call with **no** `page`/`limit` → full result set, matching
+    today's unpaginated behaviour;
+  - explicit `limit` → page of that size, with `total` still reporting the
+    **full filtered count**, not the page size (this is the specific
+    behaviour the corrected records now describe, and the one most worth
+    proving on real SQL);
+  - explicit `page` → correct offset;
+  - a page past the end → **empty page, not an error**;
+  - a filter parameter alongside pagination parameters → no interaction bug.
+- The result recorded in `CHECKPOINT-2026-09-11-001`'s Integration Test field,
+  **replacing** its current "None — and deliberately recorded as none" text,
+  and in a new Level 1 checkpoint for this run.
+- **No production code change is expected.** If the live run disagrees with
+  the mock-backed tests, that is a defect discovery and becomes its own task
+  with its own decision about scope — it does not get fixed silently inside a
+  validation pass.
 
-**Correction, 2026-09-08 (third revision):** two places in this file were left stale by
-the previous revision, which updated the DoR table and the candidate list but did not sweep
-the whole document. The **Configuration shape** row still read `Record<AssetCategory, …>`
-while the row directly beneath it said "Chain keyed to Type — done", and **Dependencies**
-still asked for the five per-Category values that **RQ52** had replaced. Both contradicted
-this file's own Primary Next Step. **Same failure mode as F-53** — fixing one statement and
-leaving its siblings — caught by re-reading rather than by anything downstream.
+---
 
-**Supersedes:** the 2026-09-07 run and its two same-day revisions, which are worth naming
-because both were corrections of this file's own account of F-03: the first understated the
-remaining work and omitted `TC-WARRANTY-001-07`; the second **overshot**, claiming the chain
-was "specified end-to-end" when the Dashboard half specified only the tile's *absence*
-(**F-52**). **As of today that claim is finally true** — not by assertion, but because the
-specification pass was actually performed.
+## Acceptance Criteria
+
+There is **no `RAISE-FR-*` acceptance criterion for pagination** — it is
+cross-cutting scalability hardening, not a PRD-traced capability, exactly as
+`CHECKPOINT-2026-09-11-001/-002` already record. Stating that plainly rather
+than attaching a requirement ID that does not govern this work.
+
+The bar for this task is therefore its own, and is met when: all five
+behaviours above are observed against real Postgres for all three domains, the
+observations are recorded with the actual requests and responses, and any
+divergence from the mock-backed expectations is reported rather than
+reconciled.
+
+---
+
+## Validation
+
+- `docker compose up` (or the already-running stack) with the backend and
+  Postgres live.
+- Real HTTP calls to the three list endpoints, with the responses read back —
+  not `curl` output pasted from a prior session, and not inferred from the
+  unit tests.
+- `total` cross-checked against a direct `SELECT COUNT(*)` on the
+  corresponding table for at least one domain, since "`total` must stay the
+  full filtered count" is the claim most likely to be wrong and the one the
+  mocks cannot prove.
+- Backend re-validated on merged `main` after the run: `go build`, `go vet`,
+  `go test -count=1 ./...`.
+
+---
+
+## Risks / Blockers
+
+- **Seed volume is small (~8 rows).** Page-boundary cases are still
+  exercisable at that size, but it will not surface volume-dependent
+  behaviour. Say so in the record rather than implying more coverage than the
+  data supports — the same discipline PR #130 applied when it reported that
+  `EXPLAIN` still chose a sequential scan at this scale.
+- **This proves the SQL, not the API contract's ceiling.** With no `limit`
+  bound in place (item 1 above), a passing validation must not be written up
+  as "pagination is now safe."
+- **No blocker.** Nothing about this step waits on anyone.
+
+---
+
+## Files to Update
+
+`PROJECT-CHECKPOINTS.md` (new Level 1 checkpoint; amend
+`CHECKPOINT-2026-09-11-001`'s Integration Test and Known Issues fields),
+`CURRENT-STATUS.md`, `DEVELOPMENT-LOG.md` only if a PR results,
+`PROJECT-TIMELINE.md` only if a phase status genuinely changes (it should
+not), `CHANGELOG.md` **not** — a validation pass changes nothing a user would
+notice. This file, on the next run.
+
+---
+
+## Next Checkpoint
+
+`CHECKPOINT-2026-09-16-001` — "Live-stack validation of the pagination
+LIMIT/OFFSET SQL (PR #129 → COMPLETED)".
+
+---
+
+## Secondary Tasks
+
+Listed in priority order. **None of these replaces the primary step**
+(Protocol Step 6).
+
+1. **Bound the maximum page size on the three RAISE list endpoints.**
+   Classification `FINDING`. The gap is real (item 1 under Current State).
+   **The number is the whole question, and there is a non-invented answer
+   available:** `sampleController.go:224` already establishes **100** as this
+   repository's max page size. Adopting it reuses an existing in-repo
+   convention rather than inventing a threshold — precisely what PR #129 did
+   when it reused `assets`/`audit_logs`' pagination contract instead of
+   designing a new one. **Still requires a go-ahead**, because it changes
+   response behaviour for any caller that asks for more.
+2. **F-16 — DB migration tooling.** Classification `TECHNICAL_DEBT`.
+   Genuinely unblocked, no business input needed: `sql/pg/V*__*.sql` are still
+   applied by hand, and V6 was applied that way on 2026-09-11. Larger than it
+   looks (tool choice, baselining six existing migrations, CI wiring) and
+   **moves no requirement verdict**, which is why it sits below a validation
+   pass rather than above it.
+3. **F-14's remaining half — image build/push in CI.** Classification
+   `TECHNICAL_DEBT`. CI validates both stacks' source but builds no image;
+   **F-13 (hosting target) is undecided**, so this can only go as far as
+   building and publishing, not deploying.
+4. **F-36 — seed fixtures and the backend fallback still emit legacy
+   `EMP-…` ids that the app's own validator rejects.** Classification `BUG`,
+   but **do not pick a fix without asking**: both available options (invent a
+   rule for the HR-issued 6 digits, or remove auto-generation entirely) are
+   scope decisions, and HR owns the numbering.
+
+**Not selectable, restated so no future run mistakes them for available
+work:** F-03/Gap 21 and F-55 — both waiting on a stakeholder decision.
+**F-03 remains the only outstanding item that would move a Compliance Review
+verdict.**

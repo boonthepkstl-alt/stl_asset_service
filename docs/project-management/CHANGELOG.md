@@ -14,6 +14,15 @@ changes user-visible or API-visible behavior. Pure documentation-sync PRs
 
 ---
 
+## 2026-09-18
+
+### Changed
+- **List endpoints now cap `limit` at 100 rows per request.** Asking for more is
+  silently reduced to 100 rather than rejected, so no request starts failing.
+  Applies to Assets, Employees, Tickets, Asset Handovers and Audit Log alike.
+  **Omitting `limit` is unchanged** — you still get the full list, exactly as
+  before.
+
 ## 2026-09-11
 
 ### Changed

@@ -5193,6 +5193,66 @@ Commit: recorded on merge.
 
 ---
 
+## CHECKPOINT-2026-09-18-001
+
+**Phase:** Cross-cutting (all five RAISE list endpoints)
+**Feature:** Maximum page size
+**Task:** Cap `limit` at 100 on `/assets`, `/employees`, `/tickets`, `/handovers` and `/audit-logs`. Carries out `NEXT-STEP.md`'s 2026-09-16 second-run `PRIMARY NEXT STEP`, on an explicit go-ahead covering the value (100), the behaviour (silent clamp) and the scope (all five domains).
+
+**What was implemented:** `model.MaxPageLimit = 100` and `model.ClampPageLimit(limit int) int` in a new `model/pagination.go`, called from each of the five list controllers immediately after `QueryParser`.
+**What was modified:** The five list handlers (one line each); `RAISE-API-DB-SPEC.md`.
+**What was fixed:** The unbounded-page-size half of `CHECKPOINT-2026-09-11-001`'s Known Issues — a caller could previously request any page size.
+**What was added:** `model/pagination.go`, `controller/paginationClamp_test.go` (21 assertions), and a shared **Pagination** contract section in the API spec.
+**What was removed:** None.
+
+**Neither the value nor the behaviour was chosen.** `sampleController.go:224` already capped the company template's own list endpoint at **100**, and already **clamped silently rather than rejecting with 400**. Both were taken from there. This matters because the project forbids inventing numbers — **F-03** has been held open across four requests rather than filling in a default, and **F-54** was raised precisely because four SLA values shipped without authority. A ceiling picked by preference would have been the same error in a new place. Reusing an in-repo convention is the same move **PR #129** made when it reused `assets`/`audit_logs`' pagination contract instead of designing a fresh one.
+
+**Files changed:** `go-template-main/model/pagination.go` (new), `go-template-main/controller/paginationClamp_test.go` (new), `controller/employeeController.go`, `assetController.go`, `ticketController.go`, `assetHandoverController.go`, `auditController.go` (one line each), `docs/09-api-db-spec/RAISE-API-DB-SPEC.md`.
+**Database changes:** None.
+**API changes:** `limit > 100` now yields at most 100 rows on all five list endpoints. `limit <= 100`, absent `limit`, `page`, every filter, and the `{data, total}` envelope are all unchanged.
+**Frontend changes:** None — the frontend sends no `limit` at all, so no caller's behaviour changes today.
+
+**Tests:**
+- Unit Test: **21 new assertions.** `TestListEndpoints_ClampMaxPageLimit` drives all five endpoints through `fiber.App.Test()` against capturing fake services — 4 cases each (above the ceiling → clamped; exactly at it → unchanged; below it → untouched; **absent → stays 0, not rewritten to the ceiling**). `TestClampPageLimit` covers the function's own boundaries including negatives. All run individually, not merely via a package-level `ok`.
+- **The tests assert on the query the service actually received, not on the response body** — deliberately. The clamp sits between `QueryParser` and the service call, and the fakes return a fixed payload either way, so a body-only assertion would pass just as happily against a controller that ignored `Limit` entirely.
+- **Mutation-tested, not merely run.** `ClampPageLimit` was temporarily reduced to `return limit` and the suite re-run: all five "above the ceiling" subtests failed with their own message. Restored and re-verified green. Same discipline as PR #116 and PR #128.
+- Integration Test: live, see below.
+- E2E Test: None — no UI involved.
+
+**Validation:** `go build` / `go vet` / `go test -count=1 ./...` all clean. **`gofmt` checked the way CI actually checks it** — against the *index* content (`git show :<path>`), not the Windows working tree: zero CR bytes and `gofmt -l` silent. Checking the raw working tree instead lists nearly every file in the module and proves nothing, which is the trap R-34 was written about (F-49). `git diff --check` clean.
+
+**Live verification — and the first attempt could not have proven anything, which is the part worth keeping.** The stack was rebuilt first (the 2026-09-16 stale-image lesson), then all five endpoints were driven with `?limit=999999`. Every one returned 200 with correct totals — **and that result was worthless as evidence**, because no table holds more than 100 rows (largest: `audit_logs` at 41), so a clamped and an unclamped backend return *byte-identical* responses. Reporting that as confirmation would have been a false pass.
+
+**So the condition was created rather than assumed.** 150 synthetic rows were inserted into `employees` (`employee_code LIKE 'ZZTMP-%'`), taking it to 155:
+
+| Request | Rows returned | `total` | Shows |
+|---|---|---|---|
+| `?limit=999999` | **100** | 155 | far above the ceiling → clamped |
+| `?limit=101` | **100** | 155 | one above the ceiling → clamped |
+| `?limit=100` | 100 | 155 | the boundary itself → unchanged |
+| `?limit=50` | 50 | 155 | below the ceiling → untouched |
+| *(no `limit`)* | **155** | 155 | **the ceiling does not bound an unparameterized request** |
+
+**All 150 rows were then deleted and the database verified restored** — `employees` back to 5, zero `ZZTMP-` leftovers, `tickets` 8 / `asset_handovers` 8 / `assets` 20 unchanged, and all five endpoints re-checked healthy afterwards.
+
+**An unrelated fragility surfaced and is recorded rather than chased:** the first synthetic rows left `phone` NULL, and `employeePGRepository.List` failed with `converting NULL to string is unsupported` → HTTP 500. That is **pre-existing and unrelated to this change** — the repository scans several nullable columns into plain `string` — and it was my seed data, not a defect this PR introduced. Fixed by populating the columns. **No `F-NN` invented for it**; noted here so it is findable if it ever surfaces from real data.
+
+**Requirement Traceability:** **None applicable, stated plainly rather than attaching an ID that does not govern this.** Pagination is cross-cutting hardening with no `RAISE-FR-*` acceptance criterion — the position `CHECKPOINT-2026-09-11-001/-002` and `-2026-09-16-001` already recorded. No requirement verdict moves.
+
+**Git:** Branch `feature/max-page-size`. Commit recorded on merge.
+
+**Status:** ✅ Complete for its confirmed scope.
+
+**Known Issues:**
+- **An unparameterized request is still unbounded, and this checkpoint does not claim otherwise** — demonstrated live in the table above (no `limit` → all 155 rows). The ceiling bounds what a caller may *ask for*; the `limit <= 0` default is resolved downstream in each PG repository as "the full result set". Changing that would alter the response of **every existing caller**, which is a separate decision and was deliberately not taken here. Documented in `model/pagination.go`'s own comment and in the API spec's Pagination section so neither can be read as fully closed.
+- `employeePGRepository.List` cannot tolerate NULLs in several nullable columns (above). Pre-existing, unrelated, unfixed.
+
+**Remaining Work:** None for this task.
+
+**Next Step:** Recalculated in `NEXT-STEP.md` (Protocol Step 11).
+
+---
+
 ## Level 2 — Feature Checkpoints
 
 ### FEATURE-CHECKPOINT-project-tracking-governance

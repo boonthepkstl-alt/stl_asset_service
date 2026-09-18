@@ -14,6 +14,27 @@ Base URL: `{VITE_API_BASE_URL}` (default `http://localhost:8080/api`, unversione
 Auth: `Authorization: Bearer <token>` header, required on every route below
 except `POST /auth/login` and `GET /ping`.
 
+**Pagination** — the contract is identical on all five list endpoints
+(`/assets`, `/employees`, `/tickets`, `/handovers`, `/audit-logs`), so it is
+stated once here rather than repeated per section:
+
+- `page` and `limit` are optional. `page <= 0` is treated as page 1;
+  `offset = (page-1) * limit`.
+- **`limit` is capped at 100** (`model.MaxPageLimit`). A larger value is
+  **silently clamped**, not rejected — no `400`. The ceiling and the
+  clamp-don't-reject behaviour both follow `sampleController.go`'s
+  pre-existing template convention rather than being chosen for RAISE.
+- **Omitting `limit` returns the full result set**, not a default page. This
+  preserves the behaviour of every caller that predates pagination, and it
+  means the 100-row ceiling bounds only what a caller may *ask for* — an
+  unparameterized request is still unbounded. Deliberate, and recorded as a
+  known limitation in `CHECKPOINT-2026-09-18-001`.
+- `total` is always the **full filtered count**, never the size of the
+  returned page — the count query is intentionally unpaginated. Confirmed
+  against live Postgres 2026-09-16 (`CHECKPOINT-2026-09-16-001`).
+- The response envelope stays `{data, total}` on every domain; there is no
+  `page`/`limit`/`totalPages` envelope.
+
 ---
 
 ## 1. Auth
@@ -99,7 +120,7 @@ frontend's snapshot-not-join pattern; see §4 for the same choice on
 
 | Method | Path | Purpose |
 |---|---|---|
-| GET | `/employees?search=&department=&location=&status=` | List/filter |
+| GET | `/employees?search=&department=&location=&status=&page=&limit=` | List/filter |
 | GET | `/employees/:id` | Get one (by internal id or `employeeCode`) |
 | POST | `/employees` | Create |
 | PUT | `/employees/:id` | Partial update |
@@ -142,7 +163,7 @@ CREATE TABLE employees (
 
 | Method | Path | Purpose |
 |---|---|---|
-| GET | `/tickets?search=&status=&priority=&category=&department=&requesterName=` | List/filter |
+| GET | `/tickets?search=&status=&priority=&category=&department=&requesterName=&page=&limit=` | List/filter |
 | GET | `/tickets/:code` | Get one (by `ticketCode` or internal id) |
 | POST | `/tickets` | Create (resolves `requesterId`/`assetId` server-side) |
 | POST | `/tickets/:code/approval` | Dept Approval decision |

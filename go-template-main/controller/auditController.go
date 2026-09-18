@@ -43,6 +43,7 @@ func (obj *auditController) ListAuditLogs(c *fiber.Ctx) error {
 			"error":   err.Error(),
 		})
 	}
+	query.Limit = model.ClampPageLimit(query.Limit)
 
 	resp, err := obj.auditService.ListAuditLogs(query)
 	if err != nil {

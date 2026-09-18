@@ -65,6 +65,7 @@ func (obj *ticketController) ListTickets(c *fiber.Ctx) error {
 		log.Errorf("ListTickets parse error: %v", err)
 		return c.Status(http.StatusBadRequest).JSON(fiber.Map{"message": "Invalid query parameters", "error": err.Error()})
 	}
+	query.Limit = model.ClampPageLimit(query.Limit)
 	if query.Status == "ALL" {
 		query.Status = ""
 	}

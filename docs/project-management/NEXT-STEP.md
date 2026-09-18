@@ -3,191 +3,180 @@
 **Live output of [`NEXT-STEP-PROTOCOL.md`](NEXT-STEP-PROTOCOL.md).**
 Overwritten in place each time the protocol is re-run.
 
-**Run date:** 2026-09-16 (second run this day), after
-`CHECKPOINT-2026-09-16-001`. Triggered by Protocol **Step 11 — Recalculate**:
-the previous run's `PRIMARY NEXT STEP` has been carried out, so its
-recommendation is spent and must not be re-read as current.
+**Run date:** 2026-09-18, after `CHECKPOINT-2026-09-18-001`. Triggered by
+Protocol **Step 11 — Recalculate**: the previous run's `PRIMARY NEXT STEP` has
+been carried out, so its recommendation is spent.
 
 ---
 
 ## Current State
 
-**Git.** `main` is at **`b05dd66`** — the merge commit for PR #133 (two
-parents, `d35b34a` and `4ff040d`; not a fast-forward). The validation work
-recorded below sits on branch `docs/pagination-live-validation-2026-09-16`,
-**documentation only**.
+**Git.** `main` is at **`c23c9cf`** (PR #134's merge commit, two parents). The
+max-page-size work sits on `feature/max-page-size`, **the first code change in
+this stretch** — the four before it were documentation.
 
-**What changed since the last run.** The previous run's primary step —
-executing the pagination `LIMIT`/`OFFSET` SQL against the live stack — **has
-been done and passed**, recorded as `CHECKPOINT-2026-09-16-001`:
+**What changed since the last run.** The previous run's primary step is done:
+**`limit` is now capped at 100 on all five list endpoints**
+(`/assets`, `/employees`, `/tickets`, `/handovers`, `/audit-logs`), silently
+clamped rather than rejected, via `model.ClampPageLimit`. Neither the value nor
+the clamp-don't-reject behaviour was chosen — both were taken from
+`sampleController.go:224`, which had already established them. 21 new
+assertions, mutation-tested; proven live by seeding `employees` past the
+ceiling (155 rows → `?limit=999999` returned exactly 100) and then restoring
+the database.
 
-- **18 live cases** (6 per domain × `/employees`, `/tickets`, `/handovers`)
-  against the real backend and real Postgres, all passing: default-no-params,
-  explicit `limit`, explicit `page`, partial last page, page past the end
-  (HTTP 200 + empty page, not an error), and filter-plus-pagination.
-- **`total` cross-checked against direct SQL** on filtered queries —
-  `/tickets?priority=Low` → `total=2` vs `SELECT COUNT(*)` = 2;
-  `/handovers?status=PENDING_RECIPIENT_CONFIRMATION` → `total=3` vs 3. This is
-  the live confirmation that PR #129 was right to leave `SQL_*_pg_count_base`
-  unpaginated.
-- **A stale container was caught before the first request**: the running
-  backend image was built 2026-09-09, two days *older* than the pagination
-  commit it was about to be used to test. Rebuilt from `main` first.
-- **PR #129 therefore moves from `VALIDATING` to `COMPLETED`** under the
-  Protocol's own Completion Rule.
+**The pagination thread is now closed except for one deliberate residual:**
+**an unparameterized request is still unbounded.** Omitting `limit` returns the
+full result set, because the `limit <= 0` default is resolved downstream as
+"everything" — and changing it would alter the response of every existing
+caller. Recorded in three places so it cannot be mistaken for closed.
 
-**Chain document versions** — unchanged by that pass, as expected of a
-validation: PRD **v0.21**, Design **v0.19**, Prototype **v0.20**, AC **v0.19**,
-Test Plan **v0.20**, Test Cases **v0.34**, Matrix **v2.15**. **Gap 21 remains
-the only open gap** of 27.
+**Chain document versions** — unchanged: PRD **v0.21**, Design **v0.19**,
+Prototype **v0.20**, AC **v0.19**, Test Plan **v0.20**, Test Cases **v0.34**,
+Matrix **v2.15**. `RAISE-API-DB-SPEC.md` gained a shared **Pagination**
+contract section (as-built doc, unversioned). **Gap 21 remains the only open
+gap** of 27.
 
-**Test/validation state**, re-run 2026-09-16 on merged `main`: backend
-`go build` / `go vet` / `go test -count=1 ./...` all clean; frontend **54
-files / 288 tests** (untouched by this work).
+**Test/validation state** (run 2026-09-18): backend `go build` / `go vet` /
+`go test -count=1 ./...` clean; `gofmt` clean **checked against index content,
+the way CI checks it**; frontend untouched at 54 files / 288 tests.
 
-**Blockers — unchanged, and both are decisions rather than work:**
+**Blockers — unchanged for the fourth consecutive run, and both are decisions
+rather than work:**
 
 | Item | Blocks | Waiting on |
 |---|---|---|
-| **F-03** | **Gap 21** (NBV tile, `NBVSettings`, Settings section — none built) | One useful-life value per **Asset Type** present in the data (PRD §16 RQ52). **Still the only item that would move a Compliance Review verdict.** |
+| **F-03** | **Gap 21** (NBV tile, `NBVSettings`, Settings section — none built) | One useful-life value per **Asset Type** (PRD §16 RQ52). **Still the only item that would move a Compliance Review verdict.** |
 | **F-55** | `RAISE-FR-MAINT-001`'s create flow in **real-API mode only** | How the requester resolves with no `requesterId` param; partly downstream of **F-08**. |
 
 ---
 
 ## Primary Next Step
 
-**Bound the maximum page size on the three RAISE list endpoints
-(`/employees`, `/tickets`, `/handovers`).**
+**F-16 — wire up a database migration tool.**
 
-Classification: **`FINDING`**. **Requires an explicit go-ahead before
+Classification: **`TECHNICAL_DEBT`**. **Scope needs agreeing before
 implementation** — see Risks.
 
 ---
 
 ## Why This Is Next
 
-**It is now the only item left from the pagination thread, and yesterday's
-validation sharpened rather than closed it.** The live run proved the SQL
-computes pages correctly; it proved nothing about what happens when a caller
-asks for an unreasonable page. The endpoints accept any `limit`: the only
-clamp anywhere in the backend is `controller/sampleController.go:224`
-(`if query.Limit > 100`), which belongs to the company template's **non-RAISE**
-demo domain, and `employeeController.go` / `ticketController.go` /
-`assetHandoverController.go` do not reference `Limit` at all. **A single
-request can still ask for the entire table** — the exact class of exposure the
-P0 pagination work was raised to remove, left half-closed.
+**The pagination thread is finished, and nothing else unblocked is closer to
+the product.** F-03/Gap 21 and F-55 remain unselectable for the fourth run
+running: both block on a stakeholder decision, which Protocol Step 4 treats as
+an incomplete dependency and Step 5 forbids supplying on the business's behalf.
+Nothing about either changed.
 
-**The higher-priority items remain unselectable for the same reason as the
-last run.** F-03/Gap 21 and F-55 both block on a stakeholder decision, which
-Protocol Step 4 treats as an incomplete dependency and Step 5 forbids
-supplying on the business's behalf. Nothing about them changed.
+**Among unblocked work, F-16 is now the largest real exposure.** Six migrations
+(`V0`–`V6`) are applied **by hand**. The consequences are not hypothetical and
+two of them showed up in the last three days:
 
-**It outranks the other unblocked work on exposure, not on size.** **F-16**
-(migration tooling still applied by hand) and **F-14's remaining half** (CI
-builds no image) are both genuinely unblocked and both real debt — and today's
-stale-container incident is fresh evidence for the latter — but neither closes
-an open request path, and neither moves any verdict. This does close one.
+- **V6 was applied manually** on 2026-09-11 — one `docker exec psql` away from
+  having been forgotten, with nothing in the repository able to tell.
+- **There is no record anywhere of which migrations a given database has
+  had applied.** The 2026-09-16 validation had to confirm V6's indexes by
+  querying `pg_indexes` directly, because no schema-version table exists to ask.
+- The official Postgres image runs `sql/pg/*.sql` **only on first init against
+  an empty volume** (`docker-compose.yml`'s own comment says so). Any
+  migration added after a developer's volume exists is silently skipped for
+  them — which is precisely how a stale schema goes unnoticed.
 
-**The number does not have to be invented, and that is what makes it
-selectable at all.** This project holds an explicit rule against inventing
-business numbers — F-03 was held open across four separate requests, and
-**F-54** was raised precisely because four SLA values shipped without
-authority. The same rule applies here, and the exit is the same one PR #129
-used: **reuse an existing in-repo convention instead of designing a new one.**
-`sampleController.go:224` already establishes **100** as this repository's
-maximum page size. Adopting it is a citation, not an invention — exactly as
-PR #129 reused `assets`/`audit_logs`' pagination contract rather than
-reinventing it. **If the stakeholder wants a different ceiling, that is their
-call and this step should take it from them instead.**
+**It is genuinely unblocked.** No business input, no PRD question, no
+stakeholder decision — the only open questions are engineering ones.
+
+**Why not the alternatives.** **F-14's remaining half** (CI builds no image) is
+real and got fresh evidence on 2026-09-16 when a two-day-stale container nearly
+produced a false validation — but it is downstream of **F-13** (no hosting
+target decided), so it can only go as far as build-and-publish. **F-36** is a
+`BUG` but needs a decision HR owns. Neither is bigger than the schema-drift
+exposure above.
+
+**An honest caveat about its value, stated rather than buried:** F-16 moves
+**no requirement verdict**. It is infrastructure. It ranks first here because
+everything above it is blocked, not because it is the most valuable thing on
+the board — **F-03's missing values remain that**, and they are still the only
+item that would change a Compliance Review outcome.
 
 ---
 
 ## Dependencies
 
-None. No business input is required *if* the template's existing 100 is
-adopted; a different value would require someone to supply it.
+None blocking. Note that **F-13** (hosting target) is still undecided, so this
+step must not drift into anything deployment-shaped.
 
 ---
 
 ## Expected Output
 
-- An upper bound applied to `Limit` for the three RAISE list endpoints,
-  implemented **once in a shared place if the codebase already offers one**,
-  and otherwise mirrored per controller in the same shape
-  `sampleController.go` already uses — establishing no new pattern.
-- Unit tests covering: `limit` under the ceiling (unaffected), `limit` above
-  it (clamped to the ceiling, **not** rejected with an error — matching the
-  template's existing behaviour, which silently clamps), and the existing
-  `limit <= 0` default path (unchanged).
-- The clamp behaviour documented in **`RAISE-API-DB-SPEC.md`** §3/§4/§6's
-  query-string lines, since that document is the as-built API contract and
-  currently implies no ceiling exists.
-- **`assets` and `audit_logs` explicitly considered and a decision recorded
-  either way.** They already paginate and are equally unbounded; extending the
-  clamp to them is consistent, *not* extending it leaves an inconsistency this
-  step would have created. Deciding it silently is the one outcome to avoid.
+- A migration tool selected and wired for the Go backend, with the **choice
+  and its rejected alternatives recorded** — this is an architecture decision
+  and the repository has no ADR convention yet, so it belongs in
+  `RAISE-HIGH-LEVEL-ARCHITECTURE.md` §6 alongside F-16's own entry.
+- **`V0`–`V6` baselined, not re-run.** Existing databases already have this
+  schema; the tool must adopt them as already-applied rather than attempting to
+  execute them again.
+- A documented path for a developer whose volume predates the tool.
+- CI wiring only if it can be done without a hosting decision.
 
 ---
 
 ## Acceptance Criteria
 
-**No `RAISE-FR-*` acceptance criterion governs pagination** — stated plainly
-rather than attaching a requirement ID that does not apply, consistent with
-`CHECKPOINT-2026-09-11-001/-002` and `-2026-09-16-001`.
+No `RAISE-FR-*` criterion governs migration tooling — F-16 is filed under
+*Infrastructure / Process (not addressed anywhere in the PRD)*, and stating
+that is more honest than attaching an ID that does not apply.
 
-The bar is therefore: a request above the ceiling returns at most the ceiling's
-worth of rows; `total` still reports the **full filtered count** (the property
-the live run just confirmed, and the one a clamp could most easily break); no
-existing caller's behaviour changes, since none currently sends a `limit` at
-all; and the as-built spec no longer implies an unbounded endpoint.
+The bar: a fresh database reaches the same schema as an existing one; an
+existing database is **not** damaged or re-migrated; the applied set is
+queryable from the database itself; and `V0`–`V6` remain byte-unchanged — this
+step adopts them, it does not rewrite them.
 
 ---
 
 ## Validation
 
-- `go build`, `go vet`, `go test -count=1 ./...`, `gofmt` (raw **and** over LF
-  content, per R-34).
-- New unit tests run individually, not merely via a package-level `ok` — the
-  standing practice in this project since PR #128.
-- **A live re-run of the relevant subset** against the rebuilt stack: a request
-  above the ceiling, and a normal request confirming nothing regressed.
-  **Rebuild the backend image first** — see Risks.
-- `git diff --check`; confirm `.claude/scheduled_tasks.lock` untouched.
+- A **fresh volume** brought up from empty and its schema compared against a
+  current database — including the five V6 indexes.
+- An **existing volume** brought up and confirmed unchanged, with the tool
+  reporting the migrations as already applied. **This is the case that matters**;
+  a tool that quietly re-runs V1 on a populated database is worse than no tool.
+- `go build` / `go vet` / `go test -count=1 ./...`; `gofmt` **against index
+  content**, not the Windows working tree.
+- Rebuild the stack before any live check — the 2026-09-16 stale-image lesson.
 
 ---
 
 ## Risks / Blockers
 
-- **This changes response behaviour for any caller that asks for more than the
-  ceiling.** No such caller exists today (the frontend sends no `limit` at
-  all), which is what makes now the cheap moment to do it — but it is a
-  behaviour change, so it needs a go-ahead rather than being folded in as
-  cleanup.
-- **Clamp silently, or reject with 400?** The template clamps. Rejecting would
-  be defensible and is arguably clearer to an API consumer, but it is a
-  *different* contract and would diverge from the in-repo precedent this step
-  leans on for its authority. **Do not decide this by preference** — take the
-  template's behaviour unless told otherwise.
-- **Rebuild the dev stack before any live check.** The 2026-09-16 pass found
-  the running backend image was two days older than the code under test. Any
-  live verification that skips this step is measuring the wrong binary.
+- **Scope needs agreeing first.** "Wire up a migration tool" spans a
+  one-evening job (a library, baselined, run at startup) and a week (CI
+  integration, rollback strategy, per-environment config). **Agree which before
+  starting.**
+- **Baselining is the dangerous part.** Getting it wrong means re-running
+  `CREATE TABLE` against a populated database. Every rehearsal belongs on a
+  throwaway volume.
+- **Do not let it become a hosting decision.** F-13 is undecided and is not
+  this step's to settle.
+- **It moves no verdict.** Worth restating so the board is not misread as
+  progressing toward MVP acceptance.
 
 ---
 
 ## Files to Update
 
-`go-template-main/controller/` (the three RAISE controllers) or a shared
-helper; the corresponding `_test.go` files;
-`docs/09-api-db-spec/RAISE-API-DB-SPEC.md`; then
-`PROJECT-CHECKPOINTS.md`, `CURRENT-STATUS.md`, `DEVELOPMENT-LOG.md` (a code PR
-does get a row), and this file. **`CHANGELOG.md` — yes**, unlike the last two
-steps: a maximum page size is an API-visible behaviour change.
+`go-template-main/` (tool config, wiring, possibly `go.mod`);
+`docker-compose.yml` and `DOCKER.md`; `RAISE-HIGH-LEVEL-ARCHITECTURE.md` §6;
+`OPEN-FINDINGS.md` (**F-16 is a numbered finding — it gets a real Resolved row
+with the merge commit, unlike the un-numbered review findings**); then
+`PROJECT-CHECKPOINTS.md`, `CURRENT-STATUS.md`, `DEVELOPMENT-LOG.md`, and this
+file. `CHANGELOG.md` **no** — invisible to users.
 
 ---
 
 ## Next Checkpoint
 
-`CHECKPOINT-2026-09-16-002` — "Maximum page size on the RAISE list endpoints".
+`CHECKPOINT-2026-09-18-002` — "Database migration tooling (F-16)".
 
 ---
 
@@ -195,18 +184,20 @@ steps: a maximum page size is an API-visible behaviour change.
 
 **None of these replaces the primary step** (Protocol Step 6).
 
-1. **F-16 — DB migration tooling.** `TECHNICAL_DEBT`. Fully unblocked, no
-   business input. `sql/pg/V*__*.sql` are still applied by hand. Larger than
-   it looks (tool choice, baselining six existing migrations, CI wiring) and
-   moves no requirement verdict.
-2. **F-14's remaining half — image build/push in CI.** `TECHNICAL_DEBT`. Given
-   fresh evidence on 2026-09-16: a developer verifying against a long-running
-   local stack silently tests stale code. Can only go as far as build/publish;
-   **F-13** (hosting target) is undecided, so deployment is out of reach.
-3. **F-36 — seed fixtures and the backend fallback still emit legacy `EMP-…`
-   ids the app's own validator rejects.** `BUG`, but **do not pick a fix
-   without asking**: both options are scope decisions and HR owns the
-   numbering.
+1. **F-14's remaining half — image build/push in CI.** `TECHNICAL_DEBT`.
+   Fresh evidence 2026-09-16: a developer verifying against a long-running
+   local stack silently tests stale code. Capped by **F-13**.
+2. **F-36 — seed fixtures and the backend fallback still emit legacy `EMP-…`
+   ids the app's own validator rejects.** `BUG`; **do not pick a fix without
+   asking** — HR owns the numbering.
+3. **Bound the unparameterized request.** `ENHANCEMENT`. The residual left
+   open by `CHECKPOINT-2026-09-18-001`. Deliberately *not* ranked higher: it
+   changes the response of every existing caller, so it is a product decision
+   about default behaviour, not cleanup.
+4. **`employeePGRepository.List` cannot tolerate NULLs** in several nullable
+   columns (`converting NULL to string is unsupported` → HTTP 500). Found
+   incidentally 2026-09-18 from synthetic test data, not from real data; no
+   `F-NN` invented. Only reachable by rows the app itself would not create.
 
 **Not selectable, restated so no future run mistakes them for available
 work:** **F-03/Gap 21** and **F-55**, both waiting on a stakeholder decision.

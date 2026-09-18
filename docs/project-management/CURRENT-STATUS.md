@@ -9,8 +9,8 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-09-16, at `b05dd66` (**PR #133** merged; a merge commit with two
-parents, not a fast-forward). Suite **54 test files / 288 tests** frontend, backend
+**As of:** 2026-09-18, at `c23c9cf` (**PR #134** merged; a merge commit with two
+parents, not a fast-forward), plus the max-page-size work on `feature/max-page-size`. Suite **54 test files / 288 tests** frontend, backend
 `go build`/`vet`/`test -count=1` clean **and 24 backend subtests added by PR #129**.
 Test Cases **v0.34**,
 Matrix **v2.14**; PRD **v0.21**, Design **v0.19**, Prototype **v0.20**, AC **v0.19**,
@@ -47,9 +47,17 @@ against the live stack for all three domains — 18 cases, all passing, includin
 `SQL_*_pg_count_base` unpaginated was correct. **A stale container was caught
 first:** the running backend image predated the pagination commit by two days and
 was rebuilt before anything was measured — see `CHECKPOINT-2026-09-16-001`.
-**Still open from that work: there is no maximum page size on any RAISE list
-endpoint** (the only clamp in the repository is in the non-RAISE template demo
-domain), so a single request may still ask for the entire table.
+~~**Still open from that work: there is no maximum page size on any RAISE list
+endpoint**~~ — **closed 2026-09-18** (`CHECKPOINT-2026-09-18-001`): `limit` is
+now capped at **100** on all five list endpoints (`/assets`, `/employees`,
+`/tickets`, `/handovers`, `/audit-logs`), silently clamped rather than
+rejected. **Neither the value nor the behaviour was invented** — both were
+taken from `sampleController.go:224`, which had already established them.
+Proven live by seeding a table past the ceiling (`?limit=999999` → 100 rows of
+155) and mutation-tested at the unit level. **One half deliberately remains
+open: an unparameterized request is still unbounded** — omitting `limit` still
+returns the full result set, because changing that would alter the response of
+every existing caller.
 
 **F-56 is RESOLVED** (`c3bac79`) — the Asset Detail assignee link no longer falls
 back to the hardcoded fixture id `'e1'` when `assignedEmployeeId` is missing. Found

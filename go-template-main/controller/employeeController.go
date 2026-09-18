@@ -44,6 +44,7 @@ func (obj *employeeController) ListEmployees(c *fiber.Ctx) error {
 	if query.Location == "ALL" {
 		query.Location = ""
 	}
+	query.Limit = model.ClampPageLimit(query.Limit)
 	if query.Status == "ALL" {
 		query.Status = ""
 	}

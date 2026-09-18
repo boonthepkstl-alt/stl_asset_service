@@ -58,6 +58,7 @@ func (obj *assetController) ListAssets(c *fiber.Ctx) error {
 			"error":   err.Error(),
 		})
 	}
+	query.Limit = model.ClampPageLimit(query.Limit)
 	if query.Status == "all" {
 		query.Status = ""
 	}

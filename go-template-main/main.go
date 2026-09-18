@@ -4,6 +4,7 @@ package main
 import (
 	"context"
 	"database/sql"
+	"flag"
 	"fmt"
 	"os"
 	"os/signal"
@@ -27,6 +28,8 @@ func init() {
 }
 
 func main() {
+	flag.Parse()
+
 	log := logger.GetLogger()
 	shutdownTracing, traceErr := util.InitTracing(context.Background())
 	if traceErr != nil {
@@ -50,6 +53,14 @@ func main() {
 	// membership from config file without restart.
 	repository.InitTT()
 	repository.InitPG()
+
+	// -migrate runs the PostgreSQL migrations and exits without starting the server (Open Finding
+	// F-16). Deliberately NOT run on every startup: doing that races across multiple instances and
+	// changes the behaviour of an already-running deployment, which is a separate decision from
+	// "there should be a way to apply migrations at all". See repository/migration.go.
+	if *migrateOnly {
+		runMigrationsAndExit(log, *migrateBaseline)
+	}
 
 	if strings.TrimSpace(viper.GetString("DB_MSSQL_SERVER")) != "" {
 		mssqlDb, err = repository.InitMSSQLPool()

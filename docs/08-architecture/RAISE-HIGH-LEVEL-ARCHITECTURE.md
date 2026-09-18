@@ -182,7 +182,7 @@ Per this project's "flag gaps, don't silently invent" convention (see
 | Real user/auth store (replacing the hardcoded demo user) | Confirmed **Roadmap**, not MVP, per PRD §16 Resolved Question 38 |
 | RBAC backend enforcement (`middleware.RequireRole` beyond the demo `/samples` wiring) | Confirmed **Roadmap**, not MVP — same PRD resolution |
 | Observability / monitoring / logging retention | PRD §10 NFR backlog — TBD at every layer, see `RAISE-DESIGN.md` §16A |
-| Database migration tooling (the `sql/pg/V*__*.sql` files are applied manually today) | Not decided |
+| Database migration tooling | **Partly decided 2026-09-18.** A minimal in-repo runner (`repository/migration.go`, invoked as `./server -migrate`) tracks applied versions in `schema_migrations` and applies pending `sql/pg/V*__*.sql` in version order, each in one transaction. **No external tool or dependency was adopted**, and the existing files were neither renamed nor edited: `golang-migrate` would have required renaming every file to `<n>_<name>.up.sql`, and `goose` would have required editing `-- +goose Up` markers into migrations already applied to real databases; `Atlas` would have added a binary and a toolchain heavier than this cut needs. Adopting an existing database requires an explicit `-baseline=N` — the runner refuses to guess. **Still not decided:** running at application startup, down/rollback migrations, and CI integration (blocked behind the undecided hosting target). |
 | Scalability / availability targets | PRD §10 NFR backlog — TBD |
 
 Do not resolve any of the above by implication elsewhere in this document —

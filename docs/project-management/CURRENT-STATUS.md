@@ -9,8 +9,19 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-09-18, at `c23c9cf` (**PR #134** merged; a merge commit with two
-parents, not a fast-forward), plus the max-page-size work on `feature/max-page-size`. Suite **54 test files / 288 tests** frontend, backend
+**As of:** 2026-09-18, at `fd8a966` (**PR #135** merged), plus the F-16 migration
+runner on `feature/f16-migration-runner`.
+
+**F-16 (DB migration tooling) is narrowed, not closed (2026-09-18).** A scoped-down
+runner now exists: `schema_migrations` tracking, version-ordered application of
+`sql/pg/V*__*.sql` each in one transaction, invoked as
+`docker compose run --rm backend -migrate`. **No dependency added and V0–V6 were
+neither renamed nor edited.** Adopting a database that predates the runner requires
+an explicit `-baseline=N` — it **refuses to guess** which migrations a populated
+schema already has. Live-verified on every branch, including the F-16 scenario
+itself (a database missing only V6 received exactly V6). **Still open:** running at
+startup, down/rollback, and CI integration (capped by F-13). Normal app startup is
+unchanged. See `CHECKPOINT-2026-09-18-002`. Suite **54 test files / 288 tests** frontend, backend
 `go build`/`vet`/`test -count=1` clean **and 24 backend subtests added by PR #129**.
 Test Cases **v0.34**,
 Matrix **v2.14**; PRD **v0.21**, Design **v0.19**, Prototype **v0.20**, AC **v0.19**,

@@ -5253,6 +5253,67 @@ Commit: recorded on merge.
 
 ---
 
+## CHECKPOINT-2026-09-18-002
+
+**Phase:** Infrastructure / Process (not a PRD-traced phase)
+**Feature:** Database migration tooling
+**Task:** Open Finding **F-16** — scoped-down first cut. Selected by `NEXT-STEP.md`'s 2026-09-18 run as its `PRIMARY NEXT STEP`, on an explicit go-ahead for the scoped-down variant.
+
+**What was implemented:** `repository/migration.go` — a minimal PostgreSQL migration runner: a `schema_migrations` tracking table, version-ordered application of `sql/pg/V*__*.sql`, an explicit baseline mode, and a `pg_advisory_lock` so two runners cannot migrate the same database concurrently. `migrations_embed.go` embeds the SQL into the binary. `migrate_cmd.go` adds the `-migrate` / `-baseline` flags.
+**What was modified:** `main.go` — `flag.Parse()` plus a five-line branch that runs migrations and exits. **Normal startup is unchanged.**
+**What was fixed:** The three symptoms F-16 names. Nothing recorded which migrations a database had received; a volume created before a migration existed could never receive it (`docker-entrypoint-initdb.d` runs only on first init against an empty volume); and application was by hand with no record.
+**What was added:** `repository/migration_test.go` — 15 assertions across 4 test functions.
+**What was removed:** None. **`V0`–`V6` were neither renamed nor edited.**
+
+**No dependency was added, and the tool choice is the load-bearing decision here.** `golang-migrate` requires `<n>_<name>.up.sql` naming — adopting it meant renaming all seven files, invalidating every document that cites them by name (`RAISE-API-DB-SPEC.md`, three checkpoints, the timeline). `goose` requires `-- +goose Up` markers **inside** each file — that rewrites migrations already applied to real databases. `Atlas` reads Flyway-style naming but adds a binary and a toolchain heavier than this cut needs, and its CI half is blocked behind **F-13** anyway. What remained was ~180 lines reading the existing naming convention from an `fs.FS`, with `go:embed` (stdlib) supplying it — **embedded rather than read from disk because the runtime image copies only the compiled binary**, verified in the Dockerfile's second stage, so a filesystem read would work locally and fail in the container.
+
+**The baseline problem is solved by refusing to guess, which is the part worth keeping.** `NEXT-STEP.md` flagged baselining as the dangerous step: get it wrong and you re-run `CREATE TABLE` against populated tables. The runner therefore does **not** infer. If the tracking table is absent but the schema has objects, it returns `ErrBaselineRequired` and tells the operator to re-run with `-baseline=N`. Assuming "all applied" would silently skip a genuinely pending migration; assuming "none" would destroy a populated database. **This is the same discipline the project applies to business values (F-03, F-54), applied to schema state.**
+
+**Tests:**
+- Unit Test: **15 assertions / 4 functions**, against `fstest.MapFS` — no database needed. Covers the real V0–V6 filenames; **numeric rather than lexical ordering** (V10 must follow V2, not precede it); rejection of unconventional names and duplicate versions; pending-selection including the stale-volume case and a mid-sequence gap; and the baseline split at 0, 5, 6 and above-max. Split this way deliberately: `repository/` had **zero** test files before this and there is no live PG in CI, so logic that could only be checked against a real server would be checked by nobody.
+- Integration Test: **live, against the real stack** — see below.
+- E2E Test: None — no UI involved.
+
+**Validation:** `go build` / `go vet` / `go test -count=1 ./...` clean across `controller`/`middleware`/`repository`/`service`. `gofmt` checked **against index content the way CI checks it** (`git show :<path>`), not the CRLF working tree: clean, zero CR bytes. `git diff --check` clean.
+
+**Live verification, every branch exercised against a real database:**
+
+| Case | Result |
+|---|---|
+| Populated dev DB, no history, **no** baseline | **Refused** (`ErrBaselineRequired`), created nothing — `schema_migrations` still absent |
+| Same DB, `-baseline=6` | 7 rows recorded `baselined=true`, **nothing executed**; employees 5 / tickets 8 / handovers 8 / assets 20 unchanged; all five V6 indexes untouched |
+| Re-run with nothing pending | No-op, reported as such |
+| **Empty** throwaway DB | All 7 applied, `baselined=false`; tables **and** indexes `diff`ed **identical** to the dev database |
+| **The F-16 scenario** — DB missing only V6 | Applied **exactly V6**, nothing re-run; the five indexes came back |
+
+The throwaway database was created and dropped inside the same container specifically so the dev volume was never at risk; its removal and the dev DB's integrity were both verified afterwards.
+
+**A real defect in this feature was caught by live testing and fixed, not shipped.** The first build logged its success output through `logger.GetLogger()`, and **none of it appeared** — errors printed, `Infof` did not. Verified rather than assumed by checking the running backend's own log, where even `main.go`'s `-= Start Service =-` never appears. A migration tool whose success output is invisible is worse than useless, so the operator-facing summary now goes to stdout via `fmt`; errors additionally go to the logger. **The shared logger's configuration was not touched** — that is an app-wide change and unrelated to this finding.
+
+**Also corrected during testing rather than worked around:** the first live invocation was `docker compose run --rm backend ./server -migrate`, which hung. The image's `ENTRYPOINT` is already `./server`, so that ran `./server ./server -migrate` — `flag.Parse` stops at the positional, so `-migrate` was never parsed and the server simply started listening. The correct form is `docker compose run --rm backend -migrate`, and it is now documented in `DOCKER.md` and in `migrate_cmd.go`'s own header so the next person does not repeat it.
+
+**Files changed:** `go-template-main/repository/migration.go` (new), `repository/migration_test.go` (new), `migrations_embed.go` (new), `migrate_cmd.go` (new), `main.go` (+6 lines); `DOCKER.md`; `docs/08-architecture/RAISE-HIGH-LEVEL-ARCHITECTURE.md` §6; `docs/project-management/OPEN-FINDINGS.md`.
+**Database changes:** One new table, `schema_migrations`, created by the runner itself — **not** a new `V7` migration file, deliberately: the table that records migrations cannot itself be one.
+**API changes:** None. **Frontend changes:** None.
+
+**Requirement Traceability:** **None, and deliberately so.** F-16 is filed under *Infrastructure / Process (not addressed anywhere in the PRD)*. No `RAISE-FR-*` verdict moves.
+
+**Git:** Branch `feature/f16-migration-runner`. Commit recorded on merge.
+
+**Status:** ✅ Complete for its confirmed scope — which is the scoped-down cut, not F-16 in full.
+
+**Known Issues:**
+- **Migrations do not run at application startup**, by design. Doing so races across multiple instances and changes the behaviour of a running deployment; that is a separate decision.
+- **No down/rollback migrations.** Forward-only.
+- **No CI integration** — capped by **F-13**, no hosting target decided.
+- **`logger.GetLogger()`'s Info level is suppressed app-wide** (pre-existing, found here, unrelated to migrations: even `-= Start Service =-` never prints). Worked around locally for this command only. **No `F-NN` invented for it.**
+
+**Remaining Work:** The three open items above, whenever prioritized. F-16 stays **Open**, narrowed.
+
+**Next Step:** Recalculated in `NEXT-STEP.md` (Protocol Step 11).
+
+---
+
 ## Level 2 — Feature Checkpoints
 
 ### FEATURE-CHECKPOINT-project-tracking-governance

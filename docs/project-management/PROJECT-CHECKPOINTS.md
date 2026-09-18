@@ -5008,7 +5008,7 @@ Evidence came from the **browser's own network log**, not `curl`: four `POST htt
 
 **Tests:**
 - Unit Test: **3 new test functions, 24 new subtests** — `TestListEmployees_Pagination`, `TestListTickets_Pagination`, `TestListAssetHandovers_Pagination`, 8 subtests each: default/no-params, explicit limit, explicit page, partial last page, a page past the end (empty, not an error), empty result set, a filter param alongside pagination params, and deterministic ordering across repeated calls. All run and verified passing individually. `go test -count=1 ./...` clean across `controller`/`middleware`/`service`.
-- Integration Test: **None — and deliberately recorded as none.** This codebase has no repository-level test harness (verified: zero test files under `repository/`), so the pagination SQL is exercised only through each service's in-memory mock repository, not against a real Postgres instance. **The `LIMIT`/`OFFSET` SQL has not been executed against a live database.**
+- Integration Test: **None at the time of this PR — and deliberately recorded as none.** This codebase has no repository-level test harness (verified: zero test files under `repository/`), so the pagination SQL was exercised only through each service's in-memory mock repository, not against a real Postgres instance. **Discharged 2026-09-16** — the `LIMIT`/`OFFSET` SQL was executed against the live stack for all three domains and passed every case, including `total` cross-checked against direct `SELECT COUNT(*)` on filtered queries. See `CHECKPOINT-2026-09-16-001`. This PR's own status therefore moves from `VALIDATING` to **`COMPLETED`**.
 - E2E Test: None run (backend-only change).
 
 **Validation:**
@@ -5030,9 +5030,9 @@ Commit: `6b5e1f5`
 **Known Issues:**
 - Frontend does not yet send `page`/`limit` on these three list calls — deferred, not a regression.
 - **No upper bound on `limit`.** A client may request any page size; the only clamp anywhere in the backend is `controller/sampleController.go:224` (`if query.Limit > 100`), which belongs to the company template's **non-RAISE** demo domain. An unparameterized call still returns the whole table. Bounding it was not in this PR's scope and is not claimed here.
-- **The pagination SQL has never run against a real database** — see the Integration Test field above.
+- ~~**The pagination SQL has never run against a real database**~~ — **closed 2026-09-16** (`CHECKPOINT-2026-09-16-001`); kept here to show what changed rather than deleted.
 
-**Remaining Work:** Wire frontend list views for Employee/Ticket/Handovers to pass `page`/`limit` when pagination-driven UI (e.g. a page-size selector) is prioritized. Not urgent at current seed data volume. Separately: decide whether a maximum page size belongs on the RAISE domains, and verify the `LIMIT`/`OFFSET` SQL against the live stack at least once.
+**Remaining Work:** Wire frontend list views for Employee/Ticket/Handovers to pass `page`/`limit` when pagination-driven UI (e.g. a page-size selector) is prioritized. Not urgent at current seed data volume. Separately: decide whether a maximum page size belongs on the RAISE domains — **still open**, and the only item from this checkpoint that remains.
 **Next Step:** Proceed to the P1 index-hardening pass identified in the same 2026-09-10 review (`CHECKPOINT-2026-09-11-002`).
 
 ---
@@ -5122,6 +5122,74 @@ Commit: `bea06ea` (merge commit `0e5bfbe`, two parents — `8271e4e` and `bea06e
 **Known Issues:** None introduced. F-16 (migration tooling), F-03, F-55 remain open and untouched, exactly as scoped.
 **Remaining Work:** None for this task. The 2026-09-10 database status review's three follow-ups (P0 pagination, P1 index hardening, P2 spec reconciliation) are now all merged.
 **Next Step:** No unblocked engineering work identified by this review. **F-03 and F-55 remain the highest-leverage open items**, both waiting on a stakeholder business decision (per `CHECKPOINT-2026-09-10-003`).
+
+---
+
+## CHECKPOINT-2026-09-16-001
+
+**Phase:** Cross-cutting (Employee, Maintenance/Ticket, Asset Handovers)
+**Feature:** List/count query pagination — validation
+**Task:** Execute the pagination `LIMIT`/`OFFSET` SQL against the live stack for all three domains, discharging the one open validation item on PR #129. Selected by `NEXT-STEP.md`'s 2026-09-16 run as its `PRIMARY NEXT STEP`.
+
+**What was implemented:** Nothing. **This was a validation pass and no production code, SQL, or migration was changed** — stated first so the checkpoint is not misread as a build.
+**What was modified:** Documentation only (this file, `CURRENT-STATUS.md`, `NEXT-STEP.md`).
+**What was fixed:** Nothing in the product. One **process** defect was found and corrected in the environment — see Known Issues.
+**What was added:** The live execution record below.
+**What was removed:** None.
+
+**A stale container was caught before it could produce a false result, and that is the part of this checkpoint most worth keeping.** The running backend image was built **2026-09-09T09:07:54Z**; the pagination code merged **2026-09-11** (`6b5e1f5`). The container serving `:8080` was therefore **two days older than the feature under test**. Running the matrix against it would have returned "`limit` ignored, full result set returned" for every case — a result that looks exactly like a pagination bug, and which could equally have been written up as "default behaviour confirmed". **This was checked before the first request, not diagnosed afterwards from a confusing result**, by comparing `docker inspect`'s image creation timestamp against the merge date of the commit under test. `docker compose build backend` + `up -d` rebuilt from current `main` (container recreated 2026-09-16T09:25:58Z) before anything was measured.
+
+**Ground truth was taken from Postgres directly, not from the API being tested:** `employees` = **5**, `tickets` = **8**, `asset_handovers` = **8**. All five **V6 indexes** (PR #130) confirmed still present in `pg_indexes` on the same volume.
+
+**Results — every case passed, all three domains** (real HTTP through the running backend against real Postgres, `Authorization: Bearer` from a real `POST /auth/login`):
+
+| Case | `/employees` | `/tickets` | `/handovers` |
+|---|---|---|---|
+| default, no params → rows == `COUNT(*)`, `total` == `COUNT(*)` | 5/5 ✅ | 8/8 ✅ | 8/8 ✅ |
+| `limit=2` → 2 rows, **`total` still the full count, not the page size** | ✅ total=5 | ✅ total=8 | ✅ total=8 |
+| `limit=2&page=2` → offset applied, matches slice `[2:4]` of default | ✅ | ✅ | ✅ |
+| partial last page → matches the default list's tail exactly | ✅ 2 rows | ✅ 2 rows | ✅ 2 rows |
+| `page=999` → **HTTP 200 with an empty page, not an error** | ✅ | ✅ | ✅ |
+| filter + `limit` together → filtered `total` identical with and without `limit` | ✅ | ✅ | ✅ |
+
+**The claim most likely to be wrong was cross-checked against the database rather than trusted from the API's own answer.** "`total` must remain the full *filtered* count" is precisely what the mock-backed tests cannot prove, so filtered totals were compared to direct SQL: `GET /tickets?priority=Low` returned `total=2` against `SELECT COUNT(*) FROM tickets WHERE priority='Low'` = **2**; `GET /handovers?status=PENDING_RECIPIENT_CONFIRMATION` returned `total=3` against `SELECT COUNT(*)` = **3**. **This is the direct live confirmation that PR #129 was right to leave `SQL_*_pg_count_base` unpaginated** — the decision that four documents had misdescribed until PR #132 corrected them.
+
+**One result reported as-is rather than tidied:** the employees filter case showed `department=Engineering` returning `total=5`, equal to the unfiltered total, which reads like a filter that did nothing. It is not — `SELECT department, COUNT(*) FROM employees GROUP BY department` returns exactly one row, `Engineering = 5`. **The seed data has no departmental variety, so this case proves the filter *ran* but cannot prove it *discriminates* on this domain.** The tickets and handovers cases do discriminate (2 of 8, 3 of 8) and carry that half of the evidence. Recorded rather than silently swapped for a filter value that would have looked better.
+
+**Files changed:** `docs/project-management/PROJECT-CHECKPOINTS.md`, `CURRENT-STATUS.md`, `NEXT-STEP.md`. Test script kept in the session scratchpad, deliberately **not** committed — it is a one-off probe, not a test the suite should carry (adding it would imply a live-DB dependency the suite does not have).
+**Database changes:** None. Reads only, plus the pre-existing V6 indexes confirmed intact.
+**API changes:** None.
+**Frontend changes:** None.
+
+**Tests:**
+- Unit Test: `go test -count=1 ./...` clean across `controller`/`middleware`/`service` on merged `main`.
+- Integration Test: **the 18 live cases above** (6 per domain × 3 domains), executed over HTTP against the real backend and Postgres.
+- E2E Test: None — no UI is involved in this change.
+
+**Validation:**
+- Build: `go build ./...` clean (exit 0).
+- Lint: `go vet ./...` clean (exit 0).
+- Test: `go test -count=1 ./...` clean.
+- Type Check: N/A (Go; no frontend code involved).
+
+**Requirement Traceability:**
+PRD: **None, and deliberately so.** Pagination is cross-cutting scalability hardening with no `RAISE-FR-*` acceptance criterion governing it — the same position `CHECKPOINT-2026-09-11-001/-002` already recorded. No requirement verdict moves as a result of this pass.
+Design / Acceptance Criteria / Test Case: Not touched.
+
+**Git:**
+Branch: `docs/pagination-live-validation-2026-09-16`
+Commit: recorded on merge.
+
+**Status:** ✅ Complete for its confirmed scope. **PR #129 moves from `VALIDATING` to `COMPLETED`** per `NEXT-STEP-PROTOCOL.md`'s Completion Rule — acceptance criteria (none applicable, stated above) and required validation have both now been satisfied.
+
+**Known Issues:**
+- **No upper bound on `limit` — unchanged by this pass, and this validation must not be read as closing it.** A passing run proves the SQL is correct, not that the endpoint is safe: the only clamp anywhere in the backend remains `controller/sampleController.go:224` (`if query.Limit > 100`) in the **non-RAISE** template demo domain. A single request may still ask for the whole table.
+- **Seed volume is ~5–8 rows per table.** Page boundaries are genuinely exercised at that size; volume-dependent behaviour is not, and nothing here claims otherwise — the same limitation PR #130 stated when its `EXPLAIN` still showed a sequential scan.
+- **The dev stack does not rebuild itself from `main`.** The stale-image trap above is a live instance of the gap **F-14**'s remaining half describes (CI validates source but builds and publishes no image), and it will recur for anyone who verifies against a long-running local stack. Recorded as an observation against F-14; **no `F-NN` row invented for it**, matching the Finding 4 / Finding 5 precedent.
+
+**Remaining Work:** None for this task. The one item inherited from `CHECKPOINT-2026-09-11-001` that is still open is the missing maximum page size.
+
+**Next Step:** Recalculated in `NEXT-STEP.md`'s 2026-09-16 second run (Protocol Step 11). The max page size is now the highest-ranked selectable item — with the caveat that it requires a go-ahead, because it changes response behaviour and involves choosing a number.
 
 ---
 

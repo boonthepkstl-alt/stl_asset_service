@@ -5396,6 +5396,52 @@ Four further signals in the current cell agree: the **AC Group(s)** column assig
 
 ---
 
+## CHECKPOINT-2026-09-20-003
+
+**Phase:** Infrastructure / Process (not a PRD-traced phase)
+**Feature:** Application logging / observability
+**Task:** Investigate why `logger.GetLogger()`'s `Info` level was suppressed app-wide, and decide whether it was intended. `NEXT-STEP.md`'s 2026-09-18 `PRIMARY NEXT STEP`.
+
+**What was fixed:** The composed backend emitted **no application `Info` logging at all**. It now runs at `INFO`.
+**What was modified:** `docker-compose.yml` (added `LOG_LEVEL: ${LOG_LEVEL:-INFO}`), `docker.env.example`, `DOCKER.md`.
+**What was implemented / added / removed:** No code. **`logger/logger.go` and `util/init.go` were deliberately not touched** — see below.
+
+**Cause, read rather than guessed.** `logger/logger.go` sets no level at all — it calls `log.WithFields` on the logrus **standard** logger. The level is set once in `util/init.go:217-232`, which reads `LOG_LEVEL` from viper and switches on it. The switch's final branch is **`default: log.SetLevel(log.ErrorLevel)`**, so any unrecognised *or empty* value silences `Info` and `Warn`. **`LOG_LEVEL` was never set anywhere in RAISE** — not in `docker-compose.yml`, not in `docker.env.example` — so the stack always took the default branch. The container's own startup line `log:` (with nothing after it) was the visible symptom, printed by `util/init.go:218`.
+
+**Cause and effect were demonstrated, not inferred.** A control run with no `LOG_LEVEL` printed `log:` and no `[INFO]` lines; an otherwise identical run with `-e LOG_LEVEL=INFO` printed `log:INFO` followed by `-= PG write pool connected to db =-`, `-= Start Service =-` and `-= starting on port 8080 =-`. Same image, same command, one variable.
+
+**Was it intended? Split verdict, and the split is the answer.** The template's `default: ErrorLevel` is **template behaviour and was left alone** — `go-template-main/architecture.md` documents `LOG_LEVEL` as a configurable variable, so the template plainly expects deployments to set it. **RAISE never did.** The silence was therefore an **omission on RAISE's side, not a decision on either side**, and the fix belongs in RAISE's own configuration rather than in the shared template's switch. Changing that default would alter behaviour for every other consumer of the template to fix a problem RAISE created by omission.
+
+**Why this was worth a task rather than a one-line config tweak.** At `ERROR` the stack still prints `[ERRO]` lines and Fiber's `[AUDIT]` request lines — which come from Fiber's own middleware, not this logger — so it **looks** instrumented while dropping every deliberate application `Info`. That is the failure mode that hid the F-16 migration runner's entire success output until it was worked around in `CHECKPOINT-2026-09-18-002`, and it is how a silent failure gets reported as a success.
+
+**Files changed:** `docker-compose.yml`, `docker.env.example`, `DOCKER.md`, and the project-management documents this close-out touches.
+**Database / API / Frontend changes:** None.
+
+**Tests:**
+- Unit Test: none added, and none appropriate — the change is a configuration value, not logic. `go test -count=1 ./...` re-run clean regardless.
+- Integration Test: **live, on the real stack.** After `docker compose up -d backend`, the container log shows `log:INFO` and all six startup `[INFO]` lines. `GET /api/ping` → **200**.
+- E2E Test: None — no UI involved.
+
+**Regression check:** `[AUDIT]` request lines still present after the change (4 observed across a login and two list calls). **`[ERRO]` routing cannot regress here by construction** — the threshold moved from `Error` to `Info`, which is strictly more permissive, so nothing that printed before can stop printing. Stated as reasoning rather than dressed up as a test.
+
+**Validation:** `docker compose config -q` valid, resolved value confirmed `LOG_LEVEL: INFO`. `git diff --check` clean. Backend `go build`/`vet`/`test -count=1` clean.
+
+**Requirement Traceability:** **None applicable.** Observability targets are themselves undefined — `RAISE-NFR-*` performance/monitoring/logging targets are open under **F-17**. No `RAISE-FR-*` verdict moves.
+
+**Git:** Branch `fix/suppressed-info-logging`. Commit recorded on merge.
+
+**Status:** ✅ Complete for its confirmed scope.
+
+**Known Issues:**
+- **The template's `default: ErrorLevel` is unchanged and still a footgun** for any deployment that forgets `LOG_LEVEL`. Left deliberately: it is `go-template-main`'s own behaviour, documented as configurable, and changing it unilaterally would affect other consumers. Recorded here rather than filed as an `F-NN`, matching the Finding 4 / Finding 5 precedent for issues closed out directly.
+- **`F-17` is untouched** — this makes the app observable; it does not define what should be observed. No NFR target was invented.
+
+**Remaining Work:** None for this task.
+
+**Next Step:** Recalculated in `NEXT-STEP.md` (Protocol Step 11).
+
+---
+
 ## Level 2 — Feature Checkpoints
 
 ### FEATURE-CHECKPOINT-project-tracking-governance

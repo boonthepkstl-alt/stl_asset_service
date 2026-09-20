@@ -5354,6 +5354,48 @@ The throwaway database was created and dropped inside the same container specifi
 
 ---
 
+## CHECKPOINT-2026-09-20-002
+
+**Phase:** Deliverable chain — Traceability Matrix + Compliance Review
+**Feature:** Verdict correctness
+**Task:** Answer Open Finding **F-59**, and correct the defect wherever it actually was.
+
+**What was fixed:** Three things, in the order they should have been done the first time — the matrix's stale label, the Compliance Review row that followed it, and the finding itself.
+**What was implemented / added / removed:** Nothing. Documentation only; no code, test or migration touched.
+
+**The answer is (b): the body was right, the label was stale.** `RAISE-FR-WARRANTY-001` is a full **`PASS`**.
+
+**The evidence that settles it is a date, not a judgement call.** The matrix cell has contradicted itself since **v2.2 (2026-09-04)** — label `PASS (partial)`, body *"Overall row status: **PASS** — no remaining PRD-content blocker and no remaining unexecuted test case for this requirement"*. **`TC-WARRANTY-001-07`, the dual-mapped case the `(partial)` was assumed to describe, was not added until 2026-09-05.** A label cannot have been describing a case that did not yet exist. It is a leftover from before **Gap 12** and **Gap 13** closed on 2026-09-01 — the body was updated for those closures, the label was not. Established by reading the row out of **fourteen committed matrix revisions** with `git show`, not inferred from the current file.
+
+Four further signals in the current cell agree: the **AC Group(s)** column assigns `AC-WARRANTY-001-07` to `RAISE-FR-EXEC-001`; the **TC ID(s)** column marks `-01..06` *"this requirement, unaffected"* and `-07` as belonging to EXEC-001's NBV scope; and the body says twice that `-07` is *"not counted within this row's own `PASS`"*. §2's *any BLOCKED case marks the requirement down* rule keys on the requirement's **own** cases, and by this matrix's own columns `-07` is not one of them.
+
+**The general convention this settles, for the next dual-mapped case:** a test case qualifies the requirement whose **scope its content tests**, not every requirement whose ID-prefix or screen it happens to share.
+
+**This checkpoint exists because the previous one got it wrong, and that is the part worth keeping.** `CHECKPOINT-2026-09-20-001` recorded Compliance Review v1.3 downgrading this row to match the matrix's label — on the sound principle that a compliance review consolidates its input rather than overruling it. **The principle was right and the application was wrong:** the input contradicted *itself*, and v1.3 aligned to one half without establishing which half was stale. It then filed the ambiguity as F-59 and deferred it, **having already acted on it.** Answering it properly cost one `git show`. Acting first cost a published verdict being wrong twice in three days — 8-of-17 at v1.1/v1.2, 7-of-17 at v1.3, 8-of-17 again now.
+
+**The rule that follows, and it is narrower than "be careful":** when the authoritative input contradicts itself, **investigate which half is stale before correcting, not after.** The v1.3 rule stands unchanged — this document does not overrule the matrix; the fix belonged in the matrix, and that is where it went this time.
+
+**On the number, stated because it must not be mistaken for the motive:** the MVP pass count returns to **8 of 17 (47%)**. F-59 was filed with an explicit warning against picking the reading that improves that figure. It was not picked for that — the v2.2-predates-`-07` fact is independent of the count, and would hold if the correction moved the number the other way.
+
+**Files changed:** `docs/07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md` (→ v2.16), `docs/11-compliance-review/RAISE-COMPLIANCE-REVIEW.md` (→ v1.4), `docs/project-management/OPEN-FINDINGS.md` (F-59 → RESOLVED), this file.
+**Database / API / Frontend changes:** None.
+
+**Tests:** None run and none applicable — **no verdict here rests on new execution, and none is claimed.** `TC-WARRANTY-001-01..06` remain PASS and `-07` remains BLOCKED on F-03 under either reading of F-59; nothing about the evidence changed, only which requirement the blocked case is counted against. `git diff --check` clean.
+
+**Requirement Traceability:** Board after this pass — **8 `PASS`, 1 `PASS (partial)`, 2 `FAIL`, 6 `BLOCKED`** across 17 MVP requirements.
+
+**Git:** Branch `docs/f59-warranty-verdict-correction`. Commit recorded on merge.
+
+**Status:** ✅ Complete for its confirmed scope.
+
+**Known Issues:** None introduced. **F-03 now gates one §3 row again** (`RAISE-FR-EXEC-001`), not two — v1.3's claim that it gated two rested on the downgrade being correct.
+
+**Remaining Work:** None for this task.
+
+**Next Step:** Unchanged from `NEXT-STEP.md` — the suppressed application `Info` logging. **F-03 remains the highest-value open item.**
+
+---
+
 ## Level 2 — Feature Checkpoints
 
 ### FEATURE-CHECKPOINT-project-tracking-governance

@@ -5314,6 +5314,46 @@ The throwaway database was created and dropped inside the same container specifi
 
 ---
 
+## CHECKPOINT-2026-09-20-001
+
+**Phase:** Deliverable chain — terminal artifact
+**Feature:** Requirement Compliance Review currency
+**Task:** Re-verify `RAISE-COMPLIANCE-REVIEW.md` against Traceability Matrix **v2.15** (it stood at v1.2, consolidating **v2.6** — nine revisions behind).
+
+**What was implemented:** Nothing. Documentation re-verification only; no code, no test, no migration.
+**What was fixed:** One wrong verdict, one stale gap claim, one stale finding description.
+**What was added:** Finding **F-59**.
+**What was removed:** None.
+
+**The headline result is not the staleness — it is what the staleness hid.** All 18 verdicts (17 MVP + `RAISE-NFR-SEC-RBAC-001`) were re-checked row by row. **Seventeen matched. One did not, and it was not caused by the nine revisions of drift:** `RAISE-FR-WARRANTY-001` was recorded as a full `PASS` while the matrix has recorded `PASS (partial)` **continuously from v2.2 through v2.15** — established by reading the row out of all fourteen committed matrix revisions with `git show`, not inferred from the current file. The error was introduced by **v1.1** and carried by v1.2.
+
+**v1.1 is the revision that existed to fix F-47 — this document overstating `RAISE-FR-EXEC-001` as a full `PASS`. In the same pass, it overstated a second row the same way.** The published headline of **8 of 17 (47%)** requirements passing was therefore wrong, in the flattering direction, for two revisions. Corrected to **7 of 17 (41%)**.
+
+**The underlying ambiguity was raised, not settled.** The matrix's Warranty row contradicts itself: the Test Status label says `PASS (partial)` while the same cell's body says the blocked case "is not counted within this row's own `PASS`". The question — does a dual-mapped blocked test case qualify both requirements it maps to, or only the one whose content it tests — belongs to whoever owns the matrix. **Filed as F-59 with both coherent outcomes stated and neither chosen**, noting that one of them would restore the count to 8 of 17, which is exactly why it must not be picked for its effect on a number.
+
+**Also corrected:** §7's "Gaps 1—20 all resolved, with no gap open at all" — true of matrix v2.6, false from v2.7 (**Gap 21 is open**; Gaps 22–27 opened and closed in between). And F-03's description, re-keyed from "five numbers per Asset Category" to **per Asset Type** by PRD §16 Resolved Question 52 (2026-09-08, after v1.2) — F-03 now gates **two** §3 rows rather than one.
+
+**Files changed:** `docs/11-compliance-review/RAISE-COMPLIANCE-REVIEW.md` (to v1.3), `docs/project-management/OPEN-FINDINGS.md` (F-59), this file.
+**Database changes / API changes / Frontend changes:** None.
+
+**Tests:** None run, and none applicable — no verdict here rests on new execution. Every verdict cites an execution already recorded in the matrix. **`git diff --check` clean.**
+
+**Requirement Traceability:** All 17 MVP requirements re-checked. Net effect on the board: **7 `PASS`, 2 `PASS (partial)`, 2 `FAIL`, 6 `BLOCKED`.**
+
+**Git:** Branch `docs/compliance-review-reverify-v13`. Commit recorded on merge.
+
+**Status:** ✅ Complete for its confirmed scope.
+
+**Known Issues:** **F-59 is open and deliberately unresolved** — settling it changes the MVP pass count, so it needs the matrix owner, not this pass.
+
+**Remaining Work:** None for this task.
+
+**Next Step:** Answer **F-59**; it is cheap and it moves a published number. **F-03 remains the highest-value item** — it now gates two rows.
+
+**What this checkpoint adds to the pattern.** A re-verification pass is not self-verifying. v1.2 only revisited the rows it was already looking at, so v1.1's error in an untouched row survived it. **The rule that follows: re-check every row against the input, including the ones the last pass called fine.**
+
+---
+
 ## Level 2 — Feature Checkpoints
 
 ### FEATURE-CHECKPOINT-project-tracking-governance

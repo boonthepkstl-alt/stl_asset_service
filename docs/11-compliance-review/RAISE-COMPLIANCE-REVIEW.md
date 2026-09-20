@@ -1,12 +1,16 @@
 # RAISE — Requirement Compliance Review
 
-**Document Status:** Draft v1.3 — **Re-verified 2026-09-20 against Traceability Matrix v2.15.** All 18 verdicts (17 MVP requirements + `RAISE-NFR-SEC-RBAC-001`) were re-checked row by row against the matrix. **17 matched; one did not:** `RAISE-FR-WARRANTY-001` was recorded here as a full `PASS` while the matrix has recorded `PASS (partial)` continuously since **v2.2** — four revisions *before* the v1.1 re-verification that introduced the error. Corrected down, dropping the headline from 8-of-17 to **7-of-17**. §7's claim that no gap was open is also corrected: **Gap 21 is open**. *(v1.2 header retained below for history.)*
+**Document Status:** Draft v1.4 — **Re-verified 2026-09-20 against Traceability Matrix v2.16.** v1.3 downgraded `RAISE-FR-WARRANTY-001` to `PASS (partial)` to match the matrix's label. **That was wrong** — Open Finding **F-59** established that the label, not the body, was the stale half: the cell has contradicted itself since matrix **v2.2**, four days *before* the dual-mapped `TC-WARRANTY-001-07` that the `(partial)` was assumed to describe even existed. Matrix v2.16 corrects the label; this row is restored to **`PASS`** and the headline returns to **8 of 17 (47%)**. The other 17 verdicts were re-checked row by row at v1.3 and are unchanged. *(v1.2 header retained below for history.)*
+
+*(v1.3: re-verified 2026-09-20 against matrix v2.15 — corrected §7's stale gap claim and F-03's re-key, and wrongly downgraded the Warranty row.)*
+
+*(v1.2: Draft v1.2 — re-verified 2026-09-07 against Traceability Matrix v2.6.)*
 
 *(v1.2: Draft v1.2 — re-verified 2026-09-07 against Traceability Matrix v2.6.)*
 **Scope note:** this is the first artifact in the deliverable chain that
 consumes real source code rather than producing the spec for it. It
 consolidates [`RAISE-TRACEABILITY-MATRIX.md`](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md)
-**v2.15** against the code in `go-template-main/` and `frontend/`, per the
+**v2.16** against the code in `go-template-main/` and `frontend/`, per the
 chain diagram in [`CLAUDE.md`](../../CLAUDE.md):
 
 ```text
@@ -58,7 +62,40 @@ consistent — no requirement below is missing a Design/Prototype/AC/Test
 Plan/Test Case layer, and no citation in this document rests on an
 unverified claim from a downstream document.
 
-## 1a. Revision Note — what changed at v1.3, and why it mattered
+## 1a. Revision Note — what changed at v1.4, and why it mattered
+
+**v1.4 (2026-09-20) — `RAISE-FR-WARRANTY-001` restored to `PASS`; v1.3's downgrade was an error.**
+
+v1.3 found this document recording a full `PASS` where the matrix's label said
+`PASS (partial)`, and corrected down on the principle that a compliance review
+consolidates its input rather than overruling it. **The principle is right. The
+application was wrong**, because the matrix cell contradicts *itself*, and v1.3 aligned
+to one half of it without first establishing which half was stale. It then filed the
+ambiguity as **F-59** and deferred it — having already acted on it.
+
+**F-59's answer, and the one fact that settles it:** the contradiction is older than
+the thing blamed for it. At matrix **v2.2 (2026-09-04)** the cell already read label
+`PASS (partial)` and body *"Overall row status: **PASS** — no remaining PRD-content
+blocker and no remaining unexecuted test case for this requirement"*.
+`TC-WARRANTY-001-07` was added **2026-09-05**. The `(partial)` label cannot have
+described a case that did not yet exist; it is a leftover from before **Gap 12** and
+**Gap 13** closed on 2026-09-01, updated in the body and missed in the label.
+
+Four further signals in the current cell agree: the **AC Group(s)** column assigns
+`AC-WARRANTY-001-07` to `RAISE-FR-EXEC-001`, the **TC ID(s)** column marks `-01..06`
+*"this requirement, unaffected"* and `-07` as belonging to EXEC-001's NBV scope, and
+the body says twice that `-07` is *"not counted within this row's own `PASS`"*.
+
+**The fix went where the defect was.** Matrix **v2.16** corrects the label; this
+document follows it, as it should have all along. **v1.3's rule stands unchanged —
+this document does not overrule the matrix** — and the lesson v1.4 adds is narrower:
+**when the input contradicts itself, investigate before correcting, not after.**
+Answering F-59 cost one `git show` across fourteen revisions; acting first cost a
+published verdict being wrong twice in three days.
+
+---
+
+## 1b. Revision Note — what changed at v1.3
 
 **v1.3 (2026-09-20) — re-verified against matrix v2.15, nine revisions on from v1.2.**
 All 18 verdicts were re-checked row by row. **Seventeen matched. One did not, and it
@@ -139,7 +176,7 @@ first time in that document's history.
 | `RAISE-FR-OPS-001` | QR / Barcode | **PASS** | §3 row — `TC-OPS-001-01..03` all PASS, re-executed 2026-08-26 after F-21 fix | Nothing outstanding. |
 | `RAISE-FR-OPS-002` | Check-in / Check-out | **PASS** | §3 row — `TC-OPS-002-01..03` all PASS, executed 2026-08-28 | "Appropriate permission" role-correctness (PRD §16 Q22 / F-08) remains untestable but does not block the state-transition/audit-entry behavior already confirmed. |
 | `RAISE-FR-MAINT-001` | Maintenance (4-stage workflow) | **PASS** | §3 row — `TC-MAINT-001-01..09` all PASS, executed 2026-08-28 | SLA/vendor/cost model and delegated-approver configuration rules remain a separate, still-open PRD question — does not block the confirmed workflow-shape PASS. |
-| `RAISE-FR-WARRANTY-001` | Warranty | **PASS (partial)** — *corrected DOWN from `PASS` at v1.3, see §1a* | §3 row (matrix v2.15) — `TC-WARRANTY-001-01..06` all PASS, last case executed 2026-09-01 (surfaced and fixed a real Settings admin-gating defect first). **`TC-WARRANTY-001-07` is `BLOCKED`**, tied to F-03. | **The per-Asset-Type useful-life values (F-03).** The matrix has recorded this row as `PASS (partial)` continuously since **v2.2**; v1.1 of this document annotated `TC-WARRANTY-001-07` as belonging to `RAISE-FR-EXEC-001`'s NBV scope and kept the row at a full `PASS` on that reasoning. **That reasoning is defensible and is echoed in the matrix's own row text — but it is this document overriding its authoritative input, which is not this document's call to make** (see §1a). Verdict aligned to the matrix; the underlying ambiguity is raised as **F-59** rather than settled here. |
+| `RAISE-FR-WARRANTY-001` | Warranty | **PASS** — *restored at v1.4 after v1.3 downgraded it in error; see §1a* | §3 row (matrix **v2.16**) — `TC-WARRANTY-001-01..06` all PASS, last case executed 2026-09-01 (surfaced and fixed a real Settings admin-gating defect first). The matrix's own **AC Group(s)** and **TC ID(s)** columns assign `TC-WARRANTY-001-07` to `RAISE-FR-EXEC-001`'s NBV scope, and its cell concludes *"Overall row status: **PASS**"*. | Nothing outstanding for this requirement. `TC-WARRANTY-001-07` shares the P-018 Settings screen but tests `RAISE-FR-EXEC-001`'s NBV section and is BLOCKED **there**, on F-03. |
 | `RAISE-FR-ORACLE-001` | Oracle FA Integration + NBV/Depreciation | **FAIL** | §3 row — `TC-ORACLE-001-01..04` all FAIL, executed 2026-08-29; `/reconciliation` renders a generic placeholder stub, not the specified Financial View | Business explicitly deferred building even a scoped placeholder-vs-real screen (`OPEN-FINDINGS.md` F-31, 2026-09-01) until the Oracle FA integration mechanism itself is resolved (F-04, PRD §16 Q6–Q10). No further engineering action is expected until that decision lands. |
 | `RAISE-FR-ALERT-001` | Alerts | **PASS** — *upgraded from `PASS (partial)` at v1.1* | §3 row (matrix v2.6) — **all seventeen `TC-ALERT-001-01..17` executed and passing, across both surfaces**: the Alerts screen (P-012, `-01..-11`) and the header bell in global chrome (`-12..-17`, executed 2026-09-07). The five trigger conditions and their fixed severities were confirmed by PRD §16 Resolved Question 44 (F-05 → R-23), the access gate by Resolved Question 45 (F-08 partial → R-25), and the bell's scope by Resolved Question 49 (Gap 17). | Nothing outstanding for this requirement's confirmed MVP scope. **PRD §16 Q22a** (should a user see only *their* alerts?) is raised but unspecified, has no criterion written for it, and is not specifiable today — no `User`→`Employee` link exists — so it is future scope, not an unmet criterion. |
 | `RAISE-FR-AUDIT-001` | Immutable Audit Log | **BLOCKED (partial)** | §3 row — testable subset (`TC-AUDIT-001-01..03`) all PASS, executed 2026-08-26 | Field taxonomy (Design §15) and the audit-review role gate (PRD §16 Q22 / F-08) require a PRD/Design answer, not more testing. |
@@ -176,8 +213,8 @@ Traceability ID (Traceability Matrix §3):
 
 | Verdict | Count | Requirements |
 |---|---|---|
-| `PASS` | 7 | `RAISE-FR-ASSET-001`, `-002`, `-003`, `RAISE-FR-OPS-001`, `-002`, `RAISE-FR-MAINT-001`, `RAISE-FR-ALERT-001` |
-| `PASS (partial)` | 2 | **`RAISE-FR-WARRANTY-001`** *(corrected at v1.3)*, `RAISE-FR-EXEC-001` |
+| `PASS` | 8 | `RAISE-FR-ASSET-001`, `-002`, `-003`, `RAISE-FR-OPS-001`, `-002`, `RAISE-FR-MAINT-001`, **`RAISE-FR-WARRANTY-001`** *(restored at v1.4)*, `RAISE-FR-ALERT-001` |
+| `PASS (partial)` | 1 | `RAISE-FR-EXEC-001` |
 | `FAIL` | 2 | `RAISE-FR-ORACLE-001`, `RAISE-AI-SEARCH-001` |
 | `BLOCKED (partial)` | 1 | `RAISE-FR-AUDIT-001` |
 | `BLOCKED` | 1 | `RAISE-FR-LIFE-001` |
@@ -187,31 +224,35 @@ Plus 2 cross-cutting items with no dedicated ID: `RAISE-NFR-SEC-RBAC-001`
 (`PASS`) and Dashboard/Navigation (`PASS (partial)`, same page as
 `RAISE-FR-EXEC-001`).
 
-**Reading this honestly:** **7 of 17 (41%)** carry a full, unqualified `PASS`, and 2
-more are `PASS (partial)`. **The 8-of-17 (47%) figure printed here at v1.1 and v1.2 was
-wrong, and wrong in the direction that flatters the project** — it counted
-`RAISE-FR-WARRANTY-001` as a full `PASS` while the matrix recorded it as
-`PASS (partial)`, which the matrix had done continuously since **v2.2**, four
-revisions *before* the v1.1 re-verification that introduced the error.
+**Reading this honestly:** **8 of 17 (47%)** carry a full, unqualified `PASS`, and 1
+more is `PASS (partial)`.
 
-**This is the same failure as F-47, on a different row, committed by the pass that
-existed to fix F-47.** v1.1 corrected `RAISE-FR-EXEC-001` down from an overstated
-`PASS` and, in the same revision, overstated `RAISE-FR-WARRANTY-001` by keeping it at
-`PASS` on this document's own reasoning about which requirement `TC-WARRANTY-001-07`
-belongs to. The reasoning may well be right — **but a compliance review does not get
-to upgrade a verdict its authoritative input records lower.** That is the whole point
-of consolidating rather than re-deciding. The ambiguity in the matrix's own row text
-is raised as **F-59**; this document now simply reports what the matrix says.
+**This figure has now been wrong in both directions inside three days, and the record
+of that is worth more than the number.** v1.1 and v1.2 printed 8-of-17 while the
+matrix's `RAISE-FR-WARRANTY-001` **label** read `PASS (partial)`. v1.3 read that label,
+concluded this document had overstepped, and corrected down to 7-of-17. **v1.3 was
+wrong** — it aligned to the label without first establishing which half of a
+self-contradicting cell was the error.
 
-**What the correction does not change:** every `FAIL` and `BLOCKED` verdict, and the
-`RAISE-FR-ALERT-001` upgrade, all still stand exactly as v1.1/v1.2 recorded them —
-re-checked row by row against matrix v2.15 this revision, all 18 matching.
+**F-59 answered that, and the decisive evidence is a date.** The matrix cell has
+contradicted itself since **v2.2 (2026-09-04)** — label `PASS (partial)`, body
+*"Overall row status: **PASS** — no remaining PRD-content blocker and no remaining
+unexecuted test case for this requirement"*. `TC-WARRANTY-001-07`, the dual-mapped case
+usually blamed for the `(partial)`, **was not added until 2026-09-05**. The label
+therefore never described the dual-mapping; it is a leftover from before Gap 12 and
+Gap 13 closed on 2026-09-01. Matrix **v2.16** corrects the label; this row is restored.
 
-The 2 `FAIL` verdicts are both the product of an explicit, recorded business decision
-to defer rather than build a placeholder/simulation — they are not silently broken,
-they are knowingly not-yet-built. The 6 `BLOCKED` verdicts are exactly what the PRD's
-own Open Questions predict: capabilities that cannot be tested until a business
-decision this project has never claimed to have made is actually made.
+**What v1.1 got right and why it still looked wrong:** its verdict was correct, but it
+reached `PASS` by reasoning about which requirement `TC-WARRANTY-001-07` belongs to
+rather than by catching the stale label — which is indistinguishable, from the outside,
+from a compliance review upgrading its own input. **The rule from v1.3 stands: this
+document does not overrule the matrix.** The fix was never to change the verdict here;
+it was to fix the matrix.
+
+**Consequence, stated because it must not be mistaken for the motive:** the count
+returns to 8-of-17. F-59 was filed with an explicit warning against picking the reading
+that improves that number, and the reading was picked on the v2.2-predates-`-07`
+evidence, which is independent of it.
 
 **Every verdict in this table now matches the Traceability Matrix row it cites** —
 verified row by row against v2.15 this revision, rather than asserted. That claim was
@@ -339,6 +380,20 @@ document still does not recommend an order for them.
 ---
 
 ## Document Status
+
+**Version:** 1.4 (2026-09-20 — re-verified against Traceability Matrix **v2.16**; F-59 answered)
+**Author:** Re-verified by Claude Code. **No new test execution was performed for this revision or for v1.3** — every verdict cites an execution already recorded in the matrix.
+**Next Action:** unchanged — re-verify in the same pass that closes a gap or resolves a finding, and re-check **every** row, not only the ones the last pass touched. **v1.4 adds a third rule: when the input contradicts itself, investigate which half is stale *before* correcting, not after.**
+
+**Change Log — v1.3 → v1.4 (2026-09-20, same day)**
+
+1. **`RAISE-FR-WARRANTY-001` restored, `PASS (partial)` → `PASS`** — v1.3's downgrade was an error. F-59 established that the matrix cell has contradicted itself since **v2.2 (2026-09-04)**, while `TC-WARRANTY-001-07` — the case the `(partial)` was assumed to describe — was not added until **2026-09-05**. The label was the stale half.
+2. **Headline restored, 7-of-17 (41%) → 8-of-17 (47%)**, with the full history of it moving in both directions recorded in §4 rather than quietly settled.
+3. **Matrix v2.16** corrects the label at source; this document consolidates it rather than overruling it — which is what v1.1 should have done and v1.3 should have verified.
+4. **F-59 marked RESOLVED** in `OPEN-FINDINGS.md` with answer **(b)** and the dating evidence.
+5. **Nothing else changed.** v1.3's other corrections — §7's stale "no gap open" claim, F-03's per-Asset-Type re-key, the §5 refresh — all stand.
+
+*(v1.3 header retained for history below.)*
 
 **Version:** 1.3 (2026-09-20 — re-verified against Traceability Matrix **v2.15**)
 **Author:** Re-verified by Claude Code, consolidating existing chain evidence — **no new test execution was performed for this revision**; every verdict cites an execution already recorded in the matrix.

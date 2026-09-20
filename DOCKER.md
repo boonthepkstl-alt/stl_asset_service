@@ -56,6 +56,15 @@ Copy `docker.env.example` to `.env` in the repo root to override any
 default (DB credentials, host ports, the frontend's backend URL).
 `docker compose` reads `.env` automatically.
 
+**`LOG_LEVEL` (added 2026-09-20).** The composed backend runs at **`INFO`**.
+Accepted values are `DEBUG`, `INFO`, `WARN`, `ERROR` — and anything else,
+**including leaving it empty, falls through to `ERROR`**
+(`go-template-main/util/init.go`). That fallback is why this was worth
+setting explicitly: at `ERROR` the stack still prints `[ERRO]` lines and
+Fiber's `[AUDIT]` request lines, so it *looks* instrumented while every
+application `log.Info` — including the backend's own `-= Start Service =-` —
+is dropped. Override it in `.env` if you want a quieter or noisier stack.
+
 ## Services
 
 | Service | Image / Build | Port (host) | Notes |

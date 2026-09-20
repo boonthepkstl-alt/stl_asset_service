@@ -12,6 +12,17 @@ see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 **As of:** 2026-09-18, at `fd8a966` (**PR #135** merged), plus the F-16 migration
 runner on `feature/f16-migration-runner`.
 
+**Application `Info` logging was silently disabled, and now is not (2026-09-20).**
+The composed backend emitted **no application `Info` at all** — `LOG_LEVEL` was never
+set anywhere in RAISE, and `go-template-main/util/init.go`'s switch falls through to
+`log.SetLevel(ErrorLevel)` for an empty value. `[ERRO]` and Fiber's `[AUDIT]` request
+lines still printed, so the stack looked instrumented while dropping every deliberate
+`log.Info` — including the backend's own `-= Start Service =-`. Fixed in RAISE's own
+config (`docker-compose.yml` now sets `LOG_LEVEL: ${LOG_LEVEL:-INFO}`), **not** in the
+template's default, which is documented as configurable and left alone. Verified live:
+unset → no Info; `INFO` → all startup lines back, `GET /api/ping` still 200. See
+`CHECKPOINT-2026-09-20-003`.
+
 **F-16 (DB migration tooling) is narrowed, not closed (2026-09-18).** A scoped-down
 runner now exists: `schema_migrations` tracking, version-ordered application of
 `sql/pg/V*__*.sql` each in one transaction, invoked as

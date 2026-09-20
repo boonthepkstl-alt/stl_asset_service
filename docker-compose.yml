@@ -37,6 +37,14 @@ services:
       # Derived from FRONTEND_PORT by default so the two can't silently drift apart --
       # override CORS_ALLOW_ORIGINS directly only if the frontend is reachable at a
       # different origin than this host/port (e.g. a comma-separated multi-origin list).
+      # go-template-main/util/init.go:220-232 parses LOG_LEVEL and falls through to
+      # log.SetLevel(ErrorLevel) for any unrecognised or empty value. Leaving it unset
+      # therefore silences every log.Info in the app -- including main.go's own
+      # "-= Start Service =-" -- while [ERRO] and Fiber's [AUDIT] request lines still
+      # print, so the stack looks instrumented while emitting no application Info at all.
+      # The template documents LOG_LEVEL as configurable (architecture.md); RAISE simply
+      # never set it. Verified 2026-09-20: unset -> no Info; INFO -> Info restored.
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
       CORS_ALLOW_ORIGINS: ${CORS_ALLOW_ORIGINS:-http://localhost:${FRONTEND_PORT:-3000}}
     ports:
       - "${BACKEND_PORT:-8080}:8080"

@@ -3,143 +3,160 @@
 **Live output of [`NEXT-STEP-PROTOCOL.md`](NEXT-STEP-PROTOCOL.md).**
 Overwritten in place each time the protocol is re-run.
 
-**Run date:** 2026-09-18 (second run this day), after
-`CHECKPOINT-2026-09-18-002`. Triggered by Protocol **Step 11 — Recalculate**.
+**Run date:** 2026-09-20, after `CHECKPOINT-2026-09-20-003`. Triggered by
+Protocol **Step 11 — Recalculate**.
 
 ---
 
 ## Current State
 
-**Git.** `main` is at **`fd8a966`** (PR #135's merge commit). The F-16 migration
-runner sits on `feature/f16-migration-runner`.
+**Git.** `main` is at **`64870b0`** (PR #139's merge commit). The
+suppressed-`Info`-logging fix sits on `fix/suppressed-info-logging`.
 
-**What changed since the last run.** The previous run's primary step — F-16's
-scoped-down cut — is done. A migration runner now exists (`schema_migrations`
-tracking, version-ordered application each in one transaction, invoked as
-`docker compose run --rm backend -migrate`), with **no new dependency** and
-**V0–V6 neither renamed nor edited**. Adopting a database that predates it
-requires an explicit `-baseline=N`; it refuses to guess. Live-verified on every
-branch, including the F-16 scenario itself.
+**What changed since the last run.** The previous primary step is done:
+application `Info` logging was silently disabled and now is not.
+`LOG_LEVEL` was never set anywhere in RAISE, and `util/init.go`'s switch falls
+through to `ErrorLevel` for an empty value. Fixed in RAISE's own config, **not**
+in the template's default — which is documented as configurable and was left
+alone. Cause and effect demonstrated with a control run, not inferred.
 
-**F-16 stays OPEN, narrowed.** Startup auto-run, down/rollback migrations and
-CI integration are all still out of scope — the last of those capped by
-**F-13**.
+**Also closed since the last run:** **F-59** — the matrix's
+`RAISE-FR-WARRANTY-001` label was stale, not its body. Corrected at source
+(matrix **v2.16**), Compliance Review restored to **v1.4**, MVP pass count back
+to **8 of 17 (47%)**.
 
-**Chain document versions** — unchanged by infrastructure work: PRD **v0.21**,
-Design **v0.19**, Prototype **v0.20**, AC **v0.19**, Test Plan **v0.20**, Test
-Cases **v0.34**, Matrix **v2.15**. **Gap 21 remains the only open gap** of 27.
+**Chain document versions:** PRD **v0.21**, Design **v0.19**, Prototype
+**v0.20**, AC **v0.19**, Test Plan **v0.20**, Test Cases **v0.34**, Matrix
+**v2.16**, Compliance Review **v1.4**. **Gap 21 remains the only open gap** of 27.
 
-**Test state** (2026-09-18): backend `go build` / `go vet` /
-`go test -count=1 ./...` clean across four packages — `repository/` now has
-tests for the first time. Frontend untouched at 54 files / 288 tests.
+**Test state** (2026-09-20): backend `go build` / `go vet` /
+`go test -count=1 ./...` clean across four packages; frontend 54 files /
+288 tests.
 
-**Blockers — unchanged, all three are decisions rather than work:**
-
-| Item | Waiting on |
-|---|---|
-| **F-03** | Useful-life values per Asset Type. **Still the only item that would move a Compliance Review verdict.** |
-| **F-55** | The Create Requisition requester rule; partly downstream of **F-08**. |
-| **F-57** | Whether Software License is promoted from Roadmap to MVP — [`DR-01`](DECISION-REQUESTS.md), prepared, unanswered. |
+**Board:** **8 `PASS` · 1 `PASS (partial)` · 2 `FAIL` · 6 `BLOCKED`** across 17
+MVP requirements.
 
 ---
 
 ## Primary Next Step
 
-**Find out why `logger.GetLogger()`'s Info level is suppressed, and decide
-whether that is intended.**
+**Write the outstanding business decisions up as durable requests in
+[`DECISION-REQUESTS.md`](DECISION-REQUESTS.md) — `DR-02` for F-03 and `DR-03`
+for F-55 — and hand them to the stakeholder.**
 
-Classification: **`BUG`** (pre-existing, unrelated to any feature).
+Classification: **`BLOCKER`** (the work is unblocked; what it unblocks is not).
 
 ---
 
 ## Why This Is Next
 
-**The application currently emits no INFO logging at all.** Found while testing
-the migration runner and verified rather than assumed: the running backend's own
-output contains **zero** Info lines — even `main.go`'s `-= Start Service =-`,
-a plain `log.Info`, never appears, while `[ERRO]` lines do. Every
-`logger.GetLogger().Infof` call in this codebase is therefore writing to
-nowhere.
+**There is no substantial unblocked engineering work left on this board, and
+saying so plainly is more useful than manufacturing some.** Every non-passing
+requirement traces to a decision nobody has made. The remaining engineering
+items are a stale documentation pointer (**F-58**), a CI step capped by an
+undecided hosting target (**F-14**), and deferred halves of **F-16** that are
+themselves decisions. None moves a verdict.
 
-**That matters more than its size suggests.** `[AUDIT]` request lines still
-print — they come from Fiber's own middleware, not this logger — so the app
-looks adequately instrumented at a glance. What is missing is every deliberate
-application-level Info the code emits, including, until it was worked around,
-the migration runner's entire success output. **A tool whose confirmation is
-invisible is how a silent failure gets reported as a success**, which is the
-class of error this project has spent several sessions correcting.
+**The bottleneck is decision latency, and the project has already shown it
+handles that badly.** `CHECKPOINT-2026-09-10-002`/`-003` record that a request
+covering **F-03** and **F-55** was *"prepared and sent to the stakeholder
+2026-09-10"* — **with no copy of what was actually asked kept anywhere**. Ten
+days on, both are unanswered, and there is no way to tell whether the question
+was clear, whether it reached the right person, or what exactly was asked. A
+question that cannot be re-read cannot be followed up on.
 
-**It is genuinely unblocked** — no business decision, no PRD question, no
-dependency on F-13.
+**`DECISION-REQUESTS.md` already exists and already solves this** — it was
+created on 2026-09-18 for **DR-01** (F-57, License scope) precisely because of
+that gap, and its own closing section flags F-03 and F-55 as the two requests
+with no durable copy. **Writing them up is the work this file was made for, and
+it is the highest-leverage thing available**: F-03 is the only item that would
+move a Compliance Review verdict, and F-55 is a real defect in a shipped flow
+that nobody can fix without a rule.
 
-**Why not the alternatives.** **F-14's remaining half** (CI builds no image)
-stays capped by F-13. **F-36** needs a decision HR owns. **F-58** (three source
-files citing a document that does not exist) is real but cosmetic. **Bounding
-the unparameterized list request** changes the response of every existing caller
-and is a product decision, not cleanup.
+**Why not the alternatives.** **F-58** is trivial and genuinely unblocked, but
+it is a comment fix — it belongs in the same PR as anything else touching those
+files, not at the top of a board. **F-14's** remaining half stays capped by
+**F-13**. **F-16's** remaining parts (startup auto-run, rollback) are decisions,
+not tasks. **Bounding the unparameterized list request** changes the response of
+every existing caller and is a product decision.
 
-**Caveat, stated rather than buried:** like F-16, this moves **no requirement
-verdict**. It ranks first because everything above it is blocked — **F-03's
-missing values remain the highest-value item on the board**, and they are still
-the only thing that would change a Compliance Review outcome.
+**The caveat this step does not escape:** writing a request does not produce an
+answer. If the stakeholder does not respond, the board does not move, and no
+amount of engineering effort changes that. **What this step does is make the
+non-response visible and specific**, rather than leaving it as an unrecorded
+"we asked once."
 
 ---
 
 ## Dependencies
 
-None.
+None. `DECISION-REQUESTS.md` and its `DR-NN` convention already exist.
 
 ---
 
 ## Expected Output
 
-- The cause identified in `logger/` — a level set from config, a hook, or a
-  formatter that drops the level — **read, not guessed**.
-- A decision recorded either way: if the suppression is deliberate, say so
-  where a reader will find it and stop treating it as a defect; if not, fix it.
-- If fixed: confirmation that Info lines actually appear in the running
-  container, not merely that the configuration changed.
+- **`DR-02` — F-03.** What is missing: one useful-life value **per Asset Type
+  present in the data** (PRD §16 **RQ52**, which amended RQ46 from per-Category).
+  State what is already settled — formula, salvage zero, clamp, configuration
+  location — so the ask is narrow. State what unblocks: `RAISE-FR-EXEC-001` to a
+  full `PASS`, **Gap 21** closed, the NBV tile and P-018 Settings section
+  buildable.
+- **`DR-03` — F-55.** The Create Requisition requester rule. Present the three
+  shapes already identified in the finding and **propose none**; record that
+  option (a), the logged-in user, is **not implementable today** because no
+  `User`→`Employee` link exists (partly downstream of **F-08**).
+- Both written to be sent **as-is**, each stating plainly what happens if the
+  answer is "no" or "not yet" — a deferral is a complete answer and should not
+  require engineering to chase it again.
+- `OPEN-FINDINGS.md` F-03 and F-55 rows updated to cite their `DR-NN`.
 
 ---
 
 ## Acceptance Criteria
 
-No `RAISE-FR-*` criterion governs logging, and the `RAISE-NFR-*` observability
-targets are themselves undefined (**F-17**). The bar is therefore: a deliberate
-`log.Info` in application code reaches the container's output, or the reason it
-does not is documented where a reader will find it.
+No `RAISE-FR-*` criterion governs project governance. The bar: each request
+states the question, the inputs required, what each possible answer unblocks,
+and **proposes no answer of its own** — the rule `DECISION-REQUESTS.md` opens
+with, and the rule F-03 has been held open across four requests to honour.
 
 ---
 
 ## Validation
 
-`go build` / `go vet` / `go test -count=1 ./...`; `gofmt` **against index
-content**, not the Windows working tree. Rebuild the stack and read the
-container's real output — the 2026-09-16 stale-image lesson applies.
+Re-read each request cold and check it can be answered **without opening the
+repository**. A request that requires the reader to go find context is one that
+will sit unanswered, which is the failure this step exists to correct.
+`git diff --check`; docs only.
 
 ---
 
 ## Risks / Blockers
 
-- **The logger is shared by every package.** A level change affects all output,
-  including `[AUDIT]` volume. Check what gets noisier before changing it.
-- **It may be intentional** — config-driven quieting for a demo stack is a
-  legitimate choice. If so the outcome is documentation, not a patch.
+- **Writing a request is not getting an answer.** This step improves the odds
+  and the record; it cannot compel a decision.
+- **Do not let drafting slide into deciding.** The temptation with F-03 is to
+  offer "reasonable" default useful-life values to make the ask easier to say
+  yes to. **That is exactly what F-54 records going wrong** — four SLA numbers
+  shipped without authority. Offer none.
+- **F-55's option (a) must be marked not-implementable**, not merely
+  "less preferred" — recommending it without the `User`→`Employee` link would
+  hand back an answer that cannot be built.
 
 ---
 
 ## Files to Update
 
-`go-template-main/logger/` (investigation; a change only if warranted), then
+`docs/project-management/DECISION-REQUESTS.md` (DR-02, DR-03),
+`OPEN-FINDINGS.md` (F-03 and F-55 rows cite their request), then
 `PROJECT-CHECKPOINTS.md`, `CURRENT-STATUS.md`, and this file.
-`DEVELOPMENT-LOG.md` only if a PR results. `CHANGELOG.md` **no** — invisible to
-users.
+`DEVELOPMENT-LOG.md` only if a PR results. `CHANGELOG.md` **no**.
 
 ---
 
 ## Next Checkpoint
 
-`CHECKPOINT-2026-09-18-003` — "Application Info logging suppressed".
+`CHECKPOINT-2026-09-20-004` — "Decision requests DR-02 (F-03) and DR-03 (F-55)".
 
 ---
 
@@ -148,13 +165,16 @@ users.
 1. **F-58** — three source files cite `SOFTWARE-LICENSE-MIGRATION.md`, which
    does not exist. `TECHNICAL_DEBT`, trivial, unblocked.
 2. **F-14's remaining half** — image build/push in CI. Capped by **F-13**.
-3. **F-16's remaining parts** — startup auto-run (a decision: racy across
-   instances), down/rollback, CI integration.
-4. **F-36** — legacy `EMP-…` ids the app's own validator rejects. `BUG`, but
-   **do not pick a fix without asking**; HR owns the numbering.
-5. **Bound the unparameterized list request** — the residual from
+3. **F-16's remaining parts** — startup auto-run (racy across instances),
+   down/rollback, CI integration.
+4. **F-36** — legacy `EMP-…` ids the app's own validator rejects. **Do not pick
+   a fix without asking**; HR owns the numbering.
+5. **Bound the unparameterized list request** — residual from
    `CHECKPOINT-2026-09-18-001`. A product decision about default behaviour.
+6. **The template's `default: ErrorLevel`** remains a footgun for any
+   deployment that forgets `LOG_LEVEL`. Left alone deliberately — it is
+   `go-template-main`'s behaviour, not RAISE's.
 
-**Not selectable:** **F-03/Gap 21**, **F-55**, **F-57** — all three waiting on a
-stakeholder decision. **F-03 remains the only outstanding item that would move a
-Compliance Review verdict.**
+**Not selectable:** **F-03/Gap 21**, **F-55**, **F-57** — the three the primary
+step is about asking, not answering. **F-03 remains the only outstanding item
+that would move a Compliance Review verdict.**

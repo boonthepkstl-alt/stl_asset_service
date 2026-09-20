@@ -21,10 +21,34 @@ docker compose up --build
 - Postgres: localhost:5432 (`raise` / `raise_dev_password` / db `raise` by default)
 
 First run only: Postgres is empty, so the official image auto-applies
-every `.sql` file in `go-template-main/sql/pg/` (V0 through V4, in
+every `.sql` file in `go-template-main/sql/pg/` (V0 through V6, in
 order) via its `docker-entrypoint-initdb.d` mechanism. This only
-happens against a **fresh** data volume — see "Resetting the database"
-below if you need to re-apply schema changes.
+happens against a **fresh** data volume — an existing volume never sees
+a migration added after it was created.
+
+**Applying migrations to a volume that already exists** (2026-09-18,
+Open Finding F-16):
+
+```
+docker compose run --rm backend -migrate
+```
+
+This applies every migration the database has not already recorded, in
+version order, each in one transaction, and records it in
+`schema_migrations`. Re-running it when nothing is pending is a no-op.
+
+The first time you run it against a database created **before** this
+runner existed, it will refuse — it will not guess which migrations that
+database already received. Check the schema, then adopt it by naming the
+highest version it already has:
+
+```
+docker compose run --rm backend -migrate -baseline=6
+```
+
+That records `V0`–`V6` as applied **without executing them**, leaving
+your data untouched; anything above the baseline is applied normally.
+You only need it once per database.
 
 ## Configuration
 
@@ -77,10 +101,11 @@ docker compose up --build
 
 ## What this does not do
 
-- **No migration tool.** Schema changes beyond the existing `V0`–`V4`
-  files are not tracked or auto-applied — this mirrors the app's
-  existing state (Open Finding **F-16**), not a new limitation
-  introduced by Docker.
+- **No automatic migrations on startup.** Migrations are tracked and can
+  be applied on demand (`-migrate`, above), but the app does **not** run
+  them when it boots — that is a separate decision, not an oversight, and
+  Open Finding **F-16** stays open for it along with down/rollback
+  migrations and CI integration.
 - **No production secrets management.** `docker.env.example`'s defaults
   are for local dev only; never reuse `raise_dev_password` anywhere real.
 - **No CI/CD.** These Dockerfiles are not yet built/pushed by any

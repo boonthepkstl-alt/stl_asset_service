@@ -5442,6 +5442,47 @@ Four further signals in the current cell agree: the **AC Group(s)** column assig
 
 ---
 
+## CHECKPOINT-2026-09-21-001
+
+**Phase:** Project governance (not a PRD-traced phase)
+**Feature:** Business decision requests
+**Task:** Write **F-03** and **F-55** up as durable, sendable decision requests — `NEXT-STEP.md`'s 2026-09-20 `PRIMARY NEXT STEP`.
+
+**What was implemented / fixed:** Nothing in the product. Documentation only; no code, test, migration or config touched.
+**What was added:** `DR-02` (F-03) and `DR-03` (F-55) in `DECISION-REQUESTS.md`; pointers from both findings' rows.
+**What was modified:** The file's closing "Previously sent, no durable copy" section, now superseded — nothing is outstanding without a durable copy.
+
+**Why this was the top item with no code in it.** Every non-passing MVP requirement traces to a decision nobody has made, so the bottleneck is decision latency rather than engineering capacity. And the project had already shown it handles that badly: `CHECKPOINT-2026-09-10-002`/`-003` record a combined F-03/F-55 request *"prepared and sent"* on 2026-09-10 **with no copy of what was asked kept**. Eleven days on both were unanswered, with no way to tell whether the question was clear or reached the right person. **A question that cannot be re-read cannot be followed up on.**
+
+**Each request narrows the ask instead of restating the finding.** DR-02 lists everything about NBV that is *already* settled — RQ46's formula, salvage zero, the clamp, the P-018 configuration location, and RQ51's rule that an unconfigured Asset Type contributes `purchaseCost` unchanged — so what remains is one number per Type, and **a partial answer is explicitly usable**. DR-03 states the defect in a single code line, names which entry points break, and lays out options (a)/(b)/(c).
+
+**Facts were re-verified in code rather than carried from the register.** `frontend/src/lib/nbv.ts` exists, implements RQ46 in full, defines **no defaults**, and has **zero production importers** — only its own test file (the two other files matching a `nbv` grep mention it in comments). `CreateRequisition/index.tsx:60` still reads `params.get('requesterId') || 'e1'`, and `'e1'` is still `mockData.ts:345`. `types/auth.ts`'s `User` still carries only `{id, username, fullName, role}` — which is what makes DR-03's option (a) **not implementable today**, stated as a fact rather than a preference.
+
+**No answer is proposed in either request, and DR-02 says so explicitly.** The temptation with F-03 is to offer plausible useful-life values to make the ask easier to say yes to. That is exactly what **F-54** records going wrong — four SLA numbers reached production without authority — and PRD §16 Open Question 3a says in terms *"Do not invent or use an illustrative number as if confirmed."* **DR-02 offers no candidate values, not even as a starting point to react to**, on the grounds that a number offered for convenience has a way of becoming the answer.
+
+**Both requests state that "not yet" is a complete answer** requiring no follow-up, because the failure mode being addressed is silence, not refusal.
+
+**Files changed:** `docs/project-management/DECISION-REQUESTS.md`, `OPEN-FINDINGS.md` (F-03, F-55 rows), this file, `CURRENT-STATUS.md`, `NEXT-STEP.md`.
+**Database / API / Frontend changes:** None.
+
+**Tests:** None run and none applicable — no code changed. `git diff --check` clean; table integrity checked on both edited rows.
+
+**Requirement Traceability:** **None.** This is governance, not a product capability. No `RAISE-FR-*` verdict moves — and writing a request does not move one either.
+
+**Git:** Branch `docs/dr02-dr03-decision-requests`. Commit recorded on merge.
+
+**Status:** ✅ Complete for its confirmed scope — **which is asking well, not being answered.**
+
+**Known Issues:**
+- **This does not produce an answer.** If the stakeholder does not respond, the board does not move. What changed is that the non-response is now visible and specific instead of an unrecorded "we asked once."
+- **`F-55`'s register row has 7 columns in a 5-column table** — its description contains literal `|` characters. **Pre-existing**, verified against `HEAD` before and after this edit; left alone rather than widening this change's scope.
+
+**Remaining Work:** None for this task.
+
+**Next Step:** Recalculated in `NEXT-STEP.md`. With all three outstanding decisions now written up, the unblocked list is down to small items — **F-58** is the only one that is both unblocked and genuinely free of a pending decision.
+
+---
+
 ## Level 2 — Feature Checkpoints
 
 ### FEATURE-CHECKPOINT-project-tracking-governance

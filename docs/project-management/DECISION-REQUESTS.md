@@ -116,12 +116,161 @@ records, and avoiding it is why this request exists rather than a pull request.
 
 ---
 
+## DR-02 — What is the useful life, per Asset Type, for Net Book Value?
+
+| | |
+|---|---|
+| **Raised** | 2026-09-21 (first asked 2026-09-10 as part of a combined request; no copy of that one was kept) |
+| **Finding** | [F-03](OPEN-FINDINGS.md) |
+| **Requirement** | `RAISE-FR-EXEC-001` — Executive Dashboard |
+| **Status** | **Awaiting answer** |
+| **Blocks** | The NBV tile on the Dashboard, the NBV section of the P-018 Settings screen, **Gap 21**, and `RAISE-FR-EXEC-001`'s remaining `PASS (partial)`. **This is the only outstanding item that would move a Compliance Review verdict.** |
+
+### What is already decided — so the ask is as narrow as possible
+
+Everything about *how* NBV works is settled. None of it is being reopened:
+
+- **Formula** (PRD §16 **Resolved Question 46**): straight-line —
+  `NBV = purchaseCost − (purchaseCost ÷ usefulLifeYears × assetAgeInYears)`
+- **Salvage value:** zero. **Clamped** at 0 — an asset past its useful life is
+  worth 0, never negative.
+- **Inputs:** `purchaseDate` and `purchaseCost`, both of which already exist on
+  every Asset record.
+- **Where it is configured:** the P-018 Settings screen, following the same
+  pattern the Warranty Expiring-threshold already uses (RQ41).
+- **An Asset Type with no configured value** (PRD §16 **Resolved Question 51**)
+  contributes its `purchaseCost` unchanged to the portfolio total — treated as
+  not yet depreciated, still included. **So a partial answer is usable.**
+- **The code is already written and tested.** `frontend/src/lib/nbv.ts`
+  implements the formula in full, with 15 unit tests, and takes the useful-life
+  lookup as an **injected parameter** — it defines **no defaults of its own**.
+  It has zero production importers today because there is nothing to feed it.
+
+### The question
+
+> **For each Asset Type, how many years is its useful life for depreciation
+> purposes?**
+
+As currently seeded, the Asset Types present in the data are:
+
+| Category | Asset Types needing a value |
+|---|---|
+| IT Hardware | Laptop, Monitor, Headphones |
+| Mobile | Smartphone, Tablet |
+| Office Equipment | Printer, Projector |
+| Infrastructure | Server, Router |
+| Media Equipment | Camera |
+
+**This list is not a fixed enumeration.** `type` is free text on the Asset
+record, so it grows as new kinds of asset are added. Per RQ51 above, a Type
+with no configured value is simply treated as not yet depreciated — so **you do
+not need to wait until you can answer for every Type.** Values for the Types
+that matter most are enough to start.
+
+### Why it is asked per **Type** and not per **Category**
+
+Because you told us so. PRD §16 **Resolved Question 52** (2026-09-08) amended
+RQ46 after the earlier per-Category question could not be answered for **IT
+Hardware** — *"it depends on the equipment purchased"*. Per-Type is a superset:
+nothing about the other four categories' coverage is lost by keying it this way.
+
+### If the answer is "not yet"
+
+That is a complete answer and needs no follow-up. The NBV tile stays unbuilt,
+`RAISE-FR-EXEC-001` stays `PASS (partial)`, and Gap 21 stays open — all of
+which is already the recorded state. **Nothing is blocked on *hearing* that.**
+What does not work is silence, because silence is indistinguishable from the
+question not having reached you.
+
+### What engineering will not do
+
+**Supply a plausible-looking default so the tile can ship.** These numbers
+become money on an executive dashboard. PRD §16 Open Question 3a says in terms:
+*"Do not invent or use an illustrative number as if confirmed."* This project
+has held F-03 open across four separate requests rather than fill it in, and
+raised **F-54** precisely because four SLA values reached production without
+authority. **No candidate values are offered here, deliberately** — not even as
+a starting point to react to, because a number offered for convenience has a
+way of becoming the answer.
+
+---
+
+## DR-03 — Who is the requester when an IT Requisition is created?
+
+| | |
+|---|---|
+| **Raised** | 2026-09-21 (first asked 2026-09-10 as part of a combined request; no copy of that one was kept) |
+| **Finding** | [F-55](OPEN-FINDINGS.md) |
+| **Requirement** | `RAISE-FR-MAINT-001` — Maintenance / IT Requisition |
+| **Status** | **Awaiting answer** |
+| **Blocks** | The Create IT Requisition form in real-API mode. `RAISE-FR-MAINT-001`'s verdict is **not** affected — it stays a full `PASS`. |
+
+### The defect, stated plainly
+
+`frontend/src/pages/CreateRequisition/index.tsx:60` reads:
+
+```
+const requesterId = params.get('requesterId') || 'e1';
+```
+
+`'e1'` is a **mock fixture id** (`mockData.ts:345`). Real employee ids in
+Postgres are UUIDs. So when the page is opened **without** a `requesterId` in
+the URL and the real-API flags are on, the lookup for employee `'e1'` returns
+**404**, and the page fails before any requisition is submitted — showing
+*"Unable to submit the IT requisition. Please try again."*, **a retryable
+message for something that can never succeed on retry.**
+
+**Which entry points are affected:** the sidebar, the Maintenance list's "New
+IT Requisition" button, and Asset Detail. Only **Employee Detail** passes a
+real `requesterId`, because it files on that employee's behalf.
+
+**Nothing user-facing is broken today** — the real-API flags default off
+outside the Docker stack. But `docker-compose.yml` defaults them **on**, so
+this surfaces the moment anyone runs the composed stack.
+
+### The question
+
+> **When someone opens Create IT Requisition without naming an employee, who
+> should the requisition be filed on behalf of?**
+
+### The options identified, none of them chosen here
+
+**(a) The logged-in user.** The obvious answer — and **not implementable
+today**, which is why it is listed first rather than recommended. The
+authenticated `User` (`frontend/src/types/auth.ts`) carries only
+`{id, username, fullName, role}` and **no employee id**; the demo user's `id`
+is the literal string `"admin"`. Choosing (a) means first establishing a
+`User`→`Employee` link that does not exist, which makes it partly downstream of
+**F-08** (authentication mechanism and role model, still open).
+
+**(b) An explicit requester field on the form.** The person filing chooses the
+employee, defaulting to nobody. Implementable now with no dependency on F-08 —
+but it **adds a field to a confirmed screen**, which is a specification change
+and needs the same authority as any other scope change.
+
+**(c) Some other rule you specify.** For example: always require arriving from
+an employee's record, and remove the standalone entry points entirely.
+
+### If the answer is "not yet"
+
+Also a complete answer. The defect stays recorded, the real-API flags stay off
+outside the composed stack, and nothing regresses. **What should not happen is
+this being fixed quietly by picking (b)** because it is the easiest to build.
+
+### What engineering will not do
+
+Substitute a different hardcoded id, or silently default to the first employee
+in the list. Both would replace one invented answer with another. **The fix is
+small; deciding what it should do is not engineering's call.**
+
+---
+
 ## Previously sent, no durable copy
 
-**F-03** (useful-life values per Asset Type) and **F-55** (Create Requisition
-requester rule) had a combined decision request prepared and sent on
-**2026-09-10**; the checkpoints record that it was sent, but not its contents.
-Both remain unanswered. Their current state is in
-[`OPEN-FINDINGS.md`](OPEN-FINDINGS.md) — **not restated here**, deliberately, so
-this file cannot drift from the register. If either is re-asked, write it up as
-a `DR-NN` section above so the next follow-up has something to point at.
+**Superseded 2026-09-21.** **F-03** and **F-55** had a combined request prepared
+and sent on **2026-09-10** — the checkpoints record that it was sent, but not
+its contents. Both are now written up properly as **DR-02** and **DR-03** above,
+so the next follow-up has something specific to point at.
+
+**Nothing else is outstanding without a durable copy.** If a new decision is
+needed, write it up as a `DR-NN` section before asking, not after.

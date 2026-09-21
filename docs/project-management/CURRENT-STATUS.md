@@ -12,6 +12,17 @@ see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 **As of:** 2026-09-18, at `fd8a966` (**PR #135** merged), plus the F-16 migration
 runner on `feature/f16-migration-runner`.
 
+**All three outstanding business decisions are now written up as sendable requests
+(2026-09-21).** [`DECISION-REQUESTS.md`](DECISION-REQUESTS.md) carries **DR-01** (F-57,
+License scope), **DR-02** (F-03, useful life per Asset Type) and **DR-03** (F-55, the
+Create Requisition requester rule). The 2026-09-10 request covering F-03 and F-55 had
+been sent with **no copy of what was asked** kept, so there was nothing to follow up
+against, and both were still unanswered eleven days later. **No answer is proposed in
+any of them** — DR-02 says so explicitly, since offering "reasonable" useful-life
+values is precisely the failure F-54 records. All three state that "not yet" is a
+complete answer. **This unblocks nothing on its own** — it makes the non-response
+visible and specific. See `CHECKPOINT-2026-09-21-001`.
+
 **Application `Info` logging was silently disabled, and now is not (2026-09-20).**
 The composed backend emitted **no application `Info` at all** — `LOG_LEVEL` was never
 set anywhere in RAISE, and `go-template-main/util/init.go`'s switch falls through to

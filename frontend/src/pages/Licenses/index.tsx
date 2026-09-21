@@ -28,8 +28,7 @@ import type { SoftwareLicense, LicenseCategory, LicenseType, LicenseStatus } fro
 import { cn } from '@/lib/cn';
 
 // Ported from src/pages/SoftwareLicense.tsx. Reads/writes exclusively through
-// licenseService/useLicenses — never data/fixtures/licenseData.ts directly. See
-// SOFTWARE-LICENSE-MIGRATION.md.
+// licenseService/useLicenses — never data/fixtures/licenseData.ts directly.
 
 const statusStyles: Record<LicenseStatus, { variant: 'success' | 'warning' | 'error' | 'default'; label: string }> = {
   Active: { variant: 'success', label: 'Active' },

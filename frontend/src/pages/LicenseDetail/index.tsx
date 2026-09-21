@@ -31,7 +31,7 @@ import type { AllocatedSeat, InstalledAssetBinding } from '@/types/license';
 // Ported from src/pages/LicenseDetail.tsx (1900+ lines). Reads/writes exclusively through
 // licenseService/useLicense. Consolidated the legacy page's 6 tabs into 5 (the standalone "SaaS
 // Optimization" tab folds into Overview's sidebar card, same consolidation pattern used for
-// AssetDetail/TicketDetail in Phase 4/5B) — see SOFTWARE-LICENSE-MIGRATION.md. The IT Tickets
+// AssetDetail/TicketDetail in Phase 4/5B). The IT Tickets
 // tab goes through ticketService (Phase 5B), unlike AssetDetail/EmployeeDetail's equivalent
 // tabs which had to defer that when Ticket domain didn't exist yet.
 

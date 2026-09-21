@@ -3,164 +3,153 @@
 **Live output of [`NEXT-STEP-PROTOCOL.md`](NEXT-STEP-PROTOCOL.md).**
 Overwritten in place each time the protocol is re-run.
 
-**Run date:** 2026-09-21, after `CHECKPOINT-2026-09-21-001`. Triggered by
-Protocol **Step 11 — Recalculate**.
+**Run date:** 2026-09-21 (second run this day), after
+`CHECKPOINT-2026-09-21-002`. Triggered by Protocol **Step 11 — Recalculate**.
 
 ---
 
 ## Current State
 
-**Git.** `main` is at **`c413f53`** (PR #140's merge commit). The DR-02/DR-03
-write-up sits on `docs/dr02-dr03-decision-requests`.
+**Git.** `main` is at **`755b5a0`** (PR #141's merge commit). The F-58 fix sits
+on `docs/f58-stale-migration-doc-citations`.
 
-**What changed since the last run.** The previous primary step is done: **F-03
-and F-55 are now durable, sendable requests** — `DECISION-REQUESTS.md` **DR-02**
-and **DR-03**, with both findings' register rows pointing at them. All three
-outstanding decisions (DR-01 for F-57 included) now have a copy of what was
-actually asked, which the 2026-09-10 request did not.
+**What changed since the last run.** **F-58 is closed.** The three source files
+citing `SOFTWARE-LICENSE-MIGRATION.md` no longer do. `git log --all` confirmed
+the document was **never committed at any point**, so there was nothing to
+retarget to; writing it to satisfy three comments was rejected as scope creep,
+and was unnecessary because each comment already stated its own point in full.
+Comment-only, proven with `git diff -U0`.
 
 **Chain document versions:** PRD **v0.21**, Design **v0.19**, Prototype
 **v0.20**, AC **v0.19**, Test Plan **v0.20**, Test Cases **v0.34**, Matrix
 **v2.16**, Compliance Review **v1.4**. **Gap 21 remains the only open gap** of 27.
 
 **Board:** **8 `PASS` · 1 `PASS (partial)` · 2 `FAIL` · 6 `BLOCKED`** across 17
-MVP requirements. Backend and frontend suites clean as of 2026-09-20.
-
-**Blockers — all three now asked, none answered:**
-
-| Item | Request | Waiting on |
-|---|---|---|
-| **F-03** | **DR-02** | Useful life per Asset Type. **Still the only item that would move a Compliance Review verdict.** |
-| **F-55** | **DR-03** | The Create Requisition requester rule; option (a) is downstream of **F-08**. |
-| **F-57** | **DR-01** | Whether Software License is promoted from Roadmap to MVP. |
+MVP requirements. Frontend 54 files / 288 tests; backend clean.
 
 ---
 
 ## Primary Next Step
 
-**F-58 — fix the three source files that cite `SOFTWARE-LICENSE-MIGRATION.md`,
-a document that does not exist.**
+**None. Wait for an answer to DR-01, DR-02 or DR-03.**
 
-Classification: **`TECHNICAL_DEBT`**. Small, and honestly labelled as such.
+Classification: **`BLOCKER`** — and the blocker is not ours to clear.
 
 ---
 
 ## Why This Is Next
 
-**Because it is the only remaining item that is both unblocked and free of a
-pending decision, and that is worth stating plainly rather than dressing up.**
-The board is decision-bound: every non-passing requirement waits on DR-01,
-DR-02 or DR-03, and writing those was the previous step. **Nothing engineering
-does now moves a requirement verdict until one of them is answered.**
+**This run deliberately does not name a task, because naming one would be
+dishonest.** With F-58 closed, **every remaining item on the board waits on a
+decision that has been asked and not answered.** The protocol's Step 6 asks for
+exactly one primary next step; Step 5 forbids inventing scope; and Step 4 says
+that when a dependency blocks the planned task, select the dependency instead.
+**Here the dependency is a business answer, and there is nothing behind it to
+select.**
 
-**What makes F-58 worth doing rather than skipping.** Three files —
-`services/license-service.ts`, `pages/Licenses/index.tsx`,
-`pages/LicenseDetail/index.tsx` — point a reader at a design document for the
-domain's cross-domain rules, and the document **does not exist anywhere in the
-repository**. No test, `tsc` or ESLint run can catch it, because all three
-citations sit in comments. It is the same class as the broken
-`RAISE-PROJECT-TIMELINE.md` link PR #131 fixed.
+**What is actually outstanding, all three written up and sendable:**
 
-**It also needs a judgement call, which is why it is not purely mechanical:**
-write the missing document, retarget the citations at whatever superseded it,
-or drop them. **Check first whether the content exists under another name** —
-retargeting a live pointer is better than deleting a reference to something
-that turns out to be real.
+| Request | Finding | What it unblocks |
+|---|---|---|
+| **DR-02** | **F-03** | `RAISE-FR-EXEC-001` → full `PASS`, **Gap 21** closed, NBV tile + P-018 section buildable. **The only item that would move a Compliance Review verdict.** |
+| **DR-03** | **F-55** | The Create Requisition flow in real-API mode. Option (a) is downstream of **F-08**. |
+| **DR-01** | **F-57** | Whether Software License is MVP at all. "No" is a complete answer that closes it. |
 
-**Why not the alternatives.** **F-14's** remaining half stays capped by
-**F-13**. **F-16's** remaining parts (startup auto-run, rollback) are decisions
-about behaviour, not tasks. **F-36** needs a rule HR owns. **Bounding the
-unparameterized list request** changes the response of every existing caller
-and is a product decision.
+**DR-02 is the one worth chasing first.** `frontend/src/lib/nbv.ts` already
+implements RQ46's formula in full with 15 passing tests and takes the
+useful-life lookup as an injected parameter. **It has zero production importers
+because there is nothing to feed it.** The gap between "blocked" and "shipped"
+there is a set of numbers, not a build.
 
-**The honest framing of this whole run:** the queue is nearly empty, and that
-is a *state*, not a problem to engineer around. **Manufacturing work to look
-busy is the failure mode to avoid here** — the useful thing is to keep the
-board accurate and wait for answers.
+**What remains that is technically unblocked is not worth promoting, and this
+run says so rather than dressing one up as a priority:**
+
+- **F-14's remaining half** — image build/push in CI. Capped by **F-13**; can
+  only reach publish, not deploy.
+- **F-16's remaining parts** — startup auto-run is itself a decision (racy
+  across instances); rollback and CI integration follow it.
+- **F-36** — a real `BUG`, but HR owns the numbering rule.
+- **Bounding the unparameterized list request** — changes the response of every
+  existing caller. A product decision.
+- **`F-55`'s register row has 7 columns** in a 5-column table (literal `|` in
+  its description). Cosmetic; fold into a future edit of that row.
+- **The template's `default: ErrorLevel`** — a footgun for any deployment that
+  forgets `LOG_LEVEL`, deliberately left as `go-template-main`'s own behaviour.
+
+**None of these moves a requirement verdict.** Picking one to keep the queue
+non-empty is the failure mode to avoid here — **a nearly-empty queue is a
+state, not a problem to engineer around.**
 
 ---
 
 ## Dependencies
 
-None. **F-57/DR-01 does not gate this** — correcting a stale pointer in
-existing code is not License scope work, and does not touch behaviour, routing
-or the Roadmap gating.
+A stakeholder answer. Nothing engineering can supply, and nothing it may
+supply on the business's behalf — the rule **F-03** has been held open across
+four requests to honour, and **F-54** exists because it was once broken.
 
 ---
 
 ## Expected Output
 
-- Each of the three citations either pointing at a document that exists, or
-  removed with the cross-domain information they promised either inlined or
-  dropped as genuinely unneeded.
-- **A search performed and recorded first** — under `docs/`, in git history,
-  and under any plausible alternative name — so "it does not exist" is a
-  verified conclusion rather than an assumption from one `find`.
-- **No behaviour change of any kind.** Comments only.
+**From this run: none.** The correct output of a recalculation that finds no
+selectable work is an accurate record that there is none.
+
+**When an answer arrives**, the next step follows from which one:
+
+- **DR-02 answered** → values into the P-018 Settings NBV section, wire
+  `lib/nbv.ts` to its first real consumer, build the tenth Dashboard tile,
+  re-execute `TC-DASH-01`/`TC-EXEC-001-01` against a real ten-tile grid, close
+  **Gap 21**, re-verify the Compliance Review **in the same pass**.
+- **DR-03 answered** → implement the chosen requester rule; if option (b), the
+  chain re-enters at the AC layer first, since it adds a field to a confirmed
+  screen.
+- **DR-01 answered "yes"** → re-enter the chain at `RAISE-PRD.md`; **not** a
+  backend PR.
+- **DR-01 answered "no"** → close **F-57** as *confirmed unchanged*. No code.
 
 ---
 
 ## Acceptance Criteria
 
-No `RAISE-FR-*` criterion governs source comments. The bar: no file in the
-repository cites a document that does not exist, and the diff contains **only**
-comment lines — confirmable with `git diff -U0`, the same check PR #127 used
-for its comment-only change.
+Not applicable — no work is selected.
 
 ---
 
 ## Validation
 
-`tsc --noEmit`, ESLint, `vitest run` (all three files are covered by existing
-tests, so a stray edit outside a comment would surface); `git diff -U0` to
-prove every changed line is a comment; `git diff --check`.
+Not applicable. **Re-run this protocol when an answer lands, or when anything
+changes on `main`** — not on a schedule, and not to find something to do.
 
 ---
 
 ## Risks / Blockers
 
-- **Do not delete a citation that could be retargeted.** If the content exists
-  under another name, pointing at it is the better fix.
-- **Do not write a new design document to satisfy the pointer** unless the
-  content genuinely needs to exist. Inventing a document to justify a comment
-  is scope creep wearing a tidy hat.
-- **Stay out of License scope.** These files belong to a Roadmap-gated domain
-  whose MVP status is the open question in DR-01. Touching comments is fine;
-  touching behaviour is not.
+- **The real risk in this state is manufacturing work to look busy.** Every
+  item in the "not worth promoting" list above could be made to sound like a
+  priority. None of them is.
+- **The second risk is the silence going unnoticed.** All three requests are
+  unanswered; DR-02 and DR-03 were first asked on **2026-09-10** in a form
+  nobody kept a copy of. **If they go unanswered again, the problem is the
+  asking channel, not the questions** — they are written to be answerable now.
 
 ---
 
 ## Files to Update
 
-`frontend/src/services/license-service.ts`,
-`frontend/src/pages/Licenses/index.tsx`,
-`frontend/src/pages/LicenseDetail/index.tsx`; `OPEN-FINDINGS.md` (F-58 →
-Resolved); then `PROJECT-CHECKPOINTS.md`, `CURRENT-STATUS.md`, and this file.
-`DEVELOPMENT-LOG.md` if a PR results. `CHANGELOG.md` **no** — invisible to users.
+None until an answer arrives.
 
 ---
 
 ## Next Checkpoint
 
-`CHECKPOINT-2026-09-21-002` — "F-58: stale SOFTWARE-LICENSE-MIGRATION.md
-citations".
+None scheduled. The next checkpoint follows the next answered decision.
 
 ---
 
 ## Secondary Tasks
 
-1. **F-14's remaining half** — image build/push in CI. Capped by **F-13**.
-2. **F-16's remaining parts** — startup auto-run (racy across instances),
-   down/rollback, CI integration.
-3. **F-36** — legacy `EMP-…` ids the app's own validator rejects. **Do not pick
-   a fix without asking**; HR owns the numbering.
-4. **Bound the unparameterized list request** — residual from
-   `CHECKPOINT-2026-09-18-001`. A product decision about default behaviour.
-5. **`F-55`'s register row has 7 columns in a 5-column table** (its description
-   contains literal `|`). Pre-existing and cosmetic; fold into any future edit
-   of that row rather than making it its own change.
-6. **The template's `default: ErrorLevel`** remains a footgun for any
-   deployment that forgets `LOG_LEVEL`. Left alone deliberately.
-
-**Not selectable:** **F-03**, **F-55**, **F-57** — asked, unanswered. **F-03
-remains the only outstanding item that would move a Compliance Review verdict.**
+See the "not worth promoting" list above — enumerated so nothing is lost, not
+as a queue to work through. **Not selectable:** **F-03**, **F-55**, **F-57**.
+**F-03/DR-02 remains the only outstanding item that would move a Compliance
+Review verdict.**

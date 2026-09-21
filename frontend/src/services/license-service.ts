@@ -10,8 +10,8 @@ const repository: SoftwareLicenseRepository = new MockSoftwareLicenseRepository(
  * The stable frontend contract for the Software License vertical slice (pages/Licenses,
  * pages/LicenseDetail). License is its own domain — this file depends on
  * assetService/employeeService one-way (to resolve employeeId/assetId into a seat's display
- * snapshot), and neither of those services imports anything from here. See
- * SOFTWARE-LICENSE-MIGRATION.md "Cross-domain relationships".
+ * snapshot), and neither of those services imports anything from here. That one-way rule is the
+ * contract -- re-verified 2026-09-21: this file imports both, and neither imports license.
  */
 export const licenseService = {
   listLicenses: (query: LicenseListQuery = {}) => repository.list(query),

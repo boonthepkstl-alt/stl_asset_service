@@ -12,6 +12,16 @@ see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 **As of:** 2026-09-18, at `fd8a966` (**PR #135** merged), plus the F-16 migration
 runner on `feature/f16-migration-runner`.
 
+**F-58 closed 2026-09-21 — and with it, the unblocked queue is empty.** Three source
+files cited a `SOFTWARE-LICENSE-MIGRATION.md` that `git log --all` confirms was **never
+committed at any point** — so there was nothing to retarget to, and writing the document
+to satisfy three comments was rejected as scope creep. Each comment already stated its
+own point in full; only the dead pointer was removed. The one claim that became
+load-bearing without it — `license-service.ts`'s one-way dependency on
+asset/employee services — was re-verified and the verification recorded inline.
+Comment-only, proven with `git diff -U0`. **Every remaining item on the board now waits
+on DR-01, DR-02 or DR-03.** See `CHECKPOINT-2026-09-21-002`.
+
 **All three outstanding business decisions are now written up as sendable requests
 (2026-09-21).** [`DECISION-REQUESTS.md`](DECISION-REQUESTS.md) carries **DR-01** (F-57,
 License scope), **DR-02** (F-03, useful life per Asset Type) and **DR-03** (F-55, the

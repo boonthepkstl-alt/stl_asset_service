@@ -5483,6 +5483,44 @@ Four further signals in the current cell agree: the **AC Group(s)** column assig
 
 ---
 
+## CHECKPOINT-2026-09-21-002
+
+**Phase:** Minor / Tech Debt (not a PRD-traced phase)
+**Feature:** Source-comment accuracy
+**Task:** **F-58** — three source files cited `SOFTWARE-LICENSE-MIGRATION.md`, a document that does not exist. `NEXT-STEP.md`'s 2026-09-21 `PRIMARY NEXT STEP`.
+
+**What was fixed:** Three dead documentation pointers, in `services/license-service.ts`, `pages/Licenses/index.tsx` and `pages/LicenseDetail/index.tsx`.
+**What was implemented / added / removed:** No code. **Comment-only.**
+
+**The search was done before the decision, and it changed the decision.** The finding said the document did not exist; `NEXT-STEP.md` asked for that to be *verified* rather than assumed, and specifically for a check on whether the content existed under another name — because retargeting a live pointer beats deleting a reference to something real. `git log --all --diff-filter=ADR --name-only` across the entire history shows the file was **never committed at any point**. Not deleted, not renamed — it never existed. **That ruled out retargeting**, which was the preferred outcome had it been available.
+
+**Writing the document was considered and rejected.** `NEXT-STEP.md` warned that inventing a design document to justify a comment is "scope creep wearing a tidy hat", and reading the three comments confirmed it was also unnecessary: **each one already states its own point in full.** The tab-consolidation pattern, the never-read-fixtures-directly rule, and the one-way cross-domain dependency are all *in the comment*. The citation only ever promised elaboration nobody wrote, so removing it loses nothing.
+
+**One claim became load-bearing once its pointer was gone, and was re-verified rather than trusted.** `license-service.ts`'s comment asserts a one-way dependency — it imports `assetService`/`employeeService`, and neither imports anything from license. With the "see …" gone, that sentence becomes the only record of the rule, so it was checked: both imports present, zero license references in either of the other two services. **The verification and its date are now recorded in the comment itself**, which is more durable than a pointer to a document that never existed.
+
+**Comment-only was proven, not asserted.** `git diff -U0` shows every changed line begins with `//` or ` * ` — the same check PR #127 used for its comment-only change.
+
+**Files changed:** `frontend/src/services/license-service.ts`, `frontend/src/pages/Licenses/index.tsx`, `frontend/src/pages/LicenseDetail/index.tsx`, `docs/project-management/OPEN-FINDINGS.md` (F-58 → Resolved), plus the project-management documents this close-out touches.
+**Database / API / Frontend behaviour changes:** None. No route, no rendering, no Roadmap gating.
+
+**Tests:** No test added — there is nothing to assert about a comment, and a test that pinned comment text would be worse than the finding. `tsc --noEmit` clean, ESLint clean (`--max-warnings=0`), **54 files / 288 tests** passing — **unchanged, which is the expected result** and is stated as such rather than presented as evidence the change worked.
+
+**Validation:** `git diff -U0` comment-only proof, `git diff --check` clean.
+
+**Requirement Traceability:** **None.** Source comments are governed by no `RAISE-FR-*` criterion. No verdict moves. **`F-57` is entirely unaffected** — these files belong to a Roadmap-gated domain whose MVP status is DR-01's open question, and only comments were touched.
+
+**Git:** Branch `docs/f58-stale-migration-doc-citations`. Commit recorded on merge.
+
+**Status:** ✅ Complete for its confirmed scope.
+
+**Known Issues:** None introduced.
+
+**Remaining Work:** None for this task.
+
+**Next Step:** **There is now no unblocked engineering work on the board that is free of a pending decision.** All three outstanding questions — DR-01 (F-57), DR-02 (F-03), DR-03 (F-55) — are written up and unanswered. **F-03/DR-02 remains the only item that would move a Compliance Review verdict.** Recalculated in `NEXT-STEP.md`, which says so plainly rather than promoting a task to fill the slot.
+
+---
+
 ## Level 2 — Feature Checkpoints
 
 ### FEATURE-CHECKPOINT-project-tracking-governance

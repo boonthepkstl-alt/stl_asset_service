@@ -3,178 +3,164 @@
 **Live output of [`NEXT-STEP-PROTOCOL.md`](NEXT-STEP-PROTOCOL.md).**
 Overwritten in place each time the protocol is re-run.
 
-**Run date:** 2026-09-20, after `CHECKPOINT-2026-09-20-003`. Triggered by
+**Run date:** 2026-09-21, after `CHECKPOINT-2026-09-21-001`. Triggered by
 Protocol **Step 11 — Recalculate**.
 
 ---
 
 ## Current State
 
-**Git.** `main` is at **`64870b0`** (PR #139's merge commit). The
-suppressed-`Info`-logging fix sits on `fix/suppressed-info-logging`.
+**Git.** `main` is at **`c413f53`** (PR #140's merge commit). The DR-02/DR-03
+write-up sits on `docs/dr02-dr03-decision-requests`.
 
-**What changed since the last run.** The previous primary step is done:
-application `Info` logging was silently disabled and now is not.
-`LOG_LEVEL` was never set anywhere in RAISE, and `util/init.go`'s switch falls
-through to `ErrorLevel` for an empty value. Fixed in RAISE's own config, **not**
-in the template's default — which is documented as configurable and was left
-alone. Cause and effect demonstrated with a control run, not inferred.
-
-**Also closed since the last run:** **F-59** — the matrix's
-`RAISE-FR-WARRANTY-001` label was stale, not its body. Corrected at source
-(matrix **v2.16**), Compliance Review restored to **v1.4**, MVP pass count back
-to **8 of 17 (47%)**.
+**What changed since the last run.** The previous primary step is done: **F-03
+and F-55 are now durable, sendable requests** — `DECISION-REQUESTS.md` **DR-02**
+and **DR-03**, with both findings' register rows pointing at them. All three
+outstanding decisions (DR-01 for F-57 included) now have a copy of what was
+actually asked, which the 2026-09-10 request did not.
 
 **Chain document versions:** PRD **v0.21**, Design **v0.19**, Prototype
 **v0.20**, AC **v0.19**, Test Plan **v0.20**, Test Cases **v0.34**, Matrix
 **v2.16**, Compliance Review **v1.4**. **Gap 21 remains the only open gap** of 27.
 
-**Test state** (2026-09-20): backend `go build` / `go vet` /
-`go test -count=1 ./...` clean across four packages; frontend 54 files /
-288 tests.
-
 **Board:** **8 `PASS` · 1 `PASS (partial)` · 2 `FAIL` · 6 `BLOCKED`** across 17
-MVP requirements.
+MVP requirements. Backend and frontend suites clean as of 2026-09-20.
+
+**Blockers — all three now asked, none answered:**
+
+| Item | Request | Waiting on |
+|---|---|---|
+| **F-03** | **DR-02** | Useful life per Asset Type. **Still the only item that would move a Compliance Review verdict.** |
+| **F-55** | **DR-03** | The Create Requisition requester rule; option (a) is downstream of **F-08**. |
+| **F-57** | **DR-01** | Whether Software License is promoted from Roadmap to MVP. |
 
 ---
 
 ## Primary Next Step
 
-**Write the outstanding business decisions up as durable requests in
-[`DECISION-REQUESTS.md`](DECISION-REQUESTS.md) — `DR-02` for F-03 and `DR-03`
-for F-55 — and hand them to the stakeholder.**
+**F-58 — fix the three source files that cite `SOFTWARE-LICENSE-MIGRATION.md`,
+a document that does not exist.**
 
-Classification: **`BLOCKER`** (the work is unblocked; what it unblocks is not).
+Classification: **`TECHNICAL_DEBT`**. Small, and honestly labelled as such.
 
 ---
 
 ## Why This Is Next
 
-**There is no substantial unblocked engineering work left on this board, and
-saying so plainly is more useful than manufacturing some.** Every non-passing
-requirement traces to a decision nobody has made. The remaining engineering
-items are a stale documentation pointer (**F-58**), a CI step capped by an
-undecided hosting target (**F-14**), and deferred halves of **F-16** that are
-themselves decisions. None moves a verdict.
+**Because it is the only remaining item that is both unblocked and free of a
+pending decision, and that is worth stating plainly rather than dressing up.**
+The board is decision-bound: every non-passing requirement waits on DR-01,
+DR-02 or DR-03, and writing those was the previous step. **Nothing engineering
+does now moves a requirement verdict until one of them is answered.**
 
-**The bottleneck is decision latency, and the project has already shown it
-handles that badly.** `CHECKPOINT-2026-09-10-002`/`-003` record that a request
-covering **F-03** and **F-55** was *"prepared and sent to the stakeholder
-2026-09-10"* — **with no copy of what was actually asked kept anywhere**. Ten
-days on, both are unanswered, and there is no way to tell whether the question
-was clear, whether it reached the right person, or what exactly was asked. A
-question that cannot be re-read cannot be followed up on.
+**What makes F-58 worth doing rather than skipping.** Three files —
+`services/license-service.ts`, `pages/Licenses/index.tsx`,
+`pages/LicenseDetail/index.tsx` — point a reader at a design document for the
+domain's cross-domain rules, and the document **does not exist anywhere in the
+repository**. No test, `tsc` or ESLint run can catch it, because all three
+citations sit in comments. It is the same class as the broken
+`RAISE-PROJECT-TIMELINE.md` link PR #131 fixed.
 
-**`DECISION-REQUESTS.md` already exists and already solves this** — it was
-created on 2026-09-18 for **DR-01** (F-57, License scope) precisely because of
-that gap, and its own closing section flags F-03 and F-55 as the two requests
-with no durable copy. **Writing them up is the work this file was made for, and
-it is the highest-leverage thing available**: F-03 is the only item that would
-move a Compliance Review verdict, and F-55 is a real defect in a shipped flow
-that nobody can fix without a rule.
+**It also needs a judgement call, which is why it is not purely mechanical:**
+write the missing document, retarget the citations at whatever superseded it,
+or drop them. **Check first whether the content exists under another name** —
+retargeting a live pointer is better than deleting a reference to something
+that turns out to be real.
 
-**Why not the alternatives.** **F-58** is trivial and genuinely unblocked, but
-it is a comment fix — it belongs in the same PR as anything else touching those
-files, not at the top of a board. **F-14's** remaining half stays capped by
-**F-13**. **F-16's** remaining parts (startup auto-run, rollback) are decisions,
-not tasks. **Bounding the unparameterized list request** changes the response of
-every existing caller and is a product decision.
+**Why not the alternatives.** **F-14's** remaining half stays capped by
+**F-13**. **F-16's** remaining parts (startup auto-run, rollback) are decisions
+about behaviour, not tasks. **F-36** needs a rule HR owns. **Bounding the
+unparameterized list request** changes the response of every existing caller
+and is a product decision.
 
-**The caveat this step does not escape:** writing a request does not produce an
-answer. If the stakeholder does not respond, the board does not move, and no
-amount of engineering effort changes that. **What this step does is make the
-non-response visible and specific**, rather than leaving it as an unrecorded
-"we asked once."
+**The honest framing of this whole run:** the queue is nearly empty, and that
+is a *state*, not a problem to engineer around. **Manufacturing work to look
+busy is the failure mode to avoid here** — the useful thing is to keep the
+board accurate and wait for answers.
 
 ---
 
 ## Dependencies
 
-None. `DECISION-REQUESTS.md` and its `DR-NN` convention already exist.
+None. **F-57/DR-01 does not gate this** — correcting a stale pointer in
+existing code is not License scope work, and does not touch behaviour, routing
+or the Roadmap gating.
 
 ---
 
 ## Expected Output
 
-- **`DR-02` — F-03.** What is missing: one useful-life value **per Asset Type
-  present in the data** (PRD §16 **RQ52**, which amended RQ46 from per-Category).
-  State what is already settled — formula, salvage zero, clamp, configuration
-  location — so the ask is narrow. State what unblocks: `RAISE-FR-EXEC-001` to a
-  full `PASS`, **Gap 21** closed, the NBV tile and P-018 Settings section
-  buildable.
-- **`DR-03` — F-55.** The Create Requisition requester rule. Present the three
-  shapes already identified in the finding and **propose none**; record that
-  option (a), the logged-in user, is **not implementable today** because no
-  `User`→`Employee` link exists (partly downstream of **F-08**).
-- Both written to be sent **as-is**, each stating plainly what happens if the
-  answer is "no" or "not yet" — a deferral is a complete answer and should not
-  require engineering to chase it again.
-- `OPEN-FINDINGS.md` F-03 and F-55 rows updated to cite their `DR-NN`.
+- Each of the three citations either pointing at a document that exists, or
+  removed with the cross-domain information they promised either inlined or
+  dropped as genuinely unneeded.
+- **A search performed and recorded first** — under `docs/`, in git history,
+  and under any plausible alternative name — so "it does not exist" is a
+  verified conclusion rather than an assumption from one `find`.
+- **No behaviour change of any kind.** Comments only.
 
 ---
 
 ## Acceptance Criteria
 
-No `RAISE-FR-*` criterion governs project governance. The bar: each request
-states the question, the inputs required, what each possible answer unblocks,
-and **proposes no answer of its own** — the rule `DECISION-REQUESTS.md` opens
-with, and the rule F-03 has been held open across four requests to honour.
+No `RAISE-FR-*` criterion governs source comments. The bar: no file in the
+repository cites a document that does not exist, and the diff contains **only**
+comment lines — confirmable with `git diff -U0`, the same check PR #127 used
+for its comment-only change.
 
 ---
 
 ## Validation
 
-Re-read each request cold and check it can be answered **without opening the
-repository**. A request that requires the reader to go find context is one that
-will sit unanswered, which is the failure this step exists to correct.
-`git diff --check`; docs only.
+`tsc --noEmit`, ESLint, `vitest run` (all three files are covered by existing
+tests, so a stray edit outside a comment would surface); `git diff -U0` to
+prove every changed line is a comment; `git diff --check`.
 
 ---
 
 ## Risks / Blockers
 
-- **Writing a request is not getting an answer.** This step improves the odds
-  and the record; it cannot compel a decision.
-- **Do not let drafting slide into deciding.** The temptation with F-03 is to
-  offer "reasonable" default useful-life values to make the ask easier to say
-  yes to. **That is exactly what F-54 records going wrong** — four SLA numbers
-  shipped without authority. Offer none.
-- **F-55's option (a) must be marked not-implementable**, not merely
-  "less preferred" — recommending it without the `User`→`Employee` link would
-  hand back an answer that cannot be built.
+- **Do not delete a citation that could be retargeted.** If the content exists
+  under another name, pointing at it is the better fix.
+- **Do not write a new design document to satisfy the pointer** unless the
+  content genuinely needs to exist. Inventing a document to justify a comment
+  is scope creep wearing a tidy hat.
+- **Stay out of License scope.** These files belong to a Roadmap-gated domain
+  whose MVP status is the open question in DR-01. Touching comments is fine;
+  touching behaviour is not.
 
 ---
 
 ## Files to Update
 
-`docs/project-management/DECISION-REQUESTS.md` (DR-02, DR-03),
-`OPEN-FINDINGS.md` (F-03 and F-55 rows cite their request), then
-`PROJECT-CHECKPOINTS.md`, `CURRENT-STATUS.md`, and this file.
-`DEVELOPMENT-LOG.md` only if a PR results. `CHANGELOG.md` **no**.
+`frontend/src/services/license-service.ts`,
+`frontend/src/pages/Licenses/index.tsx`,
+`frontend/src/pages/LicenseDetail/index.tsx`; `OPEN-FINDINGS.md` (F-58 →
+Resolved); then `PROJECT-CHECKPOINTS.md`, `CURRENT-STATUS.md`, and this file.
+`DEVELOPMENT-LOG.md` if a PR results. `CHANGELOG.md` **no** — invisible to users.
 
 ---
 
 ## Next Checkpoint
 
-`CHECKPOINT-2026-09-20-004` — "Decision requests DR-02 (F-03) and DR-03 (F-55)".
+`CHECKPOINT-2026-09-21-002` — "F-58: stale SOFTWARE-LICENSE-MIGRATION.md
+citations".
 
 ---
 
 ## Secondary Tasks
 
-1. **F-58** — three source files cite `SOFTWARE-LICENSE-MIGRATION.md`, which
-   does not exist. `TECHNICAL_DEBT`, trivial, unblocked.
-2. **F-14's remaining half** — image build/push in CI. Capped by **F-13**.
-3. **F-16's remaining parts** — startup auto-run (racy across instances),
+1. **F-14's remaining half** — image build/push in CI. Capped by **F-13**.
+2. **F-16's remaining parts** — startup auto-run (racy across instances),
    down/rollback, CI integration.
-4. **F-36** — legacy `EMP-…` ids the app's own validator rejects. **Do not pick
+3. **F-36** — legacy `EMP-…` ids the app's own validator rejects. **Do not pick
    a fix without asking**; HR owns the numbering.
-5. **Bound the unparameterized list request** — residual from
+4. **Bound the unparameterized list request** — residual from
    `CHECKPOINT-2026-09-18-001`. A product decision about default behaviour.
+5. **`F-55`'s register row has 7 columns in a 5-column table** (its description
+   contains literal `|`). Pre-existing and cosmetic; fold into any future edit
+   of that row rather than making it its own change.
 6. **The template's `default: ErrorLevel`** remains a footgun for any
-   deployment that forgets `LOG_LEVEL`. Left alone deliberately — it is
-   `go-template-main`'s behaviour, not RAISE's.
+   deployment that forgets `LOG_LEVEL`. Left alone deliberately.
 
-**Not selectable:** **F-03/Gap 21**, **F-55**, **F-57** — the three the primary
-step is about asking, not answering. **F-03 remains the only outstanding item
-that would move a Compliance Review verdict.**
+**Not selectable:** **F-03**, **F-55**, **F-57** — asked, unanswered. **F-03
+remains the only outstanding item that would move a Compliance Review verdict.**

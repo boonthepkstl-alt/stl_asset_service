@@ -15,7 +15,9 @@ at all.
 
 **Maintenance rule:** one section per request, identified `DR-NN`. Never delete
 a request — mark it **Answered** with the date and the decision, and link to the
-`§16 Resolved Question` or finding row that carries the consequence. The
+`§16 Resolved Question` or finding row that carries the consequence. Where a
+request has a sendable page, link it from that request's table — this file stays the
+record of what was asked; the page is only a nicer way to ask it. The
 finding register ([`OPEN-FINDINGS.md`](OPEN-FINDINGS.md)) stays the index of
 *what is blocked*; this file is the record of *what was asked, and when*.
 
@@ -125,6 +127,7 @@ records, and avoiding it is why this request exists rather than a pull request.
 | **Requirement** | `RAISE-FR-EXEC-001` — Executive Dashboard |
 | **Status** | **Awaiting answer** |
 | **Blocks** | The NBV tile on the Dashboard, the NBV section of the P-018 Settings screen, **Gap 21**, and `RAISE-FR-EXEC-001`'s remaining `PASS (partial)`. **This is the only outstanding item that would move a Compliance Review verdict.** |
+| **Sendable version** | <https://claude.ai/artifact/SBSEdYxNAAyS6G9rKCqBos> — the same question as a fillable schedule, one row per Asset Type. Answers save to the page, so a reply cannot go missing the way the 2026-09-10 one did. **Private by default: it must be shared from its own Share menu before the recipient can open it.** Answering by email or chat instead is equally fine — the page says so itself. |
 
 ### What is already decided — so the ask is as narrow as possible
 

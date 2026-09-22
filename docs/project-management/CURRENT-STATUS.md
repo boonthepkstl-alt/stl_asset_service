@@ -12,6 +12,18 @@ see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 **As of:** 2026-09-18, at `fd8a966` (**PR #135** merged), plus the F-16 migration
 runner on `feature/f16-migration-runner`.
 
+**The repository layer has automated coverage for the first time (2026-09-22).**
+17 of 18 files in `repository/` had none, and the pagination SQL had been verified
+exactly once — by hand, on 2026-09-16. `repository/pgharness_test.go` now brings up a
+test database with the application's own migration runner and truncates between tests;
+`employeePGRepository_test.go` adds **13 assertions**, all passing against real
+PostgreSQL. **They skip when no test database is configured**, so a laptop `go test
+./...` is unchanged; CI opts in with a `postgres:16-alpine` service. The harness
+**refuses any database whose name does not end in `_test`** — verified against a
+throwaway target, where it refused and created nothing. Dev data confirmed untouched
+after the run. **16 files still have no coverage**, and no verdict moves. See
+`CHECKPOINT-2026-09-22-002`.
+
 **F-13 (hosting) asked for the first time, 2026-09-22 — `DECISION-REQUESTS.md` DR-04.**
 It had been open since the architecture document was written and had **never carried a
 decision request**, while blocking F-14's remaining half and every deployment-shaped

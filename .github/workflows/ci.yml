@@ -91,6 +91,27 @@ jobs:
     defaults:
       run:
         working-directory: go-template-main
+
+    # A real PostgreSQL for the repository integration tests (repository/pgharness_test.go).
+    # Without it those tests skip -- a deliberate default on a laptop, but in CI a skip would
+    # mean this package's SQL is never executed against a server at all. The database is named
+    # `raise_test` because the harness refuses any name not ending in `_test`: it TRUNCATEs every
+    # table between tests, so the name is the guard against ever pointing it at real data.
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: raise
+          POSTGRES_PASSWORD: raise_dev_password
+          POSTGRES_DB: raise_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U raise -d raise_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
     steps:
       - uses: actions/checkout@v7
 
@@ -118,6 +139,17 @@ jobs:
         # to a wrong value and running twice -- plain `go test` reported `ok (cached)` while
         # `-count=1` reported FAIL. Without this flag a frontend-only drift can be served a
         # stale green, which is the exact silent pass that test exists to prevent.
+        #
+        # RAISE_TEST_PG_HOST is what opts the repository integration tests in; without it they
+        # skip. The schema is created by the tests themselves, through the application's own
+        # migration runner, so no separate setup step is needed -- and running that runner against
+        # an empty database on every CI run is itself coverage of it.
+        env:
+          RAISE_TEST_PG_HOST: localhost
+          RAISE_TEST_PG_PORT: "5432"
+          RAISE_TEST_PG_USER: raise
+          RAISE_TEST_PG_PASS: raise_dev_password
+          RAISE_TEST_PG_DB: raise_test
         run: go test -count=1 ./...
 
       # `gofmt` IS a gate, as of 2026-09-07. The note that used to sit here said it could

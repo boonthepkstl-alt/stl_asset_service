@@ -177,7 +177,7 @@ Per this project's "flag gaps, don't silently invent" convention (see
 | Area | Status |
 |---|---|
 | Hosting / deployment target (cloud provider, containers, IaC) | Not decided anywhere in the PRD or this repo |
-| CI/CD pipeline | Not decided — no `.github/workflows/` or equivalent exists for either `frontend/` or `go-template-main/` |
+| CI/CD pipeline | **Decided and built 2026-09-04 (F-14 → R-20); this row was stale until 2026-09-22.** `.github/workflows/ci.yml` runs both stacks on every pull request and every push to `main` — lint, type-check, tests and build for `frontend/`, and build, vet, `-count=1` tests and a `gofmt` gate for `go-template-main/`. **Still not decided: building and publishing a container image**, which needs a registry and is therefore downstream of the hosting row above (**F-13**, asked as **DR-04**) |
 | API versioning (`/api` vs `/api/v1`) | Open, per `COMPANY-FOUNDATION-BASELINE.md` §5.1 |
 | Real user/auth store (replacing the hardcoded demo user) | Confirmed **Roadmap**, not MVP, per PRD §16 Resolved Question 38 |
 | RBAC backend enforcement (`middleware.RequireRole` beyond the demo `/samples` wiring) | Confirmed **Roadmap**, not MVP — same PRD resolution |

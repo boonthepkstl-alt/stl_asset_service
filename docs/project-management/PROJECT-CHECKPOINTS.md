@@ -5521,6 +5521,45 @@ Four further signals in the current cell agree: the **AC Group(s)** column assig
 
 ---
 
+## CHECKPOINT-2026-09-22-001
+
+**Phase:** Project governance / Infrastructure (not a PRD-traced phase)
+**Feature:** Business decision requests
+**Task:** Write **F-13 (hosting)** up as **DR-04** — the one blocker on the board that had never been asked.
+
+**What was fixed:** A stale row in `RAISE-HIGH-LEVEL-ARCHITECTURE.md` §6, found while reading that section for DR-04's context.
+**What was added:** `DR-04` in `DECISION-REQUESTS.md`; a pointer from F-13's register row.
+**What was implemented / removed:** No code.
+
+**Why F-13 and not one of the engineering options.** Two infrastructure tasks were genuinely available — a repository-layer test harness and a Docker build step in CI — and both were passed over for the cheaper, higher-leverage move. **F-13 had been open since the architecture document was written and had never carried a decision request**, while quietly blocking F-14's remaining half and every deployment-shaped item in §6. It is the same move that produced DR-01/02/03: **turn a blocker nobody has asked about into a question someone can answer.** The Docker-build task is itself downstream of this answer, so asking first avoids building toward a target that may not exist.
+
+**DR-04 leads with the cheapest possible answer, deliberately.** The first question is not "which cloud provider" but **"is deploying beyond a developer's machine in scope right now?"** A "no — local demo only" is a complete answer that **closes F-13 as *decided: not yet*** and reclassifies **F-14's remainder from blocked to not-needed-yet**, removing it from the board rather than leaving it looking like neglected work. Only a "yes" makes the five follow-on inputs relevant.
+
+**DR-04 breaks one convention the other three follow, and says so on its face.** DR-01/02/03 propose no answers because they ask for business rules engineering must not invent. **Hosting is not that class** — engineering could propose options; what makes it the business's call is that it commits money, a vendor and an operator. So DR-04 **offers a recommendation on request**, and states explicitly that the same offer is *not* extended to DR-02, where a suggested figure would contaminate the answer. Flattening all four into one "we propose nothing" template would have been tidier and less honest.
+
+**The stale row was found by reading, not by audit.** `RAISE-HIGH-LEVEL-ARCHITECTURE.md` §6 still read *"CI/CD pipeline | Not decided — no `.github/workflows/` or equivalent exists"* — false since **2026-09-04**, when F-14 was resolved (R-20). CI has since run green on every pull request in this session, including the ones that merged while that row claimed it did not exist. Corrected in place, with what **is** still undecided (image build/push, needing a registry) named and pointed at F-13/DR-04 rather than left implied.
+
+**Files changed:** `docs/project-management/DECISION-REQUESTS.md` (DR-04), `OPEN-FINDINGS.md` (F-13 row), `docs/08-architecture/RAISE-HIGH-LEVEL-ARCHITECTURE.md` §6, this file, `CURRENT-STATUS.md`, `NEXT-STEP.md`.
+**Database / API / Frontend changes:** None.
+
+**Tests:** None run and none applicable — no code changed. `git diff --check` clean; table integrity checked on the edited register row.
+
+**Requirement Traceability:** **None, and F-13 has none by definition** — it is filed under *Infrastructure / Process (not addressed anywhere in the PRD)*. **No `RAISE-FR-*` verdict moves, and no answer to DR-04 would move one either.** Worth stating because a hosting decision can feel like progress while changing nothing in the chain.
+
+**Git:** Branch `docs/dr04-hosting-decision`. Commit recorded on merge.
+
+**Status:** ✅ Complete for its confirmed scope — asking, not being answered.
+
+**Known Issues:**
+- **Four requests are now outstanding and none is answered.** DR-02 and DR-03 were first asked on 2026-09-10; DR-01 on 2026-09-18; DR-04 today. **If a fourth unanswered request accumulates, the problem is the asking channel rather than the questions** — they are each written to be answerable in one reply.
+- DR-02's fillable page is **still private** and cannot be opened by a recipient until it is shared from its own Share menu. Not something engineering can change.
+
+**Remaining Work:** None for this task.
+
+**Next Step:** Unchanged in substance — wait for an answer. The two engineering options passed over here (repository test harness, Docker build in CI) remain available and remain incapable of moving a verdict; the Docker one is now explicitly downstream of DR-04.
+
+---
+
 ## Level 2 — Feature Checkpoints
 
 ### FEATURE-CHECKPOINT-project-tracking-governance

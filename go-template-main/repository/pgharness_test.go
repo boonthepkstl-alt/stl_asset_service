@@ -64,6 +64,17 @@ func newPGHarness(t *testing.T) *pgHarness {
 
 	host := strings.TrimSpace(os.Getenv("RAISE_TEST_PG_HOST"))
 	if host == "" {
+		// A skip is not a pass. On a laptop that distinction is acceptable -- not everyone has a
+		// database running, and `go test ./...` should stay useful. In CI it is not: if the
+		// postgres service or its env were ever removed, these tests would skip, the job would
+		// stay green, and this package's SQL would go untested without anything saying so. So CI
+		// fails instead. `CI` is set by GitHub Actions (and most other runners) and by nothing on
+		// a normal developer machine.
+		if strings.TrimSpace(os.Getenv("CI")) != "" {
+			t.Fatal("RAISE_TEST_PG_HOST is unset in CI: the PostgreSQL integration tests would " +
+				"silently skip and the job would still pass. Restore the postgres service and its " +
+				"env in .github/workflows/ci.yml, or delete these tests deliberately.")
+		}
 		t.Skip("RAISE_TEST_PG_HOST not set -- skipping PostgreSQL integration tests (see pgharness_test.go)")
 	}
 

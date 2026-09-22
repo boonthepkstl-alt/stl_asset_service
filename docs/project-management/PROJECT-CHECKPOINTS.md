@@ -5589,6 +5589,8 @@ Four further signals in the current cell agree: the **AC Group(s)** column assig
 
 **One test pins a defect rather than a feature, and says so.** `TestEmployeePGRepository_ListFailsOnNullNullableColumn` asserts that a row with a NULL in a nullable column makes `List` fail wholesale (`converting NULL to string`). That is **today's behaviour, not desired behaviour** — found incidentally on 2026-09-18 while seeding by hand and recorded then without a test. Pinning it means the day someone decides to handle NULLs, the change is visible and deliberate rather than silent.
 
+**CI cannot skip these silently, and that guard exists because the first CI run could not prove it hadn't.** The initial push went green, but `go test` without `-v` prints one `ok` per package — a skip and a real run look identical. Package timing (0.311s in CI against 0.156s skipped locally) *suggested* they ran and proved nothing. **Rather than report an inference as a result, the harness now fails instead of skipping when `CI` is set and no database is configured.** If the postgres service or its env were ever removed, the job would fail loudly rather than stay green over untested SQL. Both branches verified: a laptop run still SKIPs, and `CI=true` with no database FAILs with that message.
+
 **Validation:** `go build` / `go vet` clean. `gofmt` checked **against index content the way CI checks it**. `git diff --check` clean. `ci.yml` parsed as valid YAML before commit.
 
 **Dev database integrity verified after the run**, not assumed: `employees` 5, `assets` 20, `tickets` 8 — all unchanged. The test database is a separate database on the same server, and `raise_guardcheck` was dropped afterwards.

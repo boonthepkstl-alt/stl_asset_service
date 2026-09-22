@@ -12,6 +12,15 @@ see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 **As of:** 2026-09-18, at `fd8a966` (**PR #135** merged), plus the F-16 migration
 runner on `feature/f16-migration-runner`.
 
+**Repository coverage extended to Tickets (2026-09-22).** 21 more assertions, all passing
+against real PostgreSQL, on the three behaviours that live only in SQL: `status=ACTIVE`
+expanding to three in-flight statuses (a mock filtering on equality returns nothing for it
+and still looks correct), the JSONB `doc` round-trip, and six-column ILIKE search. **The
+ACTIVE test was mutation-tested** — narrowing the expansion to one status made it fail with
+`expected: 3, actual: 1`, and `model/ticketModel.go` was restored byte-identical before
+commit. **Two domains covered, 15 files still without.** No verdict moves. See
+`CHECKPOINT-2026-09-22-003`.
+
 **The repository layer has automated coverage for the first time (2026-09-22).**
 17 of 18 files in `repository/` had none, and the pagination SQL had been verified
 exactly once — by hand, on 2026-09-16. `repository/pgharness_test.go` now brings up a

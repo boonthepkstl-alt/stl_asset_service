@@ -5560,6 +5560,61 @@ Four further signals in the current cell agree: the **AC Group(s)** column assig
 
 ---
 
+## CHECKPOINT-2026-09-22-002
+
+**Phase:** Infrastructure / Process (not a PRD-traced phase)
+**Feature:** Repository-layer test coverage
+**Task:** Build an integration-test harness for the PostgreSQL repositories, and prove it on the one behaviour with no repeatable coverage.
+
+**What was implemented:** `repository/pgharness_test.go` — connects to a configured test database, brings its schema up with the application's own migration runner, truncates between tests, and skips when no database is configured. `repository/employeePGRepository_test.go` — **13 assertions across 3 test functions**, the first in this module to execute this package's SQL against a real server.
+**What was modified:** `.github/workflows/ci.yml` — a `postgres:16-alpine` service on the backend job and the env that opts the tests in.
+**What was fixed / removed:** Nothing. No production code changed.
+
+**The gap this closes, stated precisely.** 17 of the 18 files in `repository/` had no automated coverage (the exception being `migration.go`, added four days ago). Every other test in the module stops at the service layer against in-memory mocks, so **no test had ever run the SQL in `model/*.go` against a real server.** PR #129's pagination was verified exactly once, by hand, on 2026-09-16 — a real check that nothing repeats.
+
+**The property worth guarding hardest is one a mock cannot prove.** `total` must stay the **full filtered count** while `data` is one page of it. A mock computes both from the same slice, so it agrees whatever the SQL does. Getting it wrong is silent — every page looks right in isolation and only the page count is wrong. It is also the exact decision **four documents described incorrectly** until PR #132 corrected them, which is a fair signal of how easy it is to lose.
+
+**One test exists to catch what per-page assertions cannot.** *"Paging through covers every row exactly once"* walks every page and compares the concatenation against the unpaginated list. **An off-by-one offset passes every single-page assertion and fails only here.**
+
+**The filter test seeds a second department on purpose.** The 2026-09-16 manual pass could not prove its filter discriminated, because all five seeded employees happened to share one department — recorded honestly at the time as a limitation. This harness controls its own fixtures, so that case is now proven rather than reported as inconclusive.
+
+**A destructive-guard test was run as a real experiment, not asserted.** The harness TRUNCATEs every table, so it refuses any database whose name does not end in `_test`, and **fails loudly rather than skipping** — a misconfigured run must not look like an absent one. That guard was verified by pointing the suite at a **throwaway** database named `raise_guardcheck`: it refused, and **created nothing at all — 0 tables, not even `schema_migrations`**. A throwaway target was used deliberately: testing a destructive guard against the real dev database is the one experiment whose failure mode is the disaster it prevents.
+
+**Why the variables are `RAISE_TEST_PG_*` and not `DB_PG_*`.** Reusing the application's own names would let a value already sitting in a developer's shell or `.env` steer a truncating suite onto a real database. The distinct prefix means opting in is always deliberate.
+
+**Tests:**
+- Unit Test: unchanged elsewhere; `go test -count=1 ./...` clean across all four packages **with no database configured** — the three new tests SKIP, which is the intended laptop default.
+- Integration Test: **all 13 assertions pass against real PostgreSQL** (`raise_test` on the dev stack's server). Pagination: no-limit returns everything; a page is one page while `total` stays 25; offsets advance correctly; the last page is partial; a page past the end is an empty page rather than an error; `page=0` equals `page=1`; and paging end-to-end reproduces the full list exactly. Filtering: the filter discriminates (12 of 13), composes with pagination (12 matched, 5 returned), and an unmatched filter returns an empty page with `total=0`.
+- E2E Test: None — no UI involved.
+
+**One test pins a defect rather than a feature, and says so.** `TestEmployeePGRepository_ListFailsOnNullNullableColumn` asserts that a row with a NULL in a nullable column makes `List` fail wholesale (`converting NULL to string`). That is **today's behaviour, not desired behaviour** — found incidentally on 2026-09-18 while seeding by hand and recorded then without a test. Pinning it means the day someone decides to handle NULLs, the change is visible and deliberate rather than silent.
+
+**CI cannot skip these silently, and that guard exists because the first CI run could not prove it hadn't.** The initial push went green, but `go test` without `-v` prints one `ok` per package — a skip and a real run look identical. Package timing (0.311s in CI against 0.156s skipped locally) *suggested* they ran and proved nothing. **Rather than report an inference as a result, the harness now fails instead of skipping when `CI` is set and no database is configured.** If the postgres service or its env were ever removed, the job would fail loudly rather than stay green over untested SQL. Both branches verified: a laptop run still SKIPs, and `CI=true` with no database FAILs with that message.
+
+**Validation:** `go build` / `go vet` clean. `gofmt` checked **against index content the way CI checks it**. `git diff --check` clean. `ci.yml` parsed as valid YAML before commit.
+
+**Dev database integrity verified after the run**, not assumed: `employees` 5, `assets` 20, `tickets` 8 — all unchanged. The test database is a separate database on the same server, and `raise_guardcheck` was dropped afterwards.
+
+**Files changed:** `go-template-main/repository/pgharness_test.go` (new), `repository/employeePGRepository_test.go` (new), `.github/workflows/ci.yml`, plus the project-management documents this close-out touches.
+**Database changes:** None to any application schema. A `raise_test` database now exists on the local dev server; CI creates its own per run.
+**API / Frontend changes:** None.
+
+**Requirement Traceability:** **None.** Test infrastructure is governed by no `RAISE-FR-*` criterion, and **no verdict moves** — the board stays 8/1/2/6. Worth stating because adding 13 assertions can feel like progress on the requirement board and is not.
+
+**Git:** Branch `test/repository-pg-harness`. Commit recorded on merge.
+
+**Status:** ✅ Complete for its confirmed scope — **which is one repository proven and a reusable harness, not coverage of all 17 files.**
+
+**Known Issues:**
+- **16 repository files still have no coverage.** This cut deliberately proves the harness on the domain with the documented gap rather than spreading thin. Extending it is now cheap; it was not done here.
+- **CI runs these against a service container**, so a failure there can mean a broken database rather than broken code. The skip-by-default design means a local run cannot distinguish the two either — the trade for not requiring Docker on every laptop.
+
+**Remaining Work:** None for this task.
+
+**Next Step:** Unchanged — **wait for an answer to DR-01/02/03/04.** This task reduced a real risk and moved no verdict, exactly as `NEXT-STEP.md` predicted when it declined to promote it.
+
+---
+
 ## Level 2 — Feature Checkpoints
 
 ### FEATURE-CHECKPOINT-project-tracking-governance

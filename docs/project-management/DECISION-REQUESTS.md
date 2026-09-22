@@ -268,6 +268,75 @@ small; deciding what it should do is not engineering's call.**
 
 ---
 
+## DR-04 — Where is RAISE meant to run, and is deploying it in scope yet?
+
+| | |
+|---|---|
+| **Raised** | 2026-09-22 — **first time this has ever been asked.** F-13 has been open since the architecture document was written and has never carried a decision request. |
+| **Finding** | [F-13](OPEN-FINDINGS.md) |
+| **Requirement** | None. F-13 is filed under *Infrastructure / Process — not addressed anywhere in the PRD.* |
+| **Status** | **Awaiting answer** |
+| **Blocks** | **F-14's remaining half** (CI builds no container image because there is nowhere to publish one), and every deployment-shaped item in `RAISE-HIGH-LEVEL-ARCHITECTURE.md` §6. Blocks **no MVP requirement** — nothing in the traceability matrix depends on it. |
+
+### How this request differs from DR-01, DR-02 and DR-03 — stated plainly
+
+The other three ask for **business rules engineering must not invent**: useful-life
+values, a requester rule, a scope decision. This one is different, and pretending
+otherwise would be misleading.
+
+**Hosting is a decision engineering could propose options for.** What makes it
+yours rather than ours is that it commits money, a vendor, and someone to operate
+it — none of which is engineering's to commit on your behalf. **So if a
+recommendation would help, ask and you'll get one.** That offer is deliberately
+not extended in DR-02, where a suggested figure would contaminate the answer.
+
+### The cheapest answer first
+
+> **Is deploying RAISE anywhere beyond a developer's machine in scope right now?**
+
+**If the answer is no — "local demo only for now" — that is a complete answer and
+the best possible outcome for this request.** It closes F-13 as *decided: not yet*,
+and it reclassifies F-14's remaining half from "blocked" to "not needed yet", which
+removes it from the board rather than leaving it to look like neglected work.
+**Nothing needs building, and one open finding stops being open.**
+
+Only if deployment **is** in scope does the rest of this matter.
+
+### What exists today
+
+- **The app runs as three containers** — frontend, backend, Postgres — via
+  `docker-compose.yml` and two Dockerfiles. Local development and demo are
+  reproducible. That was done on 2026-09-01.
+- **CI validates both stacks on every pull request** — lint, type-check, tests,
+  build, and `gofmt`. It has been green on every merge.
+- **CI does not build or publish a container image**, because there is nowhere
+  agreed to publish it to. That is the entire content of F-14's remaining half.
+- **Database migrations can be applied on demand** (`-migrate`), but do not run
+  automatically — deliberately, since running them at startup is unsafe across
+  multiple instances, which is itself a deployment-shaped question.
+
+### If deployment is in scope, the inputs needed
+
+**No option is proposed for any of these** — but unlike DR-02, a recommendation is
+available on request:
+
+| # | Input needed | Why it blocks work |
+|---|---|---|
+| 1 | **Where it runs** — a cloud provider, on-premise servers, or the company's existing platform | Determines everything downstream. Without it, nothing else on this list can be answered. |
+| 2 | **A container registry** | The single thing F-14's remaining half needs. CI can build and publish images the day this exists. |
+| 3 | **Which environments** — production only, or staging as well | Decides how many configurations exist and whether migrations need a rehearsal target. |
+| 4 | **Who operates it** — this team, an internal platform team, or a vendor | Decides how much of the work is ours at all, and who holds the credentials. |
+| 5 | **Whether infrastructure-as-code is expected** | A tooling and skills commitment, not a detail. |
+
+### What is not being asked here
+
+**Nothing about the product.** No requirement, screen, field or business rule
+changes on any answer to this request. It is entirely about where the software
+runs, and it can be answered "not yet" without consequence for anything in the
+deliverable chain.
+
+---
+
 ## Previously sent, no durable copy
 
 **Superseded 2026-09-21.** **F-03** and **F-55** had a combined request prepared

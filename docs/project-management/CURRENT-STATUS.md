@@ -12,6 +12,17 @@ see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 **As of:** 2026-09-18, at `fd8a966` (**PR #135** merged), plus the F-16 migration
 runner on `feature/f16-migration-runner`.
 
+**F-13 (hosting) asked for the first time, 2026-09-22 — `DECISION-REQUESTS.md` DR-04.**
+It had been open since the architecture document was written and had **never carried a
+decision request**, while blocking F-14's remaining half and every deployment-shaped
+item in architecture §6. DR-04 leads with the cheapest answer — *is deploying beyond a
+developer's machine in scope at all?* — because a "no, local demo only" closes F-13 as
+*decided: not yet* and takes F-14's remainder off the board entirely. **Unlike
+DR-01/02/03 it offers a recommendation on request**, since hosting is not the
+don't-invent-business-values class. **Four requests are now outstanding, none answered.**
+Also corrected in the same pass: architecture §6 still claimed no CI pipeline existed —
+false since 2026-09-04 (F-14 → R-20). See `CHECKPOINT-2026-09-22-001`.
+
 **F-58 closed 2026-09-21 — and with it, the unblocked queue is empty.** Three source
 files cited a `SOFTWARE-LICENSE-MIGRATION.md` that `git log --all` confirms was **never
 committed at any point** — so there was nothing to retarget to, and writing the document

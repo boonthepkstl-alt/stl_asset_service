@@ -5666,6 +5666,61 @@ Four further signals in the current cell agree: the **AC Group(s)** column assig
 
 ---
 
+## CHECKPOINT-2026-09-23-001
+
+**Phase:** Infrastructure / Process (not a PRD-traced phase)
+**Feature:** Repository-layer test coverage
+**Task:** Extend the integration harness to Asset Handovers — the repository carrying the most logic that exists nowhere but SQL.
+
+**What was added:** `repository/assetHandoverPGRepository_test.go` — **34 assertions across 5 test functions**.
+**What was implemented / modified / removed:** No production code. The harness was reused unchanged for the third time.
+
+**Four behaviours here are only checkable against a real database:**
+
+1. **`HasActiveForAsset` enforces "one live handover per asset"** with `status NOT IN ('ASSIGNED','REJECTED')` — a single SQL predicate that **nothing in Go re-checks**. It is what stops a second handover opening for an asset already in one.
+2. **`CountByCodePrefix` backs the `AHO-<year>-<seq>` sequence.** Wrong scoping produces a duplicate code, and the collision surfaces as a unique-constraint violation far from its cause.
+3. **`Update` writes the denormalised `status` column AND the `doc` JSON in one statement.** If they diverge, a status filter returns rows whose own document contradicts the query that matched them.
+4. **`GetByCode` accepts either the internal id or the handover code** in one `OR` predicate.
+
+**The guard was mutation-tested twice, each time against the specific failure its test was written for.**
+
+- **Scoping removed** (`asset_id = $1` → an always-true predicate): caught. With a global predicate, any in-flight handover anywhere marks every asset as held, so the ASSIGNED- and REJECTED-released cases fail. **Worth recording precisely: they failed, not the "scoped to the asset" case alone** — the mutation's blast radius is wider than the test written for it, which is the honest description of what happened rather than the tidy one.
+- **`REJECTED` dropped from the terminal set**: caught by exactly the intended case, with its own message — *"REJECTED is terminal -- the asset must be free to hand over again"*. That mutation is the realistic one: a rejected handover that never releases its asset locks that asset permanently, and **no other test in this repository would notice.**
+
+`model/assetHandoverModel.go` was restored with `git checkout --` after each and confirmed **byte-identical to HEAD** before committing.
+
+**The dual-write test is the one worth keeping beyond this repository.** It advances a handover, then asserts the row is found *by the new status* **and** that the returned document's own `Status` agrees with the column the query matched on. Column and JSON are written together by a single `UPDATE`; nothing enforces that they stay consistent. It then drives the handover to `ASSIGNED` and asserts the asset is released — closing the loop between the two features, since `HasActiveForAsset` reads the **column** while callers read the **doc**. A doc-only update would leave the asset locked forever while every payload looked correct.
+
+**Cases chosen to fail for the right reason:**
+- **"A past completed handover does not hide a current live one"** — an asset with one `ASSIGNED` and one in-flight handover is still held. A `LIMIT 1`-style implementation ordering by anything could return the terminal row and report the asset free.
+- **"Terminal handovers still consume a sequence number"** — a count that skipped `REJECTED` rows would reissue a code already taken.
+- **"A year with no handovers counts zero rather than erroring"** — the first handover of a new year depends on it.
+
+**Tests:**
+- Unit Test: unchanged elsewhere. `go test -count=1 ./...` clean across all four packages **with no database** — these SKIP.
+- Integration Test: **all 34 assertions pass against real PostgreSQL.**
+- E2E Test: None.
+
+**Validation:** `go build` / `go vet` clean. `gofmt` checked **against index content the way CI checks it**. `git diff --check` clean.
+
+**Files changed:** `go-template-main/repository/assetHandoverPGRepository_test.go` (new), plus the project-management documents this close-out touches.
+**Database / API / Frontend changes:** None. `model/assetHandoverModel.go` was mutated twice during testing and restored; it is unchanged in the diff.
+
+**Requirement Traceability:** **None.** No `RAISE-FR-*` criterion governs test infrastructure, and **no verdict moves — the board stays 8/1/2/6.**
+
+**Git:** Branch `test/handover-repository-coverage`. Commit recorded on merge.
+
+**Status:** ✅ Complete for its confirmed scope.
+
+**Known Issues:**
+- **14 repository files still have no coverage.** Three domains are now covered. **One target with genuine SQL-only behaviour remains — Audit**, which writes a `doc` column its own `SELECT` deliberately excludes, so the stored shape and the wire shape differ by design. After that the remainder is plain CRUD where a mock is nearly as good, and extending further would be counting files rather than reducing risk.
+
+**Remaining Work:** None for this task.
+
+**Next Step:** Audit is the last worthwhile target. Beyond it, **the honest recommendation is to stop** — and the standing answer is unchanged: **wait for DR-01/02/03/04.** Three days of this work has moved no requirement verdict, by design and as predicted.
+
+---
+
 ## Level 2 — Feature Checkpoints
 
 ### FEATURE-CHECKPOINT-project-tracking-governance

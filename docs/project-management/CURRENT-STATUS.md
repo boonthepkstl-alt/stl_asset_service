@@ -12,6 +12,17 @@ see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 **As of:** 2026-09-18, at `fd8a966` (**PR #135** merged), plus the F-16 migration
 runner on `feature/f16-migration-runner`.
 
+**Repository coverage extended to Asset Handovers (2026-09-23).** 34 assertions on the
+logic that exists only in SQL: `HasActiveForAsset`'s one-live-handover-per-asset guard
+(`status NOT IN ('ASSIGNED','REJECTED')` — nothing in Go re-checks it),
+`CountByCodePrefix` behind the `AHO-<year>-<seq>` sequence, and the `UPDATE` that writes
+the denormalised `status` column and the `doc` JSON together. **The guard was
+mutation-tested twice** — removing the per-asset scoping and making `REJECTED`
+non-terminal were both caught, and the model restored byte-identical each time.
+**Three domains covered; 14 files still without.** Audit is the last target with
+SQL-only behaviour; beyond it, extending would be counting files. No verdict moves.
+See `CHECKPOINT-2026-09-23-001`.
+
 **Repository coverage extended to Tickets (2026-09-22).** 21 more assertions, all passing
 against real PostgreSQL, on the three behaviours that live only in SQL: `status=ACTIVE`
 expanding to three in-flight statuses (a mock filtering on equality returns nothing for it

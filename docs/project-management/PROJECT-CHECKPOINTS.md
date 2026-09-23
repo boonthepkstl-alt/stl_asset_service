@@ -5615,6 +5615,57 @@ Four further signals in the current cell agree: the **AC Group(s)** column assig
 
 ---
 
+## CHECKPOINT-2026-09-22-003
+
+**Phase:** Infrastructure / Process (not a PRD-traced phase)
+**Feature:** Repository-layer test coverage
+**Task:** Extend the integration harness to a second repository — Tickets.
+
+**What was added:** `repository/ticketPGRepository_test.go` — **21 assertions across 4 test functions**.
+**What was implemented / modified / removed:** No production code. The harness from `CHECKPOINT-2026-09-22-002` was reused unchanged, which was the point of building it.
+
+**Tickets was chosen for what its SQL does, not to raise a file count.** Three behaviours live only in SQL, and no service-layer mock reaches any of them:
+
+1. **`status=ACTIVE` is not a status.** The list query expands it, in a three-branch conditional, to `status IN ('PLANNING','IN_PROGRESS','ON_HOLD')` — documented in `RAISE-API-DB-SPEC.md` as real API behaviour. **A mock filtering on string equality returns nothing for it and still looks correct to a test written against that same mock.**
+2. **The row *is* the JSON.** Tickets store the whole `TicketModel` in a `doc` jsonb column and `List` reads it back with `SELECT doc`. An in-memory mock hands back the struct it was given and **can never lose a field**.
+3. **Search spans six columns with ILIKE**, two of which — `asset_code` and `technician_name` — no other filter touches.
+
+**The ACTIVE test was mutation-tested, not merely run.** The expansion was narrowed in `model/ticketModel.go` from three statuses to one; the test failed with `expected: 3, actual: 1` and named the missing codes. `model/ticketModel.go` was then restored with `git checkout --` and confirmed **byte-identical to HEAD** before anything was committed. Same discipline as PR #116, PR #128 and the max-page-size clamp.
+
+**Cases chosen to fail for the right reason:**
+- **"An unknown status matches nothing rather than everything"** — guards the conditional's precedence. A mis-parenthesised version falls through to the empty-string branch and returns the whole table, which every other status assertion would still pass.
+- **"Filters combine with AND, not OR"** — an OR'd query returns *more* rows and passes every single-filter assertion in the file.
+- **"requesterName is an exact match, unlike search"** — the two read the same column by different operators (`=` against `ILIKE`); asserting both pins which is which.
+- **"Paging through covers every row exactly once, in DESC order"** — tickets sort `ticket_code DESC`, the opposite of employees' ascending order, so this also proves the harness is not accidentally encoding one domain's ordering.
+
+**Two defects in the test code itself were caught before commit**, both by `go vet` and by reading rather than by a green run: `TimelineEvent` has no `Status` or `Actor` field (its real fields are `ActorName`/`ActorRole`/`Action`), and the JSONB round-trip assertion checked `SLATargetHours == 2` when the fixture sets **8** — copied from the neighbouring "2 timeline entries" assertion. **The second would have passed had the fixture used 2**, which is the kind of agreement-by-coincidence a mutation test exists to expose.
+
+**Tests:**
+- Unit Test: unchanged elsewhere. `go test -count=1 ./...` clean across all four packages **with no database** — these SKIP, the intended laptop default.
+- Integration Test: **all 21 assertions pass against real PostgreSQL.** ACTIVE expands to exactly three; every literal status still matches only itself; an unknown status matches nothing; the JSONB round-trip preserves `SLATargetHours`, `Requester.Email`, `Description`, `Location` and a two-entry nested `Timeline` including a field no column carries; search matches `asset_code`, is case-insensitive, and is distinct from the exact `requesterName` filter; filters AND; ACTIVE composes with a second filter; and paging reproduces the full DESC list exactly.
+- E2E Test: None.
+
+**Validation:** `go build` / `go vet` clean. `gofmt` checked **against index content the way CI checks it**. `git diff --check` clean.
+
+**Files changed:** `go-template-main/repository/ticketPGRepository_test.go` (new), plus the project-management documents this close-out touches.
+**Database / API / Frontend changes:** None. `model/ticketModel.go` was temporarily mutated during testing and restored; it is unchanged in the diff.
+
+**Requirement Traceability:** **None.** Test infrastructure is governed by no `RAISE-FR-*` criterion. **No verdict moves — the board stays 8/1/2/6.**
+
+**Git:** Branch `test/ticket-repository-coverage`. Commit recorded on merge.
+
+**Status:** ✅ Complete for its confirmed scope.
+
+**Known Issues:**
+- **15 repository files still have no coverage.** Two domains are now covered. The remaining ones with SQL worth testing are **Asset Handovers** (`active_for_asset` guards one live handover per asset; `count_by_code_prefix` backs code generation) and **Audit** (writes a `doc` column its own SELECT excludes, so the wire shape and the stored shape differ by design). The rest are largely plain CRUD where a mock is nearly as good.
+- **Returns diminish from here.** The two highest-value targets after this are named above; beyond them, extending for its own sake would be counting files.
+
+**Remaining Work:** None for this task.
+
+**Next Step:** Unchanged — **wait for an answer to DR-01/02/03/04.** This reduced real risk and moved no verdict, exactly as before.
+
+---
+
 ## Level 2 — Feature Checkpoints
 
 ### FEATURE-CHECKPOINT-project-tracking-governance

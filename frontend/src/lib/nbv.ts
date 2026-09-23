@@ -12,13 +12,17 @@ import type { Asset } from '@/types/asset';
 // with salvage value **zero** and the result **clamped at 0**, so a fully depreciated asset
 // reads 0 rather than going negative.
 //
-// WHAT IS DELIBERATELY NOT HERE, and why this file can exist before it: the **default**
-// useful-life years per Asset Category are still unsupplied (PRD §16 Open Question 3a —
-// business was asked directly and said they would specify them). So this module takes
-// `usefulLifeYearsFor` as an INJECTED lookup and defines no defaults of its own, exactly as
-// `lib/alerts.ts` takes `warrantyThresholdFor` rather than hardcoding RQ41's 90 days. Every
-// test below passes its own values in. Nothing here invents a number, and nothing here can
-// render on the dashboard until Settings has real defaults to feed it.
+// The lookup is keyed by the asset's **`type`**, not its `category` — PRD §16 Resolved Question
+// 52 (2026-09-08) re-keyed the configuration, because IT Hardware has no single lifespan ("it
+// depends on the equipment purchased") while a per-Type table is a superset of a per-Category
+// one. This module was written before that decision and keyed by `category` until 2026-09-23.
+//
+// The default values themselves are NOT here. They are business data, they live in Settings
+// (`services/settings-service.ts`, PRD §16 Resolved Question 54), and this module takes
+// `usefulLifeYearsFor` as an INJECTED lookup — exactly as `lib/alerts.ts` takes
+// `warrantyThresholdFor` rather than hardcoding RQ41's 90 days. Every test below passes its own
+// values in. Nothing here invents a number, and a type absent from the injected table is handled
+// by the RQ51 rule below rather than by a fallback constant.
 //
 // A trap worth naming, since the Asset record makes it inviting: `Asset.currentValue` looks
 // like a ready-made NBV and is not one. `go-template-main/service/assetService.go:101` sets it
@@ -38,27 +42,30 @@ export function assetAgeInYears(purchaseDate: string, asOf: Date = new Date()): 
 
 export interface NbvInput {
   /** Reads `purchaseCost` and `purchaseDate` only — never `currentValue` (see note above). */
-  asset: Pick<Asset, 'purchaseCost' | 'purchaseDate' | 'category'>;
+  asset: Pick<Asset, 'purchaseCost' | 'purchaseDate' | 'type'>;
   /**
-   * Useful life for this asset's category, in years. Injected rather than looked up here:
-   * the per-category defaults are an open business input (PRD Open Question 3a), and the
-   * eventual source is Settings, following RQ41's `expiringThresholdDaysByCategory` shape.
+   * Useful life for this asset's **type**, in years (PRD §16 Resolved Question 52). Injected
+   * rather than looked up here: the defaults are business data owned by Settings
+   * (`nbv.usefulLifeYearsByType`), following RQ41's `expiringThresholdDaysByCategory` shape.
    */
-  usefulLifeYearsFor: (category: string) => number;
+  usefulLifeYearsFor: (type: string) => number;
   asOf?: Date;
 }
 
 /**
  * Straight-line NBV for one asset, clamped at 0.
  *
- * Returns `purchaseCost` unchanged when the useful life is not a usable positive number. That
- * is deliberate rather than a silent 0 or a NaN: a missing or zero useful life means the
- * category has no configured lifespan yet, and reporting "not yet depreciated" is honest,
- * whereas 0 would claim the asset is worthless and NaN would render as "NaN" on a KPI tile.
+ * Returns `purchaseCost` unchanged when the useful life is not a usable positive number. This is
+ * PRD §16 Resolved Question 51, not a defensive fallback: an Asset Type with no configured
+ * lifespan contributes its `purchaseCost` unchanged and stays counted in the portfolio total,
+ * treated as not yet depreciated. RQ54 supplied values for the ten Asset Types present in the
+ * data today and explicitly did NOT make them a blanket default, so a new Type appearing in the
+ * data lands here by design — reporting "not yet depreciated" is honest, whereas 0 would claim
+ * the asset is worthless and NaN would render as "NaN" on a KPI tile.
  */
 export function computeAssetNbv({ asset, usefulLifeYearsFor, asOf = new Date() }: NbvInput): number {
   const { purchaseCost } = asset;
-  const usefulLifeYears = usefulLifeYearsFor(asset.category);
+  const usefulLifeYears = usefulLifeYearsFor(asset.type);
 
   if (!Number.isFinite(usefulLifeYears) || usefulLifeYears <= 0) return purchaseCost;
 
@@ -87,8 +94,8 @@ export interface PortfolioNbv {
  * would be inventing a business rule.
  */
 export function computePortfolioNbv(
-  assets: Pick<Asset, 'purchaseCost' | 'purchaseDate' | 'category'>[],
-  usefulLifeYearsFor: (category: string) => number,
+  assets: Pick<Asset, 'purchaseCost' | 'purchaseDate' | 'type'>[],
+  usefulLifeYearsFor: (type: string) => number,
   asOf: Date = new Date(),
 ): PortfolioNbv {
   return assets.reduce<PortfolioNbv>(

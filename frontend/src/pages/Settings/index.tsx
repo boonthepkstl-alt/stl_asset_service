@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, Globe, Shield, Palette, Mail, Database, Save, ShieldCheck } from 'lucide-react';
+import { Bell, Globe, Shield, Palette, Mail, Database, Save, ShieldCheck, Landmark } from 'lucide-react';
 import { AppShell } from '@/components/AppShell';
 import { Button, Input, Select, Textarea, Checkbox, useToast, SectionCard } from '@/components/ui';
 import { useSettings } from '@/hooks/useSettings';
@@ -11,6 +11,7 @@ const sections = [
   { id: 'general', label: 'General', icon: Globe },
   { id: 'notifications', label: 'Notifications', icon: Bell },
   { id: 'warranty', label: 'Warranty', icon: ShieldCheck },
+  { id: 'nbv', label: 'NBV', icon: Landmark },
   { id: 'security', label: 'Security', icon: Shield },
   { id: 'appearance', label: 'Appearance', icon: Palette },
   { id: 'email', label: 'Email', icon: Mail },
@@ -166,6 +167,50 @@ export function SettingsPage() {
                   </div>
                 ))}
               </div>
+            </SectionCard>
+          )}
+
+          {section === 'nbv' && (
+            // AC-WARRANTY-001-07. Useful life per Asset Type, the one input RQ46's straight-line
+            // NBV formula needs beyond purchaseCost/purchaseDate. Keyed by `type` rather than
+            // `category` (PRD Section 16 Resolved Question 52) because IT Hardware has no single
+            // lifespan; values confirmed by business 2026-09-23 (Resolved Question 54).
+            //
+            // Rows come from the settings map, not from the Asset Types present in the data. An
+            // Asset Type with no row here is not broken and is not shown as a gap to fill: PRD
+            // Section 16 Resolved Question 51 governs it -- it contributes purchaseCost unchanged
+            // and stays in the portfolio total. Rendering every observed type with an empty box
+            // would invite an admin to invent a number the business has not confirmed.
+            <SectionCard title="NBV Useful Life" description="Years of straight-line depreciation per Asset Type, used by the dashboard's Net Book Value tile">
+              <div className="flex flex-col gap-4">
+                {Object.keys(draft.nbv.usefulLifeYearsByType).map((type) => (
+                  <div key={type} className="flex items-center justify-between py-2 border-b border-surface-100 last:border-0">
+                    <div>
+                      <p className="text-body font-medium text-surface-900">{type}</p>
+                      <p className="text-caption text-surface-500">Useful life in years</p>
+                    </div>
+                    <Input
+                      type="number"
+                      className="w-24"
+                      aria-label={`Useful life in years for ${type}`}
+                      value={draft.nbv.usefulLifeYearsByType[type]}
+                      onChange={(e) =>
+                        setDraft({
+                          ...draft,
+                          nbv: {
+                            ...draft.nbv,
+                            usefulLifeYearsByType: { ...draft.nbv.usefulLifeYearsByType, [type]: Number(e.target.value) || 0 },
+                          },
+                        })
+                      }
+                    />
+                  </div>
+                ))}
+              </div>
+              <p className="text-caption text-surface-500 mt-4">
+                An Asset Type not listed here has no configured useful life and is reported at its
+                purchase cost, unchanged — it is still counted in the portfolio total.
+              </p>
             </SectionCard>
           )}
 

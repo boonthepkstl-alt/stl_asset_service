@@ -5966,3 +5966,38 @@ citing earlier checkpoints.
 **Known Issues:** None newly found by this scan (see `OPEN-FINDINGS.md` for the standing list).
 **Remaining Work:** None specific to establishing this baseline.
 **Next Recommended Task:** QR / Barcode (`RAISE-FR-OPS-001`) — per `CURRENT-STATUS.md` §4 and `PHASE-CHECKPOINT-1`'s recommendation, unchanged by this scan.
+
+---
+
+## CHECKPOINT-2026-09-23-003
+
+**Phase:** 5C — Executive Dashboard / NBV
+**Feature:** `RAISE-FR-EXEC-001` Net Book Value
+**Task:** Answer DR-02, propagate PRD §16 Resolved Question 54 through the chain, and build both NBV surfaces.
+
+**What business decided:** ten per-Asset-Type useful-life values — nine types at **5 years**, **Smartphone at 3**. Two ambiguities in the raw phrasing ("5 years for everything except mobile phones, 3 years") were **put back and answered explicitly rather than inferred**: Tablet is 5, not 3 ("มือถือ" meant the handset, not the Mobile category); and the ten cover the data as it stands today, **not** a blanket default — an unlisted Asset Type stays under RQ51. Both clarifications are recorded at every layer, because neither is recoverable from the sentence business actually said.
+
+**Chain propagated end to end:** PRD v0.22, Design v0.20, Prototype v0.21, AC v0.21, Test Plan v0.21, Test Cases v0.35, Matrix v2.17. **Open Finding F-03 is RESOLVED** after being held open across four separate requests.
+
+**A correction was made mid-chain, and it is the more instructive half of this task.** The AC layer initially kept `AC-DASH-03b`/`AC-EXEC-001-03b`/`AC-WARRANTY-001-07` marked NOT TESTABLE YET on the ground that the tile still is not built. That misapplies this project's own marker: `CLAUDE.md` reserves it for a missing **business answer** (rule, threshold, field, role), and the governing precedent is `RAISE-FR-ORACLE-001` — its screen does not exist, `/reconciliation` renders a placeholder, and `TC-ORACLE-001-01..04` are recorded **FAIL**, not "not testable." A fully-specified criterion with nothing implementing it is **testable and failing**. Seven criteria had the marking removed; the v0.20 Change Log entry that carried the bad reasoning is marked **SUPERSEDED** rather than quietly rewritten.
+
+**What was implemented:** `settings-service.ts` seeds the ten values; `types/settings.ts` gains `NbvSettings`; `settings-repository.ts` merges per-Type edits key-by-key; **`lib/nbv.ts` is re-keyed from `category` to `type`** — RQ52 decided that on 2026-09-08 and **the code had never followed for fifteen days**, harmless only while the module had no consumer; `hooks/usePortfolioNbv.ts` is that first consumer; the P-018 Settings NBV section and the **tenth** Dashboard KPI tile are built. RQ50's instruction to leave the illustrative Monthly Depreciation tile untouched beside the real one was followed, and is asserted.
+
+**Tests:** 289 → **296**, all passing. `tsc`/`vite build`/ESLint all clean.
+- Unit: the ten values are pinned by a whole-object equality that fails on an **eleventh** entry as well as a changed one — inventing a row for a type business never ruled on is the realistic mistake, and F-54 exists because four values once shipped without authority.
+- **Four mutations verified, each restored and re-checked:** Smartphone 3→5 (3 tests failed), Tablet 5→3 (2 failed), an invented eleventh type (2 failed), and reverting the RQ52 re-key to `category` (the Dashboard wiring test failed).
+- One real defect found and fixed while writing them: the new Settings cases keyed off the seeded organization name, which an earlier test in the same file mutates — they were order-dependent until re-anchored on the section nav.
+
+**Validation:** `npm test` 296/296, `npm run build` clean, `npm run lint` clean — all run, none assumed.
+
+**Requirement Traceability:** **No verdict moved. The board stays 8 PASS / 2 FAIL / 6 BLOCKED / 1 partial.** `RAISE-FR-EXEC-001` stays `PASS (partial)` and **Gap 21 stays OPEN.** Recorded explicitly because "the blocker was answered and the feature was built" is exactly what gets mistaken for a verdict change.
+
+**Also corrected this session:** the tally handed to the matrix agent was wrong — 8/1/2/6 instead of 8/2/6/1. The agent re-tallied all 17 rows itself and rejected it; verified independently against `RAISE-COMPLIANCE-REVIEW.md` §5.
+
+**Status:** 🟡 Built and specified, **not executed**.
+
+**Known Issues:** **Live browser verification could not be performed.** The desktop app's dev server resolves its launch config against the **main checkout**, not this worktree — a first run appeared to show only nine tiles, which was the main checkout's code, not a defect in this branch (confirmed: `hooks/usePortfolioNbv.ts` 404s there into the HTML fallback). Nothing in the chain was recorded as executed on the strength of it.
+
+**Remaining Work:** formal execution of `TC-DASH-01`, `TC-EXEC-001-01`, `TC-DASH-03b`, `TC-EXEC-001-03b`, `TC-DASH-04`, `TC-EXEC-001-04`, `TC-WARRANTY-001-07` against the running app. `TC-DASH-01`/`TC-EXEC-001-01`'s existing PASS records were taken against the superseded **nine**-tile criteria and must be **re-executed, not carried forward**. Only that closes Gap 21.
+
+**Next Recommended Task:** run those seven cases against the app after this branch merges to `main`, where the dev server can actually serve it. That single sweep is what moves `RAISE-FR-EXEC-001` and closes Gap 21 — **the first verdict movement in four sessions.**

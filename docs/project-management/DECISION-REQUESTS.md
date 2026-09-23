@@ -125,8 +125,56 @@ records, and avoiding it is why this request exists rather than a pull request.
 | **Raised** | 2026-09-21 (first asked 2026-09-10 as part of a combined request; no copy of that one was kept) |
 | **Finding** | [F-03](OPEN-FINDINGS.md) |
 | **Requirement** | `RAISE-FR-EXEC-001` — Executive Dashboard |
-| **Status** | **Awaiting answer** |
-| **Blocks** | The NBV tile on the Dashboard, the NBV section of the P-018 Settings screen, **Gap 21**, and `RAISE-FR-EXEC-001`'s remaining `PASS (partial)`. **This is the only outstanding item that would move a Compliance Review verdict.** |
+| **Status** | **ANSWERED 2026-09-23** — see "The answer" below. Recorded as PRD §16 **Resolved Question 54** (PRD v0.22), closing **Open Question 3a** and resolving [F-03](OPEN-FINDINGS.md). |
+| **Blocks** | ~~The NBV tile on the Dashboard, the NBV section of the P-018 Settings screen, **Gap 21**, and `RAISE-FR-EXEC-001`'s remaining `PASS (partial)`.~~ **Unblocked.** Both surfaces are now built and the chain is synced. **Gap 21 is NOT closed** and `RAISE-FR-EXEC-001` stays `PASS (partial)`: the seven affected test cases are now testable but **none has been formally executed**, so no verdict moved. |
+
+### The answer — received 2026-09-23
+
+Business answered: **"ใช้ 5 ปีทุกอย่างยกเว้นมือถือ 3 ปี"** — *"use 5 years for
+everything except mobile phones, 3 years."*
+
+| Asset Type | Useful life (years) |
+|---|---|
+| Laptop | 5 |
+| Monitor | 5 |
+| Headphones | 5 |
+| **Smartphone** | **3** |
+| Tablet | 5 |
+| Printer | 5 |
+| Projector | 5 |
+| Server | 5 |
+| Router | 5 |
+| Camera | 5 |
+
+**Two ambiguities in that phrasing were put back to the business and answered
+explicitly rather than inferred.** Recording them here matters, because neither
+is recoverable from the sentence above and both are exactly the kind of thing a
+later reader would "fix" in the wrong direction:
+
+1. **Tablet is 5, not 3.** "มือถือ" was confirmed to mean the Smartphone
+   handset specifically — **not** the whole Mobile category, which also contains
+   Tablet. Smartphone is the only Asset Type at 3 years.
+2. **These ten are the Asset Types present in the data today, not a blanket
+   default.** `type` is free text and new kinds will appear. An Asset Type with
+   no configured value is **not** assumed to be 5 — it continues under PRD §16
+   **Resolved Question 51**, contributing `purchaseCost` unchanged and staying
+   counted in the portfolio total. RQ51 is unamended.
+
+**What followed the same day:** the full chain was propagated (Design v0.20,
+Prototype v0.21, AC v0.21, Test Plan v0.21, Test Cases v0.35, Matrix v2.17) and
+both surfaces were implemented — the P-018 Settings NBV section and the tenth
+Dashboard KPI tile, with `lib/nbv.ts` re-keyed from Category to Type (RQ52,
+which the code had never actually followed). The ten values are pinned by a test
+that fails on an eleventh entry as well as on a changed one, so a future
+invented row cannot pass quietly.
+
+**What did NOT follow:** execution. The automated suite covers the wiring; no
+formal browser execution of `TC-DASH-01`/`TC-EXEC-001-01`/`TC-DASH-03b`/
+`TC-WARRANTY-001-07` has happened, so **Gap 21 stays open** and the Compliance
+Review board is unchanged at **8 PASS / 2 FAIL / 6 BLOCKED / 1 partial**.
+Answering the question did not, by itself, move a verdict — and this request
+having been "the only outstanding item that would move one" is a statement about
+what it unblocks, not about what it delivers.
 | **Sendable version** | <https://claude.ai/artifact/SBSEdYxNAAyS6G9rKCqBos> — the same question as a fillable schedule, one row per Asset Type. Answers save to the page, so a reply cannot go missing the way the 2026-09-10 one did. **Private by default: it must be shared from its own Share menu before the recipient can open it.** Answering by email or chat instead is equally fine — the page says so itself. |
 
 ### What is already decided — so the ask is as narrow as possible

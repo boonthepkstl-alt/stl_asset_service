@@ -55,6 +55,23 @@ export interface WarrantySettings {
   expiringThresholdDaysByCategory: Record<string, number>;
 }
 
+// AC-WARRANTY-001-07 / AC-DASH-03b / AC-EXEC-001-03b. Useful life in years per Asset Type, the
+// only input RQ46's straight-line NBV formula needs beyond `purchaseCost` and `purchaseDate`.
+//
+// Keyed by the Asset `type` field, NOT `category` (PRD Section 16 Resolved Question 52,
+// 2026-09-08): IT Hardware has no single lifespan -- "it depends on the equipment purchased" --
+// while a per-Type table is a superset of a per-Category one, since a category with one fixed
+// value simply repeats it across its types.
+//
+// The map is deliberately sparse, and a missing key is a real state rather than an error: PRD
+// Section 16 Resolved Question 54 supplied values for the ten Asset Types present in the data
+// today and explicitly declined to make them a blanket default for future types. `type` is free
+// text, so new kinds will appear with no row here, and Resolved Question 51 governs them --
+// `lib/nbv.ts` contributes their `purchaseCost` unchanged, still counted in the portfolio total.
+export interface NbvSettings {
+  usefulLifeYearsByType: Record<string, number>;
+}
+
 export interface PlatformSettings {
   organizationName: string;
   supportEmail: string;
@@ -68,13 +85,15 @@ export interface PlatformSettings {
   email: EmailSettings;
   data: DataSettings;
   warranty: WarrantySettings;
+  nbv: NbvSettings;
 }
 
-export type UpdateSettingsInput = Partial<Omit<PlatformSettings, 'notifications' | 'security' | 'appearance' | 'email' | 'data' | 'warranty'>> & {
+export type UpdateSettingsInput = Partial<Omit<PlatformSettings, 'notifications' | 'security' | 'appearance' | 'email' | 'data' | 'warranty' | 'nbv'>> & {
   notifications?: Partial<NotificationPreferences>;
   security?: Partial<SecuritySettings>;
   appearance?: Partial<AppearanceSettings>;
   email?: Partial<EmailSettings>;
   data?: Partial<DataSettings>;
   warranty?: Partial<WarrantySettings>;
+  nbv?: Partial<NbvSettings>;
 };

@@ -21,12 +21,14 @@ import {
   Lightbulb,
   ShieldCheck,
   Wrench as WrenchIcon,
+  Landmark,
 } from 'lucide-react';
 import { AppShell } from '@/components/AppShell';
 import { Card, CardHeader, Badge, StatusBadge, Button, EmptyState } from '@/components/ui';
 import { BarChart, DonutChart, ProgressBarChart } from '@/components/Charts';
 import { useDashboardStats } from '@/hooks/useDashboardStats';
 import { computeUtilization } from '@/lib/utilization';
+import { usePortfolioNbv } from '@/hooks/usePortfolioNbv';
 import { kpis as staticKpis, assetLifecycleData, activities, approvals, maintenanceRecords } from '@/data/fixtures/mockData';
 import { aiInsights } from '@/data/fixtures/aiData';
 import { cn } from '@/lib/cn';
@@ -61,6 +63,9 @@ const severityConfig = {
 export function DashboardPage() {
   const navigate = useNavigate();
   const { stats, loading, error, refetch } = useDashboardStats();
+  // Loaded independently of `stats` (see hooks/usePortfolioNbv.ts): its own failure shows an
+  // em dash on the one tile rather than taking down the whole grid.
+  const { nbv } = usePortfolioNbv();
   // `stats` is null only while loading/errored, when the KPI grid below isn't rendered at all;
   // the zero fallback keeps this free of a non-null assertion rather than guarding twice.
   const utilization = computeUtilization(stats ?? { available: 0, assigned: 0 });
@@ -77,6 +82,13 @@ export function DashboardPage() {
         { label: 'Software Licenses', value: stats.softwareLicenseCount, icon: KeyRound, color: 'singer', sub: 'active contracts' },
         { label: 'Monthly Depreciation', value: `$${(staticKpis.monthlyDepreciation / 1000).toFixed(1)}K`, icon: TrendingDown, color: 'accent', sub: 'illustrative — no depreciation model yet' },
         { label: 'Monthly Cost', value: `$${(staticKpis.monthlyCost / 1000).toFixed(1)}K`, icon: DollarSign, color: 'success', sub: 'illustrative — no depreciation model yet' },
+        // The tenth tile (PRD §16 Resolved Question 50). Unlike the two illustrative tiles above
+        // it, this one is computed: straight-line depreciation per RQ46 over every asset's real
+        // `purchaseCost`/`purchaseDate`, using the per-Asset-Type useful life configured in
+        // Settings (RQ52 keying, RQ54 values). RQ50 kept Monthly Depreciation deliberately
+        // unchanged beside it, so the grid now carries one illustrative depreciation figure and
+        // one real one — that is the confirmed decision, not an oversight.
+        { label: 'NBV', value: nbv ? `$${(nbv.totalNbv / 1000).toFixed(1)}K` : '—', icon: Landmark, color: 'brand', sub: nbv ? `of $${(nbv.totalPurchaseCost / 1000).toFixed(1)}K purchase cost, ${nbv.assetCount} assets` : 'computing…' },
       ]
     : [];
 

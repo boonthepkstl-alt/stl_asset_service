@@ -6,6 +6,31 @@ import type { PlatformSettings, UpdateSettingsInput } from '@/types/settings';
 // SYSTEM-SETTINGS-MIGRATION.md for the field-by-field trace back to the original page. The
 // `warranty` section is new (AC-WARRANTY-001-03, resolved 2026-09-01) -- not part of the legacy
 // page, since the Expiring-threshold concept didn't exist until this business decision.
+// PRD Section 16 Resolved Question 54 (business-confirmed 2026-09-23 via Decision Request DR-02,
+// closing Open Question 3a and Open Finding F-03, which had been held open across four requests).
+// Business stated it as "5 years for everything except mobile phones, 3 years"; two ambiguities in
+// that phrasing were put back and answered explicitly rather than inferred:
+//
+//   1. Tablet is 5, not 3. "Mobile phone" meant the Smartphone handset, not the whole Mobile
+//      category -- which also contains Tablet. Smartphone is the ONLY Asset Type at 3 years.
+//   2. These ten are the Asset Types present in the data today. They are NOT a blanket default:
+//      a Type absent from this map is governed by Resolved Question 51, not by a fallback of 5.
+//
+// This is business data, transcribed. Do not add, remove, or adjust an entry without a recorded
+// business decision -- Open Finding F-54 exists because four SLA values once shipped without one.
+const NBV_USEFUL_LIFE_YEARS_BY_TYPE: Record<string, number> = {
+  Laptop: 5,
+  Monitor: 5,
+  Headphones: 5,
+  Smartphone: 3,
+  Tablet: 5,
+  Printer: 5,
+  Projector: 5,
+  Server: 5,
+  Router: 5,
+  Camera: 5,
+};
+
 const SEED: PlatformSettings = {
   organizationName: 'RAISE Corporation',
   supportEmail: 'support@raise.co',
@@ -19,6 +44,7 @@ const SEED: PlatformSettings = {
   email: { smtpServer: 'smtp.raise.co', smtpPort: 587, smtpUsername: 'noreply@raise.co', encryption: 'tls', fromEmail: 'noreply@raise.co' },
   data: { autoBackupEnabled: true, dataRetentionDays: 365, exportScheduleEnabled: false },
   warranty: { expiringThresholdDaysByCategory: Object.fromEntries(categories.map((c) => [c, 90])) },
+  nbv: { usefulLifeYearsByType: { ...NBV_USEFUL_LIFE_YEARS_BY_TYPE } },
 };
 
 const repository: SettingsRepository = new MockSettingsRepository(SEED);

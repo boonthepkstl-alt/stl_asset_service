@@ -2,9 +2,9 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Acceptance Criteria
-**Version:** 0.19 Draft
+**Version:** 0.21 Draft
 **Status:** Draft for Acceptance Review
-**Source:** [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.20 §27 (Prototype Traceability Matrix) + §5, §7–§23, §23A, §25A (per-screen specs / P-018 Settings / AI Scope Boundary / NFR Backlog Prototype Note) + §8/§20's corrected P-002/P-014 KPI grid (**now ten tiles**, Utilization built and live, NBV specified as a tenth tile — placement/formula confirmed, not yet built) and NBV/Risk/Utilization status narrative + §23A's NBV section (shape confirmed, not built; keyed by Asset **Type**, not Category, as of 2026-09-08; "NBV for an Asset Type with No Configured Useful Life" subsection) + §14's "IT Hardware Assignment Approval Workflow — Category-Scoped Exception" subsection + §18's P-012 Alerts (five confirmed MVP trigger conditions and fixed-per-condition severity; access gate confirmed 2026-09-04) + §6's "Header Bell (`AppShell`) — Second Surface of P-012 Alerts, AS BUILT" subsection and §18's "Ordering Rationale" subsection (both resolved 2026-09-05, PRD §16 Resolved Question 49, closing Gap 17), cross-checked against [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.21 (§16 Resolved Questions 50–53) and [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.19. **v0.17 propagated PRD §16 Resolved Questions 50 (NBV KPI tile confirmed as a tenth tile on both P-002/P-014, existing Monthly Depreciation tile kept unchanged) and 51 (NBV for an Asset Category with no configured useful life returns `purchaseCost` unchanged, asset still included in the portfolio total) via Prototype v0.18 — see Document Status Change Log below; that sync was actually performed on **2026-09-08**, not 2026-09-07 as v0.17's own Change Log heading previously stated (2026-09-07 is correctly the date business confirmed Resolved Questions 50–51, not the date this document was synced — see the v0.17 → v0.18 Change Log entry for the correction). **New in v0.18 (2026-09-08):** propagates PRD §16 Resolved Question 52, which **amends** Resolved Question 46 — the NBV useful-life configuration is **re-keyed from Asset Category to Asset Type** (a re-key, not new scope; `AC-WARRANTY-001-07`, `AC-DASH-03b`/`AC-DASH-04`, `AC-EXEC-001-03b`/`AC-EXEC-001-04` updated accordingly). PRD §16 Open Question 3a (re-scoped by Resolved Question 52 to ask for one default useful-life value **per Asset Type**) remains fully OPEN and is not answered by this revision. **New in v0.19 (2026-09-08):** propagates PRD §16 Resolved Question 53 (via `RAISE-PROTOTYPE.md` v0.20 §15/§20), which confirms the already-shipped **per-priority SLA target hours** for `RAISE-FR-MAINT-001` (Critical 2h, High 8h, Medium 24h, Low 48h — an existing value confirmed as-is, resolving Open Finding F-54, no code change follows). This adds one new, genuinely-executable-today criterion, **AC-MAINT-001-10** (§12) — recorded as testable but **not** executed/passing here — while leaving "SLA per stage" (how long each of the four workflow stages may take), the vendor model, the cost model, and delegated-approver configuration rules exactly as open/NOT TESTABLE YET as before; none of the four confirmed SLA numbers is a per-stage budget.
+**Source:** [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.21 §27 (Prototype Traceability Matrix) + §5, §7–§23, §23A, §25A (per-screen specs / P-018 Settings / AI Scope Boundary / NFR Backlog Prototype Note) + §8/§20's corrected P-002/P-014 KPI grid (**now ten tiles**, Utilization built and live, NBV specified as a tenth tile — placement, formula, and (as of 2026-09-23) default useful-life values all confirmed, **now buildable, not yet built**) and NBV/Risk/Utilization status narrative + §23A's NBV section (shape and default values confirmed, not built; keyed by Asset **Type**, not Category, as of 2026-09-08; ten default values confirmed 2026-09-23; "NBV for an Asset Type with No Configured Useful Life" subsection) + §14's "IT Hardware Assignment Approval Workflow — Category-Scoped Exception" subsection + §18's P-012 Alerts (five confirmed MVP trigger conditions and fixed-per-condition severity; access gate confirmed 2026-09-04) + §6's "Header Bell (`AppShell`) — Second Surface of P-012 Alerts, AS BUILT" subsection and §18's "Ordering Rationale" subsection (both resolved 2026-09-05, PRD §16 Resolved Question 49, closing Gap 17), cross-checked against [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.22 (§16 Resolved Question 54) and [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.20. **v0.17 propagated PRD §16 Resolved Questions 50 (NBV KPI tile confirmed as a tenth tile on both P-002/P-014, existing Monthly Depreciation tile kept unchanged) and 51 (NBV for an Asset Category with no configured useful life returns `purchaseCost` unchanged, asset still included in the portfolio total) via Prototype v0.18 — see Document Status Change Log below; that sync was actually performed on **2026-09-08**, not 2026-09-07 as v0.17's own Change Log heading previously stated (2026-09-07 is correctly the date business confirmed Resolved Questions 50–51, not the date this document was synced — see the v0.17 → v0.18 Change Log entry for the correction). **New in v0.18 (2026-09-08):** propagates PRD §16 Resolved Question 52, which **amends** Resolved Question 46 — the NBV useful-life configuration is **re-keyed from Asset Category to Asset Type** (a re-key, not new scope; `AC-WARRANTY-001-07`, `AC-DASH-03b`/`AC-DASH-04`, `AC-EXEC-001-03b`/`AC-EXEC-001-04` updated accordingly). PRD §16 Open Question 3a (re-scoped by Resolved Question 52 to ask for one default useful-life value **per Asset Type**) remains fully OPEN and is not answered by this revision. **New in v0.19 (2026-09-08):** propagates PRD §16 Resolved Question 53 (via `RAISE-PROTOTYPE.md` v0.20 §15/§20), which confirms the already-shipped **per-priority SLA target hours** for `RAISE-FR-MAINT-001` (Critical 2h, High 8h, Medium 24h, Low 48h — an existing value confirmed as-is, resolving Open Finding F-54, no code change follows). This adds one new, genuinely-executable-today criterion, **AC-MAINT-001-10** (§12) — recorded as testable but **not** executed/passing here — while leaving "SLA per stage" (how long each of the four workflow stages may take), the vendor model, the cost model, and delegated-approver configuration rules exactly as open/NOT TESTABLE YET as before; none of the four confirmed SLA numbers is a per-stage budget. **New in v0.20 (2026-09-23):** propagates PRD §16 Resolved Question 54 (via `RAISE-PROTOTYPE.md` v0.21 §8/§20/§23A and `RAISE-DESIGN.md` v0.20 §5.4/§13), which supplies the ten per-Asset-Type default useful-life numeric values, closing PRD §16 Open Question 3a. **Corrected in v0.21 (2026-09-23, same-day correction):** v0.20 kept `AC-DASH-03b`, `AC-EXEC-001-03b`, and `AC-WARRANTY-001-07` marked NOT TESTABLE YET on a leftover "tile/section not yet built" ground — that reasoning misapplied this document's own NOT TESTABLE YET marker (§1: reserved for a missing business rule/threshold/field/role, not a missing implementation), contradicting this project's own `RAISE-FR-ORACLE-001` precedent (`TC-ORACLE-001-01..04` recorded **FAIL**, not "not testable," against a screen that does not exist). v0.21 removes the NOT TESTABLE YET marking from `AC-DASH-01`, `AC-DASH-03b`, `AC-DASH-04`, `AC-EXEC-001-01`, `AC-EXEC-001-03b`, `AC-EXEC-001-04`, and `AC-WARRANTY-001-07` — all seven are now **testable**, none blocked by an open PRD question. **Being testable is not being met:** no `NBVSettings` type, service, or UI exists anywhere in `frontend/src/`, so executing any of the seven today is expected to produce **FAIL**, not PASS; no PASS is recorded or implied. The unbuilt-implementation status is tracked by **Gap 21** in `RAISE-TRACEABILITY-MATRIX.md` §6 and by the pending re-execution of `TC-DASH-01`/`TC-EXEC-001-01` in `RAISE-TEST-CASES.md`, not by this document. No value beyond the ten business-confirmed figures is invented for any Asset Type outside those ten.
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
 
@@ -49,7 +49,7 @@ detail is "TBD" or "conceptual," the corresponding criterion is marked
 | AC Group | Screen(s) | Requirement | Status |
 |---|---|---|---|
 | [AC-LOGIN](#4-ac-login--p-001-login--access) | P-001 | Security Design (TBD) | Partially testable |
-| [AC-DASH](#5-ac-dash--p-002-main-dashboard) | P-002 | Product / Dashboard | Testable (rewritten 2026-08-31 to match as-built dashboard, Open Finding F-22; updated 2026-09-05, PRD §16 Resolved Questions 46–48 — KPI grid nine tiles; Utilization is a passing, testable criterion (built and live, PR #102); Risk is confirmed out of MVP scope by business decision, not a gap. **Updated 2026-09-08 (sync date corrected — see Document Status Change Log; the underlying business decisions were confirmed 2026-09-07), PRD §16 Resolved Questions 50–51 (closes Open Finding F-52's specification gap):** KPI grid grows to **ten** tiles (AC-DASH-01 re-specified — its prior nine-tile PASS record, `TC-DASH-01`, requires re-execution, not carry-forward); NBV (AC-DASH-03b) flips from an absence criterion to a presence criterion, still NOT TESTABLE YET (tile not built; default useful-life values undefined, PRD Open Question 3a); new AC-DASH-04 records the confirmed unconfigured-Asset-Type NBV rule, also NOT TESTABLE YET (tile not built). **Updated again 2026-09-08, PRD §16 Resolved Question 52:** the NBV useful-life configuration referenced by AC-DASH-03b/-04 is re-keyed from Asset Category to Asset Type (amends Resolved Question 46; a re-key, not new scope)) |
+| [AC-DASH](#5-ac-dash--p-002-main-dashboard) | P-002 | Product / Dashboard | Testable (rewritten 2026-08-31 to match as-built dashboard, Open Finding F-22; updated 2026-09-05, PRD §16 Resolved Questions 46–48 — KPI grid nine tiles; Utilization is a passing, testable criterion (built and live, PR #102); Risk is confirmed out of MVP scope by business decision, not a gap. **Updated 2026-09-08 (sync date corrected — see Document Status Change Log; the underlying business decisions were confirmed 2026-09-07), PRD §16 Resolved Questions 50–51 (closes Open Finding F-52's specification gap):** KPI grid grows to **ten** tiles (AC-DASH-01 re-specified — its prior nine-tile PASS record, `TC-DASH-01`, requires re-execution, not carry-forward); NBV (AC-DASH-03b) flips from an absence criterion to a presence criterion, still NOT TESTABLE YET (tile not built; default useful-life values undefined, PRD Open Question 3a); new AC-DASH-04 records the confirmed unconfigured-Asset-Type NBV rule, also NOT TESTABLE YET (tile not built). **Updated again 2026-09-08, PRD §16 Resolved Question 52:** the NBV useful-life configuration referenced by AC-DASH-03b/-04 is re-keyed from Asset Category to Asset Type (amends Resolved Question 46; a re-key, not new scope). **Updated 2026-09-23, PRD §16 Resolved Question 54 (closes Open Question 3a and the narrowed remainder of Open Finding F-03):** the ten per-Asset-Type default useful-life values are now confirmed (5 years for nine types, 3 years for Smartphone). **Corrected 2026-09-23:** AC-DASH-01, AC-DASH-03b, and AC-DASH-04's NOT TESTABLE YET markings are **removed** — each is now fully specified and **testable**; "tile not yet built" was never a valid NOT TESTABLE YET reason under this document's own definition (§1) or this project's own `RAISE-FR-ORACLE-001` precedent (`TC-ORACLE-001-01..04` recorded FAIL, not "not testable," against an unbuilt screen). Executing these three today is expected to produce **FAIL**, not PASS — the unbuilt NBV tile/`NBVSettings`/P-018 NBV section is tracked by Gap 21 in `RAISE-TRACEABILITY-MATRIX.md` §6, not by this document) |
 | [AC-ASSET-001](#6-ac-asset-001--p-003-asset-registry) | P-003 | RAISE-FR-ASSET-001 | Testable |
 | [AC-ASSET-001-DETAIL](#7-ac-asset-001-detail--p-004-asset-detail) | P-004 | RAISE-FR-ASSET-001 | Testable |
 | [AC-LIFE-001](#75-ac-life-001--asset-lifecycle-connectivity-cross-cutting) | P-004 (Lifecycle section) | RAISE-FR-LIFE-001 | Partially testable |
@@ -58,11 +58,11 @@ detail is "TBD" or "conceptual," the corresponding criterion is marked
 | [AC-OPS-001](#10-ac-ops-001--p-007-qr--barcode-scan) | P-007 | RAISE-FR-OPS-001 | Testable |
 | [AC-OPS-002](#11-ac-ops-002--p-008-check-in--check-out) | P-008 | RAISE-FR-OPS-002 | Testable (resolved 2026-09-01, PRD §16 Resolved Question 42 — general workflow shape and permission gate confirmed for non-IT-Hardware Check-out and all Check-in; **expanded 2026-09-02, PRD §16 Resolved Question 43** — IT Hardware-category Check-out's 4-stage approval workflow now also testable at the confirmed stage-transition level. Two Stage 2 sub-points — recipient-decline path and e-signature/acknowledgment-text capture — remain **NOT TESTABLE YET**, genuinely undecided per Prototype/Design's own open-question framing. General RBAC role/permission content for other domains remains NOT TESTABLE YET, PRD §16 Q22) |
 | [AC-MAINT-001](#12-ac-maint-001--p-009-maintenance) | P-009 | RAISE-FR-MAINT-001 | Partially testable (workflow shape testable; **updated 2026-09-08, PRD §16 Resolved Question 53, resolving Open Finding F-54:** per-priority SLA target hours (Critical 2h/High 8h/Medium 24h/Low 48h) now testable — AC-MAINT-001-10, not yet executed; "SLA per stage" (per-workflow-stage time budget), vendor model, cost model, and delegated-approver rules remain NOT TESTABLE YET) |
-| [AC-WARRANTY-001](#13-ac-warranty-001--p-010-warranty--p-018-settings) | P-010, P-018 | RAISE-FR-WARRANTY-001 (Warranty section); `RAISE-FR-EXEC-001` (P-018's new NBV section, NOT TESTABLE YET) | Warranty section: Testable (field list resolved 2026-08-29; per-category configurable threshold resolved 2026-09-01). NBV section (added 2026-09-05, PRD §16 Resolved Question 46; **re-keyed 2026-09-08 from Asset Category to Asset Type, PRD §16 Resolved Question 52**): shape-only criterion, NOT TESTABLE YET pending PRD Open Question 3a (re-scoped to one value per Asset Type) |
+| [AC-WARRANTY-001](#13-ac-warranty-001--p-010-warranty--p-018-settings) | P-010, P-018 | RAISE-FR-WARRANTY-001 (Warranty section); `RAISE-FR-EXEC-001` (P-018's new NBV section) | Warranty section: Testable (field list resolved 2026-08-29; per-category configurable threshold resolved 2026-09-01). NBV section (added 2026-09-05, PRD §16 Resolved Question 46; **re-keyed 2026-09-08 from Asset Category to Asset Type, PRD §16 Resolved Question 52**; **default values confirmed 2026-09-23, PRD §16 Resolved Question 54, closing Open Question 3a**): shape and default values fully specified. **Corrected 2026-09-23:** NOT TESTABLE YET marking **removed** — AC-WARRANTY-001-07 is now **testable**; the section not yet existing in `frontend/src/` means executing it today is expected to produce **FAIL**, not that it is untestable (see `RAISE-FR-ORACLE-001` precedent, §14), tracked by Gap 21 in `RAISE-TRACEABILITY-MATRIX.md` §6 |
 | [AC-ORACLE-001](#14-ac-oracle-001--p-011-oracle-fa--financial-view) | P-011 | RAISE-FR-ORACLE-001 | Partially testable |
 | [AC-ALERT-001](#15-ac-alert-001--p-012-alerts) | P-012 (+ header bell, `AppShell`, global chrome) | RAISE-FR-ALERT-001 | Testable for the five confirmed trigger conditions and fixed-per-condition severity (resolved 2026-09-04, PRD §16 Resolved Question 44; closes Open Finding F-05's trigger-rules cause), and now also testable for the access gate itself (resolved 2026-09-04, PRD §16 Resolved Question 45 — any authenticated user, all four roles; partially resolves Open Finding F-08 for this screen only) — only Warranty EXPIRED is actually implemented as of this date, the other four are not yet built (verification deferred to Test Case execution, not decided here); per-user filtering of alert rows is a separate, newly-raised, still-open question (PRD §16 Q22a) with no criterion written for it. **Updated 2026-09-05 (PRD §16 Resolved Question 49, closing Gap 17):** the `AppShell` header bell — a second display surface over this same requirement — is now **built and shipped**, and AC-ALERT-001-12..17 test it directly as passing/testable criteria, not NOT TESTABLE YET; the group's former "bell-icon scope contradiction" left-open note is resolved and removed. **Corrected 2026-09-07:** AC-ALERT-001-12 previously over-specified a numeral on the closed bell button; rewritten to state the actual built behavior (dot indicator when closed; numeral in `aria-label` and the opened panel's header badge, identical to this screen's own derived total) — an AI-introduced specification error in the criterion, not a product defect; AC-ALERT-001-01..11 and -13..17 unaffected |
 | [AC-AUDIT-001](#16-ac-audit-001--p-013-audit-log) | P-013 | RAISE-FR-AUDIT-001 | Partially testable |
-| [AC-EXEC-001](#17-ac-exec-001--p-014-executive-dashboard) | P-014 | RAISE-FR-EXEC-001 | Testable (rewritten 2026-08-31 to match as-built dashboard, Open Finding F-22; updated 2026-09-05, PRD §16 Resolved Questions 46–48 — KPI grid nine tiles; Utilization is a passing, testable criterion (built and live, PR #102); Risk is confirmed out of MVP scope by business decision, not a gap. **Updated 2026-09-08 (sync date corrected — see Document Status Change Log; the underlying business decisions were confirmed 2026-09-07), PRD §16 Resolved Questions 50–51 (closes Open Finding F-52's specification gap):** KPI grid grows to **ten** tiles (AC-EXEC-001-01 re-specified — its prior nine-tile PASS record, `TC-EXEC-001-01`, requires re-execution, not carry-forward); NBV (AC-EXEC-001-03b) flips from an absence criterion to a presence criterion, still NOT TESTABLE YET (tile not built; default useful-life values undefined, PRD Open Question 3a); new AC-EXEC-001-04 records the confirmed unconfigured-Asset-Type NBV rule, also NOT TESTABLE YET (tile not built). **Updated again 2026-09-08, PRD §16 Resolved Question 52:** the NBV useful-life configuration referenced by AC-EXEC-001-03b/-04 is re-keyed from Asset Category to Asset Type (amends Resolved Question 46; a re-key, not new scope)) |
+| [AC-EXEC-001](#17-ac-exec-001--p-014-executive-dashboard) | P-014 | RAISE-FR-EXEC-001 | Testable (rewritten 2026-08-31 to match as-built dashboard, Open Finding F-22; updated 2026-09-05, PRD §16 Resolved Questions 46–48 — KPI grid nine tiles; Utilization is a passing, testable criterion (built and live, PR #102); Risk is confirmed out of MVP scope by business decision, not a gap. **Updated 2026-09-08 (sync date corrected — see Document Status Change Log; the underlying business decisions were confirmed 2026-09-07), PRD §16 Resolved Questions 50–51 (closes Open Finding F-52's specification gap):** KPI grid grows to **ten** tiles (AC-EXEC-001-01 re-specified — its prior nine-tile PASS record, `TC-EXEC-001-01`, requires re-execution, not carry-forward); NBV (AC-EXEC-001-03b) flips from an absence criterion to a presence criterion, still NOT TESTABLE YET (tile not built; default useful-life values undefined, PRD Open Question 3a); new AC-EXEC-001-04 records the confirmed unconfigured-Asset-Type NBV rule, also NOT TESTABLE YET (tile not built). **Updated again 2026-09-08, PRD §16 Resolved Question 52:** the NBV useful-life configuration referenced by AC-EXEC-001-03b/-04 is re-keyed from Asset Category to Asset Type (amends Resolved Question 46; a re-key, not new scope). **Updated 2026-09-23, PRD §16 Resolved Question 54 (closes Open Question 3a and the narrowed remainder of Open Finding F-03):** the ten per-Asset-Type default useful-life values are now confirmed (5 years for nine types, 3 years for Smartphone). **Corrected 2026-09-23:** AC-EXEC-001-01, AC-EXEC-001-03b, and AC-EXEC-001-04's NOT TESTABLE YET markings are **removed** — each is now fully specified and **testable**; "tile not yet built" was never a valid NOT TESTABLE YET reason under this document's own definition (§1) or this project's own `RAISE-FR-ORACLE-001` precedent (`TC-ORACLE-001-01..04` recorded FAIL, not "not testable," against an unbuilt screen). Executing these three today is expected to produce **FAIL**, not PASS — the unbuilt NBV tile/`NBVSettings`/P-018 NBV section is tracked by Gap 21 in `RAISE-TRACEABILITY-MATRIX.md` §6, not by this document) |
 | [AC-AI-SEARCH-001](#18-ac-ai-search-001--p-015-ai-assistant) | P-015 | RAISE-AI-SEARCH-001 | Partially testable |
 | [AC-AI-STATES](#19-ac-ai-states--ai-response-states) | P-015 | RAISE-AI-SEARCH-001 | Testable |
 | [AC-AI-DOC-001](#195-ac-ai-doc-001--p-004-asset-detail-incidental--ocr--extraction) | P-004 (incidental) | RAISE-AI-DOC-001 | Not testable yet |
@@ -204,6 +204,39 @@ Asset Category); it **remains fully OPEN**, and no such number — for any
 category or any type — is invented, suggested, or illustrated anywhere in this
 document, including in any Given clause or sample data.
 
+**Status Note — Updated 2026-09-23 (PRD v0.22 §16 Resolved Question 54, closing
+Open Question 3a and the narrowed remainder of Open Finding F-03;
+`RAISE-PROTOTYPE.md` v0.21 §8/§23A; `RAISE-DESIGN.md` v0.20 §5.4/§13):**
+business supplied the ten per-Asset-Type default useful-life numeric values —
+Laptop, Monitor, Headphones, Tablet, Printer, Projector, Server, Router, and
+Camera each **5 years**; **Smartphone 3 years**, the only Asset Type at 3
+years — answering Decision Request DR-02. Two clarifications business gave
+explicitly, carried through as-given, neither inferable from the raw phrasing
+("5 years for everything except mobile phones, 3 years"): **(1) Tablet is 5,
+not 3** — "mobile phone" meant the Smartphone handset specifically, not the
+whole Mobile Category (which also contains Tablet); **(2) these ten are the
+only Asset Types present in the data today — explicitly NOT a blanket default
+for any future/unlisted Asset Type.** [Resolved Question 51](../01-requirements/RAISE-PRD.md#16-open-questions)
+(unconfigured lookup key returns `purchaseCost` unchanged, AC-DASH-04 below)
+is unaffected and continues to govern any Asset Type outside this table. **PRD
+§16 Open Question 3a is now CLOSED** — no value beyond these ten is supplied,
+invented, or implied anywhere in this document, including in any Given clause
+or sample data. **The NOT TESTABLE YET marking on AC-DASH-03b
+is REMOVED** — the criterion's specification is now complete. The tile's
+non-existence in `frontend/src/` is not touched by this decision and does
+**not** keep this criterion NOT TESTABLE YET: per this document's own
+definition (§1) and this project's own precedent (`RAISE-FR-ORACLE-001`'s
+`TC-ORACLE-001-01..04`, recorded **FAIL** against a screen that does not
+exist), an unbuilt feature makes a fully-specified criterion **fail on
+execution**, not **untestable**. **AC-DASH-03b is testable today. It is
+NOT met.** No `NBVSettings` type, service, or UI exists — executing this
+criterion today would produce **FAIL**, not PASS — and no such execution is
+recorded or implied anywhere in this document as a result of this update. The
+unbuilt-implementation status is tracked by
+[Gap 21](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md) in
+`RAISE-TRACEABILITY-MATRIX.md` §6, not by this document (see the rewritten
+criterion below).
+
 **Test-case impact for the Test Cases layer (recorded here, decided there):**
 `TC-DASH-01` is currently recorded **PASS** against the prior nine-tile
 version of AC-DASH-01. Because AC-DASH-01's specification has changed (nine
@@ -225,11 +258,14 @@ way.
   from the prior nine-tile assertion. **`TC-DASH-01`'s existing PASS record was taken against the
   prior nine-tile version of this criterion and requires re-execution against
   this ten-tile version — it is not a carried-forward PASS** (see Status Note
-  above). **The NBV portion of this criterion is NOT TESTABLE YET** — the
-  first nine tiles are built and can be verified today, but the tenth (NBV)
-  tile does not exist in `frontend/src/` yet (see AC-DASH-03b/AC-DASH-04
-  below); until it is built, this criterion can only be executed as "nine of
-  ten tiles present," not as written in full.
+  above). **This criterion, including its NBV portion, is fully specified and
+  TESTABLE** — corrected 2026-09-23, consistent with AC-DASH-03b/AC-DASH-04
+  below: the tenth (NBV) tile's absence from `frontend/src/` today means
+  re-executing this criterion is expected to produce **FAIL** ("nine of ten
+  tiles present"), not that the criterion cannot be tested. The unbuilt NBV
+  tile is tracked by [Gap 21](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md)
+  in `RAISE-TRACEABILITY-MATRIX.md` §6, not by a NOT TESTABLE YET marking
+  here.
 - **AC-DASH-02** — Given asset/maintenance/warranty/license data exists,
   when the dashboard loads, then all ten sections are displayed: AI
   Insights, AI Portfolio Health, Oracle FA Reconciliation, Asset Lifecycle,
@@ -247,8 +283,10 @@ way.
   Under-Maintenance assets from the denominator) — this criterion documents
   and tests actual behavior, not just presence, since Utilization's
   correctness rules are fully resolved.
-- **AC-DASH-03b (NBV — NOT TESTABLE YET; PRESENCE criterion, superseding the
-  prior absence criterion, PRD §16 Resolved Question 50)** — Given the KPI
+- **AC-DASH-03b (NBV — TESTABLE; PRESENCE criterion, superseding the
+  prior absence criterion, PRD §16 Resolved Question 50; NOT TESTABLE YET
+  marking REMOVED 2026-09-23, PRD §16 Resolved Question 54, closing Open
+  Question 3a)** — Given the KPI
   grid as specified in AC-DASH-01, when a user inspects the tenth tile
   position, then an **NBV tile is present**, displaying the organization's
   portfolio Net Book Value — computed by `computePortfolioNbv`
@@ -258,30 +296,43 @@ way.
   per-Asset-**Type** useful life configured via the P-018 Settings NBV
   section (`NBVSettings: Record<AssetType, usefulLifeYears>` — re-keyed
   2026-09-08 from `Record<AssetCategory, usefulLifeYears>`, PRD §16 Resolved
-  Question 52, amending Resolved Question 46) — sitting
-  alongside, and distinct from, the unrelated static/illustrative Monthly
-  Depreciation tile, which is kept unchanged by this decision (PRD §16
-  Resolved Question 50). **This supersedes the prior version of this
-  criterion**, which correctly asserted the tile's *absence* while the tile
-  could not be built; that absence assertion is no longer accurate now that
-  placement and formula are confirmed. **Still marked NOT TESTABLE YET**, for
-  two independent reasons that must both be resolved before this criterion is
-  executable: (1) the tile, the `NBVSettings` type, and the P-018 Settings NBV
-  section do not exist anywhere in `frontend/src/` today (Prototype §8, §23A
-  Status Banners); (2) even once built, no default useful-life value per
-  Asset **Type** can be asserted or used to verify a specific figure, since
-  [`RAISE-PRD.md` §16 Open Question
-  3a](../01-requirements/RAISE-PRD.md#16-open-questions) — re-scoped
-  2026-09-08 (PRD §16 Resolved Question 52) to ask for one value per Asset
-  Type rather than per Asset Category — remains fully
-  **OPEN** — business was asked directly and answered "I will specify these
-  myself." **No illustrative or placeholder useful-life or NBV value is
-  asserted anywhere in this criterion** — the state to test once built is the
-  tile's presence and its (input-dependent) computed value, not any specific
-  number. Tracked as [Open Finding
+  Question 52, amending Resolved Question 46), pre-populated with the ten
+  confirmed default values (PRD §16 Resolved Question 54): Laptop, Monitor,
+  Headphones, Tablet, Printer, Projector, Server, Router, and Camera at
+  **5 years**; **Smartphone at 3 years** (the only Asset Type at 3 years); an
+  Asset Type with no configured row is governed by AC-DASH-04 below, not by
+  this table — sitting alongside, and distinct from, the unrelated
+  static/illustrative Monthly Depreciation tile, which is kept unchanged by
+  this decision (PRD §16 Resolved Question 50). **This supersedes the prior
+  version of this criterion**, which correctly asserted the tile's *absence*
+  while the tile could not be built; that absence assertion is no longer
+  accurate now that placement and formula are confirmed. **Was NOT TESTABLE
+  YET for one genuine reason — missing values — which is now resolved; "not
+  yet built" was never a valid reason for this marking and is corrected
+  here:** ~~no default useful-life value per Asset Type could be asserted,
+  since PRD §16 Open Question 3a remained OPEN~~ — **RESOLVED 2026-09-23, PRD
+  §16 Resolved Question 54**: the ten values above are now confirmed,
+  business was asked directly and supplied them. **The NOT TESTABLE YET
+  marking is REMOVED.** Per this document's own definition (§1) and this
+  project's own precedent (`RAISE-FR-ORACLE-001`'s `TC-ORACLE-001-01..04`,
+  recorded **FAIL**, 2026-08-29, against a screen that does not exist), a
+  criterion whose specification is complete is **testable**, regardless of
+  whether the feature has been built — an unbuilt feature makes a criterion
+  **fail on execution**, not **untestable**. **This criterion is fully
+  specified and testable today. It is NOT met.** No `NBVSettings` type,
+  service, repository, or UI section exists anywhere in `frontend/src/` —
+  executing this criterion today would produce **FAIL**, not PASS, and no
+  execution is recorded or implied here. The unbuilt-implementation status
+  (the tile, `NBVSettings`, and the P-018 Settings NBV section) is tracked by
+  [**Gap 21**](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md) in
+  `RAISE-TRACEABILITY-MATRIX.md` §6, and by the pending re-execution of
+  `TC-DASH-01`/`TC-EXEC-001-01` in `RAISE-TEST-CASES.md` — **not by this
+  document**; this document's role ends at defining what "correct" means. No
+  value beyond the ten confirmed is asserted anywhere in this criterion.
+  Tracked as [Open Finding
   F-03](../project-management/OPEN-FINDINGS.md#blocking-gates-an-mvp-requirement)
-  (OPEN, narrowed further by this update, not closed); this rewrite closes the
-  specification gap raised as **Open Finding F-52**.
+  — per PRD §16 Resolved Question 54, the narrowed remainder of F-03 (missing
+  values) is now fully closed; F-03 no longer blocks this criterion at all.
 - **AC-DASH-03c (Risk — CONFIRMED OUT OF MVP SCOPE, not a gap)** — Given the
   KPI grid as specified in AC-DASH-01, when a user inspects it for a Risk
   tile, then no such tile is present, **by confirmed business decision** (PRD
@@ -290,12 +341,13 @@ way.
   a documented gap: PRD §16 Q4 (the exact definition of risk) remains open,
   but it belongs entirely to `RAISE-AI-RISK-001` (Pilot/Roadmap), not to this
   screen or to `RAISE-FR-EXEC-001`'s MVP scope.
-- **AC-DASH-04 (NBV — Asset Type with no configured useful life — NOT
-  TESTABLE YET; confirmed 2026-09-07, PRD §16 Resolved Question 51; key
+- **AC-DASH-04 (NBV — Asset Type with no configured useful life — TESTABLE;
+  confirmed 2026-09-07, PRD §16 Resolved Question 51; key
   re-scoped from Asset Category to Asset Type 2026-09-08, PRD §16 Resolved
   Question 52, amending Resolved Question 46 — **RQ51's behavior is
   unaffected in substance by the RQ52 re-key; only the lookup key
-  changes**)** — Given
+  changes**; NOT TESTABLE YET marking REMOVED 2026-09-23, corrected — see
+  below)** — Given
   an Asset whose Asset **Type** has no `usefulLifeYears` value configured in
   the P-018 Settings NBV section — reachable **by data alone**, since
   `Asset.type` is declared as an open `string` type
@@ -309,19 +361,35 @@ way.
   put to business: returning **0** (would assert the asset is worthless),
   returning **NaN** (would render as the literal string "NaN" on the tile),
   and **excluding** the asset from the portfolio total (would silently
-  understate it). **Marked NOT TESTABLE YET** for the same "not yet built"
-  reason as AC-DASH-03b — the NBV tile does not exist in the shipped app
-  today (Prototype §8, §23A), so this rule cannot be observed on-screen until
-  the tile is built. Unlike AC-DASH-03b, this criterion's *rule* does not
-  itself depend on PRD §16 Open Question 3a's still-missing default values —
-  it governs only the case where a type has *no* configured value, and
-  asserts no default useful-life number for any type, anywhere.
+  understate it). **The NOT TESTABLE YET marking is REMOVED 2026-09-23** —
+  this criterion's rule was **already fully specified** (Resolved Question
+  51, 2026-09-07; re-keyed by Resolved Question 52, 2026-09-08) and never
+  depended on Open Question 3a's default useful-life values (now separately
+  confirmed too, PRD §16 Resolved Question 54); "not yet built" was the sole
+  reason this criterion previously carried the marking, and that is not a
+  valid NOT TESTABLE YET reason under this document's own definition (§1 —
+  the marker is for a missing business rule/threshold/field/role, not a
+  missing implementation) or this project's own precedent
+  (`RAISE-FR-ORACLE-001`'s `TC-ORACLE-001-01..04`, recorded **FAIL** against a
+  screen that does not exist, not "not testable"). **This criterion is fully
+  specified and testable today. It is NOT met.** No `NBVSettings` type,
+  service, or UI exists — executing this criterion today would produce
+  **FAIL**, not PASS, and no execution is recorded or implied here. The
+  unbuilt-implementation status is tracked by
+  [**Gap 21**](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md) in
+  `RAISE-TRACEABILITY-MATRIX.md` §6 — not by this document.
 
-**Testable now:** AC-DASH-02 and AC-DASH-03a test presence/behavior of the
-actual shipped tile/section list and are expected to pass against the current
-app. **AC-DASH-01 is testable only for nine of its ten asserted tiles today**
-— its NBV portion is NOT TESTABLE YET (see AC-DASH-03b/AC-DASH-04). Caveats
-that apply and do not block passing on the nine built tiles:
+**Testable now (all fully specified; execution result is a separate
+question):** AC-DASH-01, AC-DASH-02, AC-DASH-03a, AC-DASH-03b, and AC-DASH-04
+are all fully specified, testable criteria as of 2026-09-23. AC-DASH-02 and
+AC-DASH-03a are expected to **pass** against the current app (the underlying
+features are built). **AC-DASH-01, AC-DASH-03b, and AC-DASH-04 are expected
+to FAIL if executed today** — the NBV tile, `NBVSettings`, and the P-018
+Settings NBV section do not exist anywhere in `frontend/src/` (tracked by
+[Gap 21](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md) in
+`RAISE-TRACEABILITY-MATRIX.md` §6) — being testable is not being met, and no
+PASS is recorded or implied for any of these three here. Caveats
+that apply and do not block passing on AC-DASH-02/-03a:
 - Monthly Depreciation and Monthly Cost are explicitly **illustrative** — no
   depreciation model has been built (Prototype §8), and both are **kept
   unchanged** by the 2026-09-07 NBV-placement decision (PRD §16 Resolved
@@ -334,22 +402,31 @@ that apply and do not block passing on the nine built tiles:
   tiles/sections. Utilization (AC-DASH-03a) is the one exception with a
   confirmed formula, and is tested for behavior, not presence alone.
 
-**NOT TESTABLE YET — AC-DASH-03b (NBV) and AC-DASH-04 (NBV — unconfigured
+**TESTABLE, not yet met — AC-DASH-03b (NBV) and AC-DASH-04 (NBV — unconfigured
 Asset Type):** see the criteria text above. NBV's placement (PRD §16
-Resolved Question 50) and its unconfigured-type behavior (PRD §16
-Resolved Question 51) are both now confirmed — this is a **presence**
-criterion, not an absence one, as of this revision — but the per-Asset-Type
-default useful-life values remain undefined (re-keyed from Asset Category
-2026-09-08, PRD §16 Resolved Question 52, amending Resolved Question 46;
-[`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md#16-open-questions) §16 Open
-Question 3a), and the tile itself, along with the P-018 Settings NBV section,
-is not yet built in `frontend/src/`. This is a "specified but not yet
-buildable" state, not an "unspecified" one, and is a separate, not-yet-scheduled
-enhancement layered on top of the current MVP dashboard — AC-DASH-03b/
-AC-DASH-04 must not be read as confirming NBV display already passes; they
-only confirm today's absence-of-build is accurately documented, not silently
-dropped, and that no illustrative useful-life or NBV number is invented
-anywhere in this document.
+Resolved Question 50), its unconfigured-type behavior (PRD §16 Resolved
+Question 51), and — as of 2026-09-23 — its ten default per-Asset-Type
+useful-life values (PRD §16 Resolved Question 54, closing Open Question 3a)
+are all now confirmed — this is a **presence** criterion, not an absence one,
+and both criteria are now **fully specified and testable**, with their
+NOT TESTABLE YET markings **removed**. AC-DASH-04 was never blocked by Open
+Question 3a in the first place (its rule asserts no default value, for any
+type) — its "not yet built" NOT TESTABLE YET marking was a misapplication,
+corrected here per this document's own definition (§1: the marker is for a
+missing business rule/threshold/field/role, not a missing implementation).
+AC-DASH-03b *was* genuinely blocked by Open Question 3a until 2026-09-23; that
+block is now resolved, and its own lingering "not yet built" half of the
+marking is corrected the same way. Neither criterion depends on any further
+open PRD question. **Executing either today would produce FAIL, not PASS** —
+no `NBVSettings` type, service, or UI exists — and this is a separate,
+not-yet-scheduled implementation gap, tracked by
+[Gap 21](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md) in
+`RAISE-TRACEABILITY-MATRIX.md` §6 and by the pending re-execution of
+`TC-DASH-01`/`TC-EXEC-001-01` in `RAISE-TEST-CASES.md`, not by this document.
+AC-DASH-03b/AC-DASH-04 must not be read as confirming NBV display already
+passes; they only confirm the specification is complete enough to test, and
+that no value beyond the ten business-confirmed figures is invented anywhere
+in this document.
 
 **Not a gap — AC-DASH-03c (Risk):** Risk's absence from this dashboard is a
 confirmed business decision (PRD §16 Resolved Question 47), not an open
@@ -928,41 +1005,62 @@ end to end (`go-template-main/sql/pg/V1__Assets_Table.sql:7`,
 precedent as Open Finding F-27's resolution that `type` is the sub-category of
 `category` (§8 above).
 
-- **AC-WARRANTY-001-07 (NBV section of P-018 — NOT TESTABLE YET; re-keyed 2026-09-08
+- **AC-WARRANTY-001-07 (NBV section of P-018 — TESTABLE; re-keyed 2026-09-08
   from Asset Category to Asset Type, PRD §16 Resolved Question 52, amending Resolved
-  Question 46)** — Given an admin user
+  Question 46; default values confirmed 2026-09-23, PRD §16 Resolved Question 54,
+  closing Open Question 3a; NOT TESTABLE YET marking REMOVED 2026-09-23)** — Given an admin user
   opens Settings (P-018) and its NBV section, when the section loads, then each Asset
   **Type** currently present in the data shows an editable "Useful Life (years)" number
   input — currently ten types (`frontend/src/data/fixtures/mockData.ts`): Laptop,
   Monitor, Headphones (under IT Hardware); Smartphone, Tablet (under Mobile); Printer,
   Projector (under Office Equipment); Router, Server (under Infrastructure); Camera
-  (under Media Equipment). **This is one row per Asset Type currently present in the
+  (under Media Equipment) — **one row per Asset Type currently present in the
   data, not a fixed count of ten** — `type` is a free-text field (like `category`) and
   this set grows as assets of a new type are added, exactly as P-005's Category → Type
-  grouping already does (§8 above). This section follows
+  grouping already does (§8 above); **each row is pre-populated with its confirmed
+  default value** (PRD §16 Resolved Question 54): Laptop, Monitor, Headphones, Tablet,
+  Printer, Projector, Server, Router, and Camera each show **5**; Smartphone shows
+  **3** — the only Asset Type at 3 years; a Type with no confirmed default (i.e., any
+  Type outside these ten, should one exist in the data) has no pre-populated value and
+  is governed instead by Resolved Question 51 (returns `purchaseCost` unchanged, not
+  this section). This section follows
   the same shape as the Warranty section's per-category threshold input
   (`NBVSettings: Record<AssetType, usefulLifeYears>` — re-keyed 2026-09-08 from
-  `Record<AssetCategory, usefulLifeYears>` — per Prototype §23A). **This
-  criterion is NOT TESTABLE YET** for two independent reasons that must both be resolved
-  before it is executable: (1) the NBV section is confirmed in shape only and **does not
-  exist in `frontend/src/` today** — no `NBVSettings` type, service, repository, or UI
-  section has been built (Prototype §23A Status Banner); (2) even once built, no default
-  useful-life value per Asset **Type** can be asserted, since [`RAISE-PRD.md` §16 Open
-  Question 3a](../01-requirements/RAISE-PRD.md#16-open-questions) — re-scoped 2026-09-08
-  (PRD §16 Resolved Question 52) to ask for the actual
-  default-useful-life-per-Asset-**Type** numbers — remains unanswered (business was asked
-  directly and answered "I will specify these myself"). This criterion does not invent an
-  illustrative or placeholder useful-life value for any type; the input state to test
-  once built is "unset," not a specific number.
+  `Record<AssetCategory, usefulLifeYears>` — per Prototype §23A). **Was NOT TESTABLE
+  YET for one genuine reason — missing values — which is now resolved; "not yet built"
+  was never a valid reason for this marking and is corrected here:** ~~no default
+  useful-life value per Asset Type could be asserted, since PRD §16 Open Question 3a
+  remained unanswered~~ — **RESOLVED 2026-09-23, PRD §16 Resolved Question 54**:
+  business answered Decision Request DR-02 with the ten values above. **The NOT
+  TESTABLE YET marking is REMOVED.** Per this document's own definition (§1 —
+  the marker is for a missing business rule/threshold/field/role, not a missing
+  implementation) and this project's own precedent (`RAISE-FR-ORACLE-001`'s
+  `TC-ORACLE-001-01..04`, recorded **FAIL**, 2026-08-29, against a screen that does not
+  exist), a criterion whose specification is complete is **testable**, regardless of
+  whether the feature has been built. **This criterion is fully specified and
+  testable today. It is NOT met.** No `NBVSettings` type, service, repository, or UI
+  section exists anywhere in `frontend/src/` — executing this criterion today would
+  produce **FAIL**, not PASS, and no execution is recorded or implied here. The
+  unbuilt-implementation status is tracked by
+  [**Gap 21**](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md) in
+  `RAISE-TRACEABILITY-MATRIX.md` §6 — not by this document. This criterion does not
+  invent any value beyond the ten business-confirmed figures, and introduces no default
+  for any Asset Type outside those ten.
 
-**RESOLVED (was: undefined) — NBV section's own scope and admin-only access:** the NBV
-section's existence, shape, and admin-only access gate (same UI-only/client-side MVP
-enforcement level as the Warranty section, `RAISE-NFR-SEC-RBAC-001`) are confirmed by
-Prototype §23A. **NOT resolved:** the default useful-life values themselves (PRD Open
-Question 3a, now scoped per Asset Type per Resolved Question 52) and the section's
-implementation (not yet built) — AC-WARRANTY-001-07 above
-is blocked on both, and must not be treated as passing until the section is built and
-Open Question 3a is answered.
+**RESOLVED (was: undefined) — NBV section's own scope, admin-only access, and default
+values; and CORRECTED — testability:** the NBV section's existence, shape, admin-only
+access gate (same UI-only/client-side MVP enforcement level as the Warranty section,
+`RAISE-NFR-SEC-RBAC-001`), and — as of 2026-09-23 — its ten default per-Asset-Type
+useful-life values (PRD §16 Resolved Question 54, closing Open Question 3a) are all
+confirmed by Prototype §23A. **The section's implementation is separately not yet
+built** in `frontend/src/` (Prototype §23A Status Banner: "NOW BUILDABLE, but still NOT
+built") — but this does **not** keep AC-WARRANTY-001-07 NOT TESTABLE YET: the
+criterion is now **fully specified and testable**, and is expected to **FAIL** if
+executed today, exactly as `TC-ORACLE-001-01..04` were recorded FAIL against an
+unbuilt screen. The unbuilt-implementation status is tracked by
+[Gap 21](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md) in
+`RAISE-TRACEABILITY-MATRIX.md` §6, not by this document, and AC-WARRANTY-001-07 must
+not be treated as passing until the section is actually built and executed against.
 
 ---
 
@@ -1382,6 +1480,33 @@ same shipped page. This is a **re-key, not new scope** — PRD §16 Open Questio
 category or any type — is invented, suggested, or illustrated anywhere in
 this document, including in any Given clause or sample data.
 
+**Status Note — Updated 2026-09-23 (PRD v0.22 §16 Resolved Question 54, closing
+Open Question 3a and the narrowed remainder of Open Finding F-03;
+`RAISE-PROTOTYPE.md` v0.21 §20/§23A; `RAISE-DESIGN.md` v0.20 §5.4/§13):**
+identical in substance to AC-DASH's own 2026-09-23 Status Note (§5), since
+P-014 and P-002 document the same shipped page. Business supplied the ten
+per-Asset-Type default useful-life numeric values — Laptop, Monitor,
+Headphones, Tablet, Printer, Projector, Server, Router, and Camera each **5
+years**; **Smartphone 3 years**, the only Asset Type at 3 years — answering
+Decision Request DR-02, with the same two explicit clarifications as AC-DASH's
+note (Tablet is 5, not 3; these ten are the only Asset Types present in the
+data today, not a blanket default). [Resolved Question 51](../01-requirements/RAISE-PRD.md#16-open-questions)
+(unconfigured lookup key, AC-EXEC-001-04 below) is unaffected. **PRD §16 Open
+Question 3a is now CLOSED.** **The NOT TESTABLE YET marking on AC-EXEC-001-03b
+is REMOVED** — the criterion's specification is now complete. The tile's
+non-existence in `frontend/src/` is not touched by this decision and does
+**not** keep this criterion NOT TESTABLE YET: per this document's own
+definition (§1) and this project's own precedent (`RAISE-FR-ORACLE-001`'s
+`TC-ORACLE-001-01..04`, recorded **FAIL** against a screen that does not
+exist), an unbuilt feature makes a fully-specified criterion **fail on
+execution**, not **untestable**. **AC-EXEC-001-03b is testable today. It is
+NOT met.** No `NBVSettings` type, service, or UI exists — executing this
+criterion today would produce **FAIL**, not PASS — and no such execution is
+recorded or implied anywhere in this document as a result of this update. The
+unbuilt-implementation status is tracked by
+[Gap 21](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md) in
+`RAISE-TRACEABILITY-MATRIX.md` §6, not by this document.
+
 **Test-case impact for the Test Cases layer (recorded here, decided there):**
 `TC-EXEC-001-01` is currently recorded **PASS** against the prior nine-tile
 version of AC-EXEC-001-01. Because AC-EXEC-001-01's specification has changed
@@ -1401,12 +1526,14 @@ and §5).
   50, confirmed by business 2026-09-07) from the prior nine-tile assertion. **`TC-EXEC-001-01`'s existing PASS
   record was taken against the prior nine-tile version of this criterion and
   requires re-execution against this ten-tile version — it is not a
-  carried-forward PASS** (see Status Note above). **The NBV portion of this
-  criterion is NOT TESTABLE YET** — the first nine tiles are built and can be
-  verified today, but the tenth (NBV) tile does not exist in `frontend/src/`
-  yet (see AC-EXEC-001-03b/AC-EXEC-001-04 below); until it is built, this
-  criterion can only be executed as "nine of ten tiles present," not as
-  written in full.
+  carried-forward PASS** (see Status Note above). **This criterion, including
+  its NBV portion, is fully specified and TESTABLE** — corrected 2026-09-23,
+  consistent with AC-EXEC-001-03b/AC-EXEC-001-04 below: the tenth (NBV) tile's
+  absence from `frontend/src/` today means re-executing this criterion is
+  expected to produce **FAIL** ("nine of ten tiles present"), not that the
+  criterion cannot be tested. The unbuilt NBV tile is tracked by
+  [Gap 21](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md) in
+  `RAISE-TRACEABILITY-MATRIX.md` §6, not by a NOT TESTABLE YET marking here.
 - **AC-EXEC-001-02** — Given the dashboard is displayed, when the
   Executive views it, then all ten sections are present: AI Insights, AI
   Portfolio Health, Oracle FA Reconciliation, Asset Lifecycle, Department
@@ -1422,8 +1549,11 @@ and §5).
   a sub-label naming how many assets are currently assigned out of how many
   are currently assignable. Identical in substance to AC-DASH-03a (§5), since
   P-014 and P-002 document the same built page.
-- **AC-EXEC-001-03b (NBV — NOT TESTABLE YET; PRESENCE criterion, superseding
-  the prior absence criterion, PRD §16 Resolved Question 50)** — Given the
+- **AC-EXEC-001-03b (NBV — TESTABLE; PRESENCE criterion, superseding
+  the prior absence criterion, PRD §16 Resolved Question 50; NOT TESTABLE YET
+  marking REMOVED 2026-09-23, PRD §16 Resolved Question 54, closing Open
+  Question 3a)** —
+  Given the
   KPI grid as specified in AC-EXEC-001-01, when an Executive user inspects
   the tenth tile position, then an **NBV tile is present**, displaying the
   organization's portfolio Net Book Value — computed by
@@ -1434,25 +1564,41 @@ and §5).
   Settings NBV section (`NBVSettings: Record<AssetType,
   usefulLifeYears>` — re-keyed 2026-09-08 from `Record<AssetCategory,
   usefulLifeYears>`, PRD §16 Resolved Question 52, amending Resolved
-  Question 46) — sitting alongside, and distinct from, the unrelated
+  Question 46), pre-populated with the ten confirmed default values (PRD §16
+  Resolved Question 54): Laptop, Monitor, Headphones, Tablet, Printer,
+  Projector, Server, Router, and Camera at **5 years**; **Smartphone at 3
+  years** (the only Asset Type at 3 years); an Asset Type with no configured
+  row is governed by AC-EXEC-001-04 below, not by this table — sitting
+  alongside, and distinct from, the unrelated
   static/illustrative Monthly Depreciation tile, kept unchanged by this
   decision. Identical in substance to AC-DASH-03b (§5), since P-014 and P-002
   document the same built page. **This supersedes the prior version of this
   criterion**, which correctly asserted the tile's *absence* while the tile
   could not be built; that absence assertion is no longer accurate now that
-  placement and formula are confirmed. **Still marked NOT TESTABLE YET**, for
-  two independent reasons: (1) the tile, the `NBVSettings` type, and the
-  P-018 Settings NBV section do not exist anywhere in `frontend/src/` today
-  (Prototype §20, §23A Status Banners); (2) even once built, no default
-  useful-life value per Asset **Type** can be asserted, since [`RAISE-PRD.md`
-  §16 Open Question 3a](../01-requirements/RAISE-PRD.md#16-open-questions) —
-  re-scoped 2026-09-08 (PRD §16 Resolved Question 52) to ask for one value per
-  Asset Type rather than per Asset Category —
-  remains fully **OPEN**. **No illustrative or placeholder useful-life or NBV
-  value is asserted anywhere in this criterion.** Tracked as [Open Finding
+  placement and formula are confirmed. **Was NOT TESTABLE YET for one genuine
+  reason — missing values — which is now resolved; "not yet built" was never
+  a valid reason for this marking and is corrected here:** ~~no default
+  useful-life value per Asset Type could be asserted, since PRD §16 Open
+  Question 3a remained OPEN~~ — **RESOLVED 2026-09-23, PRD §16 Resolved
+  Question 54**: the ten values above are now confirmed. **The NOT TESTABLE
+  YET marking is REMOVED.** Per this document's own definition (§1) and this
+  project's own precedent (`RAISE-FR-ORACLE-001`'s `TC-ORACLE-001-01..04`,
+  recorded **FAIL**, 2026-08-29, against a screen that does not exist), a
+  criterion whose specification is complete is **testable**, regardless of
+  whether the feature has been built. **This criterion is fully specified
+  and testable today. It is NOT met.** No `NBVSettings` type, service,
+  repository, or UI section exists anywhere in `frontend/src/` — executing
+  this criterion today would produce **FAIL**, not PASS, and no execution is
+  recorded or implied here. The unbuilt-implementation status (the tile,
+  `NBVSettings`, and the P-018 Settings NBV section) is tracked by
+  [**Gap 21**](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md) in
+  `RAISE-TRACEABILITY-MATRIX.md` §6, and by the pending re-execution of
+  `TC-DASH-01`/`TC-EXEC-001-01` in `RAISE-TEST-CASES.md` — **not by this
+  document**. No value beyond the ten confirmed is asserted anywhere in this
+  criterion. Tracked as [Open Finding
   F-03](../project-management/OPEN-FINDINGS.md#blocking-gates-an-mvp-requirement)
-  (OPEN, narrowed further by this update, not closed); this rewrite closes
-  the specification gap raised as **Open Finding F-52**.
+  — per PRD §16 Resolved Question 54, the narrowed remainder of F-03 (missing
+  values) is now fully closed; F-03 no longer blocks this criterion at all.
 - **AC-EXEC-001-03c (Risk — CONFIRMED OUT OF MVP SCOPE, not a gap)** — Given
   the KPI grid as specified in AC-EXEC-001-01, when an Executive user
   inspects it for a Risk tile, then no such tile is present, **by confirmed
@@ -1461,11 +1607,12 @@ and §5).
   risk) remains open but belongs entirely to `RAISE-AI-RISK-001`
   (Pilot/Roadmap), not to this screen.
 - **AC-EXEC-001-04 (NBV — Asset Type with no configured useful life —
-  NOT TESTABLE YET; confirmed 2026-09-07, PRD §16 Resolved Question 51; key
+  TESTABLE; confirmed 2026-09-07, PRD §16 Resolved Question 51; key
   re-scoped from Asset Category to Asset Type 2026-09-08, PRD §16 Resolved
   Question 52, amending Resolved Question 46 — **RQ51's behavior is
   unaffected in substance by the RQ52 re-key; only the lookup key
-  changes**)** —
+  changes**; NOT TESTABLE YET marking REMOVED 2026-09-23, corrected — see
+  below)** —
   Given an Asset whose Asset **Type** has no `usefulLifeYears` value
   configured in the P-018 Settings NBV section — reachable **by data
   alone**, since `Asset.type` is declared as an open `string` type
@@ -1480,33 +1627,57 @@ and §5).
   three alternatives put to business: returning **0** (would assert the
   asset is worthless), returning **NaN** (would render as the literal string
   "NaN" on the tile), and **excluding** the asset from the portfolio total
-  (would silently understate it). **Marked NOT TESTABLE YET** for the same
-  "not yet built" reason as AC-EXEC-001-03b; unlike that criterion, this
-  criterion's *rule* does not itself depend on PRD §16 Open Question 3a's
-  still-missing default values — it governs only the case where a type
-  has *no* configured value, and asserts no default useful-life number for
-  any type, anywhere.
+  (would silently understate it). **The NOT TESTABLE YET marking is REMOVED
+  2026-09-23** — this criterion's rule was **already fully specified**
+  (Resolved Question 51, 2026-09-07; re-keyed by Resolved Question 52,
+  2026-09-08) and never depended on Open Question 3a's default useful-life
+  values (now separately confirmed too, PRD §16 Resolved Question 54); "not
+  yet built" was the sole reason this criterion previously carried the
+  marking, and that is not a valid NOT TESTABLE YET reason under this
+  document's own definition (§1) or this project's own precedent
+  (`RAISE-FR-ORACLE-001`'s `TC-ORACLE-001-01..04`, recorded **FAIL** against a
+  screen that does not exist). **This criterion is fully specified and
+  testable today. It is NOT met.** No `NBVSettings` type, service, or UI
+  exists — executing this criterion today would produce **FAIL**, not PASS,
+  and no execution is recorded or implied here. The unbuilt-implementation
+  status is tracked by
+  [**Gap 21**](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md) in
+  `RAISE-TRACEABILITY-MATRIX.md` §6 — not by this document.
 
-**Testable now:** AC-EXEC-001-02 and -03a test presence/behavior of the
-actual shipped tile/section list — identical to AC-DASH-02/-03a (§5) since
-P-014 and P-002 document the same built page — and are expected to pass
-against the current app. **AC-EXEC-001-01 is testable only for nine of its
-ten asserted tiles today** — its NBV portion is NOT TESTABLE YET (see
-AC-EXEC-001-03b/AC-EXEC-001-04). The Monthly Depreciation/Monthly Cost
-"illustrative, no depreciation model exists" caveat and the "presence only,
-not calculation correctness" caveat noted under AC-DASH (§5) apply equally
-here.
+**Testable now (all fully specified; execution result is a separate
+question):** AC-EXEC-001-01, AC-EXEC-001-02, AC-EXEC-001-03a, AC-EXEC-001-03b,
+and AC-EXEC-001-04 are all fully specified, testable criteria as of
+2026-09-23 — identical to AC-DASH's own status (§5), since P-014 and P-002
+document the same built page. AC-EXEC-001-02 and -03a are expected to
+**pass** against the current app. **AC-EXEC-001-01, AC-EXEC-001-03b, and
+AC-EXEC-001-04 are expected to FAIL if executed today** — the NBV tile,
+`NBVSettings`, and the P-018 Settings NBV section do not exist anywhere in
+`frontend/src/` (tracked by
+[Gap 21](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md) in
+`RAISE-TRACEABILITY-MATRIX.md` §6) — being testable is not being met, and no
+PASS is recorded or implied for any of these three here. The Monthly
+Depreciation/Monthly Cost "illustrative, no depreciation model exists"
+caveat and the "presence only, not calculation correctness" caveat noted
+under AC-DASH (§5) apply equally here.
 
-**NOT TESTABLE YET — AC-EXEC-001-03b (NBV) and AC-EXEC-001-04 (NBV —
+**TESTABLE, not yet met — AC-EXEC-001-03b (NBV) and AC-EXEC-001-04 (NBV —
 unconfigured Asset Type):** see the criteria text above — placement
-(Resolved Question 50) and unconfigured-type behavior (Resolved Question
-51) are both confirmed, this is now a **presence** criterion, but default
-useful-life values remain undefined (re-keyed from Asset Category 2026-09-08,
-PRD §16 Resolved Question 52, amending Resolved Question 46; PRD §16 Open
-Question 3a) and the tile
-itself is not yet built, tracked as Open Finding F-03 (OPEN, narrowed
-further, not closed). This is a "specified but not yet buildable" state, not
-an "unspecified" one.
+(Resolved Question 50), unconfigured-type behavior (Resolved Question 51),
+and — as of 2026-09-23 — the ten default per-Asset-Type useful-life values
+(PRD §16 Resolved Question 54, closing Open Question 3a) are all now
+confirmed, this is a **presence** criterion, and both criteria are now
+**fully specified and testable**, with their NOT TESTABLE YET markings
+**removed**. AC-EXEC-001-04 was never blocked by Open Question 3a in the
+first place — its "not yet built" NOT TESTABLE YET marking was a
+misapplication, corrected here per this document's own definition (§1).
+AC-EXEC-001-03b *was* genuinely blocked by Open Question 3a until 2026-09-23;
+that block is now resolved, and its own lingering "not yet built" half of the
+marking is corrected the same way. Neither criterion depends on any further
+open PRD question. **Executing either today would produce FAIL, not PASS** —
+no `NBVSettings` type, service, or UI exists — and this is tracked by
+[Gap 21](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md) in
+`RAISE-TRACEABILITY-MATRIX.md` §6 and by the pending re-execution of
+`TC-DASH-01`/`TC-EXEC-001-01` in `RAISE-TEST-CASES.md`, not by this document.
 
 **Not a gap — AC-EXEC-001-03c (Risk):** confirmed business decision (PRD §16
 Resolved Question 47); intentionally excluded from the Not-Yet-Testable
@@ -1742,7 +1913,6 @@ them as final:
 | Open Question | Blocks |
 |---|---|
 | Q1 Asset master field list | AC-ASSET-001-01..04 |
-| Q3a NBV per-Asset-**Type** default useful-life values (re-scoped 2026-09-08 from per-Asset-Category, PRD §16 Resolved Question 52, amending Resolved Question 46 — a re-key, not new scope; formula resolved — Resolved Question 46; tile placement resolved — Resolved Question 50, NBV now a **presence** criterion, not absence; unconfigured-type behavior resolved — Resolved Question 51; Utilization definition/mechanics resolved — Resolved Questions 27/29, and Utilization is built and testable, no longer a blocker) | AC-DASH-03b, AC-DASH-04, AC-EXEC-001-03b, AC-EXEC-001-04, AC-WARRANTY-001-07 (P-018 NBV section) — tracked further as Open Finding F-03 (OPEN, narrowed) |
 | Q6–Q10 Oracle integration design | AC-ORACLE-001-01..04 |
 | Q22 Roles and permissions required (Check-in/Check-out's own permission gate resolved — Resolved Question 42; Alerts' own access gate resolved — Resolved Question 45; general role/permission-matrix content for other domains remains open) | AC-LOGIN-01..03, AC-AUDIT-001-03, AC-MAINT-001-04..08 |
 | Q22a Per-user filtering of Alerts rows (newly raised, not decided by Resolved Question 45 — no `User`↔`Employee` link exists) | AC-ALERT-001's NOT TESTABLE YET note (§15) |
@@ -1760,6 +1930,42 @@ them as final:
 
 No criterion in this document silently resolves these — each affected
 criterion above carries its own **NOT TESTABLE YET** note.
+
+**Resolved since last revision (2026-09-23, PRD v0.22 §16 Resolved Question 54,
+per confirmed business decision — closes Open Question 3a and the narrowed
+remainder of Open Finding F-03; removed the former Q3a row above):** business
+answered Decision Request DR-02 with the ten per-Asset-Type default
+useful-life numeric values — Laptop, Monitor, Headphones, Tablet, Printer,
+Projector, Server, Router, and Camera each **5 years**; **Smartphone 3
+years**, the only Asset Type at 3 years — with two explicit clarifications
+(Tablet is 5, not 3; the ten are the only Asset Types present in the data
+today, not a blanket default for future/unlisted types). **This was the last
+PRD Open Question that was blocking `AC-DASH-03b`, `AC-EXEC-001-03b`, and
+`AC-WARRANTY-001-07`.** **Corrected 2026-09-23 (same revision):** these three
+criteria's NOT TESTABLE YET markings are now **removed entirely**, not merely
+narrowed — the earlier draft of this note (superseded, see Document Status
+Change Log) incorrectly kept them marked on a "tile/section not yet built"
+ground. Per this document's own definition (§1 — the marker is for a missing
+business rule/threshold/field/role, not a missing implementation) and this
+project's own `RAISE-FR-ORACLE-001` precedent (`TC-ORACLE-001-01..04`
+recorded **FAIL**, not "not testable," against a screen that does not exist),
+an unbuilt feature makes a fully-specified criterion **fail on execution**,
+not **untestable**. All five of `AC-DASH-03b`, `AC-DASH-04`, `AC-EXEC-001-03b`,
+`AC-EXEC-001-04`, and `AC-WARRANTY-001-07` are now **testable** — none is
+blocked by an open PRD question, and none was ever correctly NOT TESTABLE YET
+on build-status grounds (`AC-DASH-04`/`AC-EXEC-001-04` were never blocked by
+Q3a in the first place). **Being testable is not being met:** the NBV tile,
+`NBVSettings`, and the P-018 Settings NBV section do not exist anywhere in
+`frontend/src/` today, so executing any of these five criteria now is
+expected to produce **FAIL**, not PASS — this document does not report that
+execution or imply a PASS. The unbuilt-implementation status is tracked by
+**Gap 21** in `RAISE-TRACEABILITY-MATRIX.md` §6, and by the pending
+re-execution of `TC-DASH-01`/`TC-EXEC-001-01` in `RAISE-TEST-CASES.md` —
+neither is this table's job, since this table lists only open **PRD Open
+Questions**, and none blocks these five criteria any longer. **No value
+beyond the ten business-confirmed figures is invented anywhere in this
+document as a result of this update, including in any Given clause or sample
+data.**
 
 **Resolved since last revision (2026-09-08 — this sync's actual date; PRD v0.19
 §16 Resolved Questions 50–51 were confirmed by business on **2026-09-07**, not
@@ -2106,14 +2312,38 @@ Before moving to Test Plan:
       AC-EXEC-001-03b/AC-EXEC-001-04 is re-keyed from Asset Category to Asset Type — a
       re-key, not new scope; Q3a is correspondingly re-scoped to ask for one default
       value per Asset Type, and the unconfigured-key rule above is unaffected in
-      substance (only the lookup key changes).
+      substance (only the lookup key changes). **Updated 2026-09-23 (PRD §16 Resolved
+      Question 54, closing Open Question 3a and the narrowed remainder of Open Finding
+      F-03):** the ten per-Asset-Type default useful-life values are now confirmed
+      (Laptop/Monitor/Headphones/Tablet/Printer/Projector/Server/Router/Camera = 5
+      years, Smartphone = 3 years). **Corrected 2026-09-23 (same revision):**
+      AC-DASH-01, AC-DASH-03b, AC-DASH-04, AC-EXEC-001-01, AC-EXEC-001-03b, and
+      AC-EXEC-001-04's NOT TESTABLE YET markings are all **removed** — each is fully
+      specified and **testable**; "tile/section not yet built" is not a valid NOT
+      TESTABLE YET reason under this document's own definition (§1) or this project's
+      own `RAISE-FR-ORACLE-001` precedent (`TC-ORACLE-001-01..04` recorded FAIL against
+      an unbuilt screen, not "not testable"). Executing any of the six today is
+      expected to produce **FAIL**, not PASS — no `NBVSettings` type, service, or UI
+      exists — tracked by **Gap 21** in `RAISE-TRACEABILITY-MATRIX.md` §6, not by this
+      document. AC-DASH-04/AC-EXEC-001-04 were never dependent on Q3a in the first
+      place; their prior marking was solely the same build-status misapplication, now
+      corrected the same way. No value beyond the ten business-confirmed figures is
+      invented anywhere in this document.
 - [x] AC-WARRANTY-001 (§13) records the new P-018 NBV section (added 2026-09-05, PRD §16
       Resolved Question 46; **re-keyed 2026-09-08 from Asset Category to Asset Type, PRD
       §16 Resolved Question 52, amending Resolved Question 46**) as a distinct criterion,
-      AC-WARRANTY-001-07, explicitly
-      **NOT TESTABLE YET** — no default useful-life value per Asset Type is invented,
-      and the criterion does not claim the section is built (it is shape-only, per
-      Prototype §23A); the existing Warranty-section criteria (AC-WARRANTY-001-01..06)
+      AC-WARRANTY-001-07. **Updated 2026-09-23 (PRD §16 Resolved Question 54, closing
+      Open Question 3a and the narrowed remainder of Open Finding F-03):** the ten
+      per-Asset-Type default useful-life values are now confirmed and the criterion
+      asserts them by row (nine types at 5 years, Smartphone at 3 years). **Corrected
+      2026-09-23 (same revision):** the criterion's NOT TESTABLE YET marking is
+      **removed** — AC-WARRANTY-001-07 is fully specified and **testable**; the section
+      not existing in `frontend/src/` today (it is shape- and default-value-confirmed,
+      not built, per Prototype §23A) means executing it now is expected to produce
+      **FAIL**, not that it cannot be tested, matching the `RAISE-FR-ORACLE-001`
+      precedent (§14); tracked by **Gap 21** in `RAISE-TRACEABILITY-MATRIX.md` §6. No
+      value beyond the ten business-confirmed figures is invented for any Asset Type
+      outside those ten; the existing Warranty-section criteria (AC-WARRANTY-001-01..06)
       are unchanged and remain fully testable
 - [x] AC-OPS-002 (§11) reflects the category-scoped IT Hardware Assignment Approval
       Workflow exception (PRD §16 Resolved Question 43; Design §4.2) without altering
@@ -2179,12 +2409,194 @@ as blocked pending business confirmation.
 
 ## Document Status
 
-**Version:** 0.19 (2026-09-08, PRD v0.21 §16 Resolved Question 53, via
-`RAISE-PROTOTYPE.md` v0.20 — confirms the already-shipped per-priority SLA target hours
-for `RAISE-FR-MAINT-001` as they stand, resolving Open Finding F-54; adds one newly
-testable, not-yet-executed criterion, AC-MAINT-001-10; "SLA per stage," vendor model,
-cost model, and delegated-approver configuration rules are untouched and remain NOT
-TESTABLE YET)
+**Version:** 0.21 (2026-09-23, same-day correction of v0.20's NOT TESTABLE YET
+reasoning — see the v0.20 → v0.21 Change Log entry below. Net effect since v0.19:
+PRD v0.22 §16 Resolved Question 54, via `RAISE-PROTOTYPE.md` v0.21 / `RAISE-DESIGN.md`
+v0.20, supplies the ten confirmed per-Asset-Type default useful-life numeric values for
+NBV, closing PRD §16 Open Question 3a and the narrowed remainder of Open Finding F-03;
+the NOT TESTABLE YET marking is **removed** from `AC-DASH-01`, `AC-DASH-03b`,
+`AC-DASH-04`, `AC-EXEC-001-01`, `AC-EXEC-001-03b`, `AC-EXEC-001-04`, and
+`AC-WARRANTY-001-07` — all seven are now **testable**, none blocked by an open PRD
+question; none is resolved to **passing** — executing any of them today is expected to
+produce **FAIL**, tracked by Gap 21 in `RAISE-TRACEABILITY-MATRIX.md` §6, not by this
+document)
+
+**Change Log — v0.20 → v0.21 (2026-09-23, same-day correction, per coordinator review —
+corrects v0.20's NOT TESTABLE YET reasoning below; supersedes v0.20 items 2–8 as
+written):**
+
+1. **What was wrong in v0.20.** v0.20 (below) resolved the "missing values" half of
+   `AC-DASH-03b`/`AC-EXEC-001-03b`/`AC-WARRANTY-001-07`'s NOT TESTABLE YET reasoning
+   correctly, but then kept all three marked NOT TESTABLE YET on a second, leftover
+   "tile/section not yet built in `frontend/src/`" ground. **That second ground was a
+   misapplication of the marker.** This document's own definition (§1; also
+   `CLAUDE.md`) reserves NOT TESTABLE YET for a **missing answer** — an undefined
+   business rule, threshold, field, or role — not a **missing implementation**. This
+   project's own precedent contradicts the build-status reading directly:
+   `RAISE-FR-ORACLE-001`'s Financial View screen does not exist (`/reconciliation`
+   renders a generic placeholder), and its cases `TC-ORACLE-001-01..04` are recorded
+   **FAIL**, executed 2026-08-29 — not "not testable." A criterion whose specification
+   is complete but whose feature is unbuilt is **testable and failing**, not
+   untestable.
+2. **`AC-DASH-03b`/`AC-EXEC-001-03b`/`AC-WARRANTY-001-07` (§5, §13, §17) — NOT TESTABLE
+   YET marking REMOVED, not narrowed.** All three are now marked **TESTABLE**. Each
+   criterion's body text is rewritten to state plainly: the criterion is fully
+   specified and testable today; it is **NOT met** — no `NBVSettings` type, service,
+   repository, or UI section exists anywhere in `frontend/src/`, so executing any of
+   the three today would produce **FAIL**, not PASS; no execution is recorded or
+   implied. The unbuilt-implementation status is tracked by **Gap 21** in
+   `RAISE-TRACEABILITY-MATRIX.md` §6 and by the pending re-execution of
+   `TC-DASH-01`/`TC-EXEC-001-01` in `RAISE-TEST-CASES.md` — **not by this document**.
+3. **`AC-DASH-04`/`AC-EXEC-001-04` (§5, §17) — re-checked against the same standard,
+   same correction applied.** Both criteria's rule was **already fully specified**
+   before this revision (Resolved Question 51, 2026-09-07; re-keyed by Resolved
+   Question 52, 2026-09-08) and never depended on Open Question 3a. Their NOT TESTABLE
+   YET marking had exactly one cause — "not yet built" — which v0.20 left standing;
+   that cause is invalid under the same standard applied in item 2, so it is removed
+   here too. Both are now marked **TESTABLE**, **NOT met**, tracked by Gap 21, same as
+   item 2.
+4. **`AC-DASH-01`/`AC-EXEC-001-01` (§5, §17) — also corrected for consistency.** Their
+   "NBV portion is NOT TESTABLE YET" notes carried the identical, now-corrected
+   build-status reasoning (never raised by the coordinator by name, but directly
+   contradicted by leaving it standing next to the corrected criteria above). Both are
+   now marked **TESTABLE**; re-executing them today is expected to produce **FAIL**
+   ("nine of ten tiles present"), tracked by Gap 21, not a NOT TESTABLE YET note.
+5. **AC Index (§3)** — the AC-DASH, AC-EXEC-001, and AC-WARRANTY-001 rows are rewritten
+   to state the NOT TESTABLE YET marking is **removed** (not narrowed) for the seven
+   criteria in items 2–4, each expected to FAIL if executed, tracked by Gap 21.
+6. **Not-Yet-Testable Summary (§20)** — the 2026-09-23 "Resolved since last revision"
+   note (added in v0.20) is rewritten in place to state the marking is fully removed
+   for all five NBV criteria (`AC-DASH-03b`, `AC-DASH-04`, `AC-EXEC-001-03b`,
+   `AC-EXEC-001-04`, `AC-WARRANTY-001-07`), explicitly flagging that the v0.20 draft of
+   this note is superseded, not a separate, still-standing record.
+7. **Acceptance Criteria Review Checklist (§21)** — the two checklist items covering
+   AC-DASH/AC-EXEC-001's NBV tile and AC-WARRANTY-001-07 are rewritten in place (not
+   appended to) to record the removal, covering all seven criteria from items 2–4.
+8. **This document's role is unchanged: it does not report execution.** Testable is
+   not met. No `NBVSettings` type, service, repository, or UI section exists anywhere
+   in `frontend/src/`, and no PASS is recorded or implied for any of `AC-DASH-01`,
+   `AC-DASH-03b`, `AC-DASH-04`, `AC-EXEC-001-01`, `AC-EXEC-001-03b`, `AC-EXEC-001-04`,
+   or `AC-WARRANTY-001-07` by this revision. This layer defines what "correct" means;
+   the unbuilt-implementation gap is Gap 21's job (`RAISE-TRACEABILITY-MATRIX.md` §6)
+   and the pending-execution job belongs to `RAISE-TEST-CASES.md`.
+9. **Not touched by this correction:** the ten confirmed default useful-life values
+   themselves, the NBV formula, tile placement, per-Asset-Type keying, and the
+   unconfigured-key behavior are all unchanged from v0.20 — only the testability
+   marking and its stated reasoning are corrected.
+10. **This revision does not touch `RAISE-PRD.md`, `RAISE-DESIGN.md`,
+    `RAISE-PROTOTYPE.md`, `OPEN-FINDINGS.md`, or any `docs/project-management/` file** —
+    only this document. It does not touch `RAISE-TEST-PLAN.md`, `RAISE-TEST-CASES.md`,
+    or `RAISE-TRACEABILITY-MATRIX.md`. No `## NEEDS_PRD_CONFIRMATION` is raised — this
+    is a correction of this document's own internal reasoning, not a new business
+    question.
+11. **Follow-up fix within this same v0.21 (2026-09-23, later same-day pass) — §5's
+    "Status Note — Updated 2026-09-23" missed by item 2 above.** Items 2–10 correctly
+    rewrote AC-DASH-03b's own criterion body (§5) and AC-EXEC-001-03b's Status Note
+    (§17), but §5's own Status Note — the passage a reader reaches first — still ended
+    with the pre-correction sentence: *"This resolves one of AC-DASH-03b's two
+    previously-independent NOT TESTABLE YET reasons ... AC-DASH-03b therefore remains
+    NOT TESTABLE YET, narrowed to that single remaining, build-status reason only."*
+    This directly contradicted the criterion's own body forty lines below (**TESTABLE
+    … marking REMOVED**). **Fixed in place** — §5's Status Note now reads: the NOT
+    TESTABLE YET marking on AC-DASH-03b **is REMOVED**; the tile's non-existence in
+    `frontend/src/` does not keep the criterion NOT TESTABLE YET, per this document's
+    own §1 definition and the `RAISE-FR-ORACLE-001`/`TC-ORACLE-001-01..04` FAIL
+    precedent; the criterion is testable today and **NOT met**; executing it today
+    would produce FAIL; the unbuilt-implementation status is tracked by **Gap 21**
+    (`RAISE-TRACEABILITY-MATRIX.md` §6), not by this document — identical in wording
+    and structure to §17's already-corrected AC-EXEC-001-03b Status Note. **Re-checked
+    for the same pattern across the rest of the file** (every `remains
+    **NOT TESTABLE YET**`/`stays **NOT TESTABLE YET**` hit): the four remaining
+    live-text hits are genuine, untouched open questions — §11 (RBAC content for
+    domains other than Check-in/Check-out, PRD §16 Q21–Q22), §15 (RBAC content for
+    domains other than Alerts, PRD §16 Q22), and the §21 checklist's restatement of
+    the same §15 Q22 point — and are correctly left as-is; the two remaining hits
+    inside the superseded v0.19 → v0.20 Change Log entry below are pure historical
+    record, already flagged **⚠ SUPERSEDED** at that entry's head, and are
+    intentionally left unedited as history, not live guidance. **No `NBVSettings`
+    value, PASS record, or new scope is introduced by this fix** — it corrects only a
+    contradiction between two passages describing the same, already-decided
+    testability state. **Version stays at 0.21** — this is a fix to the v0.21
+    correction itself, not a new revision.
+
+**Change Log — v0.19 → v0.20 (2026-09-23, PRD v0.22 §16 Resolved Question 54 / Design
+v0.20 §5.4/§13 / `RAISE-PROTOTYPE.md` v0.21 §8/§20/§23A, closing PRD §16 Open Question
+3a and the narrowed remainder of Open Finding F-03, per confirmed business decision
+via Decision Request DR-02):**
+
+**⚠ SUPERSEDED — see the v0.20 → v0.21 entry directly above.** Items 2–8 below
+correctly resolved the "missing values" half of the NOT TESTABLE YET reasoning, but
+incorrectly kept `AC-DASH-03b`/`AC-EXEC-001-03b`/`AC-WARRANTY-001-07` (and left
+`AC-DASH-04`/`AC-EXEC-001-04` unexamined) marked NOT TESTABLE YET on a "tile/section
+not yet built" ground that this document's own §1 definition does not support. Item 1
+(the confirmed values themselves) is unaffected and still accurate. Retained below,
+unedited, for revision history only — **do not read items 2–8 as the current state of
+this document.**
+
+1. **Root confirmation.** Business answered Decision Request DR-02 verbatim in Thai —
+   "ใช้ 5 ปีทุกอย่างยกเว้นมือถือ 3 ปี" ("use 5 years for everything except mobile phones,
+   3 years"). Two ambiguities in that phrasing were put back to business and answered
+   explicitly, not inferred: **(a) Tablet is 5, not 3** — the Mobile Category has two
+   Asset Types (Smartphone, Tablet); only Smartphone is at 3 years; **(b) the 5-year
+   figure applies only to the 10 Asset Types present in the data today**, explicitly
+   not a blanket default for future/unlisted Asset Types —
+   [Resolved Question 51](../01-requirements/RAISE-PRD.md#16-open-questions)
+   (unconfigured lookup key returns `purchaseCost` unchanged) continues to
+   govern those. **Confirmed values (years):**
+   Laptop 5, Monitor 5, Headphones 5, **Smartphone 3**, Tablet 5, Printer 5, Projector
+   5, Server 5, Router 5, Camera 5. No value beyond these ten is supplied, invented, or
+   implied anywhere in this document. This closes **PRD §16 Open Question 3a** and the
+   narrowed remainder of **Open Finding F-03**.
+2. **`AC-DASH-03b`/`AC-EXEC-001-03b` (§5, §17) narrowed, not resolved to passing.**
+   Each previously carried **two independent** NOT TESTABLE YET reasons: (1) the tile
+   does not exist in `frontend/src/`; (2) no default useful-life value per Asset Type
+   could be asserted (Open Question 3a). Reason (2) is now **RESOLVED** by this
+   revision. Reason (1) is **not** touched by this decision and **remains unresolved**
+   — both criteria are therefore still marked **NOT TESTABLE YET**, narrowed to that
+   single, leftover, build-status reason. Both criteria now cite the ten confirmed
+   values as the pre-populated per-Asset-Type useful-life table the built tile would
+   use once it exists.
+3. **`AC-WARRANTY-001-07` (§13) narrowed the same way.** Previously two independent
+   reasons (section not built; default values undefined); the second is now resolved
+   — the criterion asserts the ten confirmed pre-populated row values (nine types at 5
+   years, Smartphone at 3 years); the first (section not built in `frontend/src/`)
+   remains, and the criterion stays **NOT TESTABLE YET** on that single ground.
+4. **`AC-DASH-04`/`AC-EXEC-001-04` (§5, §17) unaffected.** Both criteria's own text
+   already stated their rule does not depend on Open Question 3a (they assert no
+   default value for any type, governing only the unconfigured-key case). This
+   revision does not change them; they remain NOT TESTABLE YET for the same
+   build-status reason as before, unrelated to this update.
+5. **AC Index (§3)** — the AC-DASH, AC-EXEC-001, and AC-WARRANTY-001 rows are updated
+   to record that Open Question 3a is closed and that each of the three affected
+   criteria now carries a single, narrower, build-status-only NOT TESTABLE YET reason.
+6. **Not-Yet-Testable Summary (§20)** — the former **Q3a** table row is **removed**
+   (Q3a is closed, and this table lists only open PRD Open Questions); a new "Resolved
+   since last revision (2026-09-23...)" note replaces it, explicitly stating which
+   criteria are affected, that none is blocked by an open PRD question any longer, and
+   that the leftover build-status reason is intentionally not tracked by this
+   PRD-Open-Question-scoped table.
+7. **Acceptance Criteria Review Checklist (§21)** — the two checklist items covering
+   AC-DASH/AC-EXEC-001's NBV tile and AC-WARRANTY-001-07 are each updated with a dated
+   2026-09-23 addendum recording the same narrowing.
+8. **CRITICAL — this revision does not report execution.** Becoming testable is not
+   the same as passing: no `NBVSettings` type, service, repository, or UI section
+   exists anywhere in `frontend/src/` today, and no PASS is recorded or implied for
+   any of `AC-DASH-03b`, `AC-DASH-04`, `AC-EXEC-001-03b`, `AC-EXEC-001-04`, or
+   `AC-WARRANTY-001-07` by this revision. This layer defines what "correct" means once
+   the tile/section is built; it does not build it or test it.
+9. **Not touched by this decision:** the NBV formula (Resolved Question 46), tile
+   placement (Resolved Question 50), per-Asset-Type keying (Resolved Question 52), and
+   the unconfigured-key behavior (Resolved Question 51) are all already confirmed and
+   untouched — this revision supplies only the numeric default values for the
+   already-confirmed key.
+10. **This revision does not touch `RAISE-PRD.md`, `RAISE-DESIGN.md`,
+    `RAISE-PROTOTYPE.md`, or `OPEN-FINDINGS.md`** — only this document, propagating
+    `RAISE-PRD.md` v0.22 §16 Resolved Question 54 as already carried forward by
+    `RAISE-PROTOTYPE.md` v0.21 and `RAISE-DESIGN.md` v0.20. It does not touch
+    `RAISE-TEST-PLAN.md`, `RAISE-TEST-CASES.md`, or `RAISE-TRACEABILITY-MATRIX.md`,
+    which are synced separately by their own subagents. No `## NEEDS_PRD_CONFIRMATION`
+    is raised — this is an already-confirmed business decision, not a newly discovered
+    gap.
 
 **Change Log — v0.18 → v0.19 (2026-09-08, PRD v0.21 §16 Resolved Question 53 / Design
 v0.19 §5.1 "Per-Priority SLA Target Hours — Confirmed As-Built" / `RAISE-PROTOTYPE.md`

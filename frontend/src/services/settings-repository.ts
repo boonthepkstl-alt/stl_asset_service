@@ -43,6 +43,13 @@ export class MockSettingsRepository implements SettingsRepository {
         ...patch.warranty,
         expiringThresholdDaysByCategory: { ...this.settings.warranty.expiringThresholdDaysByCategory, ...patch.warranty?.expiringThresholdDaysByCategory },
       },
+      nbv: {
+        ...this.settings.nbv,
+        ...patch.nbv,
+        // Merged key-by-key, like the warranty map above: a patch carrying one edited Asset Type
+        // must not drop the other nine.
+        usefulLifeYearsByType: { ...this.settings.nbv.usefulLifeYearsByType, ...patch.nbv?.usefulLifeYearsByType },
+      },
     };
     return simulateNetwork({ ...this.settings });
   }

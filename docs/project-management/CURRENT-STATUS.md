@@ -12,6 +12,18 @@ see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 **As of:** 2026-09-18, at `fd8a966` (**PR #135** merged), plus the F-16 migration
 runner on `feature/f16-migration-runner`.
 
+**Repository coverage closed out with Audit (2026-09-23) — four domains, thread complete.**
+21 assertions, including one that encodes an acceptance criterion rather than a behaviour:
+`AC-AUDIT-001-02` requires audit entries to be immutable, and nothing enforces that at
+runtime — the guarantee is that `AuditPGRepository` exposes only `Insert` and `List`. A
+reflection test asserts exactly that, **needs no database**, and was mutation-tested by
+actually adding a `Delete` (it failed, then was restored). Also covered: the `doc` column
+written on every insert and deliberately never returned, and newest-first ordering
+(fixtures inserted out of order so a pass cannot be luck). **`RAISE-FR-AUDIT-001`'s
+verdict does not move** — it stays `BLOCKED (partial)` on F-08, which no test can answer.
+**13 files remain uncovered and that is where the line is drawn:** what is left is plain
+CRUD where a mock is nearly as good. See `CHECKPOINT-2026-09-23-002`.
+
 **Repository coverage extended to Asset Handovers (2026-09-23).** 34 assertions on the
 logic that exists only in SQL: `HasActiveForAsset`'s one-live-handover-per-asset guard
 (`status NOT IN ('ASSIGNED','REJECTED')` — nothing in Go re-checks it),

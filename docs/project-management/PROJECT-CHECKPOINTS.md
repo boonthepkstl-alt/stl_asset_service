@@ -5767,6 +5767,49 @@ Four further signals in the current cell agree: the **AC Group(s)** column assig
 
 ---
 
+## CHECKPOINT-2026-09-23-002
+
+**Phase:** Infrastructure / Process (not a PRD-traced phase)
+**Feature:** Repository-layer test coverage
+**Task:** Cover the Audit repository — **the last one with behaviour only a real database can show.**
+
+**What was added:** `repository/auditPGRepository_test.go` — **21 assertions across 5 test functions**.
+**What was implemented / modified / removed:** No production code. Fourth reuse of the harness, unchanged.
+
+**One test encodes an acceptance criterion rather than a behaviour, and it is the most valuable thing in the file.** `AC-AUDIT-001-02` requires audit entries to be immutable. Nothing enforces that at runtime — no constraint, no trigger, no check. **The guarantee is that there is no way to express a change:** `AuditPGRepository` exposes `Insert` and `List` and nothing else. `TestAuditPGRepository_InterfaceIsAppendOnly` asserts exactly that, by reflection over the interface, and **needs no database** so it runs on every machine and every CI job.
+
+**It was mutation-tested by actually adding a `Delete`** to the interface with a stub implementation. The test failed, reporting the extra method and repeating why it matters. Restored and re-verified. **That mutation is the realistic one:** a `Delete` added for a plausible reason — a cleanup job, a GDPR request, a test helper — removes an acceptance criterion's only guarantee, and **no other test in this codebase would notice.**
+
+**The second thing worth a real database is the deliberate gap between stored and served shapes.** Insert writes a `doc` jsonb column holding the whole entry; `SQL_audit_pg_list_base`'s SELECT list omits it, and `AuditLogModel` has no field for it. So `doc` is written on every insert and **never read back by the application** — invisible to any mock, which has a single representation. The test reads the column directly through the harness to prove it really is populated, confirms `List` returns the columns instead, and asserts the model has no `Doc` field so that changing one without the other becomes a visible decision.
+
+**Ordering was mutation-tested too.** Audit is ordered newest-first on `created_at`, not on an id or a code, so the `ORDER BY` is the only thing between a reader and an arbitrary order. The fixtures are **inserted deliberately out of order** (2, 4, 1, 3) so that a pass cannot be insertion order by luck. Removing `ORDER BY created_at DESC` made the test fail; restored and re-verified.
+
+**One case guards a trap specific to this domain:** `entity_type` values include both `asset` and `asset_handover`, and **`asset` is a prefix of `asset_handover`**. The filter is an equality match and must stay one — a LIKE-based version would fold handover entries into an asset's history. Asserted in both directions.
+
+**Tests:**
+- Unit Test: `TestAuditPGRepository_InterfaceIsAppendOnly` needs no database and passes everywhere. `go test -count=1 ./...` clean across all four packages with no database.
+- Integration Test: **all 21 assertions pass against real PostgreSQL.**
+- E2E Test: None.
+
+**Validation:** `go build` / `go vet` clean. `gofmt` checked **against index content the way CI checks it**. `git diff --check` clean. Both mutated sources confirmed **byte-identical to HEAD** before committing.
+
+**Files changed:** `go-template-main/repository/auditPGRepository_test.go` (new), plus the project-management documents this close-out touches.
+**Database / API / Frontend changes:** None.
+
+**Requirement Traceability:** `AC-AUDIT-001-02` (immutability) now has an executable check — **but `RAISE-FR-AUDIT-001`'s verdict does not move.** It is `BLOCKED (partial)` on field taxonomy and the audit-review role gate (**F-08**), neither of which a test can answer. **The board stays 8/1/2/6.** Recorded explicitly because "an acceptance criterion now has a test" is exactly the sort of thing that gets mistaken for a verdict change.
+
+**Git:** Branch `test/audit-repository-coverage`. Commit recorded on merge.
+
+**Status:** ✅ Complete for its confirmed scope.
+
+**Known Issues:** None introduced. **13 repository files remain uncovered, and this is where the line should be drawn.** Four domains now have tests, chosen each time for SQL-only behaviour: pagination arithmetic, a synthetic status expansion, a business invariant and a code sequence, and now an append-only guarantee plus a stored/served shape gap. **What is left is plain CRUD where a mock is nearly as good** — extending further would be counting files rather than reducing risk, and saying so is more useful than a coverage number.
+
+**Remaining Work:** None. **This closes the repository-coverage thread.**
+
+**Next Step:** **Wait for DR-01/02/03/04.** Four days of infrastructure work — migration runner, page-size ceiling, logging, and four repositories — has moved **no requirement verdict**, by design and as predicted each time. The only thing that moves one is an answer.
+
+---
+
 ## Level 2 — Feature Checkpoints
 
 ### FEATURE-CHECKPOINT-project-tracking-governance

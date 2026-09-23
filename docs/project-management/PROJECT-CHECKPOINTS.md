@@ -5721,6 +5721,52 @@ Four further signals in the current cell agree: the **AC Group(s)** column assig
 
 ---
 
+## CHECKPOINT-2026-09-23-002
+
+**Phase:** Phase 2 — Authentication / RBAC (re-verification of existing scope, no new phase work)
+**Feature:** Login (P-001) / TS-LOGIN
+**Task:** Re-execute TS-LOGIN (`TC-LOGIN-01`/`-02`/`-03`) through a real browser via the new `tester` subagent, to confirm the 2026-08-29/2026-09-01 formal PASS verdicts still hold after everything merged since (through PR #147, `bec047b`).
+
+**What was implemented:** None — test-only re-execution, no production code touched.
+**What was modified:** None.
+**What was fixed:** None.
+**What was added:** `.claude/agents/tester.md` — new browser-driven QA subagent (uses the built-in browser pane as a Playwright-MCP equivalent, since no Playwright MCP server is configured in this environment). Hard-constrained by tool grant alone (no `Write`/`Edit`/`Bash`) against modifying source, config, or acceptance criteria to force a pass; required to run a 6-item pre-flight (source docs, URL, test account, test data, limitations, no-fix confirmation) and get explicit go-ahead before touching the browser. Used to run this re-execution.
+**What was removed:** None.
+
+**Files changed:** `.claude/agents/tester.md` (new; uncommitted — see Git below).
+**Database changes:** None.
+**API changes:** None.
+**Frontend changes:** None.
+
+**Tests:**
+- Unit Test: None (not applicable — no code changed).
+- Integration Test: None.
+- E2E Test: `TC-LOGIN-01`/`-02`/`-03` executed live via the browser pane against `http://localhost:5173` (mock-auth mode, `AUTH_API_ENABLED` unset/`false`, `MockAuthRepository`) — **3/3 PASS**. `TC-LOGIN-01`: `employee@raise.dev`/`demo1234` → redirected to Executive Dashboard, correct user in header, full content rendered, no console errors. `TC-LOGIN-02`: invalid credentials → stayed on Login, red "Invalid username or password" banner, no navigation. `TC-LOGIN-03`: signed in as `EMPLOYEE`, navigated directly to `/administration` (`ADMIN`-only per `App.tsx` `ProtectedRoute allowedRoles={['ADMIN']}`) → dedicated 403 "Access denied" screen, not a silent redirect or generic 404.
+
+**Validation:**
+- Build: N/A (no code changed).
+- Lint: N/A.
+- Test: TS-LOGIN suite — 3/3 PASS (see above).
+- Type Check: N/A.
+
+**Requirement Traceability:**
+**PRD:** `RAISE-NFR-SEC-RBAC-001` (Login/RBAC gate) — no requirement status change; enforcement-level decision (UI-only for MVP, backend deferred to Roadmap) already recorded in `RAISE-PRD.md` v0.9, untouched by this task.
+**Design:** `RAISE-DESIGN.md` — Login/RBAC section, unchanged.
+**Acceptance Criteria:** `AC-LOGIN-01`, `AC-LOGIN-02`, `AC-LOGIN-03` — all reconfirmed **Met**, at their existing narrow scope (existence of success/error/access-denied states only; the authentication mechanism and full role/permission-matrix content remain TBD per PRD §16 Q21–Q22, unaffected by this task).
+**Test Case:** `TC-LOGIN-01`, `TC-LOGIN-02`, `TC-LOGIN-03` — all **PASS**, matching the outcome already on record in `CURRENT-STATUS.md` for the 2026-08-29/2026-09-01 sweep. No verdict moves.
+
+**Git:**
+**Branch:** `main` (working tree; no feature branch created for this test-only task).
+**Commit:** Not yet committed — `.claude/agents/tester.md` is untracked as of this checkpoint; no commit hash exists yet.
+
+**Status:** ✅ Complete for its confirmed scope (re-verification only — no requirement or test-case status changed by this task).
+
+**Known Issues:** None new. Pre-existing and unaffected by this run: **F-08** (auth mechanism / role-permission matrix content still TBD), **F-11** (single hardcoded demo backend user, no real store), **F-12** (RBAC middleware not wired to real RAISE routes) — see `OPEN-FINDINGS.md`.
+**Remaining Work:** None for this task. `AUTH_API_ENABLED=true` (real-backend) mode, "Forgot password?", SSO buttons, and the full role/permission matrix beyond the single `ADMIN` gate check were explicitly out of scope for this re-execution and remain untested.
+**Next Step:** If `.claude/agents/tester.md` is to be kept as a permanent project asset, commit it through the project's normal branch-per-change + PR workflow — it currently exists only in the shared working tree. No further Login re-testing is recommended until either the auth mechanism (F-08) or a real backend user store (F-11) changes.
+
+---
+
 ## Level 2 — Feature Checkpoints
 
 ### FEATURE-CHECKPOINT-project-tracking-governance

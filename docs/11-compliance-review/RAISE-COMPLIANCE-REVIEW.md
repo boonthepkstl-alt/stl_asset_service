@@ -1,5 +1,17 @@
 # RAISE — Requirement Compliance Review
 
+**Document Status:** Draft v1.5 — **Re-verified 2026-09-23 against Traceability Matrix v2.17. No verdict moved; the headline stays 8 of 17 (47%).**
+
+The business answer this document has named as its one verdict-moving blocker finally arrived: Decision Request **DR-02** was answered 2026-09-23, supplying the ten per-Asset-Type NBV useful-life values (PRD §16 **Resolved Question 54**, closing Open Question 3a and resolving Open Finding **F-03**). The chain was propagated end to end and both NBV surfaces — the P-018 Settings section and the tenth Dashboard KPI tile — were built the same day, with `lib/nbv.ts` re-keyed from Category to Type (RQ52, which the code had never followed).
+
+**None of that changes a verdict here, and saying so plainly is the point of this revision.** `RAISE-FR-EXEC-001` stays **`PASS (partial)`** and **Gap 21 stays open**. The seven affected criteria moved from *blocked* to *testable*, not to *passing*: `TC-DASH-01`/`TC-EXEC-001-01`/`TC-DASH-03b`/`TC-WARRANTY-001-07` have **not been formally executed**, and `TC-DASH-01`/`TC-EXEC-001-01`'s existing PASS records were taken against the superseded **nine**-tile criteria and require re-execution rather than carry-forward. Automated tests cover the wiring (296 passing, from 289, four of the new ones mutation-verified); they are not this chain's execution record.
+
+This is the third consecutive revision where the honest result is "nothing moved," and it is worth naming why that keeps happening: this document reports **executed** verdicts, and the project has repeatedly done the work that makes execution *possible* without then executing. v1.1 existed because the opposite error — reporting a verdict the execution record did not support — reached the headline number twice.
+
+*(v1.4: re-verified 2026-09-20 against matrix v2.16 — restored the Warranty row after v1.3's erroneous downgrade. Header retained below.)*
+
+---
+
 **Document Status:** Draft v1.4 — **Re-verified 2026-09-20 against Traceability Matrix v2.16.** v1.3 downgraded `RAISE-FR-WARRANTY-001` to `PASS (partial)` to match the matrix's label. **That was wrong** — Open Finding **F-59** established that the label, not the body, was the stale half: the cell has contradicted itself since matrix **v2.2**, four days *before* the dual-mapped `TC-WARRANTY-001-07` that the `(partial)` was assumed to describe even existed. Matrix v2.16 corrects the label; this row is restored to **`PASS`** and the headline returns to **8 of 17 (47%)**. The other 17 verdicts were re-checked row by row at v1.3 and are unchanged. *(v1.2 header retained below for history.)*
 
 *(v1.3: re-verified 2026-09-20 against matrix v2.15 — corrected §7's stale gap claim and F-03's re-key, and wrongly downgraded the Warranty row.)*
@@ -263,10 +275,11 @@ because it has now actually been checked.
 
 Cross-referenced against [`OPEN-FINDINGS.md`](../project-management/OPEN-FINDINGS.md) as of this revision:
 
-**Blocking (gates an MVP requirement, genuinely open):** F-03 (NBV default
-useful-life values — **narrowed**, R-28: the formula is confirmed, only the values are
-missing; **re-keyed per Asset Type by PRD §16 Resolved Question 52 on 2026-09-08**,
-after v1.2 — it is no longer "five per Category"), F-04 (Oracle FA integration
+**Blocking (gates an MVP requirement, genuinely open):** ~~F-03~~ — **RESOLVED
+2026-09-23** (DR-02 answered; PRD §16 Resolved Question 54 supplied the ten
+per-Asset-Type values, closing Open Question 3a). **This removes the business
+blocker without moving `RAISE-FR-EXEC-001`'s verdict**: what remains is execution,
+tracked as Gap 21, not an unanswered question. F-04 (Oracle FA integration
 mechanism), F-06 (NL Search citation format), F-07 (Document Intelligence
 thresholds/fields), F-08 (Auth mechanism / role-permission matrix content —
 **narrowed**, R-25: resolved for the Alerts screen only).

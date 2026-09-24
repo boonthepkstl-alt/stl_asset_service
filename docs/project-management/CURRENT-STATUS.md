@@ -9,8 +9,38 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-09-18, at `fd8a966` (**PR #135** merged), plus the F-16 migration
-runner on `feature/f16-migration-runner`.
+**As of:** 2026-09-23, at `1a0f74a` (**PR #149** merged), plus the NBV work on
+`feature/nbv-useful-life-values` (not yet merged).
+
+**F-03 is RESOLVED, and the NBV feature is built — but no verdict moved (2026-09-23).**
+Business answered Decision Request **DR-02** after the question had been open across four
+separate requests: useful life is **5 years for nine Asset Types and 3 for Smartphone**
+(PRD §16 **Resolved Question 54**, closing Open Question 3a). Two ambiguities were put
+back and answered explicitly rather than inferred — **Tablet is 5, not 3**, and the ten
+values are **not** a blanket default for Asset Types added later, which stay under RQ51.
+The full chain was propagated the same day (PRD v0.22 → Matrix v2.17, Compliance Review
+re-verified to v1.5) and **both NBV surfaces were built**: the P-018 Settings section and
+the **tenth** Dashboard KPI tile, with `lib/nbv.ts` re-keyed from Category to Type —
+RQ52 had decided that on 2026-09-08 and **the code had never followed**, which stayed
+harmless only while the module had no consumer. **Tests 289 → 296**, build and lint
+clean, four mutations verified.
+
+**What did NOT happen, and it is the part that matters:** execution. The seven affected
+test cases are now **testable and unexecuted**. `RAISE-FR-EXEC-001` stays `PASS
+(partial)`, **Gap 21 stays OPEN**, and the board stays **8 PASS / 2 FAIL / 6 BLOCKED /
+1 partial**. `TC-DASH-01`/`TC-EXEC-001-01` additionally hold PASS records taken against
+the superseded **nine**-tile criteria and must be **re-executed, not carried forward**.
+Live browser verification was attempted and abandoned: the desktop app's dev server
+resolves its launch config against the **main checkout**, not the worktree this branch
+lives in, so the nine-tile grid it rendered was the other tree's code. See
+`CHECKPOINT-2026-09-23-003`.
+
+**A marker misuse was caught and corrected mid-chain.** The AC layer first kept three
+criteria NOT TESTABLE YET because the tile is unbuilt. `CLAUDE.md` reserves that marker
+for a missing **business answer**, and `RAISE-FR-ORACLE-001` is the standing precedent —
+its screen does not exist and its cases are recorded **FAIL**, not "not testable." Seven
+criteria had the marking removed; the superseded reasoning is marked as such rather than
+quietly rewritten.
 
 **Repository coverage closed out with Audit (2026-09-23) — four domains, thread complete.**
 21 assertions, including one that encodes an acceptance criterion rather than a behaviour:
@@ -1129,10 +1159,13 @@ requirement.
 
 The documentation chain (`docs/01-requirements/` … `docs/07-traceability-matrix/`)
 is internally consistent and current — **`RAISE-TRACEABILITY-MATRIX.md` is
-at v1.8: all 15 traceability gaps identified across this project's
-history are closed** and re-verified against real file content, not just
-re-asserted. `docs/11-compliance-review/RAISE-COMPLIANCE-REVIEW.md` v1.0
-(2026-09-01) consolidates the whole chain into a per-requirement verdict:
+at v2.17, and of its 27 gaps, 26 are closed. `Gap 21` is open**: the NBV tile
+and the P-018 NBV section are now built, but their test cases have not been
+executed. *(This paragraph claimed "v1.8, all 15 gaps closed" until
+2026-09-23 — it had been stale for weeks, which is itself the argument for
+reading the matrix rather than this summary.)*
+`docs/11-compliance-review/RAISE-COMPLIANCE-REVIEW.md` **v1.5 (re-verified
+2026-09-23 against matrix v2.17)** consolidates the whole chain into a per-requirement verdict:
 8 of 17 MVP requirements a full unqualified `PASS`, 1 `PASS (partial)`,
 2 `FAIL` (both explicitly deferred by business decision — F-31/F-33), and
 6 `BLOCKED`/`BLOCKED (partial)` — each waiting on a specific, already-
@@ -1145,13 +1178,13 @@ paragraph, which is a summary of a summary and can drift.
 
 | Document | Version | Notes |
 |---|---|---|
-| [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) | 0.14 | IT Hardware Assignment Approval Workflow — category-scoped exception to RAISE-FR-OPS-002 (Resolved Question 43, 2026-09-02) |
-| [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) | 0.12 | §4.2 extended with the 4-stage IT Hardware handover approval workflow (2026-09-02) |
-| [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) | 0.13 | P-008 updated for the handover approval workflow (2026-09-02) |
-| [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) | 0.11 | AC-OPS-002-04..09 added for the IT Hardware handover approval workflow (Resolved Question 43, 2026-09-02) |
-| [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) | 0.11 | TS-OPS-002 extended to 9 cases for the handover workflow (2026-09-02) |
-| [`RAISE-TEST-CASES.md`](../06-test-cases/RAISE-TEST-CASES.md) | 0.16 | 72 test cases; `TC-OPS-002-04..09` PASS, full-stack scope (backend PR #72 + frontend PR #74, both live-verified) — "backend/API-level scope only, no frontend UI yet" caveat removed 2026-09-03 (PR #75) |
-| [`RAISE-TRACEABILITY-MATRIX.md`](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md) | 1.8 | Gap 15 (IT Hardware handover approval) closed — `TC-OPS-002-04..09` PASS, full-stack scope recorded (PR #75, 2026-09-03) |
+| [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) | 0.22 | §16 **Resolved Question 54** (2026-09-23) — the ten per-Asset-Type NBV useful-life values, closing Open Question 3a and resolving F-03 |
+| [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) | 0.20 | §5.4 / §13 carry the confirmed NBV default values (2026-09-23) |
+| [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) | 0.21 | P-018 §23A shows the real figures; §8/§20 NBV tile reframed as buildable (2026-09-23) |
+| [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) | 0.21 | Seven criteria moved from NOT TESTABLE YET to **testable** — the marker had been applied to an unbuilt feature rather than an unanswered question (2026-09-23) |
+| [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) | 0.21 | Suites carrying an open-question blocker: 17 → **14** (2026-09-23) |
+| [`RAISE-TEST-CASES.md`](../06-test-cases/RAISE-TEST-CASES.md) | 0.35 | 96 cases; 7 moved BLOCKED → **testable, not yet executed**. `TC-DASH-01`/`TC-EXEC-001-01`'s PASS records were taken against the superseded nine-tile criteria and require **re-execution** (2026-09-23) |
+| [`RAISE-TRACEABILITY-MATRIX.md`](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md) | 2.17 | **Gap 21 stays OPEN** — its business half closed, its build/execution half did not. No verdict moved (2026-09-23) |
 | [`RAISE-HIGH-LEVEL-ARCHITECTURE.md`](../08-architecture/RAISE-HIGH-LEVEL-ARCHITECTURE.md) | — | As-built, not versioned against PRD chain |
 | [`RAISE-API-DB-SPEC.md`](../09-api-db-spec/RAISE-API-DB-SPEC.md) | — | As-built. Corrected 2026-09-11 (PR #131): Audit Log section added (was wrongly listed "not yet built"), Asset Handovers section added (was entirely undocumented), broken `PROJECT-TIMELINE.md` link fixed |
 | [`RAISE-DETAILED-DESIGN.md`](../10-detailed-design/RAISE-DETAILED-DESIGN.md) | — | As-built |
@@ -1171,7 +1204,7 @@ paragraph, which is a summary of a summary and can drift.
 | Auth | supports `RAISE-NFR-SEC-RBAC-001` | 🟡 Built, demo-only — backend is a hardcoded single user, no real user store (Roadmap-confirmed, F-11/F-12). Frontend **PASS on all 3 test cases** per formal test execution 2026-08-29/2026-09-01 — `TC-LOGIN-03` (access-denied) PASS; `TC-LOGIN-01`/`-02` (valid/invalid login) now **PASS** (F-30 resolved, R-15) via a new `MockAuthRepository` (4 demo accounts, one per Role) gated by `AUTH_API_ENABLED`. This resolves the infrastructure/testability gap only — the production auth mechanism and role/permission matrix content (PRD §16 Q21–Q22) remain undefined. **Re-verified 2026-09-23** via a real-browser re-execution (new `tester` subagent, `CHECKPOINT-2026-09-23-002`) — all 3 test cases still PASS, no regression from anything merged since the original sweep (through PR #147). Note: this row's re-verification is newer than this file's own "As of" banner above, which has not been refreshed past PR #135/2026-09-18 for unrelated work — treat only this Auth row as current as of 2026-09-23, not the rest of the table |
 | QR / Barcode lookup | `RAISE-FR-OPS-001` | ✅ Built, PASS on all test cases — [PR #29](https://github.com/boonthepkstl-alt/stl_asset_service/pull/29) + a follow-up F-21 fix (see `DEVELOPMENT-LOG.md` for the PR number once shipped). `GET /assets/:id` resolves by `code` too (dual lookup); real QR generation + Scan QR flow live on both Assets list and Asset Detail. `TC-OPS-001-01..03` all **PASS** — the invalid-code state (F-21) is fixed via a plausible-code-format check before lookup |
 | Audit Log | `RAISE-FR-AUDIT-001` | 🟡 Built — [PR #31](https://github.com/boonthepkstl-alt/stl_asset_service/pull/31) (Asset domain) + [PR #35](https://github.com/boonthepkstl-alt/stl_asset_service/pull/35) (Ticket domain). `GET /audit-logs` + recording on Asset create/assign/check-in and Ticket create/approve/dispatch/status-update. No update/delete path exists (immutability by omission). The testable subset of `TC-AUDIT-001-01..03` **PASSED** formal execution 2026-08-26; field taxonomy and the audit-review role gate remain TBD (unchanged, blocked on PRD) |
-| Executive Dashboard KPIs (first cut) | `RAISE-FR-EXEC-001` | ✅ Built, **PASS** per formal test execution 2026-08-31 — [PR #33](https://github.com/boonthepkstl-alt/stl_asset_service/pull/33). `GET /dashboard/stats` computes status counts, expired-warranty count, and department/type distribution from real Asset data. Software License count still comes from the frontend's mock license service (no backend License table exists — Roadmap-only). **F-22 resolved (R-13)**: the full chain (Design/Prototype/AC/Test Plan/Test Cases/Traceability Matrix) was corrected to document the actually shipped 8-tile KPI grid / 10-section dashboard, then re-executed against the real app — all cases **PASS** (`TC-DASH-01..03`/`TC-EXEC-001-01..02`). NBV/Risk/Utilization is retained as a documented, not-yet-scheduled enhancement (PRD §16 Q3/Q4/Q29 TBD), tracked separately as **F-03** — presence-check for its absence passes (`TC-DASH-03`), but building it remains blocked on that formula question |
+| Executive Dashboard KPIs (first cut) | `RAISE-FR-EXEC-001` | ✅ Built, **PASS** per formal test execution 2026-08-31 — [PR #33](https://github.com/boonthepkstl-alt/stl_asset_service/pull/33). `GET /dashboard/stats` computes status counts, expired-warranty count, and department/type distribution from real Asset data. Software License count still comes from the frontend's mock license service (no backend License table exists — Roadmap-only). **F-22 resolved (R-13)**: the full chain (Design/Prototype/AC/Test Plan/Test Cases/Traceability Matrix) was corrected to document the actually shipped 8-tile KPI grid / 10-section dashboard, then re-executed against the real app — all cases **PASS** (`TC-DASH-01..03`/`TC-EXEC-001-01..02`). **Superseded 2026-09-23 — this row's NBV sentence is rewritten below.** *(Previously: "NBV/Risk/Utilization is retained as a documented, not-yet-scheduled enhancement (PRD §16 Q3/Q4/Q29 TBD), tracked separately as F-03 — presence-check for its absence passes (`TC-DASH-03`), but building it remains blocked on that formula question.")* **Utilization** shipped 2026-09-05 (PR #102) and is a passing criterion. **Risk** is confirmed OUT of MVP scope (RQ47) — not a gap. **NBV is now built** (2026-09-23): business answered DR-02 with the ten per-Asset-Type useful-life values (RQ54, resolving **F-03**), and the **tenth** KPI tile plus the P-018 Settings NBV section were implemented the same day, with `lib/nbv.ts` re-keyed from Category to Type per RQ52. **The verdict does not move.** `TC-DASH-03b`/`TC-EXEC-001-03b`/`TC-WARRANTY-001-07` are now **testable and unexecuted**, and `TC-DASH-01`/`TC-EXEC-001-01`'s PASS records were taken against the superseded **nine**-tile criteria and must be re-executed rather than carried forward — so this stays `PASS (partial)` and **Gap 21 stays OPEN**. Built is not executed |
 | Oracle FA Integration | `RAISE-FR-ORACLE-001` | 🔴 Integration method/mapping/sync/security all TBD (F-04), **and `TC-ORACLE-001-01..04` FAILED formal execution 2026-08-29** — the `/reconciliation` route renders a generic "foundation placeholder" `EmptyState` (`frontend/src/pages/_shared/ModulePage.tsx`), not an actual Financial View screen; no field or state from `AC-ORACLE-001-01..04` exists at all. **Explicitly deferred by user decision 2026-09-01 (F-31)** — no placeholder-vs-real Financial View will be built until real Oracle FA integration lands |
 | Alerts | `RAISE-FR-ALERT-001` | ✅ Built (scoped), **PASS (partial)** per formal test execution 2026-09-01 — the "Notification Center" route (`/notifications`) now renders a real Alerts screen (`frontend/src/pages/Alerts/index.tsx`) instead of the app's generic 404. Scoped to the one alert-triggering condition already confirmed elsewhere (expired warranty); severity rendered honestly as "Not yet defined" since severity/trigger rules for any other condition remain TBD (**F-05**, unaffected — see `OPEN-FINDINGS.md`). The header bell-icon dropdown across other pages remains hardcoded empty, a separate smaller-scope item |
 | Natural Language Search | `RAISE-AI-SEARCH-001` | 🔴 Citation precision/format TBD (F-06), **and `TC-AI-SEARCH-001-01..03`/`TC-AI-STATES-01..05` (all 8) FAILED formal execution 2026-08-29** — the header "AI Assistant" drawer accepts no input (static placeholder only); the Assets page's "Ask AI" box is a hardcoded keyword-to-filter matcher (legacy ESAPS content), not a natural-language answer engine, and exhibits none of the 5 required response states. **Explicitly deferred by user decision 2026-09-01 (F-33)** — no canned-answer engine will be built until real AI backend integration lands |

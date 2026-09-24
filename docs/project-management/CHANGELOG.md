@@ -14,6 +14,31 @@ changes user-visible or API-visible behavior. Pure documentation-sync PRs
 
 ---
 
+## 2026-09-23
+
+### Added
+- **The dashboard now shows Net Book Value.** A tenth KPI tile reports the
+  portfolio's depreciated book value alongside its original purchase cost and
+  the number of assets counted. Unlike the Monthly Depreciation tile beside it,
+  which remains illustrative and unchanged, this figure is computed from each
+  asset's real purchase date and cost.
+- **Settings gains an NBV section** where an administrator can set the useful
+  life, in years, for each Asset Type. It arrives pre-filled with the values
+  the business confirmed: five years for Laptop, Monitor, Headphones, Tablet,
+  Printer, Projector, Server, Router and Camera, and **three years for
+  Smartphone**.
+
+### Notes
+- **An Asset Type with no useful life set is not assumed to be five years.** It
+  is reported at its full purchase cost — treated as not yet depreciated — and
+  still counted in the portfolio total. The confirmed values cover the ten Asset
+  Types in the register today and were deliberately not made a default for types
+  added later.
+- **Not yet verified against the running app.** The NBV tile and the Settings
+  section are built and covered by automated tests, but neither has been through
+  the project's formal test-case execution, so the Executive Dashboard
+  requirement's status is unchanged for now.
+
 ## 2026-09-18
 
 ### Changed

@@ -4,9 +4,14 @@ import { assetAgeInYears, computeAssetNbv, computePortfolioNbv } from '@/lib/nbv
 // RAISE-FR-EXEC-001 NBV, per PRD §16 Resolved Question 46.
 //
 // Every case supplies its own useful-life values. That is not a testing convenience — the
-// per-category defaults are a genuinely open business input (PRD Open Question 3a), so the
-// module takes the lookup as a parameter and these tests are the only place numbers appear.
-// Nothing here should be read as a confirmed default for any category.
+// defaults are business data owned by Settings (PRD §16 Resolved Question 54, confirmed
+// 2026-09-23), so the module takes the lookup as a parameter and the numbers here are arbitrary
+// test inputs chosen to make the arithmetic readable. Nothing in this file should be read as a
+// confirmed default for any Asset Type; the confirmed ten live in services/settings-service.ts
+// and are asserted there.
+//
+// The lookup is keyed by the asset's `type`, not its `category` — PRD §16 Resolved Question 52
+// (2026-09-08) re-keyed it, and the module followed on 2026-09-23.
 //
 // `asOf` is always passed explicitly so nothing depends on the clock.
 
@@ -22,10 +27,10 @@ const yearsBefore = (years: number) => new Date(AS_OF.getTime() - years * MS_PER
 const TWO_YEARS_AGO = yearsBefore(2);
 const FIVE_YEARS_AGO = yearsBefore(5);
 
-const asset = (over: Partial<{ purchaseCost: number; purchaseDate: string; category: string }> = {}) => ({
+const asset = (over: Partial<{ purchaseCost: number; purchaseDate: string; type: string }> = {}) => ({
   purchaseCost: 1000,
   purchaseDate: TWO_YEARS_AGO,
-  category: 'IT Hardware',
+  type: 'Laptop',
   ...over,
 });
 
@@ -57,10 +62,10 @@ describe('computeAssetNbv', () => {
   it('uses the useful life of the asset\'s OWN category, not a single global value', () => {
     // RQ46 is explicit that useful life is per Asset Category, not one constant. Pin that by
     // giving two categories different lives and asserting the same-cost asset differs.
-    const byCategory = (c: string) => (c === 'Mobile' ? 2 : 10);
+    const byType = (t: string) => (t === 'Smartphone' ? 2 : 10);
 
-    const mobile = computeAssetNbv({ asset: asset({ category: 'Mobile' }), usefulLifeYearsFor: byCategory, asOf: AS_OF });
-    const infra = computeAssetNbv({ asset: asset({ category: 'Infrastructure' }), usefulLifeYearsFor: byCategory, asOf: AS_OF });
+    const mobile = computeAssetNbv({ asset: asset({ type: 'Smartphone' }), usefulLifeYearsFor: byType, asOf: AS_OF });
+    const infra = computeAssetNbv({ asset: asset({ type: 'Server' }), usefulLifeYearsFor: byType, asOf: AS_OF });
 
     expect(mobile).toBeCloseTo(0, 0); // 2-year life, 2 years old -> fully depreciated
     expect(infra).toBeCloseTo(800, 0); // 10-year life, 2 years old -> 1000 - 200
@@ -96,9 +101,11 @@ describe('computeAssetNbv', () => {
     expect(nbv).toBeCloseTo(1000, 0);
   });
 
-  // The next three pin the "unconfigured category" behaviour, which is the case that will
-  // actually occur first: the tile ships before every category has a useful life set.
-  it('returns purchase cost unchanged when the category has no useful life configured (0)', () => {
+  // The next three pin the RQ51 "unconfigured Asset Type" behaviour. RQ54 supplied values for
+  // the ten Asset Types in the data today and explicitly declined to make them a blanket
+  // default, and `type` is free text — so a Type with no configured value is a permanent,
+  // expected state rather than a transitional one, and these stay load-bearing.
+  it('returns purchase cost unchanged when the type has no useful life configured (0)', () => {
     expect(computeAssetNbv({ asset: asset(), usefulLifeYearsFor: lifeOf(0), asOf: AS_OF })).toBe(1000);
   });
 
@@ -125,14 +132,14 @@ describe('computeAssetNbv', () => {
 });
 
 describe('computePortfolioNbv', () => {
-  it('sums NBV, purchase cost and count across assets of different categories', () => {
-    const byCategory = (c: string) => (c === 'Mobile' ? 2 : 10);
+  it('sums NBV, purchase cost and count across assets of different types', () => {
+    const byType = (t: string) => (t === 'Smartphone' ? 2 : 10);
     const result = computePortfolioNbv(
       [
-        asset({ category: 'Mobile', purchaseCost: 1000 }), // 2y life, 2y old -> 0
-        asset({ category: 'Infrastructure', purchaseCost: 1000 }), // 10y life, 2y old -> 800
+        asset({ type: 'Smartphone', purchaseCost: 1000 }), // 2y life, 2y old -> 0
+        asset({ type: 'Server', purchaseCost: 1000 }), // 10y life, 2y old -> 800
       ],
-      byCategory,
+      byType,
       AS_OF,
     );
 
@@ -157,5 +164,25 @@ describe('computePortfolioNbv', () => {
   it('returns zeroes for an empty register rather than NaN', () => {
     const result = computePortfolioNbv([], lifeOf(5), AS_OF);
     expect(result).toEqual({ totalNbv: 0, totalPurchaseCost: 0, assetCount: 0 });
+  });
+
+  it('still counts an asset whose type has no configured useful life, at full purchase cost', () => {
+    // RQ51 spelled out at the portfolio level, which is where it is visible to a reader of the
+    // tile: an unconfigured type must not be dropped from the count, and must not read as 0.
+    // Both would be defensible-looking bugs — one under-reports the fleet, the other writes off
+    // an asset the business never said was worthless.
+    const configured = (t: string) => (t === 'Laptop' ? 10 : Number.NaN);
+    const result = computePortfolioNbv(
+      [
+        asset({ type: 'Laptop', purchaseCost: 1000 }), // 10y life, 2y old -> 800
+        asset({ type: 'Drone', purchaseCost: 500 }), // no row -> 500, unchanged
+      ],
+      configured,
+      AS_OF,
+    );
+
+    expect(result.assetCount).toBe(2);
+    expect(result.totalPurchaseCost).toBe(1500);
+    expect(result.totalNbv).toBeCloseTo(1300, 0);
   });
 });

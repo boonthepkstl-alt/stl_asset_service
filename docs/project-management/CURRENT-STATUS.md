@@ -9,8 +9,35 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-09-23, at `1a0f74a` (**PR #149** merged), plus the NBV work on
-`feature/nbv-useful-life-values` (not yet merged).
+**As of:** 2026-09-24, at `158362e` (**PR #151** merged), plus the NBV execution sweep on
+`test/nbv-execution-sweep`.
+
+**The NBV cases were executed — five PASS, two BLOCKED, and the board still did not move
+(2026-09-24).** PR #151 merged, and the seven cases ran against the real app on the merged
+code (verified as such before the first case, after the previous day's attempt served a
+different checkout's code and nearly produced a false FAIL). **PASS:** the ten-tile KPI grid
+on both `TC-DASH-01` and `TC-EXEC-001-01` — genuine re-executions, with the superseded
+nine-tile PASSes **not** carried forward — the NBV tile itself at **$9.6K of $30.1K across 15
+assets**, and the P-018 NBV section's ten pre-populated rows matching RQ54 exactly, Smartphone
+3 and Tablet 5 included. The $9.6K was **recomputed independently from the fixtures** before it
+was accepted.
+
+**`TC-DASH-04`/`TC-EXEC-001-04` are BLOCKED for a reason that is neither of the usual two.**
+Not a missing business answer, not an unbuilt feature: **the application cannot produce the
+precondition.** RQ51's rule needs an asset whose `type` has no configured useful life, and
+Create Asset offers a closed six-option Type list — all configured — with no screen that edits
+`type` afterwards. The rule has unit coverage in `lib/nbv.test.ts`; it has never run through
+the UI. The test case's own step 1 asserted the condition was "reachable by data alone," which
+is true of the type system and false of the app, and went unchallenged until execution.
+
+**New finding F-60**, whose product half matters more than its testing half: **four Asset Types
+(Headphones, Projector, Router, Camera) and the entire Media Equipment category cannot be
+registered through the UI at all**, though assets of each already exist in the register.
+
+`RAISE-FR-EXEC-001` stays **`PASS (partial)`** — one blocked case keeps it qualified.
+**Gap 21 narrows but does not close.** Board unchanged at **8 PASS / 2 FAIL / 6 BLOCKED /
+1 partial**, re-tallied row by row. Test Cases v0.36, Matrix v2.18, Compliance Review v1.6.
+See `CHECKPOINT-2026-09-24-001`.
 
 **F-03 is RESOLVED, and the NBV feature is built — but no verdict moved (2026-09-23).**
 Business answered Decision Request **DR-02** after the question had been open across four
@@ -1183,8 +1210,8 @@ paragraph, which is a summary of a summary and can drift.
 | [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) | 0.21 | P-018 §23A shows the real figures; §8/§20 NBV tile reframed as buildable (2026-09-23) |
 | [`RAISE-ACCEPTANCE-CRITERIA.md`](../04-acceptance-criteria/RAISE-ACCEPTANCE-CRITERIA.md) | 0.21 | Seven criteria moved from NOT TESTABLE YET to **testable** — the marker had been applied to an unbuilt feature rather than an unanswered question (2026-09-23) |
 | [`RAISE-TEST-PLAN.md`](../05-test-plan/RAISE-TEST-PLAN.md) | 0.21 | Suites carrying an open-question blocker: 17 → **14** (2026-09-23) |
-| [`RAISE-TEST-CASES.md`](../06-test-cases/RAISE-TEST-CASES.md) | 0.35 | 96 cases; 7 moved BLOCKED → **testable, not yet executed**. `TC-DASH-01`/`TC-EXEC-001-01`'s PASS records were taken against the superseded nine-tile criteria and require **re-execution** (2026-09-23) |
-| [`RAISE-TRACEABILITY-MATRIX.md`](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md) | 2.17 | **Gap 21 stays OPEN** — its business half closed, its build/execution half did not. No verdict moved (2026-09-23) |
+| [`RAISE-TEST-CASES.md`](../06-test-cases/RAISE-TEST-CASES.md) | 0.36 | 96 cases; 7 moved BLOCKED → **testable, not yet executed**. `TC-DASH-01`/`TC-EXEC-001-01`'s PASS records were taken against the superseded nine-tile criteria and require **re-execution** (2026-09-23) |
+| [`RAISE-TRACEABILITY-MATRIX.md`](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md) | 2.18 | **Gap 21 stays OPEN** — its business half closed, its build/execution half did not. No verdict moved (2026-09-23) |
 | [`RAISE-HIGH-LEVEL-ARCHITECTURE.md`](../08-architecture/RAISE-HIGH-LEVEL-ARCHITECTURE.md) | — | As-built, not versioned against PRD chain |
 | [`RAISE-API-DB-SPEC.md`](../09-api-db-spec/RAISE-API-DB-SPEC.md) | — | As-built. Corrected 2026-09-11 (PR #131): Audit Log section added (was wrongly listed "not yet built"), Asset Handovers section added (was entirely undocumented), broken `PROJECT-TIMELINE.md` link fixed |
 | [`RAISE-DETAILED-DESIGN.md`](../10-detailed-design/RAISE-DETAILED-DESIGN.md) | — | As-built |

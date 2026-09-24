@@ -6001,3 +6001,35 @@ citing earlier checkpoints.
 **Remaining Work:** formal execution of `TC-DASH-01`, `TC-EXEC-001-01`, `TC-DASH-03b`, `TC-EXEC-001-03b`, `TC-DASH-04`, `TC-EXEC-001-04`, `TC-WARRANTY-001-07` against the running app. `TC-DASH-01`/`TC-EXEC-001-01`'s existing PASS records were taken against the superseded **nine**-tile criteria and must be **re-executed, not carried forward**. Only that closes Gap 21.
 
 **Next Recommended Task:** run those seven cases against the app after this branch merges to `main`, where the dev server can actually serve it. That single sweep is what moves `RAISE-FR-EXEC-001` and closes Gap 21 — **the first verdict movement in four sessions.**
+
+---
+
+## CHECKPOINT-2026-09-24-001
+
+**Phase:** 5C — Executive Dashboard / NBV
+**Feature:** `RAISE-FR-EXEC-001` Net Book Value
+**Task:** Execute the seven NBV test cases against the real running app, after PR #151 merged.
+
+**What was executed, and against what.** PR #151 merged to `main` as `158362e`. The dev server was started and **verified to be serving the merged code before any case was run** — `/src/hooks/usePortfolioNbv.ts` served and containing `computePortfolioNbv`. That check exists because the previous session's first attempt rendered nine tiles from a *different checkout's* code and nearly produced a false FAIL; the lesson was cheap the first time and would not be the second.
+
+**Five PASS.** `TC-DASH-01`/`TC-EXEC-001-01` — the KPI grid renders all **ten** tiles, read from the DOM in order, ending in NBV. These are genuine **re-executions**: the prior PASSes were taken against the superseded nine-tile criterion and were **not** carried forward. `TC-DASH-03b`/`TC-EXEC-001-03b` — the NBV tile shows **$9.6K**, sub-labelled "of $30.1K purchase cost, 15 assets". `TC-WARRANTY-001-07` — the P-018 NBV section shows ten pre-populated rows matching RQ54 exactly, **including Smartphone 3 and Tablet 5**, the two values business had to disambiguate by hand.
+
+**The NBV figure was checked against the data, not merely observed.** $9.6K was recomputed independently from `mockData.ts` — parsing each asset's `type`/`purchaseDate`/`purchaseCost` and applying RQ46's formula with RQ54's values — giving $9.6K of $30.1K across 15 assets, matching the tile exactly. A rendered number that merely *looks* plausible on a KPI tile is the easiest thing in this project to accept without checking.
+
+**Two BLOCKED, for a reason that is neither of the usual two.** `TC-DASH-04`/`TC-EXEC-001-04` cover RQ51's unconfigured-Asset-Type rule. They are not blocked on a business answer and not on an unbuilt feature — **the application cannot produce the precondition.** Create Asset's Type field is a closed six-option `Select`, every option already configured; all fifteen seeded assets use configured Types; no screen edits `type` after creation. Recorded as **BLOCKED (test data unreachable)**, a new marking. The rule is not untested — `lib/nbv.test.ts` covers it at unit level — but it has never run through the app.
+
+**That exposed a contradiction in the specification itself.** `TC-DASH-04`'s own step 1 asserts the condition is "reachable **by data alone**, since `Asset.type` is declared as an open `string`." True of the type system, false of the application — and unnoticed from the day it was written until someone actually tried to execute it. **This is the argument for executing cases rather than reasoning about them**, made at this project's own expense.
+
+**New finding F-60**, with a product half that outweighs the testing half: four Asset Types (Headphones, Projector, Router, Camera) and the entire **Media Equipment** category **cannot be registered through the UI at all**, though assets of all of them exist in the register and all now carry a confirmed NBV useful life. Not fixed here — whether Type is a closed vocabulary or open text is a product decision, and `Asset.type` being `string` end-to-end suggests open while nothing states who may add to it.
+
+**Requirement Traceability:** `RAISE-FR-EXEC-001` stays **`PASS (partial)`** — one blocked case is enough to keep it qualified. **Gap 21 narrows but does not close**: its unbuilt half is discharged, five of seven cases pass, two remain. **The board is unchanged at 8 PASS / 2 FAIL / 6 BLOCKED / 1 partial**, re-tallied row by row rather than assumed.
+
+**Documents updated:** Test Cases v0.36 (execution), Matrix v2.18 (Gap 21 narrowed), Compliance Review v1.6.
+
+**Status:** 🟡 Five of seven executed and passing; two blocked on an environment condition the app cannot create.
+
+**Known Issues:** **F-60.** Also: the app's dev server resolves its launch config against the main checkout, so execution from a worktree requires the merge to land first — which is what made this sweep possible today and impossible yesterday.
+
+**Remaining Work:** `TC-DASH-04`/`TC-EXEC-001-04`. Closing them needs a decision on F-60 first — either widen the Type vocabulary, or accept the unit-level coverage as sufficient for a branch the UI cannot reach. **The second is a legitimate answer and should not be assumed to be the lazy one**, but it is the business's call, not engineering's.
+
+**Next Recommended Task:** put F-60 to the business as a decision request, in the form this project already uses (`DECISION-REQUESTS.md`), stating what is blocked and what engineering would do with each answer — and proposing none.

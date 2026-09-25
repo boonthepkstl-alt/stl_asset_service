@@ -395,6 +395,7 @@ deliverable chain.
 | **Finding** | [F-60](OPEN-FINDINGS.md) |
 | **Requirement** | `RAISE-FR-ASSET-001` (Asset Registry) for the product half; `RAISE-FR-EXEC-001` for the testing half |
 | **Status** | **Awaiting answer** |
+| **Sendable version** | <https://claude.ai/artifact/MEgqibjox5vk71XF3429ue> — the same question as a one-choice page, written for a reader who does not work on this codebase: it leads with the ten-versus-six mismatch, states plainly that nothing is broken either way, and carries the follow-up question inline, marked as mattering only under the fixed-list answer. The answer saves to the page, so a reply cannot go missing the way the 2026-09-10 one did. It also offers a checkbox for **"I'd like your recommendation first"** — the offer DR-04 makes and DR-02 withholds. **Private by default: it must be shared from its own Share menu before the recipient can open it.** Answering by email or chat instead is equally fine — the page says so itself. |
 | **Blocks** | The last two cases of **Gap 21** (`TC-DASH-04`/`TC-EXEC-001-04`). Blocks **no verdict** on its own — `RAISE-FR-EXEC-001` is already `PASS (partial)` and stays there either way. It does, however, block four Asset Types and an entire Category from being registered through the app. |
 
 ### What was found, and how

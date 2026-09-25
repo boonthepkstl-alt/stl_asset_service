@@ -33,6 +33,12 @@ is true of the type system and false of the app, and went unchallenged until exe
 **New finding F-60**, whose product half matters more than its testing half: **four Asset Types
 (Headphones, Projector, Router, Camera) and the entire Media Equipment category cannot be
 registered through the UI at all**, though assets of each already exist in the register.
+**Put to the business 2026-09-25 as `DECISION-REQUESTS.md` DR-05** — is Asset Type a fixed
+vocabulary or open text? The codebase does not settle it: `type` is `varchar(100)` with no enum,
+no constraint and no validation, so the closed six-option list lives only in one form. If the
+answer is "fixed at the current ten," `TC-DASH-04`/`TC-EXEC-001-04` become unexecutable **by
+construction**, and whether unit coverage suffices for a rule the UI cannot reach becomes a
+standard this project must set.
 
 `RAISE-FR-EXEC-001` stays **`PASS (partial)`** — one blocked case keeps it qualified.
 **Gap 21 narrows but does not close.** Board unchanged at **8 PASS / 2 FAIL / 6 BLOCKED /

@@ -385,6 +385,72 @@ deliverable chain.
 
 ---
 
+---
+
+## DR-05 — Is Asset Type a fixed list or an open vocabulary?
+
+| | |
+|---|---|
+| **Raised** | 2026-09-25, from the NBV execution sweep (`CHECKPOINT-2026-09-24-001`) |
+| **Finding** | [F-60](OPEN-FINDINGS.md) |
+| **Requirement** | `RAISE-FR-ASSET-001` (Asset Registry) for the product half; `RAISE-FR-EXEC-001` for the testing half |
+| **Status** | **Awaiting answer** |
+| **Blocks** | The last two cases of **Gap 21** (`TC-DASH-04`/`TC-EXEC-001-04`). Blocks **no verdict** on its own — `RAISE-FR-EXEC-001` is already `PASS (partial)` and stays there either way. It does, however, block four Asset Types and an entire Category from being registered through the app. |
+
+### What was found, and how
+
+While executing the NBV test cases against the running app, two of the seven could not be run. They need an asset whose Type has no configured useful life, and **the application cannot create one.** Create Asset's Type field is a closed list of **six** options — Laptop, Monitor, Smartphone, Tablet, Server, Printer — and every one of them already has a configured value. Nothing edits Type after creation.
+
+That is the testing half. **The product half is larger and was not what anyone was looking for:**
+
+> **The register contains ten Asset Types. The form can create six of them.**
+>
+> Headphones, Projector, Router and Camera assets exist in the system today, and all four now carry a business-confirmed useful life (Resolved Question 54). **None of them can be registered through the app.** Neither can anything in the **Media Equipment** category, which is missing from the Category dropdown entirely — four of five categories are offered.
+
+Nothing is broken for existing assets: they display, depreciate and report normally. The gap is only in creating new ones.
+
+### What is already true, so the question stays narrow
+
+- **The data layer has no opinion.** `type` is `varchar(100) NOT NULL` in PostgreSQL, a plain `string` in the Go model and in the frontend's `Asset` type. There is **no enum, no check constraint, and no service-side validation** anywhere. Any string is accepted through the API today.
+- **The closed list exists only in the form.** It is six hardcoded `<option>` values in one screen, not a model of the business.
+- **Resolved Questions 52 and 54 both presume the set can grow.** RQ52 keyed useful life per Type precisely because IT Hardware has no single lifespan; RQ54 supplied values for "the ten Asset Types present in the data **today**" and explicitly declined to set a default for later ones. **Resolved Question 51 exists to govern exactly that case** — an unconfigured Type contributes its purchase cost unchanged. So the specification already assumes new Types appear. What it never says is **who may introduce one.**
+
+### The question
+
+> **Is Asset Type a fixed vocabulary the business controls, or open text whoever registers an asset can extend?**
+
+### The options, none of them chosen here
+
+**(a) Open text.** The form takes a free-text Type (or a combobox suggesting existing values). Matches what the data layer already permits and what RQ51/RQ52/RQ54 already assume. All ten Types become registerable immediately, new ones need no code change — and RQ51's rule becomes reachable through the UI, so `TC-DASH-04`/`TC-EXEC-001-04` become executable. **The cost is consistency:** "Laptop", "laptop" and "Lap top" would become three Types, each grouping and depreciating separately.
+
+**(b) Fixed list, widened.** The dropdown is corrected to the ten Types and five Categories that actually exist. Consistency is preserved and today's gap closes. **Note the consequence for testing, because it is easy to miss:** if the list is exactly the ten configured Types, then **the UI can never produce an unconfigured Type**, and `TC-DASH-04`/`TC-EXEC-001-04` stay unexecutable through the UI permanently — not as a defect, but by construction. RQ51's rule would still be live, since the API accepts any string and data can arrive from imports, migrations or the backend directly; it would simply not be reachable from the screen. Adding a Type later becomes a code change.
+
+**(c) Leave the form as it is.** Cheapest, and the hardest to defend: four Types and a Category that already exist in the register would remain uncreatable, with no stated reason.
+
+### The second question, which only matters under (b)
+
+> **Is unit-level coverage enough for a rule the UI cannot reach?**
+
+`frontend/src/lib/nbv.test.ts` already covers RQ51's rule — an unconfigured Type contributes `purchaseCost` unchanged and stays counted in the total. Under option (b) that would be the only coverage it can have at the UI level.
+
+**Answering "yes, that is sufficient" is a legitimate answer, not a concession.** It would let `TC-DASH-04`/`TC-EXEC-001-04` be closed as *covered elsewhere* rather than left open indefinitely, and **Gap 21 would close.** Answering "no" keeps them open until the rule can be exercised end to end.
+
+**This one is partly ours, so unlike DR-02 a recommendation is available on request** — the same offer made in DR-04. What makes it yours is that it sets the standard for when this project considers a rule tested, which is a precedent beyond this gap.
+
+### What engineering will do with each answer
+
+| Answer | What follows |
+|---|---|
+| **(a) Open text** | Replace the Type `Select` with free text or a combobox; consider normalising case at entry. `TC-DASH-04`/`TC-EXEC-001-04` become executable; Gap 21 closes on execution. |
+| **(b) Fixed list, widened** | Correct both dropdowns to the real ten Types and five Categories. Gap 21's last two cases then depend on the second question. |
+| **(c) Leave as is** | Record it as an accepted limitation in F-60 with the reason, and close nothing. |
+| **Second question: yes** | `TC-DASH-04`/`TC-EXEC-001-04` recorded as covered by unit test, Gap 21 closed, the standard written down so it is not re-argued case by case. |
+| **Second question: no** | Both stay open; closing them requires whatever seam option (a) or a test-data route would provide. |
+
+**No option is proposed here.** Whether Type is the business's vocabulary or the registrar's is a question about how this organisation wants its asset data governed, and engineering picking it would be inventing scope — the same reason **F-03** was held open across four requests rather than filled in with five plausible numbers.
+
+---
+
 ## Previously sent, no durable copy
 
 **Superseded 2026-09-21.** **F-03** and **F-55** had a combined request prepared

@@ -14,6 +14,22 @@ changes user-visible or API-visible behavior. Pure documentation-sync PRs
 
 ---
 
+## 2026-09-24
+
+### Notes
+- **The Net Book Value tile and the Settings NBV section have now been checked against
+  the running app**, not just covered by automated tests. The tile reports $9.6K against
+  $30.1K of purchase cost across the 15 assets in the register, and the Settings section
+  lists all ten Asset Types with the confirmed useful lives — three years for Smartphone,
+  five for the rest.
+
+### Known limitation
+- **Four Asset Types cannot be registered through the app.** The Create Asset form offers
+  Laptop, Monitor, Smartphone, Tablet, Server and Printer only — so Headphones, Projector,
+  Router and Camera assets, and anything in the Media Equipment category, cannot be added
+  through the UI even though assets of each already exist in the register. Existing assets
+  are unaffected and display normally.
+
 ## 2026-09-23
 
 ### Added

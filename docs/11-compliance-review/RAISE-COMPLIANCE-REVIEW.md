@@ -1,5 +1,19 @@
 # RAISE — Requirement Compliance Review
 
+**Document Status:** Draft v1.6 — **Re-verified 2026-09-24 against Traceability Matrix v2.18. The headline stays 8 of 17 (47%).**
+
+The NBV execution sweep this document has been waiting on finally ran, against the real app on the merged code (PR #151, `158362e`). **Five of seven cases PASS** — the ten-tile KPI grid re-executed against its current criterion (`TC-DASH-01`/`TC-EXEC-001-01`, the superseded nine-tile PASSes explicitly not carried forward), the NBV tile itself (`TC-DASH-03b`/`TC-EXEC-001-03b`, rendering **$9.6K of $30.1K across 15 assets** — a figure independently recomputed from the fixtures with RQ46's formula and RQ54's values before it was accepted), and the P-018 NBV section (`TC-WARRANTY-001-07`, ten pre-populated rows matching RQ54 exactly, **including the two values the business had to disambiguate by hand**).
+
+**`RAISE-FR-EXEC-001` still does not reach a full `PASS`, and the reason is a new one.** `TC-DASH-04`/`TC-EXEC-001-04` — PRD §16 Resolved Question 51's unconfigured-Asset-Type rule — are recorded **BLOCKED (test data unreachable)**. They are not blocked on a business answer and not on an unbuilt feature. **The application cannot produce the precondition:** Create Asset's Type field is a closed six-option list, every option already configured; all fifteen seeded assets use configured Types; and no screen edits `type` after creation. The rule is not untested — `frontend/src/lib/nbv.test.ts` covers it at the unit level — but it has never been exercised through the running app. Raised as Open Finding **F-60**, which also records the product-level half: four Asset Types and an entire Category cannot be registered through the UI at all.
+
+**Gap 21 narrows rather than closes.** Its unbuilt half is discharged and five of its seven cases pass; two remain.
+
+**Worth naming, because this document has twice reported verdicts its execution record did not support:** this is the first revision in four where execution actually happened, and the headline still did not move. That is the correct outcome, not a disappointing one — a single blocked case is enough to keep a requirement qualified, and `TC-DASH-04`'s own step 1 claiming the condition was "reachable by data alone" went unchallenged until someone tried it.
+
+*(v1.5: re-verified 2026-09-23 against matrix v2.17 — DR-02 answered and the feature built, no verdict moved. Header retained below.)*
+
+---
+
 **Document Status:** Draft v1.5 — **Re-verified 2026-09-23 against Traceability Matrix v2.17. No verdict moved; the headline stays 8 of 17 (47%).**
 
 The business answer this document has named as its one verdict-moving blocker finally arrived: Decision Request **DR-02** was answered 2026-09-23, supplying the ten per-Asset-Type NBV useful-life values (PRD §16 **Resolved Question 54**, closing Open Question 3a and resolving Open Finding **F-03**). The chain was propagated end to end and both NBV surfaces — the P-018 Settings section and the tenth Dashboard KPI tile — were built the same day, with `lib/nbv.ts` re-keyed from Category to Type (RQ52, which the code had never followed).

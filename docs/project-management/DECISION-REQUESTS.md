@@ -37,6 +37,7 @@ authority. A request that goes unanswered stays unanswered.
 | **Finding** | [F-57](OPEN-FINDINGS.md) |
 | **Requirement** | `RAISE-FR-LICENSE-001` — Software / SaaS License Management |
 | **Status** | **Awaiting answer** |
+| **Sendable version** | <https://claude.ai/artifact/T12rbAhsQhyYWMuP5i9bsZ> — the same request as a page. It leads with why the question exists at all: **the screens look finished, and that is the risk**, since a finished-looking UI invites building the rest without anyone deciding it should be in scope. **"No" is presented as a complete answer**, not a refusal — the request asks which state is intended, not for permission to build. The five inputs a Yes needs sit behind a panel marked as mattering only then, each as free text with **no suggested values**, and the panel closes by saying plainly that a Yes does not start the work: the specification is brought up to date first. The answer saves to the page. **Private by default: it must be shared from its own Share menu before the recipient can open it.** |
 | **Blocks** | Any Software License backend or CRUD work. Blocks nothing currently in approved scope. |
 
 ### What prompted this
@@ -254,6 +255,7 @@ way of becoming the answer.
 | **Finding** | [F-55](OPEN-FINDINGS.md) |
 | **Requirement** | `RAISE-FR-MAINT-001` — Maintenance / IT Requisition |
 | **Status** | **Awaiting answer** |
+| **Sendable version** | <https://claude.ai/artifact/3JPNrZL9m3yAEKEjxUtadR> — the same request as a page, opening with **the error message a real person would see** and the fact that retrying it can never work, then a four-row table of which entry points fail and which one works. The three identified options are offered as choices with their real costs stated — including that the obvious one **cannot be built yet** and that the easiest one is easiest, which is why it is not being chosen for you — plus a free-text box for a rule of your own and "leave it as it is" as a full answer. The answer saves to the page. **Private by default: it must be shared from its own Share menu before the recipient can open it.** |
 | **Blocks** | The Create IT Requisition form in real-API mode. `RAISE-FR-MAINT-001`'s verdict is **not** affected — it stays a full `PASS`. |
 
 ### The defect, stated plainly

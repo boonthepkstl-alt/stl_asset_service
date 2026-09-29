@@ -324,6 +324,7 @@ small; deciding what it should do is not engineering's call.**
 | **Finding** | [F-13](OPEN-FINDINGS.md) |
 | **Requirement** | None. F-13 is filed under *Infrastructure / Process — not addressed anywhere in the PRD.* |
 | **Status** | **Awaiting answer** |
+| **Sendable version** | <https://claude.ai/artifact/EmZP8DYEoGVQR1ir45HDmw> — the same request as a page, built around the gate rather than the detail: the one in-scope question comes first, **"not yet" is presented as the best available outcome rather than a deferral**, and the five inputs sit behind a panel marked as mattering only if deployment is in scope. Partial answers are invited, since input 2 alone unblocks F-14's remaining half. It carries the **"I'd like your recommendation first"** checkbox this request explicitly offers. The answer saves to the page. **Private by default: it must be shared from its own Share menu before the recipient can open it.** |
 | **Blocks** | **F-14's remaining half** (CI builds no container image because there is nowhere to publish one), and every deployment-shaped item in `RAISE-HIGH-LEVEL-ARCHITECTURE.md` §6. Blocks **no MVP requirement** — nothing in the traceability matrix depends on it. |
 
 ### How this request differs from DR-01, DR-02 and DR-03 — stated plainly

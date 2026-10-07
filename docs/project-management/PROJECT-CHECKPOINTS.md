@@ -6033,3 +6033,41 @@ citing earlier checkpoints.
 **Remaining Work:** `TC-DASH-04`/`TC-EXEC-001-04`. Closing them needs a decision on F-60 first — either widen the Type vocabulary, or accept the unit-level coverage as sufficient for a branch the UI cannot reach. **The second is a legitimate answer and should not be assumed to be the lazy one**, but it is the business's call, not engineering's.
 
 **Next Recommended Task:** put F-60 to the business as a decision request, in the form this project already uses (`DECISION-REQUESTS.md`), stating what is blocked and what engineering would do with each answer — and proposing none.
+
+---
+
+## CHECKPOINT-2026-10-07-001
+
+**Phase:** Cross-cutting — decision requests
+**Feature:** Business decision backlog
+**Task:** Ask F-61 as DR-06, as `NEXT-STEP.md`'s 2026-10-07 run selected.
+
+**What was done.** `DECISION-REQUESTS.md` § DR-06 written; a sendable page published in the same visual system as the other five; F-61's row cites it; the header rule's finding list now includes F-61. **Every decision-blocked finding now has a durable request.**
+
+**Facts re-verified in code for the request, not carried from the register** — the discipline PR #141 set:
+- Setting an employee `Inactive` still changes that one field and nothing else. `service/employeeService.go` assigns `Status` and calls `repo.Update`; the employee service touches no asset at all.
+- **The situation is latent, not live.** All seven seeded employees are `Active` — counted a second time independently after the first parse, because "no record is wrong yet" is a claim the request leans on. No bad record exists.
+- **Releasing equipment already works.** The check-in *controller* records an `"Asset checked in"` audit entry, the trail custody history renders from. **An earlier draft said check-in "writes custody history and an audit entry"**, which overstated it — the service writes no audit — and was tightened to what the code shows before commit.
+
+**No answer proposed.** F-61's own three options are carried without choosing. One sub-question is added because the existing status values force it rather than invented: **does `On Leave` count as leaving?** No recommendation is offered — a business rule about custody is the DR-02/DR-03 class, not the DR-04 class.
+
+**Distribution, recorded as found rather than as reported.** The account holder reported sharing the DR-01/03/04/05 pages on 2026-10-07. **The artifact service still reports DR-03 as `private`**, spot-checked as the oldest of the four. That may mean the share did not take, or that it was shared to specific people and the service still calls that private — **this session cannot distinguish the two.** **No response has been recorded on any of the four pages.** DR-06's page is new and private.
+
+**Also closed:** `DEVELOPMENT-LOG.md` had stopped at #152 — **the same hole it was backfilled for two PRs earlier**, reopened by that session's own subsequent PRs. #153–#157 and the direct-to-`main` F-61 commit `c09736c` are now logged, each with five columns and the real head SHA from the merge's second parent. **#158 is deliberately not logged inside #158:** its merge SHA cannot be known until it merges, and writing a placeholder is the defect PR #156 had to correct.
+
+**Tests:** None. Docs only — no code, test, migration or config in the diff.
+**Validation:** `git diff --check` clean; every new log row asserted at exactly five columns before writing; the published page's `responses` collection verified reachable and empty.
+
+**Requirement Traceability:** **No verdict moved.** F-61 has no `RAISE-FR-*` to move — that absence is the finding. Board unchanged at **8 PASS / 2 FAIL / 6 BLOCKED / 1 partial**; Gap 21 unchanged.
+
+**Git:** Branch `docs/dr-06-employee-offboarding`, PR #158. Commit recorded on merge.
+
+**Status:** 🟡 The request exists. F-61 stays open.
+
+**Known Issues:**
+- **Whether the requests have reached anyone is unconfirmed** (above). This is now the single largest unknown in the project.
+- **Two pre-existing log rows lose text when rendered.** Rows at `DEVELOPMENT-LOG.md` lines 144 and 169 contain unescaped `|` characters in their summaries (row 169: `'Active' | 'On Leave' | 'Inactive'`), giving 11 and 13 pipe-delimited fields against the table's 7. GFM ignores excess cells, so the text after the first stray pipe does not render. Both predate this branch and belong to other sessions; recorded, not edited. *Direction checked this time:* `NF=7` is the correct five-column row, so these have too many cells — the inverse of the mistake made about #131/#148 in PR #156's first commit.
+
+**Remaining Work:** None for this task.
+
+**Next Recommended Task:** see `NEXT-STEP.md`. In short: **none in engineering.** Confirm the pages actually reached someone.

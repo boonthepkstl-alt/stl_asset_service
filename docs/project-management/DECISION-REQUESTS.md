@@ -455,6 +455,107 @@ Nothing is broken for existing assets: they display, depreciate and report norma
 
 ---
 
+## DR-06 — When an employee leaves, what happens to the assets they hold?
+
+| | |
+|---|---|
+| **Raised** | 2026-10-07 — first time asked. Selected as the primary next step by `NEXT-STEP.md`'s 2026-10-07 run. |
+| **Finding** | [F-61](OPEN-FINDINGS.md) |
+| **Requirement** | **None — and that is the finding.** No `RAISE-FR-*` covers employee offboarding at any tier; `RAISE-PRD.md` has zero matches for resign, terminate, offboard, leave or deactivate. |
+| **Status** | **Awaiting answer** |
+| **Sendable version** | <https://claude.ai/artifact/KtGEN6amfWz5mQVuRYwskh> — the same request as a page, opening with the four-step story of what happens today and **stating plainly that no record is wrong yet**, so a reader does not mistake a latent gap for a live one. The detail questions sit behind a panel marked as mattering only for a yes, and the trigger question is skipped by anyone who answers that `Inactive` already means a person has left. The `On Leave` sub-question is asked explicitly, since the existing status values force it. **No recommendation is offered** — this is a business rule about custody, the same class as DR-02 and DR-03, not a decision engineering could propose options for, like DR-04. The answer saves to the page. **Private by default: it must be shared from its own Share menu before the recipient can open it.** |
+| **Blocks** | No verdict — there is no requirement for it to block. It does block **custody records staying correct** once anyone leaves, which is the thing this system exists to track. |
+
+### What was found, and how
+
+While planning a live regression test for *"an employee resigns, and their asset
+returns to Available"*, the test could not be written: **the feature it exercises
+does not exist.** Checked four ways before concluding that, none inferred:
+
+1. The PRD has no requirement for it.
+2. No screen offers a terminate, deactivate or offboard action. The nearest thing is
+   the Edit Employee form's status field — `Active`, `On Leave` or `Inactive` — a
+   plain field edit with no offboarding meaning attached.
+3. **Setting an employee to `Inactive` changes that one field and nothing else**, on
+   both the mock and the real backend. Re-verified in code for this request:
+   `service/employeeService.go` assigns `Status` and calls `repo.Update`; nothing
+   in the employee service touches assets at all.
+4. No earlier finding covered it.
+
+**So any asset still assigned to that person stays `Assigned` to them indefinitely,
+with nothing to notice or correct it.**
+
+### What is already true, so the question stays narrow
+
+- **This is latent, not live.** All seven seeded employees are `Active`, verified
+  directly for this request. No bad record exists yet. **That is the argument for
+  asking now:** the first time someone is set to `Inactive` while holding equipment,
+  the record goes wrong silently, and nothing in the system will say so.
+- **Releasing an asset already works.** Check-in (`POST /assets/:id/checkin`)
+  exists, passed live regression testing on the real backend, and records an
+  `"Asset checked in"` audit entry (`controller/assetController.go`) — the same trail
+  each asset's custody history is rendered from. The mechanism is not what is
+  missing. **The rule for when to use it is.**
+- **The status values already exist.** `Active`, `On Leave`, `Inactive` — so any
+  answer can be expressed in terms the system already has.
+
+### The question
+
+> **When an employee leaves the company, what should happen to the equipment
+> assigned to them — and what counts as "leaving"?**
+
+### The options identified, none of them chosen here
+
+**(a) It is in scope — define the workflow.** Then two things need deciding, and
+neither is engineering's to decide:
+
+- **What triggers it.** Setting status to `Inactive`? A dedicated "offboard" action?
+  Something from HR? And **does `On Leave` count** — should a person on long leave
+  release their laptop?
+- **What it does.** Release the equipment immediately? Require someone to confirm
+  each item came back? Notify IT or a manager and leave it assigned until they act?
+
+A yes here enters the chain at `RAISE-PRD.md` first, the same as any new
+requirement — it does not start a build.
+
+**(b) It is out of scope for the first release** — later, or never. This row then
+closes as *confirmed unchanged*, the same pattern **F-57**/DR-01 uses. A complete
+answer. Nothing gets built.
+
+**(c) Treat `Inactive` as the trigger, and specify only the behaviour.** If the
+existing status field is already how the business marks someone as gone, the
+trigger question disappears and only *what it does* remains. Narrower than (a),
+and still needs the same answer about `On Leave`.
+
+### If the answer is "not yet"
+
+Also a complete answer. The gap stays recorded, no screen changes, and nothing
+regresses — **but the latent risk is stated plainly so "not yet" is chosen with it
+in view**: until this is decided, setting someone to `Inactive` will leave their
+equipment recorded against them with no warning.
+
+### What engineering will do with each answer
+
+| Answer | What follows |
+|---|---|
+| **(a) In scope** | A new requirement written into `RAISE-PRD.md`, then the full chain — Design, Prototype, Acceptance Criteria, Test Plan, Test Cases, Matrix — and only then code. |
+| **(b) Out of scope** | F-61 closed as *confirmed unchanged*. No change anywhere. |
+| **(c) `Inactive` is the trigger** | The same chain entry as (a), with the trigger already fixed — a smaller specification, not a skipped one. |
+| **Not yet** | Recorded with its reason. No change. |
+
+### What engineering will not do
+
+**Release equipment automatically on `Inactive` because it looks obvious.** Doing
+that would silently rewrite custody records — the audit trail this system keeps is
+there precisely so changes of custody are deliberate. It would also decide the
+`On Leave` question by omission, which is the kind of answer that gets noticed only
+after a laptop is recorded as returned while still in someone's bag.
+
+**The release itself is a few lines, because check-in already exists. Deciding when
+it should happen is not ours to decide.**
+
+---
+
 ## Previously sent, no durable copy
 
 **Superseded 2026-09-21.** **F-03** and **F-55** had a combined request prepared

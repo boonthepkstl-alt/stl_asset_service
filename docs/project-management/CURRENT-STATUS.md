@@ -9,11 +9,19 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-10-07, at `bb541b4` (**PR #158** merged, DR-06 on `main`), plus a
-`DEVELOPMENT-LOG.md` repair on `docs/log-158-and-pipe-repair`: #158's row, two rows whose stray pipes
-dropped text, and **eight rows (#152 onward) that had rendered as plain text since 2026-09-24** because a
-blank line from this session's own PR #152 close-out ended the table early. Verified with GitHub's renderer.
-See `CHECKPOINT-2026-10-07-002`.
+**As of:** 2026-10-07, at `6e5f948` (**PR #159** merged), plus DR-01/DR-04 answers on
+`docs/dr-01-dr-04-answered`.
+
+**Two decision requests answered, two findings closed (2026-10-07).** Both answers came in chat.
+**DR-01 — "not in the first release":** Software License stays Enterprise Roadmap. A re-confirmation of PRD
+§16 Resolved Question 34, so the PRD is not edited; the requested Phase 5C licence slice is declined and
+**F-57 closes as confirmed unchanged** (R-42). **DR-04 — "not yet":** running RAISE beyond a developer's
+machine is not in scope for now, so **F-13 closes as decided: not yet** (R-43), F-14's image build/push
+remainder becomes *not needed yet*, and architecture §6 records the decision instead of "not decided
+anywhere". Also backfilled: **F-03 never got its Resolved-table row** when DR-02 closed it on 2026-09-23 —
+now R-41. **No verdict moved** — neither DR touches one of the 17 MVP rows. Board unchanged at 8 PASS /
+2 FAIL / 6 BLOCKED / 1 partial. Compliance Review re-verified to v1.7. **Three requests remain:** DR-03,
+DR-05, DR-06. See `CHECKPOINT-2026-10-07-003`.
 
 **F-61 asked as DR-06 (2026-10-07); every decision-blocked finding now has a request.** RAISE has no
 employee-offboarding feature, so equipment stays assigned to someone indefinitely once they leave. Two

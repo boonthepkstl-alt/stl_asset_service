@@ -9,8 +9,11 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-10-07, at `8c5348c` (**PR #157** merged), plus DR-06 on
-`docs/dr-06-employee-offboarding` (PR #158, open).
+**As of:** 2026-10-07, at `bb541b4` (**PR #158** merged, DR-06 on `main`), plus a
+`DEVELOPMENT-LOG.md` repair on `docs/log-158-and-pipe-repair`: #158's row, two rows whose stray pipes
+dropped text, and **eight rows (#152 onward) that had rendered as plain text since 2026-09-24** because a
+blank line from this session's own PR #152 close-out ended the table early. Verified with GitHub's renderer.
+See `CHECKPOINT-2026-10-07-002`.
 
 **F-61 asked as DR-06 (2026-10-07); every decision-blocked finding now has a request.** RAISE has no
 employee-offboarding feature, so equipment stays assigned to someone indefinitely once they leave. Two

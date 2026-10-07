@@ -6071,3 +6071,30 @@ citing earlier checkpoints.
 **Remaining Work:** None for this task.
 
 **Next Recommended Task:** see `NEXT-STEP.md`. In short: **none in engineering.** Confirm the pages actually reached someone.
+
+---
+
+## CHECKPOINT-2026-10-07-002
+
+**Phase:** Infrastructure / Process
+**Feature:** Project record integrity
+**Task:** Log PR #158 now that its merge SHA exists, and repair the two `DEVELOPMENT-LOG.md` rows `CHECKPOINT-2026-10-07-001` reported as losing text.
+
+**What was done.**
+1. **#158's row added** with its real head (`8ce3807`) and merge (`bb541b4`), five columns — written only after the merge, per `CHECKPOINT-2026-10-07-001`'s own reasoning.
+2. **Rows 144 and 169 repaired.** Their unescaped `|` characters sat inside code spans — a test-suite tally `96 | 63 | 26 | 4 | 3`, a grep pattern `resign|terminat|…`, and the enum `'Active' | 'On Leave' | 'Inactive'` — and were splitting each summary into extra cells that GFM then discards. Each was mapped pipe by pipe before editing: the first four and last two in each row are the real delimiters; only the ten in between were escaped. The script asserted that inserted backslashes were the only change.
+3. **A larger defect found while verifying, and it was mine.** A blank line at line 170 **ended the table early**. Everything below it — #152, the F-61 commit, and #153–#158, eight rows — had no header row and so rendered on GitHub as a paragraph of raw pipe text, not as table rows. **It was introduced by `693ed18`, this session's own PR #152 close-out:** the script that added the execution-sweep row inserted it *after* the blank line separating the table from the note below, instead of before it, and every row appended since anchored on that row and inherited the position. **The eight rows had been unreadable since 2026-09-24**, including through PR #156, whose review checked column counts but never whether those rows were inside the table at all. Removing the one blank line rejoined them.
+
+**Validation — checked with GitHub's own renderer, not a proxy.** A pipe-counting audit said every row had five columns, but that heuristic had already been read backwards once this week (PR #156's first commit), and it is blind to a blank line that ends a table. So the whole file was rendered through `gh api markdown` in GFM mode and the HTML inspected: **one table, 156 rows including the header, every row exactly 5 cells**; all eight rescued rows inside it; every escaped code span rendering with plain pipes and no stray backslash; the text after each formerly-broken span present. One false alarm on the way, recorded because it nearly produced a wrong conclusion: the first render check reported zero tables, because GitHub emits `<table role="table">` and the check matched only a bare `<table>` — the check was fixed, not the conclusion.
+
+**Tests:** None — docs only. **Diff:** `DEVELOPMENT-LOG.md` (one line removed, two lines escaped, one row added), this checkpoint, and `CURRENT-STATUS.md`'s banner.
+
+**Requirement Traceability:** No verdict moved. Board unchanged at **8 PASS / 2 FAIL / 6 BLOCKED / 1 partial**.
+
+**Status:** ✅ Complete for its scope.
+
+**Known Issues:** `CHECKPOINT-2026-10-07-001` described rows 144/169 but not the blank line, because the blank line had not been found. It is left as written — it was accurate about what it knew — and this checkpoint supersedes it on that point.
+
+**What this adds to the record of the log itself.** In nine days this one file has had an eleven-PR gap (#156), wrong SHAs and a missing column (#156), a reopened gap (#158), stray pipes from other sessions, and now eight rows rendering as plain text since a close-out of mine. **Every one was invisible to anyone reading the Markdown source, and visible only on the rendered page.** Rendering through GitHub is now how changes to this file get verified.
+
+**Next Recommended Task:** unchanged — see `NEXT-STEP.md`. Confirm whether the decision requests have reached anyone.

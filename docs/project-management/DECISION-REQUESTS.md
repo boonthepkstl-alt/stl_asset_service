@@ -36,9 +36,24 @@ authority. A request that goes unanswered stays unanswered.
 | **Raised** | 2026-09-18 |
 | **Finding** | [F-57](OPEN-FINDINGS.md) |
 | **Requirement** | `RAISE-FR-LICENSE-001` — Software / SaaS License Management |
-| **Status** | **Awaiting answer** |
+| **Status** | **ANSWERED 2026-10-07 — "No."** See "The answer" below. Confirms PRD §16 Resolved Question 34 unchanged; resolves [F-57](OPEN-FINDINGS.md) as *confirmed unchanged* (R-42). |
 | **Sendable version** | <https://claude.ai/artifact/T12rbAhsQhyYWMuP5i9bsZ> — the same request as a page. It leads with why the question exists at all: **the screens look finished, and that is the risk**, since a finished-looking UI invites building the rest without anyone deciding it should be in scope. **"No" is presented as a complete answer**, not a refusal — the request asks which state is intended, not for permission to build. The five inputs a Yes needs sit behind a panel marked as mattering only then, each as free text with **no suggested values**, and the panel closes by saying plainly that a Yes does not start the work: the specification is brought up to date first. The answer saves to the page. **Private by default: it must be shared from its own Share menu before the recipient can open it.** |
-| **Blocks** | Any Software License backend or CRUD work. Blocks nothing currently in approved scope. |
+| **Blocks** | ~~Any Software License backend or CRUD work.~~ **Settled: none is to be built.** Nothing in approved scope was ever blocked by this. |
+
+### The answer — received 2026-10-07
+
+Answered in chat: **"ไม่เข้า release แรก"** — *"not in the first release."*
+
+**Software License stays Enterprise Roadmap.** This is the "No" branch the request described as the current documented position, and it changes nothing — as the request said in advance:
+
+- **`RAISE-PRD.md` is not edited.** `RAISE-FR-LICENSE-001` already reads *Scope: Enterprise Roadmap — not Phase 1 MVP*, confirmed 2026-08-21 as §16 **Resolved Question 34**. This answer re-confirms that decision and supplies no new fact for the PRD to carry; writing one would be churn presented as progress. The dated re-confirmation lives here and in F-57, which is where this project records what was asked and what was blocked.
+- **The "Phase 5C — Software License vertical slice" that prompted F-57 is declined.** No table, model, endpoint or migration is to be built.
+- **The licence pages stay as they are** — mock-only, hidden behind `ROADMAP_FEATURES_ENABLED`, with the regression test that keeps them hidden.
+- **F-57 closes as *confirmed unchanged*** (R-42).
+
+If licence management is ever promoted, the route is the same as before: re-enter the chain at `RAISE-PRD.md` and supply the five inputs below, all of which remain undecided.
+
+**Answered in chat rather than on the sendable page** — the same channel DR-02's answer came through. The answer has also been written to the page's own store, so anyone the page was shared with sees it is settled instead of answering it a second time.
 
 ### What prompted this
 
@@ -325,9 +340,25 @@ small; deciding what it should do is not engineering's call.**
 | **Raised** | 2026-09-22 — **first time this has ever been asked.** F-13 has been open since the architecture document was written and has never carried a decision request. |
 | **Finding** | [F-13](OPEN-FINDINGS.md) |
 | **Requirement** | None. F-13 is filed under *Infrastructure / Process — not addressed anywhere in the PRD.* |
-| **Status** | **Awaiting answer** |
+| **Status** | **ANSWERED 2026-10-07 — "Not yet."** See "The answer" below. Resolves [F-13](OPEN-FINDINGS.md) as *decided: not yet* (R-43) and reclassifies F-14's remainder as *not needed yet*. |
 | **Sendable version** | <https://claude.ai/artifact/EmZP8DYEoGVQR1ir45HDmw> — the same request as a page, built around the gate rather than the detail: the one in-scope question comes first, **"not yet" is presented as the best available outcome rather than a deferral**, and the five inputs sit behind a panel marked as mattering only if deployment is in scope. Partial answers are invited, since input 2 alone unblocks F-14's remaining half. It carries the **"I'd like your recommendation first"** checkbox this request explicitly offers. The answer saves to the page. **Private by default: it must be shared from its own Share menu before the recipient can open it.** |
-| **Blocks** | **F-14's remaining half** (CI builds no container image because there is nowhere to publish one), and every deployment-shaped item in `RAISE-HIGH-LEVEL-ARCHITECTURE.md` §6. Blocks **no MVP requirement** — nothing in the traceability matrix depends on it. |
+| **Blocks** | ~~**F-14's remaining half** (CI builds no container image because there is nowhere to publish one), and every deployment-shaped item in `RAISE-HIGH-LEVEL-ARCHITECTURE.md` §6.~~ **Unblocked by being decided:** those items are now *not needed yet* rather than waiting. Never blocked an MVP requirement. |
+
+### The answer — received 2026-10-07
+
+Answered in chat: **"ยังไม่ต้อง"** — *"not yet."*
+
+**Running RAISE beyond a developer's machine is not in scope for now.** This is the cheapest answer the request offered, and the one it called the best possible outcome:
+
+- **F-13 closes as *decided: not yet*** (R-43). Hosting stops being an open question and becomes a recorded decision.
+- **F-14's remainder — building and publishing a container image — is reclassified from blocked to *not needed yet*.** An image needs a registry, and a registry is only needed if there is somewhere to deploy. It comes off the board rather than sitting there looking neglected.
+- **The five follow-on inputs below were not needed and were not asked.** If deployment comes into scope later, they are the starting point.
+- **`RAISE-HIGH-LEVEL-ARCHITECTURE.md` §6 is updated explicitly**, as that table instructs — its hosting row now records the decision instead of reading "not decided anywhere".
+- **Nothing about the product changes**, as the request said in advance. No requirement, screen, field or verdict is affected.
+
+The recommendation this request offered was not taken up; the answer came directly.
+
+**Answered in chat rather than on the sendable page**, like DR-01 and DR-02. The answer has also been written to the page's own store, so anyone the page was shared with sees it is settled.
 
 ### How this request differs from DR-01, DR-02 and DR-03 — stated plainly
 

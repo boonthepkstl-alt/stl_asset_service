@@ -93,7 +93,7 @@ happened. Every phase's **Checkpoint** row should link to a real entry in
 | **Target Date** | Not scheduled |
 | **Actual Start** | — |
 | **Actual Completion** | — |
-| **Status** | ⚪ Not started — confirmed Roadmap, not MVP |
+| **Status** | ⚪ Not started — confirmed Roadmap, not MVP. **Re-confirmed 2026-10-07:** DR-01 answered "not in the first release" (F-57 → R-42); the requested Phase 5C licence slice is declined. |
 | **Scope** | `RAISE-FR-LICENSE-001` (Software / SaaS License Management) is confirmed **Roadmap-only** (PRD §16 Resolved Question 34, 2026-08-21). No backend work is planned under current scope. The frontend already has mock-only License pages (ported from the ESAPS reference) gated behind `ROADMAP_FEATURES_ENABLED`, visible for demo purposes only. |
 | **Deliverables** | None planned. Existing: `frontend/src/pages/Licenses/`, `LicenseDetail/` (mock-only, flag-gated). |
 | **Dependencies** | Would depend on Phase 3 (license seats bind to Assets/Employees) if promoted to MVP. |

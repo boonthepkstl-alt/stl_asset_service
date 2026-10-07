@@ -6098,3 +6098,36 @@ citing earlier checkpoints.
 **What this adds to the record of the log itself.** In nine days this one file has had an eleven-PR gap (#156), wrong SHAs and a missing column (#156), a reopened gap (#158), stray pipes from other sessions, and now eight rows rendering as plain text since a close-out of mine. **Every one was invisible to anyone reading the Markdown source, and visible only on the rendered page.** Rendering through GitHub is now how changes to this file get verified.
 
 **Next Recommended Task:** unchanged — see `NEXT-STEP.md`. Confirm whether the decision requests have reached anyone.
+
+---
+
+## CHECKPOINT-2026-10-07-003
+
+**Phase:** Cross-cutting — decision requests
+**Feature:** Business decision backlog
+**Task:** Record DR-01 and DR-04, both answered by the account holder in chat on 2026-10-07.
+
+**The answers.** DR-01: **"ไม่เข้า release แรก"** — not in the first release. DR-04: **"ยังไม่ต้อง"** — not yet. Both are the cheapest answer their request offered, and both close a finding without building anything.
+
+**What each closes.**
+- **F-57 → R-42, confirmed unchanged.** `RAISE-FR-LICENSE-001` stays Enterprise Roadmap. **The PRD is deliberately not edited:** it already says exactly this, confirmed 2026-08-21 as §16 Resolved Question 34, so a re-confirmation adds no fact for it to carry. That distinction from DR-02 is the point — DR-02 supplied new values and went through the whole chain; DR-01 confirmed an existing scope and goes through none of it. The requested Phase 5C licence slice is declined.
+- **F-13 → R-43, decided: not yet.** F-14's image build/push remainder is reclassified from blocked to *not needed yet*. `RAISE-HIGH-LEVEL-ARCHITECTURE.md` §6 is updated **explicitly, because that table instructs it** — its hosting row read "not decided anywhere", and the CI and migration rows pointed at hosting as their blocker.
+
+**An omission of mine, found while doing this.** When DR-02 resolved F-03 on 2026-09-23, PR #151 marked F-03's own row RESOLVED but **never added its row to the Resolved table** — so the project's largest resolution this month had no R-id for two weeks. Backfilled as **R-41**, ahead of R-42/R-43 so the table stays in date order. Same family as every other tracking slip this month: invisible unless someone looks for the specific thing.
+
+**The pages.** Both answers were also written to their sendable pages' own stores (`responses/dr-01`, `responses/dr-04`), each marked `source: chat` with the verbatim answer, so anyone the pages were shared with sees them settled instead of answering again. One written document read back to confirm it sits at the exact path the page subscribes to.
+
+**Compliance Review → v1.7.** No verdict moved and its headline is unchanged, but its §5 listed F-57 as "decision request prepared" and F-13 as open. Updated so it does not drift — a small revision made deliberately, given how often that has been the defect.
+
+**Tests:** None — docs only.
+**Validation:** every edit anchored to exact text with a uniqueness assertion; DR edits scoped to their own section so the shared `**Awaiting answer**` string in other DRs could not be hit; all touched tables rendered through GitHub (see the PR).
+
+**Requirement Traceability:** **No verdict moved.** `RAISE-FR-LICENSE-001` is Roadmap and not among the 17 MVP rows; F-13 has no requirement. Board unchanged at **8 PASS / 2 FAIL / 6 BLOCKED / 1 partial**; Gap 21 unchanged.
+
+**Status:** ✅ Complete for its scope. Two findings closed.
+
+**Known Issues:** None introduced.
+
+**What these answers show about the channel.** Three requests have now been answered — DR-02, DR-01, DR-04 — and **all three came through chat. None has come through a sendable page.** The pages are still useful as a durable record and for anyone else they are shared with, but the evidence says the working channel is direct conversation.
+
+**Next Recommended Task:** see `NEXT-STEP.md` — put DR-05, DR-06 and DR-03 to the account holder in chat, the channel that has worked every time.

@@ -1,5 +1,13 @@
 # RAISE — Requirement Compliance Review
 
+**Document Status:** Draft v1.7 — **Re-verified 2026-10-07 against Traceability Matrix v2.18 (unchanged). No verdict moved; the headline stays 8 of 17 (47%).**
+
+Two decision requests were answered: **DR-01** (Software License stays Roadmap — F-57 resolved as *confirmed unchanged*) and **DR-04** (running RAISE beyond a developer's machine is not yet in scope — F-13 resolved as *decided: not yet*). **Neither touches a §3 row:** `RAISE-FR-LICENSE-001` is Roadmap and not among the 17, and F-13 has no requirement at all. This revision exists only so §5 stops listing both as open — a small correction, made because tracking documents drifting quietly out of date has been this month's most frequent defect.
+
+*(v1.6: re-verified 2026-09-24 against matrix v2.18 — the NBV execution sweep, no verdict moved. Header retained below.)*
+
+---
+
 **Document Status:** Draft v1.6 — **Re-verified 2026-09-24 against Traceability Matrix v2.18. The headline stays 8 of 17 (47%).**
 
 The NBV execution sweep this document has been waiting on finally ran, against the real app on the merged code (PR #151, `158362e`). **Five of seven cases PASS** — the ten-tile KPI grid re-executed against its current criterion (`TC-DASH-01`/`TC-EXEC-001-01`, the superseded nine-tile PASSes explicitly not carried forward), the NBV tile itself (`TC-DASH-03b`/`TC-EXEC-001-03b`, rendering **$9.6K of $30.1K across 15 assets** — a figure independently recomputed from the fixtures with RQ46's formula and RQ54's values before it was accepted), and the P-018 NBV section (`TC-WARRANTY-001-07`, ten pre-populated rows matching RQ54 exactly, **including the two values the business had to disambiguate by hand**).
@@ -303,7 +311,7 @@ Requisition page cannot submit in real-API mode — its default requester is a m
 fixture id; `OPEN — BLOCKED on a business decision`, partly downstream of F-08).
 **F-57** (a Software License vertical slice was requested as the next target;
 `RAISE-FR-LICENSE-001` is business-confirmed **Roadmap, not MVP**, with acceptance
-criteria undefined — a decision request is prepared as `DECISION-REQUESTS.md` DR-01).
+criteria undefined — asked as `DECISION-REQUESTS.md` DR-01, **answered 2026-10-07: not in the first release; F-57 resolved as confirmed unchanged**).
 **F-58** (three source files cite a `SOFTWARE-LICENSE-MIGRATION.md` that does not
 exist). **F-59** (this revision — the matrix's own `RAISE-FR-WARRANTY-001` row labels
 the verdict `PASS (partial)` while its body text says the blocked case "is not counted
@@ -338,8 +346,8 @@ Financial View), F-33 (AI Assistant Q&A engine).
 demo login, no real user store), F-12 (RBAC middleware wired to demo
 routes only) — both confirmed Roadmap, not MVP gaps.
 
-**Infrastructure / Process (outside PRD scope):** F-13 (hosting), F-14 (CI/CD —
-**resolved for source validation** (R-20); image build/push still open), F-15 (API
+**Infrastructure / Process (outside PRD scope):** F-13 (hosting — **decided 2026-10-07: not yet**, DR-04,
+R-43), F-14 (CI/CD — **resolved for source validation** (R-20); image build/push **not needed yet**, DR-04), F-15 (API
 versioning), F-16 (DB migration tooling — **narrowed 2026-09-18**: a runner now tracks
 applied versions and can migrate an existing volume; startup auto-run, rollback and CI
 integration remain out of scope), F-17 (NFR backlog targets undefined).

@@ -9,8 +9,23 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-09-24, at `158362e` (**PR #151** merged), plus the NBV execution sweep on
-`test/nbv-execution-sweep`.
+**As of:** 2026-10-07, at `8c5348c` (**PR #157** merged), plus DR-06 on
+`docs/dr-06-employee-offboarding` (PR #158, open).
+
+**F-61 asked as DR-06 (2026-10-07); every decision-blocked finding now has a request.** RAISE has no
+employee-offboarding feature, so equipment stays assigned to someone indefinitely once they leave. Two
+facts were re-verified in code for the request rather than carried from the register: setting `Inactive`
+changes that one field and nothing else, and **the situation is latent — all seven seeded employees are
+`Active`, so no bad record exists yet.** Releasing equipment already works; the rule for when does not.
+
+**Distribution of the requests is unconfirmed, and that is recorded rather than assumed.** On 2026-10-07 the
+account holder reported sharing the DR-01/03/04/05 pages; the artifact service still reports DR-03 as
+`private`, which may mean the share did not take or may mean it was shared to specific people only — this
+session cannot tell which. **No response has been recorded on any of the four pages.** DR-06's page is new
+and private. **The board is unchanged at 8 PASS / 2 FAIL / 6 BLOCKED / 1 partial**, and Gap 21 is still the
+only open gap of 27. Also closed this session: `DEVELOPMENT-LOG.md` was missing #153–#157 and the
+direct-to-`main` F-61 commit — the same hole it had just been backfilled for — and now has them.
+See `CHECKPOINT-2026-10-07-001`.
 
 **The NBV cases were executed — five PASS, two BLOCKED, and the board still did not move
 (2026-09-24).** PR #151 merged, and the seven cases ran against the real app on the merged

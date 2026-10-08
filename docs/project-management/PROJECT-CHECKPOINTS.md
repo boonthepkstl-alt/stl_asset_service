@@ -6131,3 +6131,34 @@ citing earlier checkpoints.
 **What these answers show about the channel.** Three requests have now been answered — DR-02, DR-01, DR-04 — and **all three came through chat. None has come through a sendable page.** The pages are still useful as a durable record and for anyone else they are shared with, but the evidence says the working channel is direct conversation.
 
 **Next Recommended Task:** see `NEXT-STEP.md` — put DR-05, DR-06 and DR-03 to the account holder in chat, the channel that has worked every time.
+
+---
+
+## CHECKPOINT-2026-10-08-001
+
+**Phase:** Cross-cutting — decision requests → chain
+**Feature:** Business decision backlog; `RAISE-FR-ASSET-001`; new `RAISE-FR-ASSET-004`
+**Task:** Record DR-03, DR-05 and DR-06 and propagate them through the full chain.
+
+**The answers, and why two needed a second round.** DR-05: **open text**. DR-06: `Inactive` is the trigger, **`On Leave` counts**, and equipment **stays assigned until IT confirms each item back**. DR-03: **the person filling in the form** — then, asked what to do meanwhile since that cannot be built, **wait for the real user store**. DR-06 and DR-03 each needed a follow-up round because the first answer settled only part of the question; both follow-ups were offered as structured choices rather than inferred. **The user's first reply was an echo of my own sentence, not an answer** — it was confirmed rather than recorded as "not yet" for all three, which is what a literal reading would have done.
+
+**The chain:** PRD v0.23 (RQ55/56/57, Open Question 3b) → Design v0.21 → Prototype v0.22 → AC v0.22 → Test Plan v0.22 → Test Cases v0.37 → Matrix v2.19 → Compliance Review v1.8. No `NEEDS_PRD_CONFIRMATION` at any layer. Three things worth keeping from the run:
+- **Design derives the held-asset marker at read time** from `Asset.status`, `Asset.assignedEmployeeId` and `Employee.status` — no stored flag to drift, and an `On Leave` → `Active` return clears it with no extra step.
+- **A layer pushed back correctly.** The Test Plan writer pointed out that the "test data unreachable" record lives in Test Cases, not the plan, and handled it rather than inventing a blocked entry. It also flagged a real caveat — whether a seeded asset's holder resolves to an employee record — which was **checked in code before the next layer ran**: every one of the 15 seeded assets carries `assignedEmployeeId`, so the caveat was closed instead of propagated.
+- **Every layer's links were counted against `main`** after the PRD writer introduced four broken ones. Those were fixed before commit; that is how **F-62** was found.
+
+**The board moved, for two separate reasons, and the record keeps them apart.** 8 of 17 → **7 of 18 (38.9%)**. The new requirement adds a row built nowhere (−2.7 points). `RAISE-FR-ASSET-001` drops to `PASS (partial)` (−5.5 points), because DR-05 added criteria to it and **one of them catches a defect shipped since the form was built** — four Categories offered, Media Equipment missing — which its original six passing cases never exercised. **Nothing in the product regressed.** Gaps 28, 29 and 30 opened; Gap 21 stays open, its blocker now a build rather than a decision.
+
+**Compliance Review v1.8 updated the body, not just the header.** v1.5, v1.6 and v1.7 had each prepended a header note while §3, §7 and the footer stayed at v1.4. Re-checking §3 row by row found three cells stale independently of today: `RAISE-FR-EXEC-001` still named the useful-life values as its blocker, `RAISE-FR-WARRANTY-001` still called `TC-WARRANTY-001-07` blocked, and Dashboard/Navigation still described nine tiles. **A legend change too:** the review had reserved `NOT_IMPLEMENTED` for "a future requirement with zero code"; that requirement has arrived, and it is recorded as the matrix does (`NOT_TESTED`) rather than in a category the matrix does not use.
+
+**Pages and records.** All three answers written to their pages' stores (`source: chat`); **all six request pages now show settled answers**. F-55, F-60, F-61 marked decided-but-open; **F-62** added; PR #160 logged.
+
+**Tests:** None — docs only. **Validation:** see the PR — every touched file rendered through GitHub.
+
+**Requirement Traceability:** `RAISE-FR-ASSET-001` **PASS → PASS (partial)**; `RAISE-FR-ASSET-004` **new, NOT_TESTED**. Board **7 / 2 / 2 / 6 / 1 of 18**.
+
+**Status:** ✅ Complete for its scope — recorded and propagated. **Nothing built.**
+
+**Known Issues:** F-62. Gap 28 carries three proposed questions the matrix raised and did not answer (a pending IT Hardware handover whose recipient leaves; whether a per-row badge without a filter lets IT find everything held by departed staff; whether the status change itself is audited). `RAISE-FR-ASSET-004` is P0 by the PRD's convention that confirmed MVP requirements are P0, not by a stated business priority.
+
+**Next Recommended Task:** see `NEXT-STEP.md` — build the open-text Type field and the Category correction.

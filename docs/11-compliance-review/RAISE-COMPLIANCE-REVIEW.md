@@ -1,5 +1,15 @@
 # RAISE — Requirement Compliance Review
 
+**Document Status:** Draft v1.8 — **Re-verified 2026-10-07 against Traceability Matrix v2.19. The first verdict movement since v1.4, and the headline goes down: 7 of 18 (38.9%), from 8 of 17 (47.1%).**
+
+Three business decisions answered in chat on 2026-10-07 — DR-05, DR-06 and DR-03 — reached this document through the full chain (PRD v0.23 → matrix v2.19). **Two of them move the board, for two different reasons, and §4 separates them:** the denominator grew by one, because DR-06 created a new MVP requirement (`RAISE-FR-ASSET-004`) that is built nowhere; and `RAISE-FR-ASSET-001` moved from `PASS` to `PASS (partial)`, because DR-05 added criteria to it — **one of which targets a defect that has shipped since the form was built** and that its original passes never exercised. **Nothing in the product regressed.**
+
+**This revision also updates the body, which the last three did not.** v1.5, v1.6 and v1.7 each prepended a header note; none touched §3, §7 or the Document Status footer, which still read **v1.4**. Re-checking §3 row by row found three cells stale independent of today's changes — `RAISE-FR-EXEC-001` still named the useful-life values (supplied 2026-09-23) as its blocker, `RAISE-FR-WARRANTY-001` still called `TC-WARRANTY-001-07` blocked (it passed 2026-09-24), and Dashboard/Navigation still described a nine-tile grid. §7 still said "F-03 needs values" two weeks after it got them. **All corrected.** The lesson §7 has carried since v1.1 — re-verify in the same pass — was being honoured in the header only.
+
+*(v1.7: re-verified 2026-10-07 against matrix v2.18 — DR-01 and DR-04 answered, no verdict moved. Header retained below.)*
+
+---
+
 **Document Status:** Draft v1.7 — **Re-verified 2026-10-07 against Traceability Matrix v2.18 (unchanged). No verdict moved; the headline stays 8 of 17 (47%).**
 
 Two decision requests were answered: **DR-01** (Software License stays Roadmap — F-57 resolved as *confirmed unchanged*) and **DR-04** (running RAISE beyond a developer's machine is not yet in scope — F-13 resolved as *decided: not yet*). **Neither touches a §3 row:** `RAISE-FR-LICENSE-001` is Roadmap and not among the 17, and F-13 has no requirement at all. This revision exists only so §5 stops listing both as open — a small correction, made because tracking documents drifting quietly out of date has been this month's most frequent defect.
@@ -198,23 +208,25 @@ first time in that document's history.
 | `PARTIAL` | Some test cases/sub-criteria PASS; at least one sub-item is genuinely blocked on an open PRD/business question (not a build gap) — the requirement is correctly built for everything currently confirmed, and the remainder is honestly out of reach until that question is answered. |
 | `FAIL` | At least one test case was formally executed and failed against the app as built — a real, confirmed build defect or missing capability, independent of any open PRD question. |
 | `BLOCKED` | The requirement (or a sub-item within it) cannot be tested at all yet, because a prerequisite PRD/business decision has not been made — there is no build gap to fix, only a decision to obtain. |
-| `NOT_IMPLEMENTED` | Not used in this revision — every MVP requirement below has at least a testable-now slice implemented; reserved for a future requirement with zero code against it. |
+| `NOT_TESTED` | *Added at v1.8.* Fully specified through the chain, test cases written, **nothing executed** — here, because nothing has been built. Not `FAIL`, which this legend reserves for an executed run; not `BLOCKED`, because nothing waits on a decision. Taken from the Traceability Matrix, which first used it for the unbuilt NBV cases at v2.17. |
+| `NOT_IMPLEMENTED` | Reserved until v1.8 for "a future requirement with zero code against it." **That requirement has now arrived** — `RAISE-FR-ASSET-004` — and this review records it as the matrix does, `NOT_TESTED` with "not built" stated, rather than introducing a category the matrix does not use. This document does not overrule the matrix. |
 
 ## 3. MVP Requirement Compliance — Verdicts
 
 | Requirement | Title | Verdict | Evidence (Traceability Matrix §3/§4) | What would move this forward |
 |---|---|---|---|---|
-| `RAISE-FR-ASSET-001` | Asset Registry | **PASS** | §3 row — `TC-ASSET-001-01..04`, `TC-ASSET-001-D-01..02` all PASS, executed 2026-08-26/-27 | Nothing outstanding for confirmed scope. Full asset master field list (F-09) remains a separate, open PRD question that does not block this row's current PASS. |
+| `RAISE-FR-ASSET-001` | Asset Registry | **PASS (partial)** — *downgraded at v1.8* | §3 row (matrix **v2.19**) — `TC-ASSET-001-01..04`, `TC-ASSET-001-D-01..02` all PASS, executed 2026-08-26/-27, **and still standing.** PRD §16 Resolved Question 55 (2026-10-07) added `TC-ASSET-001-05..08` on the Create Asset form, **none executed, all expected to FAIL**: `-05..-07` because the open-text Type field is decided but not built (Gap 29); **`-08` because the shipped form offers four Categories and omits Media Equipment** — a defect present since the form was built, against data confirmed since Resolved Question 41 (Gap 30). The original six cases never exercised the registration form, so they could not see it. | Build the open-text Type field and correct the Category list to the confirmed five, then execute `-05..-08`. **Both are engineering work; neither needs a decision.** F-09 (full field list) remains a separate open question that does not block this row. |
 | `RAISE-FR-ASSET-002` | Category & Hierarchy | **PASS** | §3 row — `TC-ASSET-002-01..03` all PASS, re-executed 2026-09-01 after F-27 spec resolution | Nothing outstanding. |
+| `RAISE-FR-ASSET-004` | Employee Offboarding (Held-Asset Flag) — *new MVP requirement at v1.8* | **NOT_TESTED** — *not built* | §3 row (matrix **v2.19**) — brought into MVP by PRD §16 Resolved Question 56 (DR-06, 2026-10-07). The chain is complete with no orphan: PRD → Design §4.2 → Prototype P-003/P-004/P-006/P-008 → `AC-ASSET-004-01..13` → `TS-ASSET-004` → `TC-ASSET-004-01..13`, 1:1. **No "Holder inactive" or "Holder on leave" text exists anywhere in `frontend/src/`**, and no case has run. Test data is reachable today: holder links are seeded on every asset, and employee status is editable. | Build the held-asset badge (Gap 28), then execute. **Engineering work; no decision outstanding.** Five of the thirteen cases (the negative ones) pass trivially against an unbuilt feature and count for nothing until `-01` passes in the same build — the matrix records this, and so does this review. |
 | `RAISE-FR-ASSET-003` | Custody History | **PASS** | §3 row — `TC-ASSET-003-01..03` all PASS, executed 2026-08-26/-27 | Nothing outstanding for this row. `RAISE-FR-ASSET-003` vs. `RAISE-FR-OPS-002` scope overlap (F-10) is a separate, still-open documentation-clarity question, not a defect in either row. |
 | `RAISE-FR-OPS-001` | QR / Barcode | **PASS** | §3 row — `TC-OPS-001-01..03` all PASS, re-executed 2026-08-26 after F-21 fix | Nothing outstanding. |
 | `RAISE-FR-OPS-002` | Check-in / Check-out | **PASS** | §3 row — `TC-OPS-002-01..03` all PASS, executed 2026-08-28 | "Appropriate permission" role-correctness (PRD §16 Q22 / F-08) remains untestable but does not block the state-transition/audit-entry behavior already confirmed. |
 | `RAISE-FR-MAINT-001` | Maintenance (4-stage workflow) | **PASS** | §3 row — `TC-MAINT-001-01..09` all PASS, executed 2026-08-28 | SLA/vendor/cost model and delegated-approver configuration rules remain a separate, still-open PRD question — does not block the confirmed workflow-shape PASS. |
-| `RAISE-FR-WARRANTY-001` | Warranty | **PASS** — *restored at v1.4 after v1.3 downgraded it in error; see §1a* | §3 row (matrix **v2.16**) — `TC-WARRANTY-001-01..06` all PASS, last case executed 2026-09-01 (surfaced and fixed a real Settings admin-gating defect first). The matrix's own **AC Group(s)** and **TC ID(s)** columns assign `TC-WARRANTY-001-07` to `RAISE-FR-EXEC-001`'s NBV scope, and its cell concludes *"Overall row status: **PASS**"*. | Nothing outstanding for this requirement. `TC-WARRANTY-001-07` shares the P-018 Settings screen but tests `RAISE-FR-EXEC-001`'s NBV section and is BLOCKED **there**, on F-03. |
+| `RAISE-FR-WARRANTY-001` | Warranty | **PASS** — *restored at v1.4 after v1.3 downgraded it in error; see §1a* | §3 row (matrix **v2.16**) — `TC-WARRANTY-001-01..06` all PASS, last case executed 2026-09-01 (surfaced and fixed a real Settings admin-gating defect first). The matrix's own **AC Group(s)** and **TC ID(s)** columns assign `TC-WARRANTY-001-07` to `RAISE-FR-EXEC-001`'s NBV scope, and its cell concludes *"Overall row status: **PASS**"*. | Nothing outstanding for this requirement. `TC-WARRANTY-001-07` shares the P-018 Settings screen but tests `RAISE-FR-EXEC-001`'s NBV section — **executed and passing 2026-09-24**, counted there, not here. *(Until v1.8 this cell said it was BLOCKED on F-03 — stale since 2026-09-24.)* |
 | `RAISE-FR-ORACLE-001` | Oracle FA Integration + NBV/Depreciation | **FAIL** | §3 row — `TC-ORACLE-001-01..04` all FAIL, executed 2026-08-29; `/reconciliation` renders a generic placeholder stub, not the specified Financial View | Business explicitly deferred building even a scoped placeholder-vs-real screen (`OPEN-FINDINGS.md` F-31, 2026-09-01) until the Oracle FA integration mechanism itself is resolved (F-04, PRD §16 Q6–Q10). No further engineering action is expected until that decision lands. |
 | `RAISE-FR-ALERT-001` | Alerts | **PASS** — *upgraded from `PASS (partial)` at v1.1* | §3 row (matrix v2.6) — **all seventeen `TC-ALERT-001-01..17` executed and passing, across both surfaces**: the Alerts screen (P-012, `-01..-11`) and the header bell in global chrome (`-12..-17`, executed 2026-09-07). The five trigger conditions and their fixed severities were confirmed by PRD §16 Resolved Question 44 (F-05 → R-23), the access gate by Resolved Question 45 (F-08 partial → R-25), and the bell's scope by Resolved Question 49 (Gap 17). | Nothing outstanding for this requirement's confirmed MVP scope. **PRD §16 Q22a** (should a user see only *their* alerts?) is raised but unspecified, has no criterion written for it, and is not specifiable today — no `User`→`Employee` link exists — so it is future scope, not an unmet criterion. |
 | `RAISE-FR-AUDIT-001` | Immutable Audit Log | **BLOCKED (partial)** | §3 row — testable subset (`TC-AUDIT-001-01..03`) all PASS, executed 2026-08-26 | Field taxonomy (Design §15) and the audit-review role gate (PRD §16 Q22 / F-08) require a PRD/Design answer, not more testing. |
-| `RAISE-FR-EXEC-001` | Executive Dashboard | **PASS (partial)** — *corrected DOWN from `PASS` at v1.1, see §1a* | §3 row (matrix v2.6) — `TC-EXEC-001-01`/`-02`/`-03a` and `TC-DASH-01`/`-02`/`-03a` all PASS — the nine-tile grid and the Utilization KPI executed 2026-09-07 (Gap 19 and Gap 20 sweeps). **`TC-EXEC-001-03b` / `TC-DASH-03b` (NBV) are `BLOCKED`**, and `TC-WARRANTY-001-07` (the NBV section of P-018 Settings) with them. | **The five default per-Asset-Category useful-life values.** This is no longer "a separate, still-open question" as v1.0 framed it: PRD §16 Resolved Question 46 confirmed the NBV **formula** (straight-line, zero salvage, clamped at 0, useful life configurable per category), which pulled NBV **inside** this requirement's confirmed scope — where it now sits unmet. Resolved Question 47 put Risk **out** of MVP scope, so Risk is no longer a gap at all. Open Finding **F-03** is narrowed (R-28), not closed. |
+| `RAISE-FR-EXEC-001` | Executive Dashboard | **PASS (partial)** — *corrected DOWN from `PASS` at v1.1, see §1a* | §3 row (matrix **v2.19**) — the **ten**-tile grid re-executed 2026-09-24: `TC-EXEC-001-01`/`-02`/`-03a`/`-03b` and their `TC-DASH-*` twins PASS, including the NBV tile itself (**$9.6K of $30.1K across 15 assets**, recomputed independently from the fixtures before it was accepted). **`TC-EXEC-001-04` / `TC-DASH-04` are BLOCKED** — Resolved Question 51's unconfigured-Type rule, whose precondition no screen could create. | **Changed at v1.8: no decision is outstanding any more.** The useful-life values arrived 2026-09-23 (Resolved Question 54); the blocker on `-04` changed on 2026-10-07 from "test data unreachable" to **"reachable once the open-text Type field is built"** (Resolved Question 55). So Gap 21 now waits on the same build as `RAISE-FR-ASSET-001`'s Gap 29. *(Until v1.8 this cell said the missing piece was "the five default per-Asset-Category useful-life values" — stale twice over: re-keyed per Type on 2026-09-08 and supplied on 2026-09-23.)* |
 | `RAISE-AI-SEARCH-001` | Natural Language Search | **FAIL** | §3 row — `TC-AI-SEARCH-001-01..03` and `TC-AI-STATES-01..05` (8 cases) all FAIL, executed 2026-08-29; two non-matching placeholder/keyword-filter surfaces exist, neither is a real Q&A engine | Business explicitly deferred building even a scoped canned-answer engine (`OPEN-FINDINGS.md` F-33, 2026-09-01) until a real AI backend integration lands. No further engineering action is expected until that decision lands. |
 | `RAISE-FR-LIFE-001` | Asset Lifecycle Connectivity | **BLOCKED** | §3 row — `TC-LIFE-001-01/-02/-04` partial, `-03` (Disposal) confirmed out-of-scope Roadmap item, not a gap | The partial sub-items require PRD-level lifecycle-stage detail not yet defined. Disposal is correctly excluded, not a defect. |
 | `RAISE-AI-DOC-001` | Document Intelligence — OCR / Extraction | **BLOCKED (full)** | §3 row — sole criterion NOT TESTABLE YET; numeric confidence-threshold value TBD | Awaits a business answer on the confidence-threshold value (F-07). |
@@ -227,7 +239,7 @@ first time in that document's history.
 | Item | Verdict | Evidence (Traceability Matrix §4) | What would move this forward |
 |---|---|---|---|
 | `RAISE-NFR-SEC-RBAC-001` (Security & RBAC) | **PASS** | §4 row — `TC-LOGIN-01..03` all PASS, `-01`/`-02` resolved 2026-09-01 (F-30, Mock auth fallback) | The production authentication mechanism and role/permission matrix *content* (PRD §16 Q21–Q22 / F-08) remain a genuinely open PRD question, separate from the UI-only MVP enforcement *location* already confirmed and tested here. |
-| Dashboard / Navigation (P-002, same page as `RAISE-FR-EXEC-001`) | **PASS (partial)** | §4 row (matrix v2.6) — `TC-DASH-01`/`-02`/`-03a` PASS against the **nine**-tile grid, executed 2026-09-07. The old `TC-DASH-03` absence-check was **retired**: it asserted that none of NBV/Risk/Utilization was present, which stopped being true when the Utilization tile shipped — its 2026-08-31 PASS is superseded, not invalidated. | Same NBV blocker as `RAISE-FR-EXEC-001` — same page, tracked once. Risk is no longer part of it (out of MVP scope by decision, Resolved Question 47). |
+| Dashboard / Navigation (P-002, same page as `RAISE-FR-EXEC-001`) | **PASS (partial)** | §4 row (matrix **v2.19**) — `TC-DASH-01`/`-02`/`-03a`/`-03b` PASS against the **ten**-tile grid, re-executed 2026-09-24; the nine-tile passes of 2026-09-07 were explicitly not carried forward. The old `TC-DASH-03` absence-check stays retired. | Same `-04` blocker as `RAISE-FR-EXEC-001` — same page, tracked once (Gap 21 → Gap 29). *(Until v1.8 this row described the nine-tile grid and an NBV blocker that no longer exists.)* |
 
 ### 3.2 Roadmap / Pilot Items — Correctly Out of Scope
 
@@ -242,24 +254,40 @@ re-entering the deliverable chain at `RAISE-PRD.md`.
 
 ## 4. Compliance Summary
 
-Of the 17 MVP-scoped requirements carrying a `RAISE-FR-*`/`RAISE-AI-*`
-Traceability ID (Traceability Matrix §3):
+Of the **18** MVP-scoped requirements carrying a `RAISE-FR-*`/`RAISE-AI-*`
+Traceability ID (Traceability Matrix **v2.19** §3) — **17 until v1.8**:
 
 | Verdict | Count | Requirements |
 |---|---|---|
-| `PASS` | 8 | `RAISE-FR-ASSET-001`, `-002`, `-003`, `RAISE-FR-OPS-001`, `-002`, `RAISE-FR-MAINT-001`, **`RAISE-FR-WARRANTY-001`** *(restored at v1.4)*, `RAISE-FR-ALERT-001` |
-| `PASS (partial)` | 1 | `RAISE-FR-EXEC-001` |
+| `PASS` | 7 | `RAISE-FR-ASSET-002`, `-003`, `RAISE-FR-OPS-001`, `-002`, `RAISE-FR-MAINT-001`, `RAISE-FR-WARRANTY-001`, `RAISE-FR-ALERT-001` |
+| `PASS (partial)` | 2 | `RAISE-FR-EXEC-001`, **`RAISE-FR-ASSET-001`** *(downgraded at v1.8)* |
 | `FAIL` | 2 | `RAISE-FR-ORACLE-001`, `RAISE-AI-SEARCH-001` |
 | `BLOCKED (partial)` | 1 | `RAISE-FR-AUDIT-001` |
 | `BLOCKED` | 1 | `RAISE-FR-LIFE-001` |
 | `BLOCKED (full)` | 4 | `RAISE-AI-DOC-001..004` |
+| `NOT_TESTED` | 1 | **`RAISE-FR-ASSET-004`** *(new MVP requirement at v1.8 — not built)* |
 
 Plus 2 cross-cutting items with no dedicated ID: `RAISE-NFR-SEC-RBAC-001`
 (`PASS`) and Dashboard/Navigation (`PASS (partial)`, same page as
 `RAISE-FR-EXEC-001`).
 
-**Reading this honestly:** **8 of 17 (47%)** carry a full, unqualified `PASS`, and 1
-more is `PASS (partial)`.
+**Reading this honestly: 7 of 18 (38.9%)** carry a full, unqualified `PASS` — **down
+from 8 of 17 (47.1%).** The 8.2-point drop has two separate causes. **Neither is a
+regression in the product**, and they must not be read as one:
+
+| Cause | Effect on the headline |
+|---|---|
+| **The denominator grew.** `RAISE-FR-ASSET-004` (Employee Offboarding) became an MVP requirement by business decision on 2026-10-07. It is specified end to end and built nowhere. | 8/17 → 8/18: **−2.7 points** |
+| **One verdict moved down.** `RAISE-FR-ASSET-001` gained four criteria. One of them catches **a defect that has shipped since the Create Asset form was built** — four Categories offered, Media Equipment missing — which the original six passing cases never exercised. Those six passes still stand. | 8/18 → 7/18: **−5.5 points** |
+
+`PASS` or `PASS (partial)` combined: 9 of 17 (52.9%) → 9 of 18 (50.0%).
+
+**Every §3 verdict re-checked against matrix v2.19 row by row at v1.8**, and three
+evidence cells found stale independent of today's changes (EXEC-001, WARRANTY-001,
+Dashboard/Navigation) — corrected above. The verdicts themselves matched; the cells
+explaining them had not been maintained since v1.4.
+
+*History, retained — the 8-of-17 figure and how v1.3/v1.4 reached it:*
 
 **This figure has now been wrong in both directions inside three days, and the record
 of that is worth more than the number.** v1.1 and v1.2 printed 8-of-17 while the
@@ -308,7 +336,7 @@ thresholds/fields), F-08 (Auth mechanism / role-permission matrix content —
 
 **Raised since v1.2, and none of them changes a §3 verdict:** **F-55** (the Create
 Requisition page cannot submit in real-API mode — its default requester is a mock
-fixture id; `OPEN — BLOCKED on a business decision`, partly downstream of F-08).
+fixture id; **decided 2026-10-07 as DR-03** — the requester is the logged-in user, effective only with the Roadmap real user store, so its blocker is now that dependency rather than a decision; it still drives no verdict).
 **F-57** (a Software License vertical slice was requested as the next target;
 `RAISE-FR-LICENSE-001` is business-confirmed **Roadmap, not MVP**, with acceptance
 criteria undefined — asked as `DECISION-REQUESTS.md` DR-01, **answered 2026-10-07: not in the first release; F-57 resolved as confirmed unchanged**).
@@ -317,6 +345,8 @@ exist). **F-59** (this revision — the matrix's own `RAISE-FR-WARRANTY-001` row
 the verdict `PASS (partial)` while its body text says the blocked case "is not counted
 within this row's own `PASS`"; see §1a). F-53, F-54 and F-56 were raised and resolved
 in the same period.
+
+**Decided 2026-10-07, and now driving verdicts — build pending, not decision pending:** **F-60** (Create Asset offers six of the ten Asset Types in the register and four of the five Categories) — DR-05 answered *open text*; it drives `RAISE-FR-ASSET-001`'s downgrade through Gaps 29 and 30, and gates Gap 21. **F-61** (no employee-offboarding feature of any kind) — DR-06 answered; it became the new MVP requirement `RAISE-FR-ASSET-004`, `NOT_TESTED`, Gap 28. **All six decision requests are now answered.**
 
 **Reclassified at v1.2 (2026-09-07), not resolved:** **F-09** (asset master field
 list) and **F-35** (asset code scheme) were both filed as blocking. Neither gates any
@@ -381,13 +411,7 @@ fine."
 
 ## 7. Recommendation
 
-**Matrix v2.15 records 27 gaps, 26 of them closed. `Gap 21` is open** — the NBV tile,
-`NBVSettings` and the P-018 Settings section are specified but not built, blocked on
-F-03. Gaps 22–27 were all opened *and* closed between v2.6 and v2.15. **The sentence
-that stood here until v1.3 — "Gaps 1—20 all resolved, with no gap open at all" — was
-true of matrix v2.6 and stopped being true at v2.7**, which is exactly the decay this
-document's own rule below is meant to catch. This review's verdicts are drawn from
-real, dated test execution and live-verification evidence, not assumption.
+**Matrix v2.19 records 30 gaps, 26 of them closed; four are open** — Gap 21 (the RQ51 cases), and the three opened at v2.19: Gap 28 (`RAISE-FR-ASSET-004`, built nowhere), Gap 29 (the open-text Type field) and Gap 30 (the Category list defect). *Derived, not quoted: the matrix states no single total — 27 gaps through v2.15 with Gap 21 the only open one, none added at v2.16–v2.18, three added at v2.19.* This review's verdicts are drawn from real, dated test execution and live-verification evidence, not assumption. *(Until v1.8 this paragraph said "Matrix v2.15 records 27 gaps" and that Gap 21 was "blocked on F-03" — both stale since 2026-09-23.)*
 
 **v1.0 said "no action is required to finish this review." That was true of its
 content and false in practice — and v1.1 exists because of it.** A compliance review
@@ -397,26 +421,17 @@ went looking. **The concrete lesson: re-verify this document in the same pass th
 closes a gap or resolves a finding, not when someone happens to check.** Every
 close-out that moves a verdict in the matrix should move it here too.
 
-The 6 `BLOCKED` requirements above are the project's genuine remaining
-MVP-completeness risk — not because anything was built wrong, but
-because a business decision each one depends on has not yet been made.
-**One of those decisions is now materially cheaper than the rest, and this document
-can say so without recommending a business priority: F-03 needs values, not a model.**
-Its formula, configuration shape, salvage value and clamp are all confirmed (PRD §16
-Resolved Question 46). **Corrected at v1.3:** the earlier wording said "five numbers …
-per-Asset-Category". PRD §16 **Resolved Question 52** (2026-09-08, after v1.2) amended
-RQ46 — the useful life is configured **per Asset Type**, not per Category, because
-business could not give one figure for IT Hardware. So what is missing is one value per
-Asset Type present in the data, and **not a fixed count of five**. It is the only remaining open finding whose resolution would move a requirement in §3
-to a full `PASS` — and **as of v1.3 it gates two rows, not one**: `RAISE-FR-EXEC-001`
-and `RAISE-FR-WARRANTY-001`, both `PASS (partial)` on the same missing values. Ordering the rest — F-04, F-06, F-07, F-08 — remains a business scheduling question, and this
-document still does not recommend an order for them.
+**The headline went down at v1.8, and what changed underneath it points the other way.** For the first time in this review's history, **the rows that moved are waiting on engineering, not on a decision.** All six decision requests are answered. `RAISE-FR-ASSET-001`, `RAISE-FR-ASSET-004` and `RAISE-FR-EXEC-001` — the two rows that moved and the one whose last blocker changed — are each waiting on a build that needs no further input: the open-text Type field and the Category correction (Gaps 29, 30, and through them Gap 21), and the held-asset badge (Gap 28). **Building those three is the one path in the project that would raise the headline.** Done in full, with every case passing, it would take the board to **10 of 18 (55.6%)** — stated as arithmetic, not a forecast.
+
+The rest divides cleanly by what it waits on. **Still awaiting a business or design decision:** `RAISE-FR-AUDIT-001`, `RAISE-FR-LIFE-001` and `RAISE-AI-DOC-001..004` (F-07, F-08). **Deferred by an explicit business decision not to build yet:** `RAISE-FR-ORACLE-001` and `RAISE-AI-SEARCH-001` (F-31, F-33). This document still does not recommend an order among the decision-blocked items.
+
+*History, retained: until v1.8 this section recommended F-03 as "materially cheaper than the rest — values, not a model," gating two rows. It was answered on 2026-09-23 and gated one row, not two, after v1.4 restored `RAISE-FR-WARRANTY-001`.*
 
 ---
 
 ## Document Status
 
-**Version:** 1.4 (2026-09-20 — re-verified against Traceability Matrix **v2.16**; F-59 answered)
+**Version:** 1.8 (2026-10-07 — re-verified against Traceability Matrix **v2.19**; the first verdict movement since v1.4). *This line read 1.4 through v1.5, v1.6 and v1.7: each of those revisions prepended a header note and never updated this footer or the body.*
 **Author:** Re-verified by Claude Code. **No new test execution was performed for this revision or for v1.3** — every verdict cites an execution already recorded in the matrix.
 **Next Action:** unchanged — re-verify in the same pass that closes a gap or resolves a finding, and re-check **every** row, not only the ones the last pass touched. **v1.4 adds a third rule: when the input contradicts itself, investigate which half is stale *before* correcting, not after.**
 

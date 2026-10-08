@@ -2,9 +2,9 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Acceptance Criteria
-**Version:** 0.21 Draft
+**Version:** 0.22 Draft
 **Status:** Draft for Acceptance Review
-**Source:** [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.21 §27 (Prototype Traceability Matrix) + §5, §7–§23, §23A, §25A (per-screen specs / P-018 Settings / AI Scope Boundary / NFR Backlog Prototype Note) + §8/§20's corrected P-002/P-014 KPI grid (**now ten tiles**, Utilization built and live, NBV specified as a tenth tile — placement, formula, and (as of 2026-09-23) default useful-life values all confirmed, **now buildable, not yet built**) and NBV/Risk/Utilization status narrative + §23A's NBV section (shape and default values confirmed, not built; keyed by Asset **Type**, not Category, as of 2026-09-08; ten default values confirmed 2026-09-23; "NBV for an Asset Type with No Configured Useful Life" subsection) + §14's "IT Hardware Assignment Approval Workflow — Category-Scoped Exception" subsection + §18's P-012 Alerts (five confirmed MVP trigger conditions and fixed-per-condition severity; access gate confirmed 2026-09-04) + §6's "Header Bell (`AppShell`) — Second Surface of P-012 Alerts, AS BUILT" subsection and §18's "Ordering Rationale" subsection (both resolved 2026-09-05, PRD §16 Resolved Question 49, closing Gap 17), cross-checked against [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.22 (§16 Resolved Question 54) and [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.20. **v0.17 propagated PRD §16 Resolved Questions 50 (NBV KPI tile confirmed as a tenth tile on both P-002/P-014, existing Monthly Depreciation tile kept unchanged) and 51 (NBV for an Asset Category with no configured useful life returns `purchaseCost` unchanged, asset still included in the portfolio total) via Prototype v0.18 — see Document Status Change Log below; that sync was actually performed on **2026-09-08**, not 2026-09-07 as v0.17's own Change Log heading previously stated (2026-09-07 is correctly the date business confirmed Resolved Questions 50–51, not the date this document was synced — see the v0.17 → v0.18 Change Log entry for the correction). **New in v0.18 (2026-09-08):** propagates PRD §16 Resolved Question 52, which **amends** Resolved Question 46 — the NBV useful-life configuration is **re-keyed from Asset Category to Asset Type** (a re-key, not new scope; `AC-WARRANTY-001-07`, `AC-DASH-03b`/`AC-DASH-04`, `AC-EXEC-001-03b`/`AC-EXEC-001-04` updated accordingly). PRD §16 Open Question 3a (re-scoped by Resolved Question 52 to ask for one default useful-life value **per Asset Type**) remains fully OPEN and is not answered by this revision. **New in v0.19 (2026-09-08):** propagates PRD §16 Resolved Question 53 (via `RAISE-PROTOTYPE.md` v0.20 §15/§20), which confirms the already-shipped **per-priority SLA target hours** for `RAISE-FR-MAINT-001` (Critical 2h, High 8h, Medium 24h, Low 48h — an existing value confirmed as-is, resolving Open Finding F-54, no code change follows). This adds one new, genuinely-executable-today criterion, **AC-MAINT-001-10** (§12) — recorded as testable but **not** executed/passing here — while leaving "SLA per stage" (how long each of the four workflow stages may take), the vendor model, the cost model, and delegated-approver configuration rules exactly as open/NOT TESTABLE YET as before; none of the four confirmed SLA numbers is a per-stage budget. **New in v0.20 (2026-09-23):** propagates PRD §16 Resolved Question 54 (via `RAISE-PROTOTYPE.md` v0.21 §8/§20/§23A and `RAISE-DESIGN.md` v0.20 §5.4/§13), which supplies the ten per-Asset-Type default useful-life numeric values, closing PRD §16 Open Question 3a. **Corrected in v0.21 (2026-09-23, same-day correction):** v0.20 kept `AC-DASH-03b`, `AC-EXEC-001-03b`, and `AC-WARRANTY-001-07` marked NOT TESTABLE YET on a leftover "tile/section not yet built" ground — that reasoning misapplied this document's own NOT TESTABLE YET marker (§1: reserved for a missing business rule/threshold/field/role, not a missing implementation), contradicting this project's own `RAISE-FR-ORACLE-001` precedent (`TC-ORACLE-001-01..04` recorded **FAIL**, not "not testable," against a screen that does not exist). v0.21 removes the NOT TESTABLE YET marking from `AC-DASH-01`, `AC-DASH-03b`, `AC-DASH-04`, `AC-EXEC-001-01`, `AC-EXEC-001-03b`, `AC-EXEC-001-04`, and `AC-WARRANTY-001-07` — all seven are now **testable**, none blocked by an open PRD question. **Being testable is not being met:** no `NBVSettings` type, service, or UI exists anywhere in `frontend/src/`, so executing any of the seven today is expected to produce **FAIL**, not PASS; no PASS is recorded or implied. The unbuilt-implementation status is tracked by **Gap 21** in `RAISE-TRACEABILITY-MATRIX.md` §6 and by the pending re-execution of `TC-DASH-01`/`TC-EXEC-001-01` in `RAISE-TEST-CASES.md`, not by this document. No value beyond the ten business-confirmed figures is invented for any Asset Type outside those ten.
+**Source:** [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.22 (**new in v0.22, 2026-10-07:** P-003 "Create Asset Form" subsection, held-asset marker on P-003/P-004/P-006/P-008, P-018 Open Question 3b note — PRD v0.23 §16 Resolved Questions 55/56/57, new `RAISE-FR-ASSET-004`, Design v0.21; see Document Status Change Log v0.21 → v0.22) §27 (Prototype Traceability Matrix) + §5, §7–§23, §23A, §25A (per-screen specs / P-018 Settings / AI Scope Boundary / NFR Backlog Prototype Note) + §8/§20's corrected P-002/P-014 KPI grid (**now ten tiles**, Utilization built and live, NBV specified as a tenth tile — placement, formula, and (as of 2026-09-23) default useful-life values all confirmed, **now buildable, not yet built**) and NBV/Risk/Utilization status narrative + §23A's NBV section (shape and default values confirmed, not built; keyed by Asset **Type**, not Category, as of 2026-09-08; ten default values confirmed 2026-09-23; "NBV for an Asset Type with No Configured Useful Life" subsection) + §14's "IT Hardware Assignment Approval Workflow — Category-Scoped Exception" subsection + §18's P-012 Alerts (five confirmed MVP trigger conditions and fixed-per-condition severity; access gate confirmed 2026-09-04) + §6's "Header Bell (`AppShell`) — Second Surface of P-012 Alerts, AS BUILT" subsection and §18's "Ordering Rationale" subsection (both resolved 2026-09-05, PRD §16 Resolved Question 49, closing Gap 17), cross-checked against [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.22 (§16 Resolved Question 54) and [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.20. **v0.17 propagated PRD §16 Resolved Questions 50 (NBV KPI tile confirmed as a tenth tile on both P-002/P-014, existing Monthly Depreciation tile kept unchanged) and 51 (NBV for an Asset Category with no configured useful life returns `purchaseCost` unchanged, asset still included in the portfolio total) via Prototype v0.18 — see Document Status Change Log below; that sync was actually performed on **2026-09-08**, not 2026-09-07 as v0.17's own Change Log heading previously stated (2026-09-07 is correctly the date business confirmed Resolved Questions 50–51, not the date this document was synced — see the v0.17 → v0.18 Change Log entry for the correction). **New in v0.18 (2026-09-08):** propagates PRD §16 Resolved Question 52, which **amends** Resolved Question 46 — the NBV useful-life configuration is **re-keyed from Asset Category to Asset Type** (a re-key, not new scope; `AC-WARRANTY-001-07`, `AC-DASH-03b`/`AC-DASH-04`, `AC-EXEC-001-03b`/`AC-EXEC-001-04` updated accordingly). PRD §16 Open Question 3a (re-scoped by Resolved Question 52 to ask for one default useful-life value **per Asset Type**) remains fully OPEN and is not answered by this revision. **New in v0.19 (2026-09-08):** propagates PRD §16 Resolved Question 53 (via `RAISE-PROTOTYPE.md` v0.20 §15/§20), which confirms the already-shipped **per-priority SLA target hours** for `RAISE-FR-MAINT-001` (Critical 2h, High 8h, Medium 24h, Low 48h — an existing value confirmed as-is, resolving Open Finding F-54, no code change follows). This adds one new, genuinely-executable-today criterion, **AC-MAINT-001-10** (§12) — recorded as testable but **not** executed/passing here — while leaving "SLA per stage" (how long each of the four workflow stages may take), the vendor model, the cost model, and delegated-approver configuration rules exactly as open/NOT TESTABLE YET as before; none of the four confirmed SLA numbers is a per-stage budget. **New in v0.20 (2026-09-23):** propagates PRD §16 Resolved Question 54 (via `RAISE-PROTOTYPE.md` v0.21 §8/§20/§23A and `RAISE-DESIGN.md` v0.20 §5.4/§13), which supplies the ten per-Asset-Type default useful-life numeric values, closing PRD §16 Open Question 3a. **Corrected in v0.21 (2026-09-23, same-day correction):** v0.20 kept `AC-DASH-03b`, `AC-EXEC-001-03b`, and `AC-WARRANTY-001-07` marked NOT TESTABLE YET on a leftover "tile/section not yet built" ground — that reasoning misapplied this document's own NOT TESTABLE YET marker (§1: reserved for a missing business rule/threshold/field/role, not a missing implementation), contradicting this project's own `RAISE-FR-ORACLE-001` precedent (`TC-ORACLE-001-01..04` recorded **FAIL**, not "not testable," against a screen that does not exist). v0.21 removes the NOT TESTABLE YET marking from `AC-DASH-01`, `AC-DASH-03b`, `AC-DASH-04`, `AC-EXEC-001-01`, `AC-EXEC-001-03b`, `AC-EXEC-001-04`, and `AC-WARRANTY-001-07` — all seven are now **testable**, none blocked by an open PRD question. **Being testable is not being met:** no `NBVSettings` type, service, or UI exists anywhere in `frontend/src/`, so executing any of the seven today is expected to produce **FAIL**, not PASS; no PASS is recorded or implied. The unbuilt-implementation status is tracked by **Gap 21** in `RAISE-TRACEABILITY-MATRIX.md` §6 and by the pending re-execution of `TC-DASH-01`/`TC-EXEC-001-01` in `RAISE-TEST-CASES.md`, not by this document. No value beyond the ten business-confirmed figures is invented for any Asset Type outside those ten. **New in v0.22 (2026-10-07):** propagates PRD §16 Resolved Questions 55 (open-text Asset Type; Create Asset criteria `AC-ASSET-001-05..08`), 56 (new MVP requirement `RAISE-FR-ASSET-004`; new group `AC-ASSET-004`, 13 criteria, testable, not built, expected FAIL, no PASS recorded), and 57 (requester rule — Roadmap-conditional, no MVP criterion); Open Question 3b stays open with no criterion; cross-checked against PRD v0.23 and Design v0.21.
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
 
@@ -50,11 +50,12 @@ detail is "TBD" or "conceptual," the corresponding criterion is marked
 |---|---|---|---|
 | [AC-LOGIN](#4-ac-login--p-001-login--access) | P-001 | Security Design (TBD) | Partially testable |
 | [AC-DASH](#5-ac-dash--p-002-main-dashboard) | P-002 | Product / Dashboard | Testable (rewritten 2026-08-31 to match as-built dashboard, Open Finding F-22; updated 2026-09-05, PRD §16 Resolved Questions 46–48 — KPI grid nine tiles; Utilization is a passing, testable criterion (built and live, PR #102); Risk is confirmed out of MVP scope by business decision, not a gap. **Updated 2026-09-08 (sync date corrected — see Document Status Change Log; the underlying business decisions were confirmed 2026-09-07), PRD §16 Resolved Questions 50–51 (closes Open Finding F-52's specification gap):** KPI grid grows to **ten** tiles (AC-DASH-01 re-specified — its prior nine-tile PASS record, `TC-DASH-01`, requires re-execution, not carry-forward); NBV (AC-DASH-03b) flips from an absence criterion to a presence criterion, still NOT TESTABLE YET (tile not built; default useful-life values undefined, PRD Open Question 3a); new AC-DASH-04 records the confirmed unconfigured-Asset-Type NBV rule, also NOT TESTABLE YET (tile not built). **Updated again 2026-09-08, PRD §16 Resolved Question 52:** the NBV useful-life configuration referenced by AC-DASH-03b/-04 is re-keyed from Asset Category to Asset Type (amends Resolved Question 46; a re-key, not new scope). **Updated 2026-09-23, PRD §16 Resolved Question 54 (closes Open Question 3a and the narrowed remainder of Open Finding F-03):** the ten per-Asset-Type default useful-life values are now confirmed (5 years for nine types, 3 years for Smartphone). **Corrected 2026-09-23:** AC-DASH-01, AC-DASH-03b, and AC-DASH-04's NOT TESTABLE YET markings are **removed** — each is now fully specified and **testable**; "tile not yet built" was never a valid NOT TESTABLE YET reason under this document's own definition (§1) or this project's own `RAISE-FR-ORACLE-001` precedent (`TC-ORACLE-001-01..04` recorded FAIL, not "not testable," against an unbuilt screen). Executing these three today is expected to produce **FAIL**, not PASS — the unbuilt NBV tile/`NBVSettings`/P-018 NBV section is tracked by Gap 21 in `RAISE-TRACEABILITY-MATRIX.md` §6, not by this document) |
-| [AC-ASSET-001](#6-ac-asset-001--p-003-asset-registry) | P-003 | RAISE-FR-ASSET-001 | Testable |
+| [AC-ASSET-001](#6-ac-asset-001--p-003-asset-registry) | P-003 (incl. Create Asset form) | RAISE-FR-ASSET-001 | Testable. **Updated 2026-10-07 (PRD §16 Resolved Question 55):** AC-ASSET-001-05..08 added for the Create Asset form (Type open text with suggestions, no normalisation/dedup, five-Category list) — fully specified and testable; **expected to FAIL today** (as-built form offers four Categories, Media Equipment missing) — no PASS recorded |
 | [AC-ASSET-001-DETAIL](#7-ac-asset-001-detail--p-004-asset-detail) | P-004 | RAISE-FR-ASSET-001 | Testable |
 | [AC-LIFE-001](#75-ac-life-001--asset-lifecycle-connectivity-cross-cutting) | P-004 (Lifecycle section) | RAISE-FR-LIFE-001 | Partially testable |
 | [AC-ASSET-002](#8-ac-asset-002--p-005-category--hierarchy) | P-005 | RAISE-FR-ASSET-002 | Testable (resolved 2026-09-01, Open Finding F-27) |
 | [AC-ASSET-003](#9-ac-asset-003--p-006-custody-history) | P-006 | RAISE-FR-ASSET-003 | Partially testable |
+| [AC-ASSET-004](#95-ac-asset-004--employee-offboarding-held-asset-flag-p-003-p-004-p-006-p-008) | P-003, P-004, P-006, P-008 | RAISE-FR-ASSET-004 (new MVP requirement, 2026-10-07) | Testable — fully specified, no NOT TESTABLE YET criterion. **Not built; executing any criterion today is expected to FAIL; no PASS recorded.** Badge wording is a prototype proposal (PRD fixes behaviour, not text) |
 | [AC-OPS-001](#10-ac-ops-001--p-007-qr--barcode-scan) | P-007 | RAISE-FR-OPS-001 | Testable |
 | [AC-OPS-002](#11-ac-ops-002--p-008-check-in--check-out) | P-008 | RAISE-FR-OPS-002 | Testable (resolved 2026-09-01, PRD §16 Resolved Question 42 — general workflow shape and permission gate confirmed for non-IT-Hardware Check-out and all Check-in; **expanded 2026-09-02, PRD §16 Resolved Question 43** — IT Hardware-category Check-out's 4-stage approval workflow now also testable at the confirmed stage-transition level. Two Stage 2 sub-points — recipient-decline path and e-signature/acknowledgment-text capture — remain **NOT TESTABLE YET**, genuinely undecided per Prototype/Design's own open-question framing. General RBAC role/permission content for other domains remains NOT TESTABLE YET, PRD §16 Q22) |
 | [AC-MAINT-001](#12-ac-maint-001--p-009-maintenance) | P-009 | RAISE-FR-MAINT-001 | Partially testable (workflow shape testable; **updated 2026-09-08, PRD §16 Resolved Question 53, resolving Open Finding F-54:** per-priority SLA target hours (Critical 2h/High 8h/Medium 24h/Low 48h) now testable — AC-MAINT-001-10, not yet executed; "SLA per stage" (per-workflow-stage time budget), vendor model, cost model, and delegated-approver rules remain NOT TESTABLE YET) |
@@ -378,6 +379,19 @@ way.
   unbuilt-implementation status is tracked by
   [**Gap 21**](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md) in
   `RAISE-TRACEABILITY-MATRIX.md` §6 — not by this document.
+  **Precondition reachability — updated 2026-10-07 (PRD §16 Resolved Question 55;
+  criterion unchanged):** "reachable by data alone" above was previously the *only*
+  route, because no screen could create an asset of an unconfigured Type; test
+  execution of this criterion (and AC-EXEC-001-04) was recorded **BLOCKED — test
+  data unreachable** in the test-case layer for that reason (that record lives in
+  `RAISE-TEST-CASES.md`, not here). Business has now decided the Create Asset form's
+  **Type is open text** (AC-ASSET-001-05..07, §6), which will make the precondition
+  reachable through the application — **decided, not yet built**. Until that field is
+  built the data-only route is still the only way to set up the Given; this criterion's
+  assertion is not changed, and it is still not met (NBV tile unbuilt, above).
+  Whether an admin can set a useful life for such a Type is
+  [Open Question 3b](../01-requirements/RAISE-PRD.md#16-open-questions), still open,
+  and no criterion is written for it.
 
 **Testable now (all fully specified; execution result is a separate
 question):** AC-DASH-01, AC-DASH-02, AC-DASH-03a, AC-DASH-03b, and AC-DASH-04
@@ -464,6 +478,43 @@ not a discrepancy. See
 - **AC-ASSET-001-04** — Given a filtered or unfiltered asset list, when
   the user selects an asset, then Asset Detail (P-004) opens for that
   asset.
+
+### Create Asset form — Type and Category (2026-10-07, PRD §16 Resolved Question 55; Prototype v0.22 P-003 "Create Asset Form"; Design §4.1)
+
+Fully specified and **testable**; none is blocked by an open PRD question (the NOT
+TESTABLE YET note below concerns the display field list, not this form). **Expected to
+FAIL if executed today** — the Type field's open-text-with-suggestions behaviour is
+decided but not yet built, and the as-built form's Category list has four entries.
+Being testable is not being met; no PASS is recorded or implied.
+
+- **AC-ASSET-001-05 (Type accepts free text)** — Given a registrar is on the Create
+  Asset form, when they enter a Type value that matches no existing Type (e.g., a
+  value not among Laptop, Monitor, Smartphone …) and submit with the other required
+  fields valid, then the asset is created with that Type stored as entered — the form
+  does not restrict Type to a closed list.
+- **AC-ASSET-001-06 (existing Types suggested)** — Given assets with existing Types
+  are present, when the registrar focuses or types in the Type field, then the Types
+  that already exist are offered as suggestions; choosing a suggestion fills the field,
+  and the registrar may still ignore the suggestions and type another value.
+- **AC-ASSET-001-07 (no normalisation, no deduplication)** — Given a Type "Laptop"
+  already exists, when a registrar creates assets with Type "laptop " (different case /
+  trailing space) or any other differing spelling, then each spelling is **stored
+  exactly as entered** and the two are **distinct Types** — no case-folding, trimming-
+  to-match, merge, spell-check, or "did you mean" prompt occurs. (The business accepted
+  this; this criterion asserts it so that silent normalisation is caught as a defect.)
+- **AC-ASSET-001-08 (Category offers the five confirmed values)** — Given the Create
+  Asset form is open, when the registrar opens the Category pick list, then it offers
+  exactly the **five** confirmed Categories — IT Hardware, Mobile, Office Equipment,
+  Infrastructure, **Media Equipment** — as a closed list, and no sixth Category.
+  `RAISE-PROTOTYPE.md` v0.22 records the as-built form offering only four
+  (Media Equipment missing) as a **build gap against the PRD**; that is a defect this
+  criterion is meant to catch, not a reason to accept four.
+
+Out of scope here (Open Question 3b stays open): **no criterion** is written for whether
+an admin can set a useful life for a newly appeared Type, or for P-018 offering any
+control for it ([PRD §16 Open Question 3b](../01-requirements/RAISE-PRD.md#16-open-questions)).
+The NBV consequence of an unconfigured new Type is already covered by AC-DASH-04 /
+AC-EXEC-001-04 (Resolved Question 51), unchanged.
 
 **NOT TESTABLE YET:** the complete set of displayable fields (identifier,
 name, status, holder, warranty status, maintenance status) is
@@ -604,6 +655,109 @@ enumeration.
   A dedicated criterion for "direct reassignment without Check-in/Check-out" cannot be
   written until that confirmation exists, since no such flow/screen is defined anywhere
   in the Prototype.
+
+---
+
+## 9.5. AC-ASSET-004 — Employee Offboarding Held-Asset Flag (P-003, P-004, P-006, P-008)
+
+**Requirement:** `RAISE-FR-ASSET-004` (new MVP requirement, confirmed 2026-10-07 — [PRD §16 Resolved Question 56](../01-requirements/RAISE-PRD.md#16-open-questions), DR-06) · **Screens:** P-003 (Holder column), P-004 (Custody section), P-006 (Current Holder), P-008 (Check-in Confirm Return step) — see [`RAISE-PROTOTYPE.md`](../03-prototype/RAISE-PROTOTYPE.md) v0.22 "Held-Asset Marker" subsections.
+
+**Status — fully specified and TESTABLE; NOT built.** PRD fixes the behaviour (trigger,
+no auto-release, per-item Check-in, visible marker, return from leave); Prototype v0.22
+fixes marker placement and wording. Nothing in this group depends on an open PRD
+question, so **no criterion is marked NOT TESTABLE YET** — "not built" is not a NOT
+TESTABLE YET reason (§1; `RAISE-FR-ORACLE-001` precedent, §14). **Executing any
+criterion below today is expected to FAIL** (no marker exists on any of the four
+screens); **no PASS is recorded or implied.** Tracked in the traceability/test layers,
+not here.
+
+**Rule under test (derived at read time, nothing stored):** the marker shows when
+`Asset.status == Assigned` **and** the holder's `EmployeeStatus` is `Inactive` or
+`On Leave`. It is a badge placed immediately after the holder name. Wording
+distinguishes the two states (colour is secondary, never the only cue). The wording
+("Holder inactive" / "Holder on leave") is a **prototype proposal** — the PRD fixes the
+behaviour, not the text; if review changes the wording, update these criteria. No
+Employee screen exists in the prototype inventory, so "the holder's status is set to…"
+is a data-state precondition using the existing status mechanism (not designed here).
+
+### Marker presence — P-003 Holder column
+
+- **AC-ASSET-004-01 (Inactive holder)** — Given an Assigned asset whose holder's
+  Employee status is `Inactive`, when a user opens Asset Registry (P-003), then that
+  asset's Holder column shows the holder's name immediately followed by a badge reading
+  **"Holder inactive"**.
+- **AC-ASSET-004-02 (On Leave holder)** — Given an Assigned asset whose holder's
+  Employee status is `On Leave`, when a user opens Asset Registry, then that asset's
+  Holder column shows the holder's name immediately followed by a badge reading
+  **"Holder on leave"** — different wording from AC-ASSET-004-01, so the two states are
+  distinguishable without relying on colour.
+- **AC-ASSET-004-03 (Active holder — no badge)** — Given an Assigned asset whose
+  holder's Employee status is `Active`, when a user opens Asset Registry (or P-004,
+  P-006, P-008 for that asset), then no held-asset badge is shown beside the holder name.
+- **AC-ASSET-004-04 (Not Assigned — no badge)** — Given an asset whose status is not
+  `Assigned` (e.g., Available), when a user opens Asset Registry, then no held-asset
+  badge is shown for it, regardless of any Employee's status.
+
+### Marker presence — P-004, P-006, P-008 (same badge, wording and rule)
+
+- **AC-ASSET-004-05 (P-004 Custody section)** — Given an Assigned asset whose holder is
+  `Inactive` or `On Leave`, when a user opens its Asset Detail (P-004), then the Custody
+  section shows the same badge beside the holder's name (wording per AC-ASSET-004-01/-02)
+  together with the one-line hint **"Return this item with Check-in"** linking to P-008
+  Check-in; no release control is offered on this screen, and no other P-004 section
+  changes.
+- **AC-ASSET-004-06 (P-006 Current Holder only)** — Given an Assigned asset whose holder
+  is `Inactive` or `On Leave` and whose custody history contains rows, when a user opens
+  Custody History (P-006), then the **Current Holder** block shows the badge beside the
+  holder name, and **no History row** — including a row naming the same person — shows
+  a badge. No new Action value appears (Assigned/Transferred unchanged).
+- **AC-ASSET-004-07 (P-008 Confirm Return step)** — Given an Assigned asset whose holder
+  is `Inactive` or `On Leave`, when a user identifies it in Check-in (P-008) and reaches
+  the Confirm Return step, then the same badge is shown beside the holder name; the
+  Check-in steps are otherwise unchanged.
+
+### Behaviour — no automatic release, per-item return, return from leave
+
+- **AC-ASSET-004-08 (nothing released automatically)** — Given a holder with one or more
+  Assigned assets, when that holder's Employee status is set to `Inactive` (or
+  `On Leave`), then every one of those assets remains `Assigned` to that holder — no
+  asset status change, no custody change, and no Custody History entry results from
+  the status change. (Whether the Employee status change itself is audited is not
+  specified by PRD/Prototype and is not asserted here.)
+- **AC-ASSET-004-09 (Check-in removes the badge, per item, with the existing audit
+  entry)** — Given a holder (`Inactive` or `On Leave`) with several Assigned assets
+  each showing the badge, when a user completes the existing Check-in (AC-OPS-002-02)
+  for **one** of them, then that asset's status updates exactly as Check-in already
+  does, the existing Audit Log entry is created (AC-OPS-002-03), and the badge no
+  longer appears for **that** asset on any of the four screens — while the **other**
+  assets still show the badge until each is individually checked in.
+- **AC-ASSET-004-10 (return from leave)** — Given an Assigned asset showing "Holder on
+  leave", when the holder's Employee status is set back from `On Leave` to `Active`,
+  then the badge no longer appears on P-003, P-004, P-006, or P-008 for that asset with
+  **no other action** taken — the asset stays `Assigned` to the same holder and nothing
+  needs restoring.
+
+### Negative criteria — what must NOT exist
+
+- **AC-ASSET-004-11 (no bulk release)** — Given a holder with several badged assets,
+  when a user inspects P-003, P-004, P-006, and P-008, then none offers a bulk or
+  "release all" control (nor any per-asset release control other than the existing
+  Check-in); returning the holder's items is only possible one item at a time through
+  Check-in.
+- **AC-ASSET-004-12 (no new alert, no notification)** — Given a holder's status is set to
+  `Inactive` or `On Leave` while they hold Assigned assets, when a user opens Alerts
+  (P-012) and the header bell, then the alert set is **unchanged** — exactly the five
+  confirmed trigger conditions of AC-ALERT-001 (PRD §16 Resolved Question 44), the
+  bell/screen totals identical to what they were before the status change, and no
+  alert row, badge count, or notification relating to the held asset appears.
+- **AC-ASSET-004-13 (marker is not a new Status, filter or column)** — Given the Asset
+  Registry is displayed, when a user inspects its Status values, filters, and columns,
+  then no new Status value, filter, or column was introduced for the held-asset state —
+  the badge appears only inside the existing Holder column.
+
+**Not criteria (deliberately):** no criterion exists for automatic release, notification,
+or any Employee-screen placement — none is specified in PRD or Prototype. This group
+touches no NOT TESTABLE YET item and adds no row to §20.
 
 ---
 
@@ -807,6 +961,15 @@ are unaffected and remain **TBD** exactly as before.
 - **AC-MAINT-001-02** — Given multiple maintenance records exist for an
   asset, when the Maintenance screen is opened, then a chronological
   maintenance history is shown.
+
+**Requester rule — Roadmap-conditional only (PRD §16 Resolved Question 57, 2026-10-07):**
+the requisition requester rule takes effect **only with the Roadmap user store**. No MVP
+criterion is added or changed for it — AC-MAINT-001-03's "requester" is unchanged, and
+`RAISE-FR-MAINT-001` remains fully testable against the current system with nothing new
+that it would fail. If the Roadmap user store is later promoted, a criterion for the
+requester rule belongs here at that time, derived from whatever is confirmed then;
+none is written now (and `RAISE-PROTOTYPE.md` v0.22 describes no Create IT Requisition
+requester).
 
 ### 4-Stage Workflow — Stage Transitions
 
@@ -1643,6 +1806,12 @@ and §5).
   status is tracked by
   [**Gap 21**](../07-traceability-matrix/RAISE-TRACEABILITY-MATRIX.md) in
   `RAISE-TRACEABILITY-MATRIX.md` §6 — not by this document.
+  **Precondition reachability — updated 2026-10-07 (PRD §16 Resolved Question 55;
+  criterion unchanged):** same note as AC-DASH-04 (§5). The Given was previously
+  reachable only by data, which is why its execution was recorded **BLOCKED — test
+  data unreachable** in `RAISE-TEST-CASES.md`; the open-text Create Asset Type field
+  (AC-ASSET-001-05..07, §6) will make it reachable through the application —
+  **decided, not yet built**. Assertion unchanged; Open Question 3b stays open.
 
 **Testable now (all fully specified; execution result is a separate
 question):** AC-EXEC-001-01, AC-EXEC-001-02, AC-EXEC-001-03a, AC-EXEC-001-03b,
@@ -1930,6 +2099,16 @@ them as final:
 
 No criterion in this document silently resolves these — each affected
 criterion above carries its own **NOT TESTABLE YET** note.
+
+**v0.22 (2026-10-07) — no row added, none removed.** The new/changed criteria
+(AC-ASSET-004-01..13, AC-ASSET-001-05..08) are fully specified and testable; none is
+blocked by an Open Question, and none is marked NOT TESTABLE YET. Two PRD items are
+deliberately **not** turned into criteria, and are recorded here so they are not
+mistaken for omissions: **[Open Question 3b](../01-requirements/RAISE-PRD.md#16-open-questions)**
+(can an admin set a useful life for a newly appeared Asset Type — still open; no
+criterion) and **Resolved Question 57** (requisition requester rule — Roadmap-
+conditional on the user store; no MVP criterion, §12). The not-built status of the new
+criteria is a **FAIL on execution**, not a Not-Yet-Testable entry.
 
 **Resolved since last revision (2026-09-23, PRD v0.22 §16 Resolved Question 54,
 per confirmed business decision — closes Open Question 3a and the narrowed
@@ -2345,6 +2524,14 @@ Before moving to Test Plan:
       value beyond the ten business-confirmed figures is invented for any Asset Type
       outside those ten; the existing Warranty-section criteria (AC-WARRANTY-001-01..06)
       are unchanged and remain fully testable
+- [x] v0.22 (2026-10-07): AC-ASSET-004 (§9.5, `RAISE-FR-ASSET-004`, PRD §16 Resolved
+      Question 56) covers the held-asset badge on P-003/P-004/P-006/P-008, no auto-release,
+      per-item Check-in removal with the existing audit entry, On Leave → Active, and the
+      negative criteria (no bulk release, no new alert — RQ44's five unchanged); AC-ASSET-001-05..08
+      (§6, RQ55) cover the open-text Type (no normalisation/dedup) and the five-Category
+      list. All fully specified and **testable, not built, expected to FAIL; no PASS
+      recorded** — none marked NOT TESTABLE YET. No criterion for Open Question 3b or for
+      RQ57 (Roadmap-conditional); AC-MAINT-001 gains a note only
 - [x] AC-OPS-002 (§11) reflects the category-scoped IT Hardware Assignment Approval
       Workflow exception (PRD §16 Resolved Question 43; Design §4.2) without altering
       AC-OPS-002-01/-02/-03's general rule for Check-in and non-IT-Hardware Check-out;
@@ -2409,7 +2596,40 @@ as blocked pending business confirmation.
 
 ## Document Status
 
-**Version:** 0.21 (2026-09-23, same-day correction of v0.20's NOT TESTABLE YET
+**Version:** 0.22 (2026-10-07, PRD v0.23 §16 Resolved Questions 55/56/57 + new
+`RAISE-FR-ASSET-004` + Open Question 3b, via `RAISE-PROTOTYPE.md` v0.22 / `RAISE-DESIGN.md`
+v0.21). Previous version line follows unchanged.
+
+**Change Log — v0.21 → v0.22 (2026-10-07):**
+
+1. **New AC group `AC-ASSET-004` (§9.5), `RAISE-FR-ASSET-004`** — 13 criteria,
+   `AC-ASSET-004-01..13`: badge presence on P-003/P-004/P-006 (Current Holder only)/P-008
+   for `Inactive` ("Holder inactive") and `On Leave` ("Holder on leave"); no badge for
+   `Active` or non-Assigned; P-004 hint "Return this item with Check-in"; no automatic
+   release; per-item Check-in removes the badge with the existing audit entry;
+   `On Leave` → `Active` removes it with no other action; negatives — no bulk release,
+   no new alert/notification (RQ44's five unchanged), no new Status/filter/column.
+   Fully specified and **testable**; **not built — expected FAIL if executed; no PASS
+   recorded.** Not marked NOT TESTABLE YET ("not built" is not a valid reason, §1; v0.21
+   correction; `RAISE-FR-ORACLE-001` precedent). Wording is a prototype proposal.
+2. **Create Asset form criteria `AC-ASSET-001-05..08` (§6), RQ55** — Type free text
+   (-05), existing Types suggested (-06), no normalisation/dedup — two spellings stored
+   as entered (-07), Category offers the five confirmed values incl. Media Equipment
+   (-08). Prototype's recorded four-Category as-built form is a build gap the criterion
+   must catch, not a softening. Testable, expected FAIL, no PASS.
+3. **`AC-DASH-04` / `AC-EXEC-001-04` — assertion unchanged;** a "Precondition
+   reachability" note added: the Given was reachable by data only (execution recorded
+   BLOCKED — test data unreachable in `RAISE-TEST-CASES.md`); the open-text Type field
+   will make it reachable via the app — decided, not yet built. Open Question 3b noted
+   as open.
+4. **RQ57** — no MVP criterion; Roadmap-conditional note added to §12
+   (AC-MAINT-001); `RAISE-FR-MAINT-001` unaffected.
+5. **Open Question 3b** — stays open; no criterion (§6, §20 notes).
+6. AC Index (§3), §20 note, §21 checklist updated. No `## NEEDS_PRD_CONFIRMATION`.
+   Not changed: any earlier-layer or later-layer document (test plan/cases/matrix need
+   their own sync pass).
+
+**Previous version line (v0.21):** (2026-09-23, same-day correction of v0.20's NOT TESTABLE YET
 reasoning — see the v0.20 → v0.21 Change Log entry below. Net effect since v0.19:
 PRD v0.22 §16 Resolved Question 54, via `RAISE-PROTOTYPE.md` v0.21 / `RAISE-DESIGN.md`
 v0.20, supplies the ten confirmed per-Asset-Type default useful-life numeric values for

@@ -2,9 +2,9 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** System / Product Design
-**Version:** 0.20 Draft
+**Version:** 0.21 Draft
 **Status:** Draft for Design Review
-**Design Source:** [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.22
+**Design Source:** [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.23
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
 
@@ -281,6 +281,26 @@ Requirement traceability:
 - `RAISE-FR-ASSET-002`
 - `RAISE-FR-LIFE-001`
 
+**Asset Type is open text — confirmed 2026-10-07 (PRD v0.23, [§16 Resolved
+Question 55](../01-requirements/RAISE-PRD.md#16-open-questions), DR-05).**
+`Asset.type` is a free-text value, not a closed vocabulary: a registrar may
+enter a Type that does not yet exist, and the registration form suggests the
+existing Type values. This design specifies **no normalisation, deduplication,
+merge or spelling-variant rule** — the business accepted that spelling
+variants become distinct Types. Consequences recorded, none of them new scope:
+
+- A newly entered Type has no configured NBV useful life, so [§16 Resolved
+  Question 51](../01-requirements/RAISE-PRD.md#16-open-questions) applies to
+  it unchanged (see [§13](#13-executive-intelligence)). Resolved Questions 51
+  and 54 are untouched. This is the first time that rule is reachable through
+  the application itself rather than by data alone.
+- **Asset Category is not decided by this** — its vocabulary is not restated
+  as changed.
+- Whether an admin can set a useful life for a newly-appeared Type through
+  P-018 is [PRD §16 Open Question 3b](../01-requirements/RAISE-PRD.md#16-open-questions),
+  **open and not decided here**; see [§5.4](#54-settings-domain) and
+  [§25 item 3b](#25-design-open-questions).
+
 ---
 
 ## 4.1A License Management (Enterprise Roadmap)
@@ -351,8 +371,65 @@ Responsible for:
 Requirement traceability:
 
 - `RAISE-FR-ASSET-003`
+- `RAISE-FR-ASSET-004` (Employee Offboarding — Held-Asset Flag; see
+  [Employee Offboarding — Held-Asset Marker](#employee-offboarding--held-asset-marker-confirmed-2026-10-07-prd-v023-16-resolved-question-56))
 - `RAISE-FR-OPS-001`
 - `RAISE-FR-OPS-002`
+
+### Employee Offboarding — Held-Asset Marker (confirmed 2026-10-07, PRD v0.23, §16 Resolved Question 56)
+
+`RAISE-FR-ASSET-004` (new, MVP) is designed here because it sits on the same
+holder link as Custody and reuses Check-in unchanged. It is a **read-side
+surfacing of existing state**, not a workflow and not a state-change operation.
+
+**Trigger (as the PRD states it):** an employee's `EmployeeStatus`
+(`Active | On Leave | Inactive`) being `Inactive` **or** `On Leave` — treated
+identically.
+
+**Mechanism — the marker is DERIVED at read time, not stored:**
+
+```text
+held-asset marker applies to an asset  ⇔
+      Asset.status == Assigned
+  AND the holder (Asset.assignedEmployeeId → Employee record)
+      has Employee.status ∈ { Inactive, On Leave }
+```
+
+- **Data it depends on, all already modeled:** `Asset.status`,
+  `Asset.assignedEmployeeId`/`assignedTo` (the confirmed direct 1:1 holder
+  link, Resolved Question 42), and `Employee.status`. No new entity, no new
+  Asset or Employee field, and no persisted flag.
+- **Why derive rather than store a flag:** the PRD fixes that nothing is
+  released, so the asset simply stays `Assigned` to the same holder. A stored
+  flag would have to be set when the status becomes `Inactive`/`On Leave` and
+  cleared on every other transition, and could drift from the Employee
+  record. A derived marker has no such failure mode.
+- **`On Leave` → `Active` needs no restoration** (PRD acceptance point 5):
+  nothing was changed on the asset, so when the holder's status returns to
+  `Active` the condition above stops being true and the marker simply no
+  longer applies. Likewise, the existing **Check-in** action clears the
+  holder link and the `Assigned` status, so the marker disappears per item
+  with no marker-specific step.
+- **Per-item return** uses the existing Check-in action
+  ([`RAISE-FR-OPS-002`](#42-custody--asset-operations)) **unchanged** — this
+  design adds no new operation, and Check-in's existing audit entry (Audit
+  Architecture, §15) is the record of each return. The change of Employee
+  status itself is not given any new audit semantics here.
+- **Scope relationship to the IT Hardware approval workflow:** the marker's
+  condition keys off `Assigned`; an IT Hardware item still inside its 4-stage
+  approval has not yet become `Assigned` (see [IT Hardware Assignment Approval
+  Workflow](#it-hardware-assignment-approval-workflow--category-scoped-exception-confirmed-2026-09-02-prd-v014-16-resolved-question-43)) and so is
+  outside this condition. This is a consequence of the derivation, not a
+  separate rule.
+- **Where the marker appears and its wording** is a Prototype decision (PRD
+  `RAISE-FR-ASSET-004` Open Question). This design states only the mechanism
+  and its data dependencies, and that any screen that shows an asset's holder
+  can derive the marker from the same two joined records.
+- **Explicitly not designed (PRD non-decisions):** automatic release of any
+  asset; a new alert condition (MVP alerts stay at exactly five, Resolved
+  Question 44 — see [§14](#14-alert-architecture)); notifications to anyone.
+  A holder record that cannot be resolved from `assignedEmployeeId` is not
+  addressed by the PRD and is not designed here.
 
 ### Conceptual State
 
@@ -645,6 +722,16 @@ User Requisition  →  Dept Approval (Delegated)  →  IT Dispatch  →  Technic
 ```
 
 - **User Requisition** — a user raises a maintenance request against an asset.
+  **Requester identity — Roadmap-conditional (PRD v0.23, [§16 Resolved
+  Question 57](../01-requirements/RAISE-PRD.md#16-open-questions), DR-03):**
+  when Create IT Requisition is opened without naming an employee, the
+  requester is the **logged-in user**. This takes effect **only with the
+  Roadmap real user store** (when a User→Employee link can exist; Resolved
+  Question 38, [Open Question 22a](#25-design-open-questions)). The business
+  declined both interim options (email matching, a temporary employee
+  chooser). **No MVP design change:** MVP behaviour and
+  `RAISE-FR-MAINT-001`'s MVP scope and acceptance are unchanged, and this
+  design proposes no `User`↔`Employee` link now.
 - **Dept Approval (Delegated)** — the request is approved by a department
   approver, who may be a delegated approver per a configurable
   delegated-approver setting.
@@ -1031,6 +1118,21 @@ Enforcement Level"](#16-security-architecture), MVP enforcement of this
 admin-only restriction is UI-only/client-side — the same accepted MVP risk
 (server-side bypass not blocked) documented there applies here and is not
 restated as a new risk.
+
+### Newly-Appeared Asset Types — Open Question 3b (raised 2026-10-07, NOT decided)
+
+With Asset Type now open text ([§4.1](#41-asset-management), PRD §16 Resolved
+Question 55), `NBVSettings` will hold rows only for Types that have a
+configured useful life, so a newly-entered Type has **no row** on the P-018
+NBV section. Whether an admin should be able to **add a useful-life value for
+such a Type through P-018**, or whether new Types stay under Resolved Question
+51 (`purchaseCost` unchanged) until a business decision supplies a value, is
+[PRD §16 Open Question 3b](../01-requirements/RAISE-PRD.md#16-open-questions)
+— **open**. This design deliberately takes neither side: it adds no
+Type-creation or add-row capability to Settings, and it adds no default
+useful life for unlisted Types. The interim is safe and already specified by
+Resolved Question 51. **Non-blocking.** The Scope Boundary below is
+unchanged.
 
 ### Scope Boundary — Not a General Settings Framework
 
@@ -1856,7 +1958,15 @@ This is reachable by **data alone**, not only by misconfiguration: both
 (`frontend/src/types/asset.ts:17` and
 `go-template-main/model/assetModel.go:23`/`sql/pg/V1__Assets_Table.sql:7`),
 **not** a fixed enum, so a category or type added later carries no configured
-value. **Resolved Question 52 does not change or reopen this rule** —
+value. **Asset Type is now open text (2026-10-07, PRD v0.23, §16 Resolved Question
+55):** a registrar can enter a new Type through the application, so this rule
+is now reachable through the UI, not by data alone; it applies to every such
+Type unchanged, and Resolved Questions 51 and 54 are not amended. Whether an
+admin can set a useful life for such a Type is [Open Question
+3b](../01-requirements/RAISE-PRD.md#16-open-questions) — **open, not decided
+here** (see [§5.4](#54-settings-domain)).
+
+**Resolved Question 52 does not change or reopen this rule** —
 because `type` is free-text just as `category` is, a newly-added type with
 no configured value falls under exactly this existing rule; the rule
 generalizes without needing an edit. This resolution **confirms
@@ -2041,7 +2151,10 @@ anywhere in the data model, see [§18](#18-logical-data-model)) or a
 software-license-expiry condition (`RAISE-FR-LICENSE-001` remains Roadmap;
 its relationship to alerting is separately TBD, see
 [§5.3, "Relationship to Alerts"](#relationship-to-alerts-open)) — a sixth
-condition is not invented here.
+condition is not invented here. **Likewise (2026-10-07, PRD v0.23, §16
+Resolved Question 56):** the `RAISE-FR-ASSET-004` held-asset marker
+([§4.2](#employee-offboarding--held-asset-marker-confirmed-2026-10-07-prd-v023-16-resolved-question-56))
+is **not** an alert condition; the count stays exactly five.
 
 ### Severity — Fixed Per Condition Type
 
@@ -2629,6 +2742,11 @@ The following require detailed design:
   custody model; PRD §16 Resolved Question 42, resolving PRD Open Question
   13; see [§4.2 Custody & Asset Operations](#42-custody--asset-operations)),
   retained here only because the other data model TBD items are still open.
+  **`RAISE-FR-ASSET-004` (2026-10-07, PRD v0.23) adds no field or entity:**
+  its held-asset marker is derived at read time from `Asset.status`,
+  `Asset.assignedEmployeeId` and `Employee.status` — see [§4.2](#employee-offboarding--held-asset-marker-confirmed-2026-10-07-prd-v023-16-resolved-question-56).
+  Likewise Asset Type open text (Resolved Question 55) needs no schema change
+  (`Asset.type` is already a free `string`).
 - IT Hardware Assignment Approval Request — **new small entity, added
   2026-09-02** (PRD §16 Resolved Question 43): a category-scoped (IT
   Hardware only) record tracking `assetId`, `recipientEmployeeId`,
@@ -2743,6 +2861,9 @@ The actual source priority rules are TBD.
 Asset Registry
 Category / Hierarchy
 Custody History
+Employee Offboarding — Held-Asset Marker (RAISE-FR-ASSET-004, derived at
+  read time from holder Employee.status Inactive / On Leave; no auto-release;
+  returns via existing Check-in — confirmed 2026-10-07)
 QR / Barcode
 Check-in / Check-out (IT Hardware Check-out (assign) only: 4-stage approval
   workflow — Initiation → Recipient Confirmation → IT Processing → IT
@@ -2788,6 +2909,8 @@ Workflow Automation
 Multi-channel Alerts
 Asset Disposal Workflow
 Software / SaaS License Management (RAISE-FR-LICENSE-001)
+Requisition requester = logged-in user (PRD §16 Resolved Question 57 —
+  Roadmap-conditional on the real user store; no MVP change)
 ```
 
 **Asset Disposal Workflow** was confirmed as Enterprise Roadmap (not MVP) by
@@ -2879,12 +3002,13 @@ treated as mandatory.
 
 | PRD Requirement | Design Area |
 |---|---|
-| RAISE-FR-ASSET-001 | Asset Management |
+| RAISE-FR-ASSET-001 | Asset Management (§4.1 — Asset Type confirmed open text 2026-10-07, §16 Resolved Question 55; no normalisation rule; follow-on Open Question 3b open) |
 | RAISE-FR-ASSET-002 | Category / Hierarchy |
 | RAISE-FR-ASSET-003 | Custody (§4.2 — holder model resolved 2026-09-01: direct 1:1 link to Employee record) |
+| RAISE-FR-ASSET-004 | Custody & Asset Operations (§4.2 "Employee Offboarding — Held-Asset Marker" — marker derived at read time from `Asset.status` + holder `Employee.status` (`Inactive`/`On Leave`); no stored flag, no auto-release, returns via existing Check-in; no alert, no notification; marker placement/wording deferred to Prototype; confirmed 2026-10-07, §16 Resolved Question 56) |
 | RAISE-FR-OPS-001 | QR / Barcode |
 | RAISE-FR-OPS-002 | Check-in / Check-out (§4.2 — general workflow shape and permission gate resolved 2026-09-01: immediate state-change, any authenticated user; **narrowed 2026-09-02**: IT Hardware Check-out (assign) only requires a new 4-stage approval workflow — see §4.2 "IT Hardware Assignment Approval Workflow" — all other categories and all Check-in unaffected) |
-| RAISE-FR-MAINT-001 | Maintenance (§5.1 — 4-stage workflow shape confirmed; per-priority SLA target hours confirmed as-built 2026-09-08, §16 Resolved Question 53; SLA per stage, vendor model, cost model, and delegated-approver configuration rules remain TBD) |
+| RAISE-FR-MAINT-001 | Maintenance (§5.1 — requester = logged-in user recorded 2026-10-07 as Roadmap-conditional only, §16 Resolved Question 57, no MVP change; 4-stage workflow shape confirmed; per-priority SLA target hours confirmed as-built 2026-09-08, §16 Resolved Question 53; SLA per stage, vendor model, cost model, and delegated-approver configuration rules remain TBD) |
 | RAISE-FR-WARRANTY-001 | Warranty (§5.2 — field list resolved 2026-08-29: `warrantyExpiry` only; 3-state status + per-Asset-Category Expiring threshold, default 90 days, resolved 2026-09-01) / Settings (§5.4 — threshold configuration home) |
 | RAISE-FR-LICENSE-001 | License Management — **Roadmap, not MVP** (§4.1A, §5.3; corrected 2026-08-21) |
 | RAISE-FR-ORACLE-001 | Oracle Integration |
@@ -3024,7 +3148,13 @@ not built."** No verdict on `RAISE-FR-EXEC-001` changes as a result — the
 requirement's Acceptance Criteria did not assert an NBV value (NBV was NOT
 TESTABLE YET pending exactly this input), so this sync introduces no new
 pass/fail test result; it only records that the blocker is now cleared at
-the design layer. No new PRD Traceability ID is introduced.
+the design layer. No new PRD Traceability ID is introduced. **As of Design
+v0.21 (PRD v0.23, §16 Resolved Questions 55–57):** `RAISE-FR-ASSET-004`
+(new, MVP) now has its own row above, designed in §4.2 as a derived read-time
+marker. The `RAISE-FR-ASSET-001` row records Asset Type as open text (Open
+Question 3b open), and the `RAISE-FR-MAINT-001` row records the requester rule
+as Roadmap-conditional (no MVP change). Every requirement ID in PRD §17 has a
+design area.
 
 ---
 
@@ -3084,6 +3214,13 @@ design-relevant grouping — not a new set of questions.)
    change). Previously blocked the NBV KPI tile; the tile is now buildable —
    see [§13 Executive Intelligence](#13-executive-intelligence), "NBV —
    Formula and Default Values Confirmed, Not Yet Built".
+3b. **Raised 2026-10-07 (PRD v0.23, §16 Open Question 3b, alongside Resolved
+   Question 55) — OPEN, not decided.** With Asset Type open text, should an
+   admin be able to set a useful life for a newly-appeared Asset Type through
+   P-018, or should new Types stay under Resolved Question 51
+   (`purchaseCost` unchanged) until the business supplies a value? Design
+   takes neither side — see [§5.4](#54-settings-domain). **Non-blocking:**
+   Resolved Question 51 covers the interim.
 4. What is risk? — **Confirmed 2026-09-05 to no longer block
    `RAISE-FR-EXEC-001`'s MVP completeness** (PRD v0.17, §16 Resolved Question
    47): the Executive Dashboard will not carry a Risk KPI tile for MVP, so
@@ -3331,6 +3468,39 @@ RAISE-COMPLIANCE-REVIEW.md
 ---
 
 ## Document Status
+
+**Version:** 0.21 (sync with PRD v0.22 → v0.23, §16 Resolved Questions 55,
+56, 57 and new requirement `RAISE-FR-ASSET-004` — all confirmed business
+decisions, 2026-10-07; `## NEEDS_PRD_CONFIRMATION` is **not** raised.)
+
+**Change Log — v0.20 → v0.21 (sync with PRD v0.22 → v0.23):**
+
+1. **§4.1 Asset Management** — new paragraph recording Asset Type as open
+   text (RQ55): form suggests existing Types, **no normalisation/dedup rule**,
+   new Type falls under RQ51, Category not decided, Open Question 3b open.
+2. **§4.2 Custody & Asset Operations** — `RAISE-FR-ASSET-004` added to
+   traceability; new subsection "Employee Offboarding — Held-Asset Marker"
+   (RQ56). **Marker is derived at read time** — `Asset.status == Assigned`
+   AND holder `Employee.status ∈ {Inactive, On Leave}` (join via
+   `Asset.assignedEmployeeId`) — not stored, because nothing is released and
+   so `On Leave` → `Active` needs no restoration. No new field/entity; returns
+   via existing Check-in unchanged; marker placement left to Prototype.
+3. **§5.1 Maintenance Domain** — requester = logged-in user recorded as
+   Roadmap-conditional (RQ57); no MVP design change.
+4. **§5.4 Settings Domain** — new subsection on newly-appeared Asset Types;
+   Open Question 3b left open, no add-row capability designed.
+5. **§13 Executive Intelligence** — RQ51 paragraph notes the rule is now
+   reachable through the UI; RQ51/RQ54 unchanged.
+6. **§14 Alert Architecture** — states the held-asset marker is not a sixth
+   alert condition (RQ44 stays at five).
+7. **§18 Logical Data Model** — notes ASSET-004 and open-text Type need no
+   schema change.
+8. **§22 MVP vs Roadmap** — marker added to MVP; requester rule added to
+   Roadmap-conditional.
+9. **§24 Design Traceability** — new `RAISE-FR-ASSET-004` row; ASSET-001 and
+   MAINT-001 rows updated. **§25** — item 3b added (open).
+10. No auto-release, notification, or new alert condition was designed, and no
+    wording or location of the marker was chosen.
 
 **Version:** 0.19 (sync with PRD v0.20 → v0.21, §16 Resolved Question 53:
 the already-shipped **per-priority SLA target hours** for

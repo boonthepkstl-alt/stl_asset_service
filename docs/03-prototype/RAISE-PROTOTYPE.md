@@ -2,11 +2,19 @@
 
 **Product:** RAISE — Enterprise Asset Intelligence Platform
 **Document:** Prototype Specification
-**Version:** 0.21 Draft
+**Version:** 0.22 Draft
 **Status:** Draft for Prototype Review
-**Source:** [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.22 + [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.20 (§13 Executive Intelligence — NBV per-Asset-Type default useful-life values CONFIRMED 2026-09-23 (PRD §16 Resolved Question 54, closing Open Question 3a): ten values supplied (Laptop/Monitor/Headphones/Tablet/Printer/Projector/Server/Router/Camera = 5 years, Smartphone = 3 years); NBV tile now specified as buildable, still NOT built; §5.4 Settings Domain — P-018's NBV section wireframe re-keyed rows now carry the confirmed values, §5.1 Maintenance Domain — per-priority SLA target hours (Critical 2h, High 8h, Medium 24h, Low 48h) confirmed as already-shipped behavior 2026-09-08 (PRD §16 Resolved Question 53, resolving Open Finding F-54); "SLA per stage," vendor model, cost model, and delegated-approver configuration rules remain TBD, §13 Executive Intelligence — NBV KPI tile placement confirmed as a tenth tile on both P-002/P-014, Monthly Depreciation tile kept unchanged, NBV-for-unconfigured-Asset-Type behavior confirmed, NBV useful-life configuration re-keyed from Asset Category to Asset Type (PRD §16 Resolved Question 52, amending Resolved Question 46), default useful-life values now CONFIRMED 2026-09-23 (PRD §16 Resolved Question 54, closing what had been Open Question 3a), §14 "Header Bell — Second Surface Over the Same Derivation" resolved 2026-09-05, §23 Prototype Preparation, §9A Document Intelligence Capabilities, §4.2 Custody & Asset Operations — Check-in/Check-out workflow/permission/holder-model resolved, plus the "IT Hardware Assignment Approval Workflow" category-scoped exception, §5.2 Warranty Domain — 3-state status model + per-Asset-Category Expiring threshold resolved (unaffected by RQ52), §5.3 License Domain, §5.4 Settings Domain — second confirmed configuration driver (NBV per-Asset-Type useful-life, shape only), §4.1B Settings / Platform Configuration, §6.4 ReconciliationPage / "Phase 6" Label, §14 Alert Architecture — five MVP trigger conditions and fixed-per-condition severity resolved, §16 Security Architecture — MVP Enforcement Level, Alerts Screen Access Gate resolved 2026-09-04, §16A Other Non-Functional Requirements — Design Backlog, §15/§22 Out of Scope)
+**Source:** [`RAISE-PRD.md`](../01-requirements/RAISE-PRD.md) v0.23 + [`RAISE-DESIGN.md`](../02-design/RAISE-DESIGN.md) v0.21 (2026-10-07: Asset Type open text (RQ55), `RAISE-FR-ASSET-004` held-asset marker (RQ56), RQ57 Roadmap-only, Open Question 3b open; earlier: §13 Executive Intelligence — NBV per-Asset-Type default useful-life values CONFIRMED 2026-09-23 (PRD §16 Resolved Question 54, closing Open Question 3a): ten values supplied (Laptop/Monitor/Headphones/Tablet/Printer/Projector/Server/Router/Camera = 5 years, Smartphone = 3 years); NBV tile now specified as buildable, still NOT built; §5.4 Settings Domain — P-018's NBV section wireframe re-keyed rows now carry the confirmed values, §5.1 Maintenance Domain — per-priority SLA target hours (Critical 2h, High 8h, Medium 24h, Low 48h) confirmed as already-shipped behavior 2026-09-08 (PRD §16 Resolved Question 53, resolving Open Finding F-54); "SLA per stage," vendor model, cost model, and delegated-approver configuration rules remain TBD, §13 Executive Intelligence — NBV KPI tile placement confirmed as a tenth tile on both P-002/P-014, Monthly Depreciation tile kept unchanged, NBV-for-unconfigured-Asset-Type behavior confirmed, NBV useful-life configuration re-keyed from Asset Category to Asset Type (PRD §16 Resolved Question 52, amending Resolved Question 46), default useful-life values now CONFIRMED 2026-09-23 (PRD §16 Resolved Question 54, closing what had been Open Question 3a), §14 "Header Bell — Second Surface Over the Same Derivation" resolved 2026-09-05, §23 Prototype Preparation, §9A Document Intelligence Capabilities, §4.2 Custody & Asset Operations — Check-in/Check-out workflow/permission/holder-model resolved, plus the "IT Hardware Assignment Approval Workflow" category-scoped exception, §5.2 Warranty Domain — 3-state status model + per-Asset-Category Expiring threshold resolved (unaffected by RQ52), §5.3 License Domain, §5.4 Settings Domain — second confirmed configuration driver (NBV per-Asset-Type useful-life, shape only), §4.1B Settings / Platform Configuration, §6.4 ReconciliationPage / "Phase 6" Label, §14 Alert Architecture — five MVP trigger conditions and fixed-per-condition severity resolved, §16 Security Architecture — MVP Enforcement Level, Alerts Screen Access Gate resolved 2026-09-04, §16A Other Non-Functional Requirements — Design Backlog, §15/§22 Out of Scope)
 **Source of Truth:** RAISE PRD
 **Reference Only:** VERSCAN
+
+**Version note (2026-10-07 re-sync, v0.21 → v0.22, PRD §16 Resolved Questions 55–57 /
+`RAISE-FR-ASSET-004` / Open Question 3b; Design v0.21):** Asset Type on the Create Asset
+form is open text with suggestions (no normalisation); the Category list is specified as
+the confirmed five (as-built form omits Media Equipment — build gap); the
+`RAISE-FR-ASSET-004` held-asset marker is specified on existing screens P-003/P-004/P-006/
+P-008 (no new screen, no new action, not an alert); RQ57 is Roadmap-conditional with no
+MVP change; Open Question 3b stays open on P-018. See Document Status change log.
 
 **Version note (2026-09-23 re-sync, v0.20 → v0.21, PRD §16 Resolved Question 54 /
 Design §13 "NBV — Formula and Default Values Confirmed, Not Yet Built," closing PRD
@@ -655,12 +663,12 @@ not from a permission matrix).
 |---|---|---|---|
 | P-001 | Login / Access | P0 | Security Design (TBD) |
 | P-002 | Main Dashboard | P0 | Product / Dashboard |
-| P-003 | Asset Registry | P0 | RAISE-FR-ASSET-001; incidental RAISE-AI-DOC-004 (Duplicate Detection) |
-| P-004 | Asset Detail | P0 | RAISE-FR-ASSET-001, RAISE-FR-LIFE-001; incidental RAISE-AI-DOC-001 (OCR/Extraction), RAISE-AI-DOC-002 (Metadata) |
+| P-003 | Asset Registry | P0 | RAISE-FR-ASSET-001 (Create Asset form: Type open text, 2026-10-07 RQ55); RAISE-FR-ASSET-004 (held-asset marker, RQ56); incidental RAISE-AI-DOC-004 (Duplicate Detection) |
+| P-004 | Asset Detail | P0 | RAISE-FR-ASSET-001, RAISE-FR-LIFE-001, RAISE-FR-ASSET-004 (marker); incidental RAISE-AI-DOC-001 (OCR/Extraction), RAISE-AI-DOC-002 (Metadata) |
 | P-005 | Category & Hierarchy | P0 | RAISE-FR-ASSET-002; incidental RAISE-AI-DOC-003 (Classification) |
-| P-006 | Custody History | P0 | RAISE-FR-ASSET-003 |
+| P-006 | Custody History | P0 | RAISE-FR-ASSET-003, RAISE-FR-ASSET-004 (marker on Current Holder) |
 | P-007 | QR / Barcode Scan | P0 | RAISE-FR-OPS-001 |
-| P-008 | Check-in / Check-out | P0 | RAISE-FR-OPS-002 |
+| P-008 | Check-in / Check-out | P0 | RAISE-FR-OPS-002; RAISE-FR-ASSET-004 (marker on Check-in confirm step) |
 | P-009 | Maintenance | P0 | RAISE-FR-MAINT-001 |
 | P-010 | Warranty | P0 | RAISE-FR-WARRANTY-001 |
 | P-011 | Oracle FA / Financial View | P0 | RAISE-FR-ORACLE-001 |
@@ -1063,9 +1071,62 @@ Asset Registry
           Asset Detail
 ```
 
+## Create Asset Form — Type Field Is Open Text (confirmed 2026-10-07, PRD §16 Resolved Question 55; Design §4.1)
+
+The registration form reached from this screen (as-built:
+`frontend/src/pages/CreateAsset/index.tsx`; not a new screen) specifies two fields
+relevant to this change:
+
+```text
+Category *   [ IT Hardware ▾ ]     closed pick list — the five confirmed Categories:
+                                    IT Hardware, Mobile, Office Equipment,
+                                    Infrastructure, Media Equipment
+Type *       [ type or choose…  ]  open text with suggestions
+                                    suggestions = Types that already exist
+                                    (e.g. Laptop, Monitor, Smartphone …)
+```
+
+- **Type:** a registrar may type any value; existing Types are offered as suggestions.
+  **No normalisation and no deduplication** — "Laptop" and "laptop " would be distinct
+  Types; the business accepted that. No merge, spell-check or "did you mean" prompt is
+  specified. A Type with no configured useful life falls under Resolved Question 51 for
+  NBV (see P-018); whether an admin can configure it is
+  [Open Question 3b](../01-requirements/RAISE-PRD.md#16-open-questions), undecided.
+- **Category — correction against confirmed data:** Category is **not** changed by
+  Resolved Question 55. The pick list is the **five** confirmed Categories (PRD §16
+  Resolved Question 41: threshold "for all 5 current categories"). The as-built form
+  offers only four and omits **Media Equipment** — recorded as a **build gap against the
+  PRD**, not a prototype decision; no sixth Category is introduced.
+
+## Held-Asset Marker in the Holder Column (2026-10-07, `RAISE-FR-ASSET-004`; PRD §16 Resolved Question 56; Design §4.2)
+
+**Rule (derived at read time, nothing stored):** an asset row shows the marker when
+`Asset.status == Assigned` **and** the holder's `Employee.status` is `Inactive` or
+`On Leave`. The marker is a small **badge placed immediately after the holder name** in
+the Holder column. It is **not** a new Status value, filter, column or alert.
+
+| Holder's Employee status | Badge wording | Notes |
+|---|---|---|
+| `Inactive` | **Holder inactive** | distinct (warning-style) badge treatment |
+| `On Leave` | **Holder on leave** | distinct (neutral/informational-style) treatment; disappears automatically when the holder returns to `Active` |
+
+The two are told apart by **wording first** (colour is secondary and never the only cue).
+Both appear on the same row type and trigger identically; only the label differs. The
+same badge, wording and rule are reused unchanged on P-004 (Custody section), P-006
+(Current Holder) and P-008 (Check-in Confirm Return). The wording is a prototype
+proposal for review; the PRD fixes the behaviour, not the text.
+
+**Explicitly not specified here:** automatic release; a bulk "release all" action; a new
+alert (RQ44 keeps exactly five — the marker is not a sixth, and P-012 is unchanged); any
+notification. Each item is returned with the **existing Check-in** (P-008). No Employee
+screen exists in this prototype's inventory, so no Employee-side placement is specified
+and none is added; the status change itself uses the existing mechanism (not designed
+here).
+
 ## Traceability
 
-`RAISE-FR-ASSET-001`
+`RAISE-FR-ASSET-001` (incl. Create Asset Type/Category, above); `RAISE-FR-ASSET-004`
+(Holder-column marker, above; also P-004, P-006, P-008).
 
 **Incidental: `RAISE-AI-DOC-004` (Duplicate Detection, PRD v0.3, P0/MVP,
 confirmed 2026-08-21):** per §5's mapping note, flagged/merged duplicate
@@ -1105,9 +1166,16 @@ The screen should demonstrate RAISE's central concept:
 
 > One asset → connected information across its lifecycle.
 
+## Held-Asset Marker in the Custody Section (2026-10-07, `RAISE-FR-ASSET-004`)
+
+The Custody section shows the held-asset marker (badge defined on P-003) beside the
+current holder's name when the marker condition holds, with a one-line hint **"Return
+this item with Check-in"** linking to P-008 Check-in. No other section changes, and no
+new action is added here — the screen offers no release control of its own.
+
 ## Traceability
 
-`RAISE-FR-ASSET-001`, `RAISE-FR-LIFE-001` (the Lifecycle section demonstrates asset
+`RAISE-FR-ASSET-004` (Custody-section marker, above); `RAISE-FR-ASSET-001`, `RAISE-FR-LIFE-001` (the Lifecycle section demonstrates asset
 lifecycle connectivity — Design §4.1 assigns `RAISE-FR-LIFE-001` to the Asset Management
 area alongside `RAISE-FR-ASSET-001`/`002`; Design §24 traces it to the "Lifecycle" design
 area specifically. No separate P-NNN screen is created for it — it is realized here plus
@@ -1241,9 +1309,17 @@ Date B     Holder B     Transferred
 Date C     Holder C     Assigned
 ```
 
+## Held-Asset Marker on Current Holder (2026-10-07, `RAISE-FR-ASSET-004`)
+
+The **Current Holder** block shows the held-asset marker (badge defined on P-003)
+beside the holder name when the marker condition holds. **History rows are not marked** —
+the marker describes the present holder only. No new Action value (Assigned/Transferred
+are unchanged) and no custody-history write is added; the later Check-in writes history
+exactly as before.
+
 ## Traceability
 
-`RAISE-FR-ASSET-003`
+`RAISE-FR-ASSET-003`; `RAISE-FR-ASSET-004` (Current Holder marker, above).
 
 **Holder data model — resolved 2026-09-01 (PRD §16 Resolved Question 42; Design
 §4.2):** the "Holder" shown in this screen (Current Holder and each History row) is a
@@ -1552,6 +1628,16 @@ Per the PRD's and Design's own non-decisions, this prototype does not add:
 - Any recipient-decline/reject UI at Stage 2 (see Stage 2 note above).
 
 ## Traceability
+
+**Held-asset marker on the Check-in Confirm Return step (2026-10-07, `RAISE-FR-ASSET-004`,
+PRD §16 Resolved Question 56; Design §4.2 "Employee Offboarding — Held-Asset Marker"):**
+when the identified asset is `Assigned` and its holder's Employee status is `Inactive` or
+`On Leave`, the Confirm Return step shows the same marker badge defined on P-003 beside
+the holder name, so IT can see why the item is being returned. **Check-in itself is
+unchanged** — same steps, same Audit Event, no new action, no bulk or "release all"
+control, no automatic release. Returning an offboarded holder's items is done **one item
+at a time** through this existing flow; the marker disappears for that item once Check-in
+completes.
 
 `RAISE-FR-OPS-002` — general workflow shape (immediate state-change, no approval/
 exception handling), permission gate (any authenticated user), and holder data model
@@ -2684,6 +2770,17 @@ below are exactly as originally confirmed.
   Question 3a (the per-Asset-Type default useful-life values, one per type present in
   the data) remains fully **OPEN** and is unaffected by this rule.
 
+#### Newly-Appeared Asset Types — Open Question 3b (raised 2026-10-07, NOT decided)
+
+With Asset Type now open text (PRD §16 Resolved Question 55; see P-003 Create Asset
+form), a Type entered by a registrar later will have **no row** in the NBV table above.
+Whether an admin should be able to set a useful life for such a Type through this screen
+is [PRD §16 Open Question 3b](../01-requirements/RAISE-PRD.md#16-open-questions) —
+**undecided**. This section therefore (a) continues to list only Types with a configured
+useful life, (b) adds **no** "add Type" / "set useful life for new Type" control, and (c)
+**does not rule one out** — a later business decision may add it. Until then a new Type
+stays under Resolved Question 51 (`purchaseCost` unchanged), above. Non-blocking.
+
 ## Scope Boundary
 
 Per Design §4.1B/§5.4, this is explicitly **not** a general Settings/platform
@@ -3074,6 +3171,11 @@ not be treated as approved MVP functionality.
 |---|---|---|
 | P-003 Asset Registry | RAISE-FR-ASSET-001 | Planned |
 | P-004 Asset Detail | RAISE-FR-LIFE-001 | Planned |
+| P-003 Asset Registry (Create Asset form, Type field) | RAISE-FR-ASSET-001 | Planned — Asset Type is open text with suggestions of existing Types, no normalisation/dedup, confirmed 2026-10-07 (PRD §16 Resolved Question 55; Design §4.1). Category list on the form = the five confirmed Categories incl. Media Equipment (as-built form offers four — gap, see P-003). Follow-on Open Question 3b stays open |
+| P-003 Asset Registry (Holder column marker) | RAISE-FR-ASSET-004 | Planned — held-asset marker derived at read time, confirmed 2026-10-07 (PRD §16 Resolved Question 56; Design §4.2); also shown on P-004 Custody section, P-006 Current Holder, P-008 Check-in confirmation step. No new screen, no new action, not an alert |
+| P-004 Asset Detail (Custody section) | RAISE-FR-ASSET-004 | Planned — marker beside current holder; return via existing P-008 Check-in |
+| P-006 Custody (Current Holder) | RAISE-FR-ASSET-004 | Planned — marker on Current Holder only, not on History rows |
+| P-008 Check-in / Check-out (Check-in) | RAISE-FR-ASSET-004 | Planned — marker shown on the Confirm Return step; Check-in itself unchanged (per-item, no bulk release) |
 | P-005 Category | RAISE-FR-ASSET-002 | Planned — sub-category taxonomy resolved 2026-09-01 (Open Finding F-27): sub-category = existing Asset `type` field, 2-level hierarchy (Category → Type), real 2026-09-01 seeded example shown, not a closed enumerated list |
 | P-006 Custody | RAISE-FR-ASSET-003 | Planned — holder data model resolved 2026-09-01 (PRD §16 Resolved Question 42; Design §4.2): direct 1:1 link to Employee record, no additional organizational relationship model |
 | P-007 QR / Barcode | RAISE-FR-OPS-001 | Planned |
@@ -3313,9 +3415,27 @@ The next artifact should be **Acceptance Criteria**, not source code.
 
 ## Document Status
 
-**Version:** 0.21 (2026-09-23, PRD v0.22 §16 Resolved Question 54 / Design v0.20 §13
-"NBV — Formula and Default Values Confirmed, Not Yet Built," closing PRD §16 Open
-Question 3a)
+**Version:** 0.22 (2026-10-07, PRD v0.23 §16 Resolved Questions 55/56/57 + new
+`RAISE-FR-ASSET-004` + Open Question 3b / Design v0.21 §4.1/§4.2/§5.1/§5.4/§14)
+
+**Change Log — v0.21 → v0.22 (2026-10-07):**
+
+1. **P-003 Asset Registry** — new "Create Asset Form" subsection: Asset Type is open text
+   with suggestions of existing Types, no normalisation/dedup (RQ55). Category list
+   specified as the **five** confirmed Categories; the as-built form's four-Category list
+   (Media Equipment missing) is recorded as a build gap, no sixth Category invented.
+2. **`RAISE-FR-ASSET-004` held-asset marker (RQ56)** — specified on P-003 (Holder
+   column), P-004 (Custody section), P-006 (Current Holder) and P-008 (Check-in Confirm
+   Return step). Badge wording "Holder inactive" / "Holder on leave". No new screen, no
+   new action, no auto-release, no bulk release, no alert (P-012 unchanged), no
+   notification. Screen Inventory and Prototype Traceability Matrix updated.
+3. **P-018 Settings** — new "Newly-Appeared Asset Types" note: Open Question 3b stays
+   open; no control added, none ruled out.
+4. **RQ57 (requester rule)** — no prototype change. This document does not describe a
+   Create IT Requisition requester; the rule takes effect only with the Roadmap user
+   store and is Roadmap-conditional only.
+5. No `## NEEDS_PRD_CONFIRMATION` raised. Marker wording/placement is a prototype
+   proposal (Design left it to this layer), flagged for review, not a requirement.
 
 **Change Log — v0.20 → v0.21 (2026-09-23, PRD §16 Resolved Question 54 / Design §13,
 per explicit business confirmation via direct chat session, resolving Decision Request

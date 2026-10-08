@@ -269,9 +269,22 @@ way of becoming the answer.
 | **Raised** | 2026-09-21 (first asked 2026-09-10 as part of a combined request; no copy of that one was kept) |
 | **Finding** | [F-55](OPEN-FINDINGS.md) |
 | **Requirement** | `RAISE-FR-MAINT-001` — Maintenance / IT Requisition |
-| **Status** | **Awaiting answer** |
+| **Status** | **ANSWERED 2026-10-07, across two rounds** — the logged-in user, effective with the Roadmap real user store. See "The answer" below. Recorded as PRD §16 **Resolved Question 57**. |
 | **Sendable version** | <https://claude.ai/artifact/3JPNrZL9m3yAEKEjxUtadR> — the same request as a page, opening with **the error message a real person would see** and the fact that retrying it can never work, then a four-row table of which entry points fail and which one works. The three identified options are offered as choices with their real costs stated — including that the obvious one **cannot be built yet** and that the easiest one is easiest, which is why it is not being chosen for you — plus a free-text box for a rule of your own and "leave it as it is" as a full answer. The answer saves to the page. **Private by default: it must be shared from its own Share menu before the recipient can open it.** |
 | **Blocks** | The Create IT Requisition form in real-API mode. `RAISE-FR-MAINT-001`'s verdict is **not** affected — it stays a full `PASS`. |
+
+### The answer — received 2026-10-07
+
+Answered in chat through structured choices, in **two rounds**:
+
+| Question | Answer |
+|---|---|
+| Whose request is it? | **"คนที่กรอกฟอร์ม"** — the person filling in the form |
+| That cannot be built yet — what in the meantime? | **"รอระบบผู้ใช้จริง"** — wait for the real user store |
+
+**The second round was needed because the first answer is option (a), which this request listed first as the obvious answer and flagged as not implementable today:** a login carries `{id, username, fullName, role}` and no link to an employee record, and the real user store is confirmed Roadmap (Resolved Question 38, F-11). Two interims were offered and **declined** — matching the login email to an employee's work email, and a temporary chooser.
+
+**So the rule is confirmed and takes effect with the Roadmap user store. MVP behaviour is unchanged**, the defect stays latent in real-database mode, and **`RAISE-FR-MAINT-001` stays a full `PASS`** — no MVP criterion was added that the current system would fail. F-55 stays open; its blocker is now that Roadmap dependency rather than an unanswered question.
 
 ### The defect, stated plainly
 
@@ -428,9 +441,20 @@ deliverable chain.
 | **Raised** | 2026-09-25, from the NBV execution sweep (`CHECKPOINT-2026-09-24-001`) |
 | **Finding** | [F-60](OPEN-FINDINGS.md) |
 | **Requirement** | `RAISE-FR-ASSET-001` (Asset Registry) for the product half; `RAISE-FR-EXEC-001` for the testing half |
-| **Status** | **Awaiting answer** |
+| **Status** | **ANSWERED 2026-10-07 — open text.** See "The answer" below. Recorded as PRD §16 **Resolved Question 55** (PRD v0.23). [F-60](OPEN-FINDINGS.md) stays open until built. |
 | **Sendable version** | <https://claude.ai/artifact/MEgqibjox5vk71XF3429ue> — the same question as a one-choice page, written for a reader who does not work on this codebase: it leads with the ten-versus-six mismatch, states plainly that nothing is broken either way, and carries the follow-up question inline, marked as mattering only under the fixed-list answer. The answer saves to the page, so a reply cannot go missing the way the 2026-09-10 one did. It also offers a checkbox for **"I'd like your recommendation first"** — the offer DR-04 makes and DR-02 withholds. **Private by default: it must be shared from its own Share menu before the recipient can open it.** Answering by email or chat instead is equally fine — the page says so itself. |
 | **Blocks** | The last two cases of **Gap 21** (`TC-DASH-04`/`TC-EXEC-001-04`). Blocks **no verdict** on its own — `RAISE-FR-EXEC-001` is already `PASS (partial)` and stays there either way. It does, however, block four Asset Types and an entire Category from being registered through the app. |
+
+### The answer — received 2026-10-07
+
+Answered in chat, through a structured choice: **"พิมพ์เพิ่มได้"** — *open text; whoever registers equipment can name a new kind.*
+
+- **Asset Type becomes open text**, with existing types suggested. **No normalisation and no dedup** — the cost ("Laptop", "laptop" and "Lap top" becoming three types) was stated on the question and accepted.
+- **The follow-up question no longer applies.** It only mattered under the fixed-list answer, where the UI could never create an unconfigured type. Under open text it can, so Resolved Question 51's rule becomes reachable through the app and `TC-DASH-04`/`TC-EXEC-001-04` become executable **once the field is built**.
+- **Category was not part of this question** and is not decided by it. The Create Asset form offering four of the five confirmed Categories is a separate defect against data confirmed since Resolved Question 41 — matrix Gap 30, not this request.
+- **One question this answer raises, recorded and not decided:** PRD §16 **Open Question 3b** — can an admin set a useful life for a newly-appeared type through P-018? Non-blocking; Resolved Question 51 handles the interim.
+
+**What followed:** the full chain to matrix v2.19. `RAISE-FR-ASSET-001` moved from `PASS` to `PASS (partial)` because its new criteria are unbuilt and one targets the shipped Category defect. **Nothing is built yet.**
 
 ### What was found, and how
 
@@ -493,9 +517,25 @@ Nothing is broken for existing assets: they display, depreciate and report norma
 | **Raised** | 2026-10-07 — first time asked. Selected as the primary next step by `NEXT-STEP.md`'s 2026-10-07 run. |
 | **Finding** | [F-61](OPEN-FINDINGS.md) |
 | **Requirement** | **None — and that is the finding.** No `RAISE-FR-*` covers employee offboarding at any tier; `RAISE-PRD.md` has zero matches for resign, terminate, offboard, leave or deactivate. |
-| **Status** | **Awaiting answer** |
+| **Status** | **ANSWERED 2026-10-07, across two rounds.** See "The answer" below. Recorded as PRD §16 **Resolved Question 56**; became the new MVP requirement **`RAISE-FR-ASSET-004`**. [F-61](OPEN-FINDINGS.md) stays open until built. |
 | **Sendable version** | <https://claude.ai/artifact/KtGEN6amfWz5mQVuRYwskh> — the same request as a page, opening with the four-step story of what happens today and **stating plainly that no record is wrong yet**, so a reader does not mistake a latent gap for a live one. The detail questions sit behind a panel marked as mattering only for a yes, and the trigger question is skipped by anyone who answers that `Inactive` already means a person has left. The `On Leave` sub-question is asked explicitly, since the existing status values force it. **No recommendation is offered** — this is a business rule about custody, the same class as DR-02 and DR-03, not a decision engineering could propose options for, like DR-04. The answer saves to the page. **Private by default: it must be shared from its own Share menu before the recipient can open it.** |
 | **Blocks** | No verdict — there is no requirement for it to block. It does block **custody records staying correct** once anyone leaves, which is the thing this system exists to track. |
+
+### The answer — received 2026-10-07
+
+Answered in chat through structured choices, in **two rounds**, because the first answer settled the trigger but not the behaviour:
+
+| Question | Answer |
+|---|---|
+| What counts as leaving? | **"ใช้สถานะ Inactive"** — status set to `Inactive` |
+| Does `On Leave` count? | **"นับเหมือนออก"** — yes, the same as leaving |
+| What happens to the equipment? | **"คนยืนยันทีละชิ้น"** — it stays assigned until IT confirms each item's return, with a visible marker that the holder has gone |
+
+- **Nothing is released automatically.** IT returns each item through the existing Check-in, which already writes the audit entry.
+- **No new alert and no notification** — Resolved Question 44's five alert conditions are unchanged.
+- **An `On Leave` → `Active` return needs no restoration**, because nothing was released.
+
+**What followed:** the full chain to matrix v2.19. It became a **new MVP requirement, `RAISE-FR-ASSET-004`** — so the board's denominator grew from 17 to 18 — recorded `NOT_TESTED` because nothing is built. The prototype specifies a badge, **"Holder inactive"** or **"Holder on leave"**, beside the holder's name on four screens; that wording is a proposal, not a business decision.
 
 ### What was found, and how
 

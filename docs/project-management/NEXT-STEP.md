@@ -3,152 +3,139 @@
 **Live output of [`NEXT-STEP-PROTOCOL.md`](NEXT-STEP-PROTOCOL.md).**
 Overwritten in place each time the protocol is re-run.
 
-**Run date:** 2026-10-07, after `CHECKPOINT-2026-10-07-003`. Triggered by
-Protocol **Step 11 — Recalculate**, because two decision requests were answered.
-Third run today; each was triggered by a change, not by the calendar.
+**Run date:** 2026-10-08, after `CHECKPOINT-2026-10-08-001`. Triggered by
+Protocol **Step 11 — Recalculate**, because the last three decision requests were
+answered and propagated through the chain.
+
+**For the first time in four runs, the primary step is engineering work.**
 
 ---
 
 ## Current State
 
-**Git.** `main` is at **`6e5f948`** (PR #159). The DR-01/DR-04 answers are on
-`docs/dr-01-dr-04-answered`.
+**Git.** `main` is at **`1b1c0a4`** (PR #160). DR-03/05/06 and the full chain
+propagation are on `feature/dr-03-05-06-answers`.
 
-**What changed since the last run.** **DR-01 and DR-04 were answered**, both in
-chat, both with the cheapest answer their request offered:
+**What changed since the last run.** **All six decision requests are answered.**
+DR-05: Asset Type is **open text** (RQ55). DR-06: `Inactive` or `On Leave` means the
+holder has gone, and equipment stays assigned until IT confirms each item back,
+with a visible marker — a **new MVP requirement, `RAISE-FR-ASSET-004`** (RQ56).
+DR-03: the requester is the logged-in user, **effective with the Roadmap user
+store** — no MVP change (RQ57). Chain: PRD v0.23 → Matrix v2.19, Compliance
+Review v1.8.
 
-- **DR-01 — "not in the first release."** Software License stays Roadmap.
-  A re-confirmation of PRD §16 Resolved Question 34, so the PRD is not edited.
-  **F-57 → R-42**, confirmed unchanged.
-- **DR-04 — "not yet."** Running RAISE beyond a developer's machine is not in
-  scope. **F-13 → R-43**, decided: not yet; F-14's image-build remainder becomes
-  *not needed yet*.
+**Board: 7 `PASS` · 2 `PASS (partial)` · 2 `FAIL` · 6 `BLOCKED` · 1 `NOT_TESTED`
+of 18 — 7 of 18 (38.9%), from 8 of 17 (47.1%).** Two causes, neither a product
+regression: a new requirement built nowhere, and `RAISE-FR-ASSET-001` moved to
+`PASS (partial)` because its new criteria catch a shipped defect (the Create Asset
+form omits Media Equipment).
 
-Also found and fixed: **F-03 never got its Resolved-table row** when it closed on
-2026-09-23 — now **R-41**.
-
-**Board: 8 `PASS` · 2 `FAIL` · 6 `BLOCKED` · 1 `PASS (partial)`** — unchanged.
-Neither answer touches one of the 17 MVP rows. **Gap 21** still the only open gap
-of 27.
-
-**Six requests, three answered:**
-
-| Request | Finding | Answered | How |
-|---|---|---|---|
-| **DR-02** | F-03 | ✅ 2026-09-23 | chat |
-| **DR-01** | F-57 | ✅ 2026-10-07 | chat |
-| **DR-04** | F-13 | ✅ 2026-10-07 | chat |
-| **DR-05** | F-60 | — | |
-| **DR-06** | F-61 | — | |
-| **DR-03** | F-55 | — | |
+**Open gaps: 4 of 30** — Gap 21, Gap 28, Gap 29, Gap 30.
 
 ---
 
 ## Primary Next Step
 
-**Put DR-05, DR-06 and DR-03 to the account holder directly, in chat.**
+**Build the open-text Asset Type field and correct the Category list on Create
+Asset, then execute the cases they unblock.**
 
-**The evidence for the channel is now unambiguous: three answers, all three in
-chat, none through a sendable page.** The previous run's primary step —
-*confirm whether the pages reached anyone* — has been overtaken by events: the
-questions that got answered were never routed through the pages at all. The
-pages stay useful as a durable record, and for anyone else they are shared with;
-they are not how decisions are actually arriving.
+| Change | Closes | Then executes |
+|---|---|---|
+| Type: closed six-option `Select` → free text with existing types suggested (RQ55) | **Gap 29** | `TC-ASSET-001-05..07` |
+| Category: add **Media Equipment**, the confirmed fifth value | **Gap 30** | `TC-ASSET-001-08` |
+| — the precondition RQ51 needed now exists through the UI | **Gap 21** | `TC-DASH-04`, `TC-EXEC-001-04` |
 
-**Order — by what each answer unlocks:**
-
-1. **DR-05** (Asset Type: fixed list or open text). The only one of the three that
-   moves Gap 21, and it has a product half — four Asset Types and the whole
-   Media Equipment category cannot be registered through the app today.
-2. **DR-06** (what happens to a leaver's equipment). Latent rather than live —
-   no bad record exists yet — but the only one about custody data being silently
-   wrong.
-3. **DR-03** (whose requisition, when nobody said). Real but narrow: affects one
-   form, only in real-database mode.
-
-Each accepts **"not yet"** as a complete answer, as DR-04 just demonstrated.
+**If every case passes:** `RAISE-FR-ASSET-001` returns to `PASS` and
+`RAISE-FR-EXEC-001` reaches a full `PASS` for the first time — **9 of 18 (50.0%)**.
+Stated as arithmetic, not a forecast; the cases decide.
 
 ---
 
 ## Why This Is Next
 
-**Protocol Step 4 — dependencies.** Every remaining engineering item depends on
-one of these answers. Nothing else is selectable without inventing scope.
+**Highest leverage per unit of work.** One small change to one form closes three
+gaps and moves two requirements. It needs no further input: the type rule is
+RQ55, and the five Categories have been confirmed since RQ41.
 
-**Step 3 — priority.** DR-05 first because it is the only answer that can move a
-gap the traceability matrix tracks.
+**Why not `RAISE-FR-ASSET-004` first.** It is the larger build, and the matrix's
+Gap 28 raised three questions nobody has answered — one of which could change its
+design:
 
-**The four findings without a request** — F-39, F-36's remainder, F-43(a), F-15 —
-**stay deferred, but the reason has weakened and is restated honestly.** They
-were deferred so as not to add volume to an unanswered queue of five. The queue
-is now three, and the account holder answers promptly when asked directly. Once
-the three above are settled, putting these four in the same direct way is the
-natural next step. One relationship worth recording without acting on it:
-**F-15 (API versioning) matters mainly once something outside the codebase
-consumes the API, and DR-04 just put that out of scope** — but architecture §6
-says not to resolve its rows by implication, so F-15 stays open until asked.
+- **Q-B: can IT find everything held by people who have left?** The prototype
+  specifies a per-row badge, and `AC-ASSET-004-13` forbids a new filter or column.
+  That may leave IT with no way to list affected assets except by scanning.
+- Q-A: should a pending IT Hardware handover whose recipient leaves be marked? The
+  rule keys only on `Assigned`.
+- Q-C: is the employee status change itself audited?
+
+**Ask those three before building ASSET-004**, the same way the decision requests
+were asked — directly, in chat. They are refinements, not blockers, but building
+first and asking second risks rework.
 
 ---
 
 ## Dependencies
 
-**The account holder's answers.** No engineering dependency.
+**None for the primary step.** The rule and the data are both confirmed.
 
 ---
 
 ## Expected Output
 
-For each answer received: the request marked answered in
-`DECISION-REQUESTS.md` with the verbatim reply, the finding resolved or
-reclassified in `OPEN-FINDINGS.md` with an R-row, and — **only where the answer
-supplies a new fact** — a PRD change propagated through the chain, as DR-02's
-was. Where it confirms existing scope, as DR-01 did, no chain work follows.
+- `frontend/src/pages/CreateAsset/index.tsx`: Type as free text with suggestions
+  drawn from existing types; Category with the confirmed five.
+- Tests pinning both, including **that two spellings are stored as entered** —
+  RQ55 explicitly declines normalisation, so a test should fail if someone adds it.
+- Formal execution of the six cases above against the running app, recorded in
+  Test Cases and the matrix; Compliance Review re-verified in the same pass.
 
 ---
 
 ## Acceptance Criteria
 
-- Each answer recorded verbatim, dated, with its source channel.
-- **Every resolved finding gets its Resolved-table row in the same PR** — the step
-  F-03 missed.
-- No PRD change invented from a "not yet" or a confirmation.
+`AC-ASSET-001-05..08` and `AC-DASH-04` / `AC-EXEC-001-04`, as written in AC v0.22.
 
 ---
 
 ## Validation
 
-- Touched tables rendered through GitHub's GFM endpoint, not checked by pipe count.
-- Uniqueness assertions on every anchored edit.
+- Unit tests, build and lint.
+- **Execution against the running app** after merge — the dev server serves the
+  main checkout, not a worktree, so the build must merge before the sweep.
+- Every touched table rendered through GitHub's GFM endpoint.
 
 ---
 
 ## Risks / Blockers
 
-**None in engineering.** The risk worth naming is the opposite of last run's: not
-that the requests are unread, but that **the pages could now contradict the
-record** if someone the pages were shared with answers one already settled in
-chat. Mitigated for DR-01 and DR-04 by writing their answers into the pages'
-own stores; the same must be done for each future chat answer.
+**Mock-mode persistence.** `MockAssetRepository` resets on a full page reload, so
+`TC-DASH-04` must create the asset and reach the dashboard by in-app navigation,
+not a reload. Recorded in Test Cases v0.37.
+
+**Open Question 3b becomes visible.** A newly typed Asset Type will not appear in
+the P-018 NBV section, which lists configured types only. That is the correct
+behaviour under RQ51 and the open question, not a defect — but the first person to
+type a new type will notice it.
 
 ---
 
-## Files to Update
+## Secondary
 
-| File | When |
+| Item | Note |
 |---|---|
-| `DECISION-REQUESTS.md`, `OPEN-FINDINGS.md` | On each answer |
-| The answered request's page store | On each chat answer, so the page shows it settled |
+| Ask Gap 28's Q-A, Q-B, Q-C | Before building `RAISE-FR-ASSET-004` |
+| Build `RAISE-FR-ASSET-004` | Closes Gap 28; would take the board to 10 of 18 |
+| **F-62** — 57 links render as plain text | A sweep **and** a rule in the PRD writer's instructions, or the sweep decays |
 | `DEVELOPMENT-LOG.md` | This PR's row, in the next PR |
-| `NEXT-STEP.md` | Re-run on each answer |
 
 ---
 
 ## Next Checkpoint
 
-Triggered by the next answer.
+Triggered when the Create Asset change merges and its cases execute.
 
 ---
 
 **Document Status:** Live output, overwritten each run.
-**Run:** 2026-10-07 (third run today) · `main` at `6e5f948` · Board 8/2/6/1 · Gap 21 open · 3 of 6 requests answered
-**Previous run:** 2026-10-07 — its primary step (confirm delivery) was overtaken: answers arrived through chat instead.
+**Run:** 2026-10-08 · `main` at `1b1c0a4` · Board 7/2/2/6/1 of 18 · Gaps open 4 of 30 · All 6 decision requests answered
+**Previous run:** 2026-10-07 — its primary step (ask DR-05, DR-06, DR-03 in chat) is complete.

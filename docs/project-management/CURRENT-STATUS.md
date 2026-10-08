@@ -9,19 +9,26 @@ narrative). For a running list of what shipped in stakeholder-facing terms,
 see [`CHANGELOG.md`](CHANGELOG.md). For known problems, see
 [`OPEN-FINDINGS.md`](OPEN-FINDINGS.md).
 
-**As of:** 2026-10-07, at `6e5f948` (**PR #159** merged), plus DR-01/DR-04 answers on
-`docs/dr-01-dr-04-answered`.
+**As of:** 2026-10-08, at `1b1c0a4` (**PR #160** merged), plus DR-03/05/06 propagated through the full chain on
+`feature/dr-03-05-06-answers`.
 
-**Two decision requests answered, two findings closed (2026-10-07).** Both answers came in chat.
-**DR-01 — "not in the first release":** Software License stays Enterprise Roadmap. A re-confirmation of PRD
-§16 Resolved Question 34, so the PRD is not edited; the requested Phase 5C licence slice is declined and
-**F-57 closes as confirmed unchanged** (R-42). **DR-04 — "not yet":** running RAISE beyond a developer's
-machine is not in scope for now, so **F-13 closes as decided: not yet** (R-43), F-14's image build/push
-remainder becomes *not needed yet*, and architecture §6 records the decision instead of "not decided
-anywhere". Also backfilled: **F-03 never got its Resolved-table row** when DR-02 closed it on 2026-09-23 —
-now R-41. **No verdict moved** — neither DR touches one of the 17 MVP rows. Board unchanged at 8 PASS /
-2 FAIL / 6 BLOCKED / 1 partial. Compliance Review re-verified to v1.7. **Three requests remain:** DR-03,
-DR-05, DR-06. See `CHECKPOINT-2026-10-07-003`.
+**All six decision requests are answered — and the board went down, honestly (2026-10-08).** DR-05, DR-06
+and DR-03 were answered in chat 2026-10-07, two of them in two rounds. **DR-05: Asset Type is open text** (RQ55).
+**DR-06: `Inactive` or `On Leave` means the holder has gone; equipment stays assigned until IT confirms each
+item back, with a visible marker** — a **new MVP requirement, `RAISE-FR-ASSET-004`** (RQ56). **DR-03: the
+requester is the logged-in user, effective with the Roadmap user store** (RQ57) — no MVP change. The full chain
+ran: PRD v0.23, Design v0.21, Prototype v0.22, AC v0.22, Test Plan v0.22, Test Cases v0.37, Matrix v2.19,
+Compliance Review v1.8. **Corrected 2026-10-08 by code review, same PR:** `TC-DASH-04`/`TC-EXEC-001-04` are
+testable-but-unexecuted, not `BLOCKED` — a missing build is not a missing decision (Test Plan v0.23, Test Cases
+v0.38, Matrix v2.20; no verdict moved).
+
+**Board: 7 PASS / 2 partial / 2 FAIL / 6 BLOCKED / 1 NOT_TESTED of 18 — 7 of 18 (38.9%), from 8 of 17
+(47.1%).** Two separate causes, neither a product regression: the denominator grew (ASSET-004 is new and built
+nowhere, −2.6 points), and **ASSET-001 moved from PASS to PASS (partial)** because its new criteria catch a
+defect shipped since the Create Asset form was built — four Categories, Media Equipment missing (−5.6
+points). **What changed underneath points the other way: every row that moved is now waiting on engineering, not
+on a decision.** Also found: **F-62** — 57 internal links in the PRD (56) and Prototype (1) render as plain text
+on GitHub. See `CHECKPOINT-2026-10-08-001`.
 
 **F-61 asked as DR-06 (2026-10-07); every decision-blocked finding now has a request.** RAISE has no
 employee-offboarding feature, so equipment stays assigned to someone indefinitely once they leave. Two

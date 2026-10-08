@@ -18,12 +18,14 @@ and DR-03 were answered in chat 2026-10-07, two of them in two rounds. **DR-05: 
 item back, with a visible marker** — a **new MVP requirement, `RAISE-FR-ASSET-004`** (RQ56). **DR-03: the
 requester is the logged-in user, effective with the Roadmap user store** (RQ57) — no MVP change. The full chain
 ran: PRD v0.23, Design v0.21, Prototype v0.22, AC v0.22, Test Plan v0.22, Test Cases v0.37, Matrix v2.19,
-Compliance Review v1.8.
+Compliance Review v1.8. **Corrected 2026-10-08 by code review, same PR:** `TC-DASH-04`/`TC-EXEC-001-04` are
+testable-but-unexecuted, not `BLOCKED` — a missing build is not a missing decision (Test Plan v0.23, Test Cases
+v0.38, Matrix v2.20; no verdict moved).
 
 **Board: 7 PASS / 2 partial / 2 FAIL / 6 BLOCKED / 1 NOT_TESTED of 18 — 7 of 18 (38.9%), from 8 of 17
 (47.1%).** Two separate causes, neither a product regression: the denominator grew (ASSET-004 is new and built
-nowhere, −2.7 points), and **ASSET-001 moved from PASS to PASS (partial)** because its new criteria catch a
-defect shipped since the Create Asset form was built — four Categories, Media Equipment missing (−5.5
+nowhere, −2.6 points), and **ASSET-001 moved from PASS to PASS (partial)** because its new criteria catch a
+defect shipped since the Create Asset form was built — four Categories, Media Equipment missing (−5.6
 points). **What changed underneath points the other way: every row that moved is now waiting on engineering, not
 on a decision.** Also found: **F-62** — 57 internal links in the PRD (56) and Prototype (1) render as plain text
 on GitHub. See `CHECKPOINT-2026-10-08-001`.
